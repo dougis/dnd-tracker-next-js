@@ -1,6 +1,6 @@
 # Product Requirements Document (PRD)
 **Product Name:** D&D Encounter Tracker Web App  
-**Version:** 2.2  
+**Version:** 2.3  
 **Date:** June 8, 2025
 
 ## 1. Purpose
@@ -166,33 +166,87 @@ The D&D Encounter Tracker Web App enables Dungeon Masters to manage combat effic
 - **Data Privacy**: GDPR compliance with data export/deletion
 
 ### 6.3 Integration
-- **Payment Processors**: Stripe (primary), PayPal (secondary)
-- **Analytics**: Mixpanel for user behavior, Stripe for subscription metrics
+- **Payment Processors**: Stripe (primary) for comprehensive payment handling
+- **Analytics**: Vercel Analytics for user behavior and performance insights
 - **Support**: Intercom for customer support and user communication
-- **CDN**: CloudFlare for global content delivery
+- **Email Service**: Resend for transactional emails and notifications
 
 ## 7. Technology Stack
 
-### 7.1 Full-Stack Framework
-- **Framework**: Next.js 14 with TypeScript and App Router
-- **Runtime**: Node.js 22 LTS (for server-side components and API routes)
-- **Frontend**: React 18 with Server Components and Client Components
-- **API Layer**: Next.js API Routes with Edge Runtime support
-- **Styling**: Tailwind CSS with custom design system
-- **State Management**: Zustand for client state, React Query for server state
+### 7.1 Core Framework & Runtime
+- **Framework**: Next.js 15 with TypeScript and App Router
+- **Runtime**: Node.js 22 LTS with Edge Runtime support
+- **Language**: TypeScript 5.0+ for type safety across frontend and backend
+- **Package Manager**: pnpm for efficient dependency management
 
-### 7.2 Data & Authentication
-- **Database**: MongoDB with Mongoose ODM
-- **Authentication**: NextAuth.js with JWT and refresh token rotation
-- **File Storage**: AWS S3 for user uploads and backups
-- **Validation**: Zod for type-safe schema validation
+### 7.2 Frontend & UI
+- **UI Library**: React 18 with Server Components and Client Components
+- **Styling**: Tailwind CSS 3.4+ with custom design system
+- **Component Library**: shadcn/ui for consistent, accessible components
+- **Icons**: Lucide React for consistent iconography
+- **Fonts**: Inter via next/font for optimized web fonts
 
-### 7.3 Infrastructure
-- **Hosting**: Vercel with Edge Runtime optimization
-- **Database**: MongoDB Atlas with automated scaling
-- **CDN**: Vercel Edge Network with global content delivery
-- **Monitoring**: Sentry for error tracking, Vercel Analytics for performance
-- **Deployment**: Vercel CI/CD with automated testing and preview deployments
+### 7.3 Backend & Database
+- **Database**: MongoDB 7.0+ with Atlas cloud hosting
+- **ODM**: Mongoose 8.0+ for schema modeling and validation
+- **API Layer**: Next.js App Router API routes with edge optimization
+- **Validation**: Zod for runtime type validation and schema definition
+- **Data Fetching**: Native fetch with Next.js caching strategies
+
+### 7.4 State Management & Data
+- **Client State**: Zustand for lightweight state management
+- **Server State**: TanStack Query (React Query) for server state caching
+- **Form Handling**: React Hook Form with Zod validation
+- **Real-time**: Pusher or Socket.IO for live collaboration features
+
+### 7.5 Authentication & Security
+- **Authentication**: NextAuth.js (Auth.js) v5 with JWT strategy
+- **Session Management**: NextAuth.js database sessions with MongoDB adapter
+- **Authorization**: Role-based access control (RBAC) with middleware
+- **Security Headers**: Next.js built-in security headers + Helmet.js
+- **Rate Limiting**: Built-in Next.js rate limiting for API routes
+
+### 7.6 Payments & Monetization
+- **Payment Processor**: Stripe with Next.js integration
+- **Webhook Handling**: Stripe webhooks via Next.js API routes
+- **Subscription Management**: Stripe Customer Portal integration
+- **Tax Handling**: Stripe Tax for global compliance
+
+### 7.7 File Storage & CDN
+- **File Storage**: Vercel Blob for user uploads and assets
+- **Image Optimization**: Next.js Image component with automatic optimization
+- **CDN**: Vercel Edge Network for global content delivery
+- **Static Assets**: Next.js static file serving with caching
+
+### 7.8 Testing & Quality
+- **Unit Testing**: Jest + React Testing Library
+- **E2E Testing**: Playwright for cross-browser testing
+- **Component Testing**: Storybook for UI component development
+- **Code Quality**: ESLint + Prettier with Next.js recommended configs
+- **Type Checking**: TypeScript strict mode with Next.js integration
+
+### 7.9 Monitoring & Analytics
+- **Error Tracking**: Sentry for error monitoring and performance tracking
+- **Analytics**: Vercel Analytics for web vitals and user insights
+- **Performance**: Vercel Speed Insights for Core Web Vitals monitoring
+- **Logging**: Next.js built-in logging with structured JSON output
+- **Uptime Monitoring**: Vercel built-in monitoring with custom alerts
+
+### 7.10 Development & Deployment
+- **Hosting**: Vercel with automatic deployments and preview environments
+- **Version Control**: Git with GitHub integration
+- **CI/CD**: Vercel automatic deployments with GitHub Actions for testing
+- **Environment Management**: Vercel environment variables with preview/production separation
+- **Database Migrations**: Custom MongoDB migration scripts via API routes
+
+### 7.11 Developer Experience
+- **Development Server**: Next.js dev server with Fast Refresh
+- **Code Editor**: VS Code with Next.js and TypeScript extensions
+- **API Documentation**: Swagger/OpenAPI with next-swagger-doc
+- **Database GUI**: MongoDB Compass for development database management
+- **Debugging**: React Developer Tools + Next.js debugging tools
+
+
 
 ## 8. Success Metrics
 
