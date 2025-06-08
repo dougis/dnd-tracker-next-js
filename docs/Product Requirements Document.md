@@ -1,6 +1,6 @@
 # Product Requirements Document (PRD)
 **Product Name:** D&D Encounter Tracker Web App  
-**Version:** 2.1  
+**Version:** 2.2  
 **Date:** June 8, 2025
 
 ## 1. Purpose
@@ -161,7 +161,7 @@ The D&D Encounter Tracker Web App enables Dungeon Masters to manage combat effic
 
 ### 6.2 Security
 - **Data Encryption**: TLS 1.3 for data in transit, AES-256 for data at rest
-- **Authentication**: JWT tokens with refresh token rotation
+- **Authentication**: NextAuth.js with JWT tokens and refresh token rotation
 - **Payment Security**: PCI DSS compliance through payment processor
 - **Data Privacy**: GDPR compliance with data export/deletion
 
@@ -173,24 +173,26 @@ The D&D Encounter Tracker Web App enables Dungeon Masters to manage combat effic
 
 ## 7. Technology Stack
 
-### 7.1 Frontend
-- **Framework**: React 18 with TypeScript
+### 7.1 Full-Stack Framework
+- **Framework**: Next.js 14 with TypeScript and App Router
+- **Runtime**: Node.js 22 LTS (for server-side components and API routes)
+- **Frontend**: React 18 with Server Components and Client Components
+- **API Layer**: Next.js API Routes with Edge Runtime support
 - **Styling**: Tailwind CSS with custom design system
 - **State Management**: Zustand for client state, React Query for server state
-- **Build Tool**: Vite for fast development and optimized builds
 
-### 7.2 Backend
-- **Runtime**: Node.js 22 LTS
-- **Framework**: Express.js with TypeScript
+### 7.2 Data & Authentication
 - **Database**: MongoDB with Mongoose ODM
-- **Authentication**: Custom JWT implementation with refresh tokens
+- **Authentication**: NextAuth.js with JWT and refresh token rotation
 - **File Storage**: AWS S3 for user uploads and backups
+- **Validation**: Zod for type-safe schema validation
 
 ### 7.3 Infrastructure
-- **Hosting**: Vercel (frontend), Railway or AWS (backend)
+- **Hosting**: Vercel with Edge Runtime optimization
 - **Database**: MongoDB Atlas with automated scaling
-- **Monitoring**: Sentry for error tracking, Uptime Robot for availability
-- **Deployment**: CI/CD pipeline with automated testing
+- **CDN**: Vercel Edge Network with global content delivery
+- **Monitoring**: Sentry for error tracking, Vercel Analytics for performance
+- **Deployment**: Vercel CI/CD with automated testing and preview deployments
 
 ## 8. Success Metrics
 
