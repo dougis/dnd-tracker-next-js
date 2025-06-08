@@ -1,6 +1,7 @@
 # Project Roadmap - D&D Encounter Tracker
 **Project:** D&D Encounter Tracker Web App  
 **Total Estimated Duration:** 16 weeks (80 working days)  
+**MVP Delivery:** 6 weeks (30 working days)  
 **Last Updated:** June 8, 2025
 
 ## Task Organization
@@ -8,59 +9,69 @@
 Tasks are organized by application area and marked with:
 - **Priority**: P1 (Critical), P2 (Important), P3 (Nice to have)
 - **Phase**: Which implementation phase (1-4)
+- **MVP**: 🎯 Tasks essential for MVP (Minimum Viable Product)
 - **Effort**: Time estimate in hours (max 8 hours = 1 day)
 - **Dependencies**: Other tasks that must be completed first
+
+## MVP Scope
+The MVP focuses on core combat tracking functionality to validate the product concept:
+- User authentication and basic account management
+- Simple character creation (name, AC, HP, initiative modifier)
+- Basic encounter builder with character assignment
+- Core combat tracker (initiative order, turn management, HP tracking)
+- Essential UI/UX for demonstrating look and feel
+- **MVP Delivery Target**: 6 weeks (30 working days)
 
 ---
 
 ## 1. Project Setup & Infrastructure (Phase 1)
 
 ### 1.1 Initial Project Setup
-- [ ] **Setup Next.js 15 project with TypeScript** `P1 | Phase 1 | 4h`
+- [ ] **Setup Next.js 15 project with TypeScript** `P1 | Phase 1 | 4h` 🎯 **MVP**
   - Initialize project with `create-next-app`
   - Configure TypeScript strict mode
   - Setup basic folder structure
   - Configure next.config.js for optimization
 
-- [ ] **Configure development environment** `P1 | Phase 1 | 4h`
+- [ ] **Configure development environment** `P1 | Phase 1 | 4h` 🎯 **MVP**
   - Setup ESLint and Prettier with Next.js configs
   - Configure VS Code settings and extensions
   - Setup pnpm workspace configuration
   - Create .env.example file
 
-- [ ] **Setup version control and branching strategy** `P1 | Phase 1 | 2h`
+- [ ] **Setup version control and branching strategy** `P1 | Phase 1 | 2h` 🎯 **MVP**
   - Configure .gitignore for Next.js
   - Setup branch protection rules
   - Create PR template
   - Document git workflow
 
 ### 1.2 Styling and UI Foundation
-- [ ] **Install and configure Tailwind CSS** `P1 | Phase 1 | 3h`
+- [ ] **Install and configure Tailwind CSS** `P1 | Phase 1 | 3h` 🎯 **MVP**
   - Install Tailwind CSS and PostCSS
   - Configure tailwind.config.js with custom theme
   - Setup CSS variables for design tokens
   - Test responsive utilities
 
-- [ ] **Setup shadcn/ui component library** `P1 | Phase 1 | 4h`
+- [ ] **Setup shadcn/ui component library** `P1 | Phase 1 | 4h` 🎯 **MVP**
   - Initialize shadcn/ui configuration
   - Install core components (Button, Input, Card, etc.)
   - Configure component theming
   - Create component showcase page
 
-- [ ] **Create design system foundations** `P1 | Phase 1 | 6h`
+- [ ] **Create design system foundations** `P1 | Phase 1 | 6h` 🎯 **MVP**
   - Define color palette and typography
   - Create spacing and sizing scales
   - Setup dark/light theme switching
   - Document design system usage
 
 ### 1.3 Database Setup
-- [ ] **Setup MongoDB Atlas cluster** `P1 | Phase 1 | 3h`
+- [ ] **Setup MongoDB Atlas cluster** `P1 | Phase 1 | 3h` 🎯 **MVP**
   - Create production and development clusters
   - Configure network access and database users
   - Setup connection strings
   - Test connectivity
 
-- [ ] **Install and configure Mongoose** `P1 | Phase 1 | 4h`
+- [ ] **Install and configure Mongoose** `P1 | Phase 1 | 4h` 🎯 **MVP**
   - Install Mongoose and type definitions
   - Create database connection utility
   - Configure connection pooling
@@ -84,13 +95,13 @@ Tasks are organized by application area and marked with:
 ## 2. Authentication & User Management (Phase 1)
 
 ### 2.1 NextAuth.js Setup
-- [ ] **Install and configure NextAuth.js v5** `P1 | Phase 1 | 6h`
+- [ ] **Install and configure NextAuth.js v5** `P1 | Phase 1 | 6h` 🎯 **MVP**
   - Install NextAuth.js and MongoDB adapter
   - Configure authentication options
   - Setup session strategy with database
   - Create auth API routes
 
-- [ ] **Setup email/password authentication** `P1 | Phase 1 | 6h`
+- [ ] **Setup email/password authentication** `P1 | Phase 1 | 6h` 🎯 **MVP**
   - Configure credentials provider
   - Create password hashing utilities
   - Implement login/register forms
@@ -103,13 +114,13 @@ Tasks are organized by application area and marked with:
   - Handle account linking
 
 ### 2.2 User Registration & Login
-- [ ] **Create user registration flow** `P1 | Phase 1 | 6h`
+- [ ] **Create user registration flow** `P1 | Phase 1 | 6h` 🎯 **MVP**
   - Build registration form with validation
   - Implement server-side user creation
   - Add email verification system
   - Create welcome email template
 
-- [ ] **Build login interface** `P1 | Phase 1 | 4h`
+- [ ] **Build login interface** `P1 | Phase 1 | 4h` 🎯 **MVP**
   - Create login form component
   - Implement sign-in logic
   - Add remember me functionality
@@ -122,7 +133,7 @@ Tasks are organized by application area and marked with:
   - Add password strength validation
 
 ### 2.3 Session Management
-- [ ] **Implement session middleware** `P1 | Phase 1 | 4h`
+- [ ] **Implement session middleware** `P1 | Phase 1 | 4h` 🎯 **MVP**
   - Create authentication middleware
   - Protect API routes
   - Handle session expiration
@@ -139,13 +150,13 @@ Tasks are organized by application area and marked with:
 ## 3. Database & Data Layer (Phase 1-2)
 
 ### 3.1 Database Schema Implementation
-- [ ] **Create User schema and model** `P1 | Phase 1 | 4h`
+- [ ] **Create User schema and model** `P1 | Phase 1 | 4h` 🎯 **MVP**
   - Define User interface and schema
   - Implement subscription fields
   - Add usage tracking fields
   - Create schema validation
 
-- [ ] **Create Character schema and model** `P1 | Phase 2 | 4h`
+- [ ] **Create Character schema and model** `P1 | Phase 2 | 4h` 🎯 **MVP**
   - Define Character interface and schema
   - Implement multi-class support
   - Add stats and attributes
@@ -157,20 +168,20 @@ Tasks are organized by application area and marked with:
   - Add template support
   - Create party validation
 
-- [ ] **Create Encounter schema and model** `P1 | Phase 2 | 6h`
+- [ ] **Create Encounter schema and model** `P1 | Phase 2 | 6h` 🎯 **MVP**
   - Define Encounter interface and schema
   - Implement participant tracking
   - Add combat state management
   - Create encounter validation
 
 ### 3.2 Data Access Layer
-- [ ] **Create User service layer** `P1 | Phase 1 | 4h`
+- [ ] **Create User service layer** `P1 | Phase 1 | 4h` 🎯 **MVP**
   - Implement CRUD operations
   - Add subscription management
   - Create usage tracking utilities
   - Add user query helpers
 
-- [ ] **Create Character service layer** `P1 | Phase 2 | 4h`
+- [ ] **Create Character service layer** `P1 | Phase 2 | 4h` 🎯 **MVP**
   - Implement character CRUD operations
   - Add template management
   - Create character query utilities
@@ -182,7 +193,7 @@ Tasks are organized by application area and marked with:
   - Create party query utilities
   - Add template helpers
 
-- [ ] **Create Encounter service layer** `P1 | Phase 2 | 6h`
+- [ ] **Create Encounter service layer** `P1 | Phase 2 | 6h` 🎯 **MVP**
   - Implement encounter CRUD operations
   - Add participant management
   - Create combat state utilities
@@ -195,7 +206,7 @@ Tasks are organized by application area and marked with:
   - Implement encounter indexes
   - Setup party collection indexes
 
-- [ ] **Implement data validation with Zod** `P1 | Phase 1 | 6h`
+- [ ] **Implement data validation with Zod** `P1 | Phase 1 | 6h` 🎯 **MVP**
   - Create validation schemas for all models
   - Implement server-side validation
   - Add client-side validation
@@ -206,7 +217,7 @@ Tasks are organized by application area and marked with:
 ## 4. Character Management (Phase 2)
 
 ### 4.1 Character Creation
-- [ ] **Build character creation form** `P1 | Phase 2 | 8h`
+- [ ] **Build character creation form** `P1 | Phase 2 | 8h` 🎯 **MVP**
   - Create multi-step character form
   - Implement basic info section
   - Add class and race selection
@@ -218,14 +229,14 @@ Tasks are organized by application area and marked with:
   - Calculate combined modifiers
   - Validate class combinations
 
-- [ ] **Add character stats management** `P1 | Phase 2 | 4h`
+- [ ] **Add character stats management** `P1 | Phase 2 | 4h` 🎯 **MVP**
   - Create stats input components
   - Implement ability score validation
   - Add modifier calculations
   - Handle stat dependencies
 
 ### 4.2 Character Management Interface
-- [ ] **Create character list view** `P1 | Phase 2 | 4h`
+- [ ] **Create character list view** `P1 | Phase 2 | 4h` 🎯 **MVP**
   - Build character grid/list display
   - Add search and filtering
   - Implement sorting options
@@ -237,7 +248,7 @@ Tasks are organized by application area and marked with:
   - Implement character actions
   - Add player information section
 
-- [ ] **Create character editing interface** `P1 | Phase 2 | 6h`
+- [ ] **Create character editing interface** `P1 | Phase 2 | 6h` 🎯 **MVP**
   - Build edit form with validation
   - Implement real-time updates
   - Add change tracking
@@ -317,7 +328,7 @@ Tasks are organized by application area and marked with:
 ## 6. Encounter Management (Phase 2-3)
 
 ### 6.1 Encounter Creation
-- [ ] **Create encounter builder interface** `P1 | Phase 2 | 8h`
+- [ ] **Create encounter builder interface** `P1 | Phase 2 | 8h` 🎯 **MVP**
   - Build drag-and-drop encounter builder
   - Add creature selection and addition
   - Implement encounter settings
@@ -336,13 +347,13 @@ Tasks are organized by application area and marked with:
   - Create template sharing
 
 ### 6.2 Encounter Management
-- [ ] **Build encounter list interface** `P1 | Phase 2 | 4h`
+- [ ] **Build encounter list interface** `P1 | Phase 2 | 4h` 🎯 **MVP**
   - Create encounter browsing view
   - Add search and filtering
   - Implement encounter categories
   - Add quick-start options
 
-- [ ] **Create encounter detail view** `P1 | Phase 2 | 6h`
+- [ ] **Create encounter detail view** `P1 | Phase 2 | 6h` 🎯 **MVP**
   - Build comprehensive encounter display
   - Add participant management
   - Implement encounter editing
@@ -360,26 +371,26 @@ Tasks are organized by application area and marked with:
 ## 7. Combat System (Phase 3)
 
 ### 7.1 Initiative System
-- [ ] **Create initiative tracking interface** `P1 | Phase 3 | 6h`
+- [ ] **Create initiative tracking interface** `P1 | Phase 3 | 6h` 🎯 **MVP**
   - Build initiative order display
   - Implement turn indicators
   - Add round tracking
   - Create initiative modification tools
 
-- [ ] **Implement initiative rolling system** `P1 | Phase 3 | 4h`
+- [ ] **Implement initiative rolling system** `P1 | Phase 3 | 4h` 🎯 **MVP**
   - Create automatic initiative rolling
   - Add manual initiative entry
   - Implement dexterity tiebreakers
   - Handle initiative modifications
 
-- [ ] **Build turn management system** `P1 | Phase 3 | 6h`
+- [ ] **Build turn management system** `P1 | Phase 3 | 6h` 🎯 **MVP**
   - Create turn advancement logic
   - Implement turn skipping
   - Add turn delay functionality
   - Handle turn order changes
 
 ### 7.2 HP and Damage Tracking
-- [ ] **Create HP tracking interface** `P1 | Phase 3 | 6h`
+- [ ] **Create HP tracking interface** `P1 | Phase 3 | 6h` 🎯 **MVP**
   - Build HP display and modification
   - Add damage and healing forms
   - Implement temporary HP tracking
@@ -398,13 +409,13 @@ Tasks are organized by application area and marked with:
   - Handle different healing types
 
 ### 7.3 Combat Flow Management
-- [ ] **Create combat state management** `P1 | Phase 3 | 6h`
+- [ ] **Create combat state management** `P1 | Phase 3 | 6h` 🎯 **MVP**
   - Implement combat start/stop logic
   - Add combat pause functionality
   - Create combat reset options
   - Handle combat state persistence
 
-- [ ] **Build combat toolbar** `P1 | Phase 3 | 4h`
+- [ ] **Build combat toolbar** `P1 | Phase 3 | 4h` 🎯 **MVP**
   - Create quick action buttons
   - Add combat shortcuts
   - Implement combat controls
@@ -634,45 +645,45 @@ Tasks are organized by application area and marked with:
 ## 13. UI/UX & Design System (Ongoing)
 
 ### 13.1 Layout & Navigation
-- [ ] **Create application layout** `P1 | Phase 1 | 6h`
+- [ ] **Create application layout** `P1 | Phase 1 | 6h` 🎯 **MVP**
   - Build main navigation structure
   - Create responsive sidebar
   - Implement breadcrumb navigation
   - Add mobile menu system
 
-- [ ] **Build landing page** `P1 | Phase 1 | 6h`
+- [ ] **Build landing page** `P1 | Phase 1 | 6h` 🎯 **MVP**
   - Create hero section
   - Add feature highlights
   - Implement pricing section
   - Create call-to-action flows
 
-- [ ] **Create dashboard interface** `P1 | Phase 2 | 6h`
+- [ ] **Create dashboard interface** `P1 | Phase 2 | 6h` 🎯 **MVP**
   - Build main dashboard layout
   - Add quick access widgets
   - Implement recent items display
   - Create dashboard customization
 
 ### 13.2 Forms & Interactions
-- [ ] **Create form component library** `P1 | Phase 1 | 6h`
+- [ ] **Create form component library** `P1 | Phase 1 | 6h` 🎯 **MVP**
   - Build reusable form components
   - Implement form validation UI
   - Add form state management
   - Create form accessibility features
 
-- [ ] **Build modal and dialog system** `P1 | Phase 2 | 4h`
+- [ ] **Build modal and dialog system** `P1 | Phase 2 | 4h` 🎯 **MVP**
   - Create modal component
   - Implement confirmation dialogs
   - Add modal state management
   - Create modal accessibility
 
-- [ ] **Implement loading and error states** `P1 | Phase 1 | 4h`
+- [ ] **Implement loading and error states** `P1 | Phase 1 | 4h` 🎯 **MVP**
   - Create loading spinner components
   - Build error boundary system
   - Implement error message display
   - Add retry functionality
 
 ### 13.3 Responsive Design
-- [ ] **Implement mobile-first design** `P1 | Phase 1 | 6h`
+- [ ] **Implement mobile-first design** `P1 | Phase 1 | 6h` 🎯 **MVP**
   - Create mobile layout components
   - Implement touch-friendly interactions
   - Add mobile navigation
@@ -702,7 +713,7 @@ Tasks are organized by application area and marked with:
 ## 14. Testing & Quality Assurance (Ongoing)
 
 ### 14.1 Unit Testing
-- [ ] **Setup Jest testing framework** `P1 | Phase 1 | 4h`
+- [ ] **Setup Jest testing framework** `P1 | Phase 1 | 4h` 🎯 **MVP**
   - Configure Jest with Next.js
   - Setup React Testing Library
   - Create test utilities
@@ -764,13 +775,13 @@ Tasks are organized by application area and marked with:
 ## 15. Deployment & DevOps (Phase 1-4)
 
 ### 15.1 Environment Setup
-- [ ] **Configure development environment** `P1 | Phase 1 | 4h`
+- [ ] **Configure development environment** `P1 | Phase 1 | 4h` 🎯 **MVP**
   - Setup local development stack
   - Configure environment variables
   - Create development documentation
   - Setup local database
 
-- [ ] **Setup staging environment** `P1 | Phase 1 | 4h`
+- [ ] **Setup staging environment** `P1 | Phase 1 | 4h` 🎯 **MVP**
   - Configure Vercel preview deployments
   - Setup staging database
   - Configure staging environment variables
@@ -783,20 +794,20 @@ Tasks are organized by application area and marked with:
   - Configure custom domain
 
 ### 15.2 CI/CD Pipeline
-- [ ] **Setup GitHub Actions workflow** `P1 | Phase 1 | 6h`
+- [ ] **Setup GitHub Actions workflow** `P1 | Phase 1 | 6h` 🎯 **MVP**
   - Create CI/CD pipeline
   - Configure automated testing
   - Setup deployment automation
   - Add quality gates
 
-- [ ] **Configure automated deployment** `P1 | Phase 1 | 4h`
+- [ ] **Configure automated deployment** `P1 | Phase 1 | 4h` 🎯 **MVP**
   - Setup automatic deployments
   - Configure branch-based deployments
   - Add deployment notifications
   - Setup rollback procedures
 
 ### 15.3 Monitoring & Logging
-- [ ] **Setup error tracking with Sentry** `P1 | Phase 1 | 4h`
+- [ ] **Setup error tracking with Sentry** `P1 | Phase 1 | 4h` 🎯 **MVP**
   - Configure Sentry integration
   - Setup error alerting
   - Create error dashboards
@@ -903,8 +914,34 @@ Tasks are organized by application area and marked with:
 ## Total Project Summary
 
 - **Total Tasks**: ~200 individual tasks
+- **MVP Tasks**: ~45 essential tasks (marked with 🎯)
 - **Total Estimated Hours**: ~800 hours
+- **MVP Estimated Hours**: ~240 hours (6 weeks)
 - **Estimated Duration**: 16 weeks (with buffer)
+- **MVP Duration**: 6 weeks (30 working days)
 - **Team Size**: 1-2 full-time developers
-- **MVP Delivery**: End of Phase 2 (8 weeks)
+- **MVP Delivery**: End of 6 weeks
 - **Full Feature Release**: End of Phase 4 (16 weeks)
+
+## MVP Feature Set Summary
+
+The MVP includes essential functionality to validate the core product concept:
+
+### **Core Features (MVP 🎯)**
+- **Authentication**: Email/password login, user registration, session management
+- **Character Management**: Basic character creation with stats (AC, HP, initiative)
+- **Encounter Building**: Simple encounter creation with character assignment
+- **Combat Tracking**: Initiative order, turn management, HP tracking
+- **Responsive UI**: Mobile-first design with essential layouts
+- **Basic Testing**: Jest framework with core component tests
+- **Deployment**: Staging environment with CI/CD pipeline
+
+### **Post-MVP Features**
+- Party management and templates
+- Advanced status effects and conditions
+- Legendary and lair actions
+- Subscription and payment system
+- Premium features (cloud sync, exports)
+- Advanced combat logging
+- Comprehensive testing suite
+- Production deployment and monitoring
