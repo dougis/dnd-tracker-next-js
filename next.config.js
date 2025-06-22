@@ -21,7 +21,7 @@ const nextConfig = {
     webpack: (config) => {
       config.plugins.push(
         require('@next/bundle-analyzer')({
-          enabled: true,
+          enabled: true
         })
       )
       return config
