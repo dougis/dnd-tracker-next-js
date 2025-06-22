@@ -153,6 +153,7 @@ All comprehensive project documentation is in the `docs/` folder:
 - Test coverage requirements for all new features
 - Mobile responsiveness validation
 - Performance optimization checks
+- Codacy scans should be performed on all code changes
 
 ## Current Status
 
