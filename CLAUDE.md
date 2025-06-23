@@ -100,6 +100,7 @@ This project follows a **GitHub Flow** branching strategy optimized for continuo
    npm run typecheck        # Ensure TypeScript compiles
    npm test                 # All tests must pass
    npm run build            # Verify production build
+   use the codacy mcp server to examine the code and fix any issues it finds
    ```
 
 4. **Create Pull Request**
@@ -109,6 +110,7 @@ This project follows a **GitHub Flow** branching strategy optimized for continuo
    gh pr create --title "Add character creation form validation" \
                 --body "Implements validation for character creation form as specified in #15"
 
+   check PR status after 90 seconds to see the results of all steps and address any failing ones
    # Or create via GitHub web interface
    ```
 
