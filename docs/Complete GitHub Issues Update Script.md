@@ -1,4 +1,5 @@
 # GitHub Issues Update Script - Complete 12-Week Phase Assignments
+
 **Date:** June 9, 2025  
 **Purpose:** Update all 46 MVP issues with correct week assignments and dependencies
 
@@ -9,6 +10,7 @@ Use these commands with GitHub CLI (`gh`) to update all issues systematically:
 ### **WEEK 1: Project Foundation (17 hours total)**
 
 #### **Issue #2: Setup Next.js 15 project with TypeScript**
+
 ```bash
 gh issue edit 2 --body "**MVP Task: Project Setup**
 
@@ -34,13 +36,14 @@ Initialize Next.js 15 project with TypeScript configuration and basic folder str
 - [ ] Basic project structure follows Next.js best practices
 - [ ] Project configuration supports planned features
 
-**Effort:** 4 hours  
-**Priority:** P1  
-**Phase:** Week 1  
+**Effort:** 4 hours
+**Priority:** P1
+**Phase:** Week 1
 **Dependencies:** None (starting point)"
 ```
 
 #### **Issue #3: Configure development environment**
+
 ```bash
 gh issue edit 3 --body "**MVP Task: Project Setup**
 
@@ -66,13 +69,14 @@ Configure development environment with ESLint, Prettier, and VS Code settings fo
 - [ ] Package management is configured consistently
 - [ ] Environment variables are properly templated
 
-**Effort:** 4 hours  
-**Priority:** P1  
-**Phase:** Week 1  
+**Effort:** 4 hours
+**Priority:** P1
+**Phase:** Week 1
 **Dependencies:** #2"
 ```
 
 #### **Issue #4: Setup version control and branching strategy**
+
 ```bash
 gh issue edit 4 --body "**MVP Task: Project Setup**
 
@@ -98,13 +102,14 @@ Configure Git workflow, branching strategy, and repository settings for team col
 - [ ] PR template guides code review process
 - [ ] Git workflow is documented for team
 
-**Effort:** 2 hours  
-**Priority:** P1  
-**Phase:** Week 1  
+**Effort:** 2 hours
+**Priority:** P1
+**Phase:** Week 1
 **Dependencies:** #2"
 ```
 
 #### **Issue #8: Setup MongoDB Atlas cluster**
+
 ```bash
 gh issue edit 8 --body "**MVP Task: Database Setup**
 
@@ -130,13 +135,14 @@ Configure MongoDB Atlas cluster for production and development environments.
 - [ ] Connection strings work in different environments
 - [ ] Database connectivity is verified
 
-**Effort:** 3 hours  
-**Priority:** P1  
-**Phase:** Week 1  
+**Effort:** 3 hours
+**Priority:** P1
+**Phase:** Week 1
 **Dependencies:** None"
 ```
 
 #### **Issue #45: Setup Jest testing framework**
+
 ```bash
 gh issue edit 45 --body "**MVP Task: Testing**
 
@@ -165,15 +171,16 @@ Setup Jest testing framework with React Testing Library for comprehensive compon
 - [ ] Tests can be run in development and CI environments
 - [ ] Mock utilities work for external dependencies
 
-**Effort:** 4 hours  
-**Priority:** P1  
-**Phase:** Week 1  
+**Effort:** 4 hours
+**Priority:** P1
+**Phase:** Week 1
 **Dependencies:** #2"
 ```
 
 ### **WEEK 2: UI Foundation & Database (23 hours total)**
 
 #### **Issue #5: Install and configure Tailwind CSS**
+
 ```bash
 gh issue edit 5 --body "**MVP Task: UI Foundation**
 
@@ -199,13 +206,14 @@ Install and configure Tailwind CSS with custom theme and design tokens for consi
 - [ ] CSS variables enable dynamic theming
 - [ ] Responsive utilities work across all breakpoints
 
-**Effort:** 3 hours  
-**Priority:** P1  
-**Phase:** Week 2  
+**Effort:** 3 hours
+**Priority:** P1
+**Phase:** Week 2
 **Dependencies:** #2"
 ```
 
 #### **Issue #6: Setup shadcn/ui component library**
+
 ```bash
 gh issue edit 6 --body "**MVP Task: UI Foundation**
 
@@ -231,13 +239,14 @@ Initialize shadcn/ui component library and configure core components for consist
 - [ ] Component theming works with Tailwind
 - [ ] Showcase page demonstrates all components
 
-**Effort:** 4 hours  
-**Priority:** P1  
-**Phase:** Week 2  
+**Effort:** 4 hours
+**Priority:** P1
+**Phase:** Week 2
 **Dependencies:** #5"
 ```
 
 #### **Issue #7: Create design system foundations**
+
 ```bash
 gh issue edit 7 --body "**MVP Task: UI Foundation**
 
@@ -263,13 +272,14 @@ Create comprehensive design system with colors, typography, spacing, and theming
 - [ ] Theme switching works seamlessly
 - [ ] Design system documentation is comprehensive
 
-**Effort:** 6 hours  
-**Priority:** P1  
-**Phase:** Week 2  
+**Effort:** 6 hours
+**Priority:** P1
+**Phase:** Week 2
 **Dependencies:** #6"
 ```
 
 #### **Issue #9: Install and configure Mongoose**
+
 ```bash
 gh issue edit 9 --body "**MVP Task: Database Setup**
 
@@ -295,13 +305,14 @@ Install and configure Mongoose ODM for MongoDB with connection pooling and envir
 - [ ] Environment configurations work for dev/prod
 - [ ] Database connection is stable and monitored
 
-**Effort:** 4 hours  
-**Priority:** P1  
-**Phase:** Week 2  
+**Effort:** 4 hours
+**Priority:** P1
+**Phase:** Week 2
 **Dependencies:** #8"
 ```
 
 #### **Issue #46: Configure automated deployment pipeline**
+
 ```bash
 gh issue edit 46 --body "**MVP Task: Deployment**
 
@@ -330,15 +341,16 @@ Configure automated deployment pipeline with GitHub Actions, staging environment
 - [ ] Deployment status is visible in GitHub
 - [ ] Rollback procedures are documented and functional
 
-**Effort:** 6 hours  
-**Priority:** P1  
-**Phase:** Week 2  
+**Effort:** 6 hours
+**Priority:** P1
+**Phase:** Week 2
 **Dependencies:** #45"
 ```
 
 ### **WEEK 3: Authentication & Core Components (24 hours total)**
 
 #### **Issue #10: Install and configure NextAuth.js v5**
+
 ```bash
 gh issue edit 10 --body "**MVP Task: Authentication**
 
@@ -364,13 +376,14 @@ Install and configure NextAuth.js v5 with MongoDB adapter for user authenticatio
 - [ ] Authentication routes work as expected
 - [ ] Session management is secure and efficient
 
-**Effort:** 6 hours  
-**Priority:** P1  
-**Phase:** Week 3  
+**Effort:** 6 hours
+**Priority:** P1
+**Phase:** Week 3
 **Dependencies:** #9"
 ```
 
 #### **Issue #40: Create application layout**
+
 ```bash
 gh issue edit 40 --body "**MVP Task: UI/UX Design**
 
@@ -399,13 +412,14 @@ Build main navigation structure and responsive sidebar for application layout an
 - [ ] Mobile menu provides full navigation access
 - [ ] Navigation state persists across page changes
 
-**Effort:** 6 hours  
-**Priority:** P1  
-**Phase:** Week 3  
+**Effort:** 6 hours
+**Priority:** P1
+**Phase:** Week 3
 **Dependencies:** #7"
 ```
 
 #### **Issue #43: Create form component library**
+
 ```bash
 gh issue edit 43 --body "**MVP Task: UI/UX Design**
 
@@ -434,13 +448,14 @@ Build reusable form components with validation, accessibility, and state managem
 - [ ] Form state is managed efficiently
 - [ ] Loading states provide user feedback during submissions
 
-**Effort:** 6 hours  
-**Priority:** P1  
-**Phase:** Week 3  
+**Effort:** 6 hours
+**Priority:** P1
+**Phase:** Week 3
 **Dependencies:** #7"
 ```
 
 #### **Issue #20: Implement data validation with Zod**
+
 ```bash
 gh issue edit 20 --body "**MVP Task: Database**
 
@@ -466,15 +481,16 @@ Implement comprehensive data validation using Zod schemas for all models and API
 - [ ] Client-side validation provides immediate feedback
 - [ ] Error handling is consistent and user-friendly
 
-**Effort:** 6 hours  
-**Priority:** P1  
-**Phase:** Week 3  
+**Effort:** 6 hours
+**Priority:** P1
+**Phase:** Week 3
 **Dependencies:** #9"
 ```
 
 ### **WEEK 4: Authentication Complete & Data Models (24 hours total)**
 
 #### **Issue #11: Create user registration flow**
+
 ```bash
 gh issue edit 11 --body "**MVP Task: Authentication**
 
@@ -500,13 +516,14 @@ Build complete user registration workflow with email verification and user onboa
 - [ ] Email verification prevents unauthorized accounts
 - [ ] Welcome flow guides new users effectively
 
-**Effort:** 6 hours  
-**Priority:** P1  
-**Phase:** Week 4  
+**Effort:** 6 hours
+**Priority:** P1
+**Phase:** Week 4
 **Dependencies:** #10"
 ```
 
 #### **Issue #21: Implement session middleware**
+
 ```bash
 gh issue edit 21 --body "**MVP Task: Authentication**
 
@@ -532,13 +549,14 @@ Implement session middleware for protecting routes and managing user authenticat
 - [ ] Session expiration is handled gracefully
 - [ ] Session refresh works automatically
 
-**Effort:** 4 hours  
-**Priority:** P1  
-**Phase:** Week 4  
+**Effort:** 4 hours
+**Priority:** P1
+**Phase:** Week 4
 **Dependencies:** #10"
 ```
 
 #### **Issue #14: Create User schema and model**
+
 ```bash
 gh issue edit 14 --body "**MVP Task: Database**
 
@@ -564,13 +582,14 @@ Create comprehensive User schema and model with subscription tracking and usage 
 - [ ] Usage tracking supports freemium limits
 - [ ] Schema validation ensures data integrity
 
-**Effort:** 4 hours  
-**Priority:** P1  
-**Phase:** Week 4  
+**Effort:** 4 hours
+**Priority:** P1
+**Phase:** Week 4
 **Dependencies:** #20"
 ```
 
 #### **Issue #17: Create User service layer**
+
 ```bash
 gh issue edit 17 --body "**MVP Task: Database**
 
@@ -596,13 +615,14 @@ Implement User service layer with CRUD operations, subscription management, and 
 - [ ] Usage tracking enables limit enforcement
 - [ ] Query helpers optimize database access
 
-**Effort:** 4 hours  
-**Priority:** P1  
-**Phase:** Week 4  
+**Effort:** 4 hours
+**Priority:** P1
+**Phase:** Week 4
 **Dependencies:** #14"
 ```
 
 #### **Issue #41: Build landing page**
+
 ```bash
 gh issue edit 41 --body "**MVP Task: UI/UX Design**
 
@@ -631,15 +651,16 @@ Create marketing landing page with hero section, feature highlights, and user on
 - [ ] Page loads quickly and is mobile-optimized
 - [ ] Call-to-action buttons are prominent and functional
 
-**Effort:** 6 hours  
-**Priority:** P1  
-**Phase:** Week 4  
+**Effort:** 6 hours
+**Priority:** P1
+**Phase:** Week 4
 **Dependencies:** #40"
 ```
 
 ### **WEEK 5: Character Data Layer (22 hours total)**
 
 #### **Issue #15: Create Character schema and model**
+
 ```bash
 gh issue edit 15 --body "**MVP Task: Database**
 
@@ -665,13 +686,14 @@ Create Character schema and model supporting D&D 5e characters with multiclass a
 - [ ] All stats and attributes are properly modeled
 - [ ] Character validation ensures data integrity
 
-**Effort:** 4 hours  
-**Priority:** P1  
-**Phase:** Week 5  
+**Effort:** 4 hours
+**Priority:** P1
+**Phase:** Week 5
 **Dependencies:** #20"
 ```
 
 #### **Issue #18: Create Character service layer**
+
 ```bash
 gh issue edit 18 --body "**MVP Task: Database**
 
@@ -697,13 +719,14 @@ Implement Character service layer with CRUD operations, template management, and
 - [ ] Query utilities optimize database access
 - [ ] Import/export supports data portability
 
-**Effort:** 4 hours  
-**Priority:** P1  
-**Phase:** Week 5  
+**Effort:** 4 hours
+**Priority:** P1
+**Phase:** Week 5
 **Dependencies:** #15"
 ```
 
 #### **Issue #12: Build character creation form**
+
 ```bash
 gh issue edit 12 --body "**MVP Task: Character Management**
 
@@ -729,13 +752,14 @@ Create comprehensive character creation form with multi-step workflow and D&D 5e
 - [ ] Form validation prevents invalid characters
 - [ ] Multi-step flow guides users effectively
 
-**Effort:** 8 hours  
-**Priority:** P1  
-**Phase:** Week 5  
+**Effort:** 8 hours
+**Priority:** P1
+**Phase:** Week 5
 **Dependencies:** #18, #43"
 ```
 
 #### **Issue #22: Add character stats management**
+
 ```bash
 gh issue edit 22 --body "**MVP Task: Character Management**
 
@@ -764,15 +788,16 @@ Implement comprehensive character statistics management including ability scores
 - [ ] Stats persist correctly in database
 - [ ] Form validation prevents invalid stat values
 
-**Effort:** 6 hours  
-**Priority:** P1  
-**Phase:** Week 5  
+**Effort:** 6 hours
+**Priority:** P1
+**Phase:** Week 5
 **Dependencies:** #12"
 ```
 
 ### **WEEK 6: Character Management (24 hours total)**
 
 #### **Issue #23: Create character list view**
+
 ```bash
 gh issue edit 23 --body "**MVP Task: Character Management**
 
@@ -801,13 +826,14 @@ Build a responsive character list interface with search, filtering, and quick ac
 - [ ] Quick actions are accessible and functional
 - [ ] List performs well with 50+ characters
 
-**Effort:** 6 hours  
-**Priority:** P1  
-**Phase:** Week 6  
+**Effort:** 6 hours
+**Priority:** P1
+**Phase:** Week 6
 **Dependencies:** #18"
 ```
 
 #### **Issue #24: Create character editing interface**
+
 ```bash
 gh issue edit 24 --body "**MVP Task: Character Management**
 
@@ -836,13 +862,14 @@ Implement character editing functionality with real-time validation and change t
 - [ ] Cancel reverts unsaved changes
 - [ ] Deletion requires confirmation and works correctly
 
-**Effort:** 8 hours  
-**Priority:** P1  
-**Phase:** Week 6  
+**Effort:** 8 hours
+**Priority:** P1
+**Phase:** Week 6
 **Dependencies:** #22"
 ```
 
 #### **Issue #25: Character validation and error handling**
+
 ```bash
 gh issue edit 25 --body "**MVP Task: Character Management**
 
@@ -871,13 +898,14 @@ Implement comprehensive character data validation and user-friendly error handli
 - [ ] Network errors are handled gracefully with retry options
 - [ ] Success feedback is provided for all actions
 
-**Effort:** 4 hours  
-**Priority:** P1  
-**Phase:** Week 6  
+**Effort:** 4 hours
+**Priority:** P1
+**Phase:** Week 6
 **Dependencies:** #20"
 ```
 
 #### **Issue #26: Implement character detail view**
+
 ```bash
 gh issue edit 26 --body "**MVP Task: Character Management**
 
@@ -906,15 +934,16 @@ Create a comprehensive character detail view showing all character information w
 - [ ] Character overview provides at-a-glance combat info
 - [ ] Navigation between characters is smooth
 
-**Effort:** 6 hours  
-**Priority:** P2  
-**Phase:** Week 6  
+**Effort:** 6 hours
+**Priority:** P2
+**Phase:** Week 6
 **Dependencies:** #24"
 ```
 
 ### **WEEK 7: Encounter Data Layer & NPCs (22 hours total)**
 
 #### **Issue #16: Create Encounter schema and model**
+
 ```bash
 gh issue edit 16 --body "**MVP Task: Database**
 
@@ -940,13 +969,14 @@ Create Encounter schema and model with participant tracking, combat state manage
 - [ ] Combat state is properly managed
 - [ ] Encounter validation ensures data integrity
 
-**Effort:** 6 hours  
-**Priority:** P1  
-**Phase:** Week 7  
+**Effort:** 6 hours
+**Priority:** P1
+**Phase:** Week 7
 **Dependencies:** #20"
 ```
 
 #### **Issue #19: Create Encounter service layer**
+
 ```bash
 gh issue edit 19 --body "**MVP Task: Database**
 
@@ -972,13 +1002,14 @@ Implement Encounter service layer with CRUD operations, participant management, 
 - [ ] Combat state utilities enable game mechanics
 - [ ] Query helpers optimize database access
 
-**Effort:** 6 hours  
-**Priority:** P1  
-**Phase:** Week 7  
+**Effort:** 6 hours
+**Priority:** P1
+**Phase:** Week 7
 **Dependencies:** #16"
 ```
 
 #### **Issue #27: Create NPC creation workflow**
+
 ```bash
 gh issue edit 27 --body "**MVP Task: Character Management**
 
@@ -1007,13 +1038,14 @@ Build specialized workflow for creating NPCs and monsters with combat-focused fi
 - [ ] Creature templates speed up creation
 - [ ] NPCs are clearly distinguished from PCs in lists
 
-**Effort:** 6 hours  
-**Priority:** P2  
-**Phase:** Week 7  
+**Effort:** 6 hours
+**Priority:** P2
+**Phase:** Week 7
 **Dependencies:** #12"
 ```
 
 #### **Issue #44: Build modal and dialog system**
+
 ```bash
 gh issue edit 44 --body "**MVP Task: UI/UX Design**
 
@@ -1042,15 +1074,16 @@ Build modal component and dialog system with accessibility and state management 
 - [ ] Different modal types serve different use cases
 - [ ] Modals can be closed via escape key or backdrop click
 
-**Effort:** 4 hours  
-**Priority:** P1  
-**Phase:** Week 7  
+**Effort:** 4 hours
+**Priority:** P1
+**Phase:** Week 7
 **Dependencies:** #43"
 ```
 
 ### **WEEK 8: Encounter Management (24 hours total)**
 
 #### **Issue #28: Create encounter participant management**
+
 ```bash
 gh issue edit 28 --body "**MVP Task: Encounter Management**
 
@@ -1079,13 +1112,14 @@ Implement functionality to add, remove, and organize participants in encounters 
 - [ ] Encounter composition is clearly visible
 - [ ] Participant roles are visually distinct
 
-**Effort:** 6 hours  
-**Priority:** P1  
-**Phase:** Week 8  
+**Effort:** 6 hours
+**Priority:** P1
+**Phase:** Week 8
 **Dependencies:** #16"
 ```
 
 #### **Issue #29: Build encounter list interface**
+
 ```bash
 gh issue edit 29 --body "**MVP Task: Encounter Management**
 
@@ -1114,13 +1148,14 @@ Create an organized encounter list view with search, filtering, and quick access
 - [ ] Quick actions provide efficient encounter management
 - [ ] Encounter status is clearly visible
 
-**Effort:** 5 hours  
-**Priority:** P1  
-**Phase:** Week 8  
+**Effort:** 5 hours
+**Priority:** P1
+**Phase:** Week 8
 **Dependencies:** #19"
 ```
 
 #### **Issue #30: Create encounter detail view**
+
 ```bash
 gh issue edit 30 --body "**MVP Task: Encounter Management**
 
@@ -1149,13 +1184,14 @@ Build comprehensive encounter detail view showing all encounter information with
 - [ ] Encounter preparation status is visible
 - [ ] Navigation to combat view is seamless
 
-**Effort:** 7 hours  
-**Priority:** P1  
-**Phase:** Week 8  
+**Effort:** 7 hours
+**Priority:** P1
+**Phase:** Week 8
 **Dependencies:** #28"
 ```
 
 #### **Issue #42: Create dashboard interface**
+
 ```bash
 gh issue edit 42 --body "**MVP Task: UI/UX Design**
 
@@ -1184,15 +1220,16 @@ Build main dashboard layout with quick access widgets and recent items display f
 - [ ] Dashboard layout adapts to different screen sizes
 - [ ] Statistics help users understand their usage
 
-**Effort:** 6 hours  
-**Priority:** P1  
-**Phase:** Week 8  
+**Effort:** 6 hours
+**Priority:** P1
+**Phase:** Week 8
 **Dependencies:** #40"
 ```
 
 ### **WEEK 9: Combat Foundation (24 hours total)**
 
 #### **Issue #37: Create combat state management**
+
 ```bash
 gh issue edit 37 --body "**MVP Task: Combat System**
 
@@ -1221,13 +1258,14 @@ Implement core combat state management with start/stop/pause functionality and s
 - [ ] Stop cleans up temporary combat data
 - [ ] Combat state survives page refreshes
 
-**Effort:** 8 hours  
-**Priority:** P1  
-**Phase:** Week 9  
+**Effort:** 8 hours
+**Priority:** P1
+**Phase:** Week 9
 **Dependencies:** #30"
 ```
 
 #### **Issue #13: Create initiative tracking interface**
+
 ```bash
 gh issue edit 13 --body "**MVP Task: Combat System**
 
@@ -1253,13 +1291,14 @@ Build initiative tracking interface with turn indicators, round management, and 
 - [ ] Round tracking works automatically
 - [ ] Initiative can be modified during combat
 
-**Effort:** 6 hours  
-**Priority:** P1  
-**Phase:** Week 9  
+**Effort:** 6 hours
+**Priority:** P1
+**Phase:** Week 9
 **Dependencies:** #37"
 ```
 
 #### **Issue #35: Implement initiative rolling system**
+
 ```bash
 gh issue edit 35 --body "**MVP Task: Combat System**
 
@@ -1288,13 +1327,14 @@ Create automatic and manual initiative rolling with dexterity tiebreakers and mo
 - [ ] Initiative order updates correctly after modifications
 - [ ] Initiative results are validated and sorted properly
 
-**Effort:** 6 hours  
-**Priority:** P1  
-**Phase:** Week 9  
+**Effort:** 6 hours
+**Priority:** P1
+**Phase:** Week 9
 **Dependencies:** #33"
 ```
 
 #### **Issue #39: Create round tracking system**
+
 ```bash
 gh issue edit 39 --body "**MVP Task: Combat System**
 
@@ -1323,15 +1363,16 @@ Implement round tracking with automatic advancement and round-based effect manag
 - [ ] Combat timeline provides combat history
 - [ ] Round triggers fire at appropriate times
 
-**Effort:** 4 hours  
-**Priority:** P1  
-**Phase:** Week 9  
+**Effort:** 4 hours
+**Priority:** P1
+**Phase:** Week 9
 **Dependencies:** #33"
 ```
 
 ### **WEEK 10: Combat Core Systems (21 hours total)**
 
 #### **Issue #33: Build turn management system**
+
 ```bash
 gh issue edit 33 --body "**MVP Task: Combat System**
 
@@ -1360,13 +1401,14 @@ Implement comprehensive turn management with turn advancement, skipping, and mod
 - [ ] Initiative order can be modified during combat
 - [ ] Round tracking increments automatically
 
-**Effort:** 8 hours  
-**Priority:** P1  
-**Phase:** Week 10  
+**Effort:** 8 hours
+**Priority:** P1
+**Phase:** Week 10
 **Dependencies:** #13"
 ```
 
 #### **Issue #34: Create HP tracking interface**
+
 ```bash
 gh issue edit 34 --body "**MVP Task: Combat System**
 
@@ -1395,13 +1437,14 @@ Build comprehensive HP tracking with damage/healing application and temporary HP
 - [ ] Visual indicators clearly show HP status
 - [ ] Death saving throws are tracked accurately
 
-**Effort:** 8 hours  
-**Priority:** P1  
-**Phase:** Week 10  
+**Effort:** 8 hours
+**Priority:** P1
+**Phase:** Week 10
 **Dependencies:** #37"
 ```
 
 #### **Issue #36: Build combat toolbar**
+
 ```bash
 gh issue edit 36 --body "**MVP Task: Combat System**
 
@@ -1430,15 +1473,16 @@ Create combat control toolbar with quick actions, shortcuts, and combat flow man
 - [ ] Combat status is always visible
 - [ ] Toolbar works well on mobile devices
 
-**Effort:** 5 hours  
-**Priority:** P1  
-**Phase:** Week 10  
+**Effort:** 5 hours
+**Priority:** P1
+**Phase:** Week 10
 **Dependencies:** #37"
 ```
 
 ### **WEEK 11: Advanced Combat & Settings (16 hours total)**
 
 #### **Issue #38: Implement damage calculation tools**
+
 ```bash
 gh issue edit 38 --body "**MVP Task: Combat System**
 
@@ -1467,13 +1511,14 @@ Create damage calculation utilities with damage type support and resistance/vuln
 - [ ] Damage history helps track combat flow
 - [ ] Critical hits are calculated properly
 
-**Effort:** 6 hours  
-**Priority:** P2  
-**Phase:** Week 11  
+**Effort:** 6 hours
+**Priority:** P2
+**Phase:** Week 11
 **Dependencies:** #34"
 ```
 
 #### **Issue #31: Implement encounter settings and configuration**
+
 ```bash
 gh issue edit 31 --body "**MVP Task: Encounter Management**
 
@@ -1502,13 +1547,14 @@ Create encounter configuration options including environment settings, special r
 - [ ] Encounter organization through tags works effectively
 - [ ] Settings persist correctly when encounter is saved
 
-**Effort:** 4 hours  
-**Priority:** P2  
-**Phase:** Week 11  
+**Effort:** 4 hours
+**Priority:** P2
+**Phase:** Week 11
 **Dependencies:** #30"
 ```
 
 #### **Issue #32: Create encounter import/export functionality**
+
 ```bash
 gh issue edit 32 --body "**MVP Task: Encounter Management**
 
@@ -1537,9 +1583,9 @@ Implement encounter data import/export capabilities for sharing and backup purpo
 - [ ] Templates enable quick encounter creation
 - [ ] Bulk operations work efficiently
 
-**Effort:** 6 hours  
-**Priority:** P2  
-**Phase:** Week 11  
+**Effort:** 6 hours
+**Priority:** P2
+**Phase:** Week 11
 **Dependencies:** #30"
 ```
 
@@ -1548,6 +1594,7 @@ Implement encounter data import/export capabilities for sharing and backup purpo
 ## 🚀 **BATCH UPDATE COMMANDS**
 
 ### **Run All Week 1 Updates:**
+
 ```bash
 gh issue edit 2 --body "..."  # (Use content from above)
 gh issue edit 3 --body "..."
@@ -1557,10 +1604,13 @@ gh issue edit 45 --body "..."
 ```
 
 ### **Continue with Weeks 2-11**
+
 Follow the same pattern for all remaining issues using the content provided above.
 
 ### **Quick Validation**
+
 After updating, verify with:
+
 ```bash
 gh issue list --label "MVP" --limit 50
 ```
@@ -1570,6 +1620,6 @@ gh issue list --label "MVP" --limit 50
 **Total Issues to Update:** 46  
 **Estimated Update Time:** 30-45 minutes  
 **Phase Assignments:** Complete 12-week roadmap  
-**Dependencies:** All mapped correctly  
+**Dependencies:** All mapped correctly
 
 **Once completed, all MVP issues will have proper week assignments and be ready for project board organization and sprint planning.**
