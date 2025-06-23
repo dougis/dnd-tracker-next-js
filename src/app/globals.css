@@ -251,12 +251,3 @@
     text-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   }
 }
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
