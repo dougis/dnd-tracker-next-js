@@ -13,41 +13,33 @@ export default function Home() {
 
       <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
         <div className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30">
-          <h2 className="mb-3 text-2xl font-semibold">
-            Initiative Tracking
-          </h2>
+          <h2 className="mb-3 text-2xl font-semibold">Initiative Tracking</h2>
           <p className="m-0 max-w-[30ch] text-sm opacity-50">
             Track turn order with automatic dexterity tiebreakers
           </p>
         </div>
 
         <div className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30">
-          <h2 className="mb-3 text-2xl font-semibold">
-            HP Management
-          </h2>
+          <h2 className="mb-3 text-2xl font-semibold">HP Management</h2>
           <p className="m-0 max-w-[30ch] text-sm opacity-50">
             Track health, armor class, and apply damage or healing
           </p>
         </div>
 
         <div className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30">
-          <h2 className="mb-3 text-2xl font-semibold">
-            Character Management
-          </h2>
+          <h2 className="mb-3 text-2xl font-semibold">Character Management</h2>
           <p className="m-0 max-w-[30ch] text-sm opacity-50">
             Create and manage PCs and NPCs with full D&D 5e support
           </p>
         </div>
 
         <div className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30">
-          <h2 className="mb-3 text-2xl font-semibold">
-            Lair Actions
-          </h2>
+          <h2 className="mb-3 text-2xl font-semibold">Lair Actions</h2>
           <p className="m-0 max-w-[30ch] text-sm opacity-50">
             Advanced encounter features including lair actions
           </p>
         </div>
       </div>
     </main>
-  )
+  );
 }
