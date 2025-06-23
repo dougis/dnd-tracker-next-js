@@ -5,7 +5,7 @@
     "prettier/prettier": "error",
     "prefer-const": "error",
     "no-var": "error",
-    "no-unused-vars": "error"
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }]
   },
   "parserOptions": {
     "ecmaVersion": "latest",

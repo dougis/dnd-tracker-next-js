@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { MobileMenu } from './MobileMenu';
 import { Breadcrumbs } from './Breadcrumbs';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -69,8 +70,9 @@ export function AppLayout({ children }: AppLayoutProps) {
               <Breadcrumbs />
             </div>
 
-            {/* User menu placeholder */}
+            {/* Theme toggle and user menu */}
             <div className="flex items-center space-x-4">
+              <ThemeToggle />
               <button className="rounded-full bg-primary p-2 text-primary-foreground">
                 <svg
                   className="h-5 w-5"
