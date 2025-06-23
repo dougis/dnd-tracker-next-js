@@ -34,15 +34,175 @@ npm run dev          # Start development server
 npm run build        # Build for production
 npm run start        # Start production server
 
-# Development workflow (to be implemented in Week 2)
+# Development workflow
 npm run lint         # ESLint checking
+npm run lint:fix     # ESLint checking with automatic fixes
+npm run format       # Prettier formatting
+npm run format:check # Check Prettier formatting
 npm run typecheck    # TypeScript compilation check
 npm test             # Run Jest tests
 npm run test:watch   # Run tests in watch mode
+npm run test:coverage # Run tests with coverage report
 
 # Database operations (to be implemented in Week 1-2)
 npm run db:migrate   # Run database migrations
 npm run db:seed      # Seed development data
+```
+
+## Git Workflow
+
+### Branching Strategy
+
+This project follows a **GitHub Flow** branching strategy optimized for continuous deployment:
+
+- **`main`** - Production-ready code, protected branch
+- **Feature branches** - `feature/issue-{number}-{short-description}` (e.g., `feature/issue-15-character-creation`)
+- **Bugfix branches** - `bugfix/issue-{number}-{short-description}` (e.g., `bugfix/issue-23-login-validation`)
+- **Hotfix branches** - `hotfix/critical-{description}` (for urgent production fixes)
+
+### Development Workflow
+
+1. **Start New Work**
+   ```bash
+   # Create and switch to new feature branch from main
+   git checkout main
+   git pull origin main
+   git checkout -b feature/issue-{number}-{description}
+   
+   # Push branch to remote immediately
+   git push -u origin feature/issue-{number}-{description}
+   ```
+
+2. **Development Process**
+   ```bash
+   # Make changes and commit frequently with descriptive messages
+   git add .
+   git commit -m "Add character creation form validation
+   
+   - Implement HP and AC field validation
+   - Add error handling for invalid ability scores
+   - Update tests for validation logic
+   
+   Relates to #15"
+   
+   # Push changes regularly
+   git push origin feature/issue-{number}-{description}
+   ```
+
+3. **Quality Checks Before PR**
+   ```bash
+   # Run all quality checks locally
+   npm run lint              # Fix any linting issues
+   npm run format           # Format code consistently  
+   npm run typecheck        # Ensure TypeScript compiles
+   npm test                 # All tests must pass
+   npm run build            # Verify production build
+   ```
+
+4. **Create Pull Request**
+   ```bash
+   # Create PR using GitHub CLI (preferred)
+   gh pr create --title "Add character creation form validation" \
+                --body "Implements validation for character creation form as specified in #15"
+   
+   # Or create via GitHub web interface
+   ```
+
+5. **Code Review Process**
+   - All PRs require at least 1 approval
+   - Address all reviewer feedback
+   - Ensure CI/CD checks pass
+   - Maintain clean commit history
+
+6. **Merge and Cleanup**
+   ```bash
+   # After PR approval, merge via GitHub interface
+   # Then clean up locally
+   git checkout main
+   git pull origin main
+   git branch -d feature/issue-{number}-{description}
+   git remote prune origin
+   ```
+
+### Commit Message Standards
+
+Follow **Conventional Commits** for consistent commit history:
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Types:**
+- `feat:` - New feature
+- `fix:` - Bug fix  
+- `docs:` - Documentation changes
+- `style:` - Code style changes (formatting, etc.)
+- `refactor:` - Code refactoring
+- `test:` - Adding or updating tests
+- `chore:` - Maintenance tasks
+
+**Examples:**
+```bash
+feat(character): add multiclass support to character creation
+fix(combat): resolve initiative tiebreaker calculation
+docs: update API documentation for encounter endpoints
+test(character): add comprehensive validation tests
+```
+
+### Branch Protection Rules
+
+**Main Branch Protection** (configured via GitHub settings):
+- ✅ Require pull request reviews (minimum 1 approval)
+- ✅ Dismiss stale reviews when new commits are pushed
+- ✅ Require status checks to pass before merging
+- ✅ Require branches to be up to date before merging
+- ✅ Restrict pushes that create files larger than 100MB
+- ✅ Do not allow force pushes
+- ✅ Do not allow deletions
+
+**Required Status Checks:**
+- ✅ Build successfully completes (`npm run build`)
+- ✅ All tests pass (`npm test`)
+- ✅ Linting passes (`npm run lint`)
+- ✅ TypeScript compilation succeeds (`npm run typecheck`)
+- ✅ Codacy quality gate passes
+
+### Pull Request Guidelines
+
+Use the provided PR template (`.github/pull_request_template.md`) which includes:
+
+- **Summary** - Clear description of changes
+- **Related Issue** - Link to GitHub issue
+- **Type of Change** - Bug fix, feature, breaking change, etc.
+- **Testing** - How changes were tested
+- **Checklist** - Quality assurance items
+
+### Emergency Procedures
+
+**Hotfix Process:**
+```bash
+# For critical production issues
+git checkout main
+git pull origin main
+git checkout -b hotfix/critical-{description}
+
+# Make minimal fix
+git commit -m "hotfix: resolve critical login issue"
+git push -u origin hotfix/critical-{description}
+
+# Create emergency PR with expedited review
+gh pr create --title "HOTFIX: Critical login issue" --label "hotfix"
+```
+
+**Rollback Process:**
+```bash
+# If needed, revert to previous stable commit
+git revert {commit-hash}
+git push origin main
 ```
 
 ## Architecture Overview
