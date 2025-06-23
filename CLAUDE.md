@@ -63,48 +63,52 @@ This project follows a **GitHub Flow** branching strategy optimized for continuo
 ### Development Workflow
 
 1. **Start New Work**
+
    ```bash
    # Create and switch to new feature branch from main
    git checkout main
    git pull origin main
    git checkout -b feature/issue-{number}-{description}
-   
+
    # Push branch to remote immediately
    git push -u origin feature/issue-{number}-{description}
    ```
 
 2. **Development Process**
+
    ```bash
    # Make changes and commit frequently with descriptive messages
    git add .
    git commit -m "Add character creation form validation
-   
+
    - Implement HP and AC field validation
    - Add error handling for invalid ability scores
    - Update tests for validation logic
-   
+
    Relates to #15"
-   
+
    # Push changes regularly
    git push origin feature/issue-{number}-{description}
    ```
 
 3. **Quality Checks Before PR**
+
    ```bash
    # Run all quality checks locally
    npm run lint              # Fix any linting issues
-   npm run format           # Format code consistently  
+   npm run format           # Format code consistently
    npm run typecheck        # Ensure TypeScript compiles
    npm test                 # All tests must pass
    npm run build            # Verify production build
    ```
 
 4. **Create Pull Request**
+
    ```bash
    # Create PR using GitHub CLI (preferred)
    gh pr create --title "Add character creation form validation" \
                 --body "Implements validation for character creation form as specified in #15"
-   
+
    # Or create via GitHub web interface
    ```
 
@@ -137,8 +141,9 @@ Follow **Conventional Commits** for consistent commit history:
 ```
 
 **Types:**
+
 - `feat:` - New feature
-- `fix:` - Bug fix  
+- `fix:` - Bug fix
 - `docs:` - Documentation changes
 - `style:` - Code style changes (formatting, etc.)
 - `refactor:` - Code refactoring
@@ -146,6 +151,7 @@ Follow **Conventional Commits** for consistent commit history:
 - `chore:` - Maintenance tasks
 
 **Examples:**
+
 ```bash
 feat(character): add multiclass support to character creation
 fix(combat): resolve initiative tiebreaker calculation
@@ -156,6 +162,7 @@ test(character): add comprehensive validation tests
 ### Branch Protection Rules
 
 **Main Branch Protection** (configured via GitHub settings):
+
 - ✅ Require pull request reviews (minimum 1 approval)
 - ✅ Dismiss stale reviews when new commits are pushed
 - ✅ Require status checks to pass before merging
@@ -165,6 +172,7 @@ test(character): add comprehensive validation tests
 - ✅ Do not allow deletions
 
 **Required Status Checks:**
+
 - ✅ Build successfully completes (`npm run build`)
 - ✅ All tests pass (`npm test`)
 - ✅ Linting passes (`npm run lint`)
@@ -184,6 +192,7 @@ Use the provided PR template (`.github/pull_request_template.md`) which includes
 ### Emergency Procedures
 
 **Hotfix Process:**
+
 ```bash
 # For critical production issues
 git checkout main
@@ -199,6 +208,7 @@ gh pr create --title "HOTFIX: Critical login issue" --label "hotfix"
 ```
 
 **Rollback Process:**
+
 ```bash
 # If needed, revert to previous stable commit
 git revert {commit-hash}

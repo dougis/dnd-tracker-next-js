@@ -11,7 +11,7 @@ Due to GitHub API limitations, branch protection rules need to be configured man
    - Click on "Branches" in the left sidebar
 
 2. **Add Branch Protection Rule**
-   - Click "Add rule" 
+   - Click "Add rule"
    - Enter branch name pattern: `main`
 
 3. **Configure Protection Settings**
@@ -25,7 +25,7 @@ Due to GitHub API limitations, branch protection rules need to be configured man
    ### Status Checks
    - ✅ **Require status checks to pass before merging**
    - ✅ **Require branches to be up to date before merging**
-   
+
    **Required status checks to add when CI/CD is configured:**
    - `build` - Build process completion
    - `test` - Test suite execution
@@ -48,6 +48,7 @@ Due to GitHub API limitations, branch protection rules need to be configured man
 ## Verification
 
 After setup, verify that:
+
 - Direct pushes to `main` are blocked
 - Pull requests are required for all changes
 - Status checks are enforced (once CI/CD is configured)
@@ -55,8 +56,9 @@ After setup, verify that:
 ## CI/CD Integration
 
 When GitHub Actions workflow is added (Issue #46), update the required status checks to include:
+
 - Build verification
-- Test execution  
+- Test execution
 - Code quality checks
 - Security scans
 

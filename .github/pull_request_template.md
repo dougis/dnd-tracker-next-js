@@ -7,14 +7,16 @@
 ## Related Issue
 
 <!-- Link to the GitHub issue this PR addresses -->
+
 Closes #
 
 ## Changes Made
 
 <!-- Detailed list of changes -->
-- [ ] 
-- [ ] 
-- [ ] 
+
+- [ ]
+- [ ]
+- [ ]
 
 ## Type of Change
 
@@ -29,6 +31,7 @@ Closes #
 ## Testing
 
 <!-- Describe how this change was tested -->
+
 - [ ] Tests pass locally (`npm test`)
 - [ ] Build succeeds (`npm run build`)
 - [ ] Linting passes (`npm run lint`)
@@ -57,13 +60,15 @@ Closes #
 ## Reviewer Focus Areas
 
 <!-- Highlight specific areas where you'd like reviewers to focus -->
-- [ ] 
-- [ ] 
-- [ ] 
+
+- [ ]
+- [ ]
+- [ ]
 
 ---
 
 **For Reviewers:**
+
 - Please review both the code changes and test coverage
 - Verify that acceptance criteria from the linked issue are met
 - Check that the changes align with the project's architectural decisions
