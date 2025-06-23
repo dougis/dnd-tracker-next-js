@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a D&D Encounter Tracker - a Next.js 15 full-stack web application for Dungeon Masters to manage combat encounters efficiently. The project is currently in the **planning complete** phase with 46 GitHub issues created for a 12-week MVP development timeline.
 
 **Key Features:**
+
 - Initiative tracking with dexterity tiebreakers
 - HP/AC management with damage and healing tracking
 - Character management (PCs and NPCs) with multiclass support
@@ -47,6 +48,7 @@ npm run db:seed      # Seed development data
 ## Architecture Overview
 
 ### Project Structure (to be created during development)
+
 ```
 src/
 ├── app/                    # Next.js App Router
@@ -74,6 +76,7 @@ src/
 ```
 
 ### Database Schema (MongoDB)
+
 - **Users:** Authentication, subscription tiers, preferences
 - **Characters:** PCs and NPCs with full D&D 5e stats, multiclass support
 - **Parties:** Character groupings with DM assignments
@@ -81,6 +84,7 @@ src/
 - **Combat Sessions:** Active combat state with initiative, turns, HP tracking
 
 ### Key Components Architecture
+
 - **Combat Tracker:** Initiative management, turn progression, HP/AC tracking
 - **Encounter Builder:** Drag-and-drop creature addition, CR calculation
 - **Party Manager:** Character creation/editing, player assignment
@@ -89,6 +93,7 @@ src/
 ## Development Workflow
 
 ### Phase-Based Development (12 Weeks)
+
 1. **Weeks 1-2:** Foundation (Next.js, MongoDB, UI setup)
 2. **Weeks 3-4:** Authentication and core components
 3. **Weeks 5-6:** Character management system
@@ -97,12 +102,14 @@ src/
 6. **Weeks 11-12:** Advanced features and polish
 
 ### Issue Management
+
 - **46 MVP issues** created with detailed specifications
 - Issues are tagged with week assignments (Phase 1-3)
 - Dependencies mapped to prevent blocking
 - Start with **Issue #2: "Setup Next.js 15 project with TypeScript"**
 
 ### Testing Strategy
+
 - Unit tests for all utility functions and business logic
 - Component tests for UI interactions
 - Integration tests for API endpoints
@@ -111,6 +118,7 @@ src/
 ## Key Business Context
 
 ### Subscription Tiers (Freemium Model)
+
 - **Free Adventurer:** $0/month (1 party, 3 encounters, 10 creatures)
 - **Seasoned Adventurer:** $4.99/month (3 parties, 15 encounters, 50 creatures)
 - **Expert Dungeon Master:** $9.99/month (10 parties, 50 encounters, 200 creatures)
@@ -118,6 +126,7 @@ src/
 - **Guild Master:** $39.99/month (Unlimited + organization features)
 
 ### Competitive Advantages
+
 - Modern, responsive UI optimized for mobile and desktop
 - Lair actions support (unique vs. competitors like Roll20, D&D Beyond)
 - Superior user experience with real-time collaboration
@@ -136,12 +145,14 @@ All comprehensive project documentation is in the `docs/` folder:
 ## Development Notes
 
 ### Starting Development
+
 1. Begin with Issue #2 (Next.js setup) - no dependencies
 2. Follow the 12-week development plan for proper sequencing
 3. All business requirements and technical architecture are pre-defined
 4. Focus on MVP features first before advanced functionality
 
 ### Code Conventions
+
 - Use TypeScript strictly with proper type definitions
 - Follow Next.js 15 App Router patterns
 - Implement proper error handling and loading states
@@ -149,6 +160,7 @@ All comprehensive project documentation is in the `docs/` folder:
 - Use Mongoose for all database operations
 
 ### Quality Gates
+
 - Each week has defined deliverables and acceptance criteria
 - Test coverage requirements for all new features
 - Mobile responsiveness validation

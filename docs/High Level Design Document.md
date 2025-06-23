@@ -1,4 +1,5 @@
 # High Level Design Document
+
 **Project:** D&D Encounter Tracker Web App  
 **Version:** 1.0  
 **Date:** June 8, 2025  
@@ -11,6 +12,7 @@ This document outlines the technical implementation approach for the D&D Encount
 ## 2. System Architecture Overview
 
 ### 2.1 High-Level Architecture
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Vercel Edge Network                      │
@@ -31,6 +33,7 @@ This document outlines the technical implementation approach for the D&D Encount
 ```
 
 ### 2.2 Core Components
+
 - **Frontend**: Next.js 15 App Router with React Server/Client Components
 - **Backend**: Next.js API Routes with Edge Runtime optimization
 - **Database**: MongoDB Atlas with Mongoose ODM
@@ -43,6 +46,7 @@ This document outlines the technical implementation approach for the D&D Encount
 ### 3.1 Core Collections
 
 #### Users Collection
+
 ```typescript
 interface User {
   _id: ObjectId;
@@ -62,6 +66,7 @@ interface User {
 ```
 
 #### Parties Collection
+
 ```typescript
 interface Party {
   _id: ObjectId;
@@ -89,6 +94,7 @@ interface Character {
 ```
 
 #### Encounters Collection
+
 ```typescript
 interface Encounter {
   _id: ObjectId;
@@ -128,6 +134,7 @@ interface LairAction {
 ```
 
 #### Combat Logs Collection (Premium Feature)
+
 ```typescript
 interface CombatLog {
   _id: ObjectId;
@@ -147,6 +154,7 @@ interface LogEntry {
 ```
 
 ### 3.2 Database Indexes
+
 ```javascript
 // Users
 db.users.createIndex({ email: 1 }, { unique: true });
@@ -169,6 +177,7 @@ db.combatlogs.createIndex({ createdAt: 1 }, { expireAfterSeconds: 31536000 }); /
 ## 4. API Design
 
 ### 4.1 API Route Structure
+
 ```
 /api/
 ├── auth/
@@ -200,6 +209,7 @@ db.combatlogs.createIndex({ createdAt: 1 }, { expireAfterSeconds: 31536000 }); /
 ### 4.2 Core API Endpoints
 
 #### Authentication & Users
+
 ```typescript
 // GET /api/auth/profile
 // POST /api/auth/profile
@@ -208,6 +218,7 @@ db.combatlogs.createIndex({ createdAt: 1 }, { expireAfterSeconds: 31536000 }); /
 ```
 
 #### Parties Management
+
 ```typescript
 // GET /api/parties - List user's parties
 // POST /api/parties - Create new party
@@ -220,6 +231,7 @@ db.combatlogs.createIndex({ createdAt: 1 }, { expireAfterSeconds: 31536000 }); /
 ```
 
 #### Encounter Management
+
 ```typescript
 // GET /api/encounters - List user's encounters
 // POST /api/encounters - Create new encounter
@@ -236,6 +248,7 @@ db.combatlogs.createIndex({ createdAt: 1 }, { expireAfterSeconds: 31536000 }); /
 ## 5. Frontend Architecture
 
 ### 5.1 App Router Structure
+
 ```
 app/
 ├── (auth)/
@@ -266,6 +279,7 @@ app/
 ### 5.2 Component Architecture
 
 #### Shared Components
+
 ```typescript
 // components/ui/ (shadcn/ui components)
 // components/forms/
@@ -275,6 +289,7 @@ app/
 ```
 
 #### Core Combat Components
+
 ```typescript
 // components/combat/
 ├── InitiativeTracker.tsx              # Main initiative display
@@ -290,6 +305,7 @@ app/
 ### 5.3 State Management
 
 #### Global State (Zustand)
+
 ```typescript
 interface AppState {
   user: User | null;
@@ -307,6 +323,7 @@ interface CombatState {
 ```
 
 #### Server State (TanStack Query)
+
 ```typescript
 // queries/
 ├── useUsers.ts
@@ -321,6 +338,7 @@ interface CombatState {
 ### 6.1 Phase 1: Foundation & MVP (Months 1-3)
 
 #### Sprint 1: Project Setup & Authentication
+
 - [ ] Initialize Next.js 15 project with TypeScript
 - [ ] Configure Tailwind CSS and shadcn/ui
 - [ ] Set up MongoDB Atlas and Mongoose schemas
@@ -329,6 +347,7 @@ interface CombatState {
 - [ ] Set up Vercel deployment pipeline
 
 #### Sprint 2: Core Data Models & Basic UI
+
 - [ ] Implement User, Party, and Character schemas
 - [ ] Create party management pages (CRUD)
 - [ ] Build character creation/editing forms
@@ -337,6 +356,7 @@ interface CombatState {
 - [ ] Create responsive navigation layout
 
 #### Sprint 3: Encounter Foundation
+
 - [ ] Implement Encounter and Creature schemas
 - [ ] Create encounter management pages (CRUD)
 - [ ] Build creature creation/editing forms
@@ -345,6 +365,7 @@ interface CombatState {
 - [ ] Add encounter status management
 
 #### Sprint 4: Combat Tracker MVP
+
 - [ ] Build initiative tracker component
 - [ ] Implement turn management system
 - [ ] Create HP tracking functionality
@@ -355,6 +376,7 @@ interface CombatState {
 ### 6.2 Phase 2: Advanced Combat & Monetization (Months 4-6)
 
 #### Sprint 5: Legendary & Lair Actions
+
 - [ ] Implement legendary action management
 - [ ] Build lair action system with initiative count 20 triggers
 - [ ] Create action counter tracking
@@ -363,6 +385,7 @@ interface CombatState {
 - [ ] Test combat flow integration
 
 #### Sprint 6: Subscription System
+
 - [ ] Set up Stripe integration and webhooks
 - [ ] Implement subscription tier logic
 - [ ] Create usage limit enforcement
@@ -371,6 +394,7 @@ interface CombatState {
 - [ ] Implement trial system
 
 #### Sprint 7: Premium Features
+
 - [ ] Build advanced combat logging system
 - [ ] Implement data export functionality (PDF, JSON)
 - [ ] Create usage analytics dashboard
@@ -379,6 +403,7 @@ interface CombatState {
 - [ ] Build upgrade prompts and limit notifications
 
 #### Sprint 8: Polish & Optimization
+
 - [ ] Implement comprehensive error handling
 - [ ] Add loading states and skeleton UI
 - [ ] Optimize database queries and indexes
@@ -389,6 +414,7 @@ interface CombatState {
 ### 6.3 Phase 3: Growth Features (Months 7-9)
 
 #### Sprint 9: Collaboration Features
+
 - [ ] Implement encounter sharing system
 - [ ] Build collaborative editing features
 - [ ] Add real-time updates with Pusher/Socket.IO
@@ -397,6 +423,7 @@ interface CombatState {
 - [ ] Add activity feeds
 
 #### Sprint 10: Advanced Analytics
+
 - [ ] Build comprehensive analytics dashboard
 - [ ] Implement play style analytics
 - [ ] Create encounter difficulty analysis
@@ -405,6 +432,7 @@ interface CombatState {
 - [ ] Implement A/B testing framework
 
 #### Sprint 11: Mobile Optimization
+
 - [ ] Optimize mobile interface design
 - [ ] Implement touch-friendly interactions
 - [ ] Add offline capability with service workers
@@ -413,6 +441,7 @@ interface CombatState {
 - [ ] Add mobile-specific shortcuts
 
 #### Sprint 12: Third-Party Integrations
+
 - [ ] Research and plan D&D Beyond integration
 - [ ] Implement Roll20 data import/export
 - [ ] Build API for external tool integration
@@ -423,6 +452,7 @@ interface CombatState {
 ## 7. Security Considerations
 
 ### 7.1 Authentication & Authorization
+
 - NextAuth.js v5 with secure session management
 - Role-based access control (RBAC) middleware
 - JWT tokens with automatic rotation
@@ -430,6 +460,7 @@ interface CombatState {
 - Rate limiting on authentication endpoints
 
 ### 7.2 Data Protection
+
 - Input validation with Zod schemas
 - SQL injection prevention (NoSQL injection for MongoDB)
 - XSS protection with Content Security Policy
@@ -437,6 +468,7 @@ interface CombatState {
 - Secure headers configuration
 
 ### 7.3 Payment Security
+
 - PCI DSS compliance through Stripe
 - Webhook signature verification
 - Secure API key management
@@ -446,6 +478,7 @@ interface CombatState {
 ## 8. Performance & Scalability
 
 ### 8.1 Frontend Optimization
+
 - Next.js App Router with Server Components
 - Static generation for public pages
 - Image optimization with next/image
@@ -453,6 +486,7 @@ interface CombatState {
 - Efficient bundle optimization
 
 ### 8.2 Backend Optimization
+
 - MongoDB indexing strategy
 - Query optimization with aggregation pipelines
 - Edge Runtime for API routes
@@ -460,6 +494,7 @@ interface CombatState {
 - Caching strategy with Next.js
 
 ### 8.3 Monitoring & Observability
+
 - Sentry for error tracking and performance monitoring
 - Vercel Analytics for user behavior insights
 - Custom logging with structured JSON
@@ -469,6 +504,7 @@ interface CombatState {
 ## 9. Testing Strategy
 
 ### 9.1 Testing Pyramid
+
 ```
 ┌─────────────────────────────────┐
 │         E2E Tests               │  ← Playwright (Critical paths)
@@ -483,6 +519,7 @@ interface CombatState {
 ```
 
 ### 9.2 Testing Tools & Strategy
+
 - **Unit Tests**: Jest + React Testing Library for components
 - **Integration Tests**: Jest for API routes and database operations
 - **E2E Tests**: Playwright for critical user journeys
@@ -492,6 +529,7 @@ interface CombatState {
 ## 10. Deployment & DevOps
 
 ### 10.1 Deployment Pipeline
+
 ```mermaid
 graph LR
     A[Developer Push] --> B[GitHub Actions]
@@ -504,6 +542,7 @@ graph LR
 ```
 
 ### 10.2 Environment Management
+
 - **Development**: Local development with MongoDB local instance
 - **Preview**: Vercel preview deployments for each PR
 - **Staging**: Dedicated staging environment with production-like data
@@ -512,12 +551,14 @@ graph LR
 ## 11. Risk Mitigation
 
 ### 11.1 Technical Risks
+
 - **Database Performance**: Implement proper indexing and query optimization
 - **Payment Processing**: Use Stripe's robust webhook system with retry logic
 - **Real-time Features**: Implement graceful degradation for collaboration features
 - **Mobile Performance**: Progressive enhancement approach
 
 ### 11.2 Business Risks
+
 - **Feature Creep**: Strict adherence to MVP scope and phased development
 - **User Adoption**: Comprehensive onboarding and trial experience
 - **Competition**: Focus on unique features (lair actions, D&D-specific optimization)
@@ -526,12 +567,14 @@ graph LR
 ## 12. Success Metrics & KPIs
 
 ### 12.1 Technical Metrics
+
 - **Performance**: Core Web Vitals scores > 90
 - **Uptime**: 99.9% availability SLA
 - **Error Rate**: < 0.1% of requests result in errors
 - **Load Time**: < 3 seconds initial page load
 
 ### 12.2 Business Metrics
+
 - **User Engagement**: > 4 sessions per month for active users
 - **Conversion Rate**: > 5% free-to-paid conversion within 30 days
 - **Feature Adoption**: > 70% of premium users use advanced features
@@ -542,6 +585,7 @@ graph LR
 This high-level design provides a comprehensive roadmap for building the D&D Encounter Tracker as a modern, scalable SaaS application. The phased approach ensures steady progress while maintaining focus on core user value. The technology stack leverages industry best practices with Next.js 15 and MongoDB to deliver a performant, secure, and maintainable solution.
 
 The design emphasizes:
+
 - **User-Centric Development**: Features directly address DM pain points
 - **Technical Excellence**: Modern stack with best practices
 - **Business Viability**: Clear monetization strategy with freemium model
