@@ -12,8 +12,7 @@ type ThemeProviderProps = {
 
 type ThemeProviderState = {
   theme: Theme;
-  // eslint-disable-next-line no-unused-vars
-  setTheme: (value: Theme) => void;
+  setTheme: (value: Theme) => void; // eslint-disable-line no-unused-vars
 };
 
 const initialState: ThemeProviderState = {
