@@ -1,4 +1,9 @@
-import { calculateAbilityModifier, calculateInitiativeModifier, rollD20, isValidEmail } from '../lib/utils';
+import {
+  calculateAbilityModifier,
+  calculateInitiativeModifier,
+  rollD20,
+  isValidEmail,
+} from '../lib/utils';
 
 describe('calculateAbilityModifier', () => {
   it('should calculate correct modifiers for various scores', () => {
@@ -11,9 +16,15 @@ describe('calculateAbilityModifier', () => {
   });
 
   it('should throw error for invalid scores', () => {
-    expect(() => calculateAbilityModifier(0)).toThrow('Ability score must be between 1 and 30');
-    expect(() => calculateAbilityModifier(31)).toThrow('Ability score must be between 1 and 30');
-    expect(() => calculateAbilityModifier(-1)).toThrow('Ability score must be between 1 and 30');
+    expect(() => calculateAbilityModifier(0)).toThrow(
+      'Ability score must be between 1 and 30'
+    );
+    expect(() => calculateAbilityModifier(31)).toThrow(
+      'Ability score must be between 1 and 30'
+    );
+    expect(() => calculateAbilityModifier(-1)).toThrow(
+      'Ability score must be between 1 and 30'
+    );
   });
 });
 
@@ -36,11 +47,11 @@ describe('rollD20', () => {
     // Mock Math.random to return 0 (minimum)
     const mockRandom = jest.spyOn(Math, 'random').mockReturnValue(0);
     expect(rollD20()).toBe(1);
-    
+
     // Mock Math.random to return 0.999... (maximum)
     mockRandom.mockReturnValue(0.999);
     expect(rollD20()).toBe(20);
-    
+
     mockRandom.mockRestore();
   });
 
@@ -48,7 +59,7 @@ describe('rollD20', () => {
     const mockRandom = jest.spyOn(Math, 'random').mockReturnValue(0.5); // Roll 11
     expect(rollD20(5)).toBe(16); // 11 + 5
     expect(rollD20(-2)).toBe(9); // 11 - 2
-    
+
     mockRandom.mockRestore();
   });
 });

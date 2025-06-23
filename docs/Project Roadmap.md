@@ -33,14 +33,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 1.1 Initial Project Setup
 
 - [ ] **Setup Next.js 15 project with TypeScript** `P1 | Phase 1 | 4h` 🎯 **MVP**
-
   - Initialize project with `create-next-app`
   - Configure TypeScript strict mode
   - Setup basic folder structure
   - Configure next.config.js for optimization
 
 - [ ] **Configure development environment** `P1 | Phase 1 | 4h` 🎯 **MVP**
-
   - Setup ESLint and Prettier with Next.js configs
   - Configure VS Code settings and extensions
   - Setup pnpm workspace configuration
@@ -55,14 +53,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 1.2 Styling and UI Foundation
 
 - [ ] **Install and configure Tailwind CSS** `P1 | Phase 1 | 3h` 🎯 **MVP**
-
   - Install Tailwind CSS and PostCSS
   - Configure tailwind.config.js with custom theme
   - Setup CSS variables for design tokens
   - Test responsive utilities
 
 - [ ] **Setup shadcn/ui component library** `P1 | Phase 1 | 4h` 🎯 **MVP**
-
   - Initialize shadcn/ui configuration
   - Install core components (Button, Input, Card, etc.)
   - Configure component theming
@@ -77,7 +73,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 1.3 Database Setup
 
 - [ ] **Setup MongoDB Atlas cluster** `P1 | Phase 1 | 3h` 🎯 **MVP**
-
   - Create production and development clusters
   - Configure network access and database users
   - Setup connection strings
@@ -92,7 +87,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 1.4 Development Tools
 
 - [ ] **Setup package management with pnpm** `P1 | Phase 1 | 2h`
-
   - Configure pnpm workspaces
   - Create package.json scripts
   - Setup dependency management
@@ -111,14 +105,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 2.1 NextAuth.js Setup
 
 - [ ] **Install and configure NextAuth.js v5** `P1 | Phase 1 | 6h` 🎯 **MVP**
-
   - Install NextAuth.js and MongoDB adapter
   - Configure authentication options
   - Setup session strategy with database
   - Create auth API routes
 
 - [ ] **Setup email/password authentication** `P1 | Phase 1 | 6h` 🎯 **MVP**
-
   - Configure credentials provider
   - Create password hashing utilities
   - Implement login/register forms
@@ -133,14 +125,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 2.2 User Registration & Login
 
 - [ ] **Create user registration flow** `P1 | Phase 1 | 6h` 🎯 **MVP**
-
   - Build registration form with validation
   - Implement server-side user creation
   - Add email verification system
   - Create welcome email template
 
 - [ ] **Build login interface** `P1 | Phase 1 | 4h` 🎯 **MVP**
-
   - Create login form component
   - Implement sign-in logic
   - Add remember me functionality
@@ -155,7 +145,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 2.3 Session Management
 
 - [ ] **Implement session middleware** `P1 | Phase 1 | 4h` 🎯 **MVP**
-
   - Create authentication middleware
   - Protect API routes
   - Handle session expiration
@@ -174,21 +163,18 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 3.1 Database Schema Implementation
 
 - [ ] **Create User schema and model** `P1 | Phase 1 | 4h` 🎯 **MVP**
-
   - Define User interface and schema
   - Implement subscription fields
   - Add usage tracking fields
   - Create schema validation
 
 - [ ] **Create Character schema and model** `P1 | Phase 2 | 4h` 🎯 **MVP**
-
   - Define Character interface and schema
   - Implement multi-class support
   - Add stats and attributes
   - Create character validation
 
 - [ ] **Create Party schema and model** `P1 | Phase 2 | 3h`
-
   - Define Party interface and schema
   - Implement member relationships
   - Add template support
@@ -203,21 +189,18 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 3.2 Data Access Layer
 
 - [ ] **Create User service layer** `P1 | Phase 1 | 4h` 🎯 **MVP**
-
   - Implement CRUD operations
   - Add subscription management
   - Create usage tracking utilities
   - Add user query helpers
 
 - [ ] **Create Character service layer** `P1 | Phase 2 | 4h` 🎯 **MVP**
-
   - Implement character CRUD operations
   - Add template management
   - Create character query utilities
   - Add import/export helpers
 
 - [ ] **Create Party service layer** `P1 | Phase 2 | 3h`
-
   - Implement party CRUD operations
   - Add member management
   - Create party query utilities
@@ -232,7 +215,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 3.3 Database Optimization
 
 - [ ] **Setup database indexing** `P2 | Phase 2 | 4h`
-
   - Create user collection indexes
   - Add character collection indexes
   - Implement encounter indexes
@@ -251,14 +233,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 4.1 Character Creation
 
 - [ ] **Build character creation form** `P1 | Phase 2 | 8h` 🎯 **MVP**
-
   - Create multi-step character form
   - Implement basic info section
   - Add class and race selection
   - Include stats input with validation
 
 - [ ] **Implement multi-class support** `P2 | Phase 2 | 6h`
-
   - Create class selection interface
   - Handle multiple class levels
   - Calculate combined modifiers
@@ -273,14 +253,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 4.2 Character Management Interface
 
 - [ ] **Create character list view** `P1 | Phase 2 | 4h` 🎯 **MVP**
-
   - Build character grid/list display
   - Add search and filtering
   - Implement sorting options
   - Add character quick actions
 
 - [ ] **Build character detail view** `P1 | Phase 2 | 6h`
-
   - Create comprehensive character display
   - Add editing capabilities
   - Implement character actions
@@ -295,7 +273,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 4.3 Character Templates
 
 - [ ] **Implement character templates system** `P2 | Phase 2 | 6h`
-
   - Create template save/load functionality
   - Build template management interface
   - Add template sharing options
@@ -310,7 +287,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 4.4 NPC Management
 
 - [ ] **Create NPC creation workflow** `P1 | Phase 2 | 6h`
-
   - Build NPC-specific form fields
   - Add challenge rating calculation
   - Implement special abilities
@@ -329,14 +305,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 5.1 Party Creation & Management
 
 - [ ] **Create party creation interface** `P1 | Phase 2 | 4h`
-
   - Build party creation form
   - Add party name and description
   - Implement party settings
   - Create party validation
 
 - [ ] **Build party member management** `P1 | Phase 2 | 6h`
-
   - Create member addition interface
   - Implement drag-and-drop organization
   - Add member removal functionality
@@ -351,7 +325,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 5.2 Party Templates & Composition
 
 - [ ] **Implement party template system** `P2 | Phase 2 | 4h`
-
   - Create template save/load functionality
   - Build template management interface
   - Add composition recommendations
@@ -378,14 +351,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 6.1 Encounter Creation
 
 - [ ] **Create encounter builder interface** `P1 | Phase 2 | 8h` 🎯 **MVP**
-
   - Build drag-and-drop encounter builder
   - Add creature selection and addition
   - Implement encounter settings
   - Create encounter preview
 
 - [ ] **Implement encounter balancing** `P2 | Phase 3 | 6h`
-
   - Add CR calculation system
   - Implement difficulty assessment
   - Create balance recommendations
@@ -400,7 +371,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 6.2 Encounter Management
 
 - [ ] **Build encounter list interface** `P1 | Phase 2 | 4h` 🎯 **MVP**
-
   - Create encounter browsing view
   - Add search and filtering
   - Implement encounter categories
@@ -427,14 +397,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 7.1 Initiative System
 
 - [ ] **Create initiative tracking interface** `P1 | Phase 3 | 6h` 🎯 **MVP**
-
   - Build initiative order display
   - Implement turn indicators
   - Add round tracking
   - Create initiative modification tools
 
 - [ ] **Implement initiative rolling system** `P1 | Phase 3 | 4h` 🎯 **MVP**
-
   - Create automatic initiative rolling
   - Add manual initiative entry
   - Implement dexterity tiebreakers
@@ -449,14 +417,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 7.2 HP and Damage Tracking
 
 - [ ] **Create HP tracking interface** `P1 | Phase 3 | 6h` 🎯 **MVP**
-
   - Build HP display and modification
   - Add damage and healing forms
   - Implement temporary HP tracking
   - Create HP history tracking
 
 - [ ] **Implement damage calculation tools** `P2 | Phase 3 | 4h`
-
   - Create damage calculator
   - Add resistance/vulnerability handling
   - Implement damage type tracking
@@ -471,7 +437,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 7.3 Combat Flow Management
 
 - [ ] **Create combat state management** `P1 | Phase 3 | 6h` 🎯 **MVP**
-
   - Implement combat start/stop logic
   - Add combat pause functionality
   - Create combat reset options
@@ -490,14 +455,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 8.1 Status Effect System
 
 - [ ] **Create status effect data model** `P1 | Phase 3 | 4h`
-
   - Define status effect schema
   - Implement effect categories
   - Create effect duration system
   - Add effect stacking rules
 
 - [ ] **Build status effect interface** `P1 | Phase 3 | 6h`
-
   - Create effect application UI
   - Add effect removal interface
   - Implement effect modification
@@ -512,7 +475,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 8.2 Condition Management
 
 - [ ] **Create D&D 5e condition library** `P1 | Phase 3 | 6h`
-
   - Implement all standard conditions
   - Add condition descriptions
   - Create condition effect automation
@@ -539,14 +501,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 9.1 Legendary Action System
 
 - [ ] **Create legendary action data model** `P1 | Phase 3 | 3h`
-
   - Define legendary action schema
   - Implement action point system
   - Create action descriptions
   - Add action cost tracking
 
 - [ ] **Build legendary action interface** `P1 | Phase 3 | 6h`
-
   - Create action selection UI
   - Add action point display
   - Implement action usage tracking
@@ -561,7 +521,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 9.2 Action Management
 
 - [ ] **Create action library system** `P2 | Phase 3 | 4h`
-
   - Build predefined action database
   - Add custom action creation
   - Implement action templates
@@ -580,14 +539,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 10.1 Lair Action System
 
 - [ ] **Create lair action data model** `P1 | Phase 3 | 3h`
-
   - Define lair action schema
   - Implement environmental effects
   - Create action triggers
   - Add action descriptions
 
 - [ ] **Build lair action interface** `P1 | Phase 3 | 6h`
-
   - Create lair configuration UI
   - Add action selection interface
   - Implement environmental displays
@@ -602,7 +559,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 10.2 Environmental Effects
 
 - [ ] **Create environmental effect system** `P2 | Phase 3 | 6h`
-
   - Build environmental condition tracking
   - Add area effect management
   - Implement terrain modifications
@@ -621,14 +577,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 11.1 Stripe Integration
 
 - [ ] **Setup Stripe configuration** `P1 | Phase 4 | 4h`
-
   - Configure Stripe API keys
   - Setup webhook endpoints
   - Create Stripe client utilities
   - Test Stripe connectivity
 
 - [ ] **Create subscription plans in Stripe** `P1 | Phase 4 | 4h`
-
   - Define all subscription tiers
   - Configure pricing and intervals
   - Setup trial periods
@@ -643,14 +597,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 11.2 Subscription Management
 
 - [ ] **Build subscription dashboard** `P1 | Phase 4 | 6h`
-
   - Create current plan display
   - Add usage metrics visualization
   - Implement billing history
   - Create subscription controls
 
 - [ ] **Implement plan upgrade/downgrade** `P1 | Phase 4 | 6h`
-
   - Create plan comparison interface
   - Build upgrade flow
   - Implement downgrade handling
@@ -665,14 +617,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 11.3 Usage Tracking & Limits
 
 - [ ] **Implement usage tracking system** `P1 | Phase 4 | 6h`
-
   - Create usage increment logic
   - Add real-time usage monitoring
   - Implement usage reset functionality
   - Create usage analytics
 
 - [ ] **Build usage limit enforcement** `P1 | Phase 4 | 6h`
-
   - Create limit checking middleware
   - Implement limit warnings
   - Add upgrade prompts
@@ -691,7 +641,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 12.1 Cloud Sync
 
 - [ ] **Implement data synchronization** `P1 | Phase 4 | 8h`
-
   - Create sync conflict resolution
   - Implement real-time data updates
   - Add offline data management
@@ -706,7 +655,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 12.2 Export Features
 
 - [ ] **Create PDF export functionality** `P2 | Phase 4 | 6h`
-
   - Build PDF generation system
   - Create export templates
   - Add custom styling options
@@ -721,7 +669,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 12.3 Advanced Combat Features
 
 - [ ] **Build advanced combat logging** `P2 | Phase 4 | 6h`
-
   - Create detailed combat history
   - Add action replay system
   - Implement combat analytics
@@ -740,14 +687,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 13.1 Layout & Navigation
 
 - [ ] **Create application layout** `P1 | Phase 1 | 6h` 🎯 **MVP**
-
   - Build main navigation structure
   - Create responsive sidebar
   - Implement breadcrumb navigation
   - Add mobile menu system
 
 - [ ] **Build landing page** `P1 | Phase 1 | 6h` 🎯 **MVP**
-
   - Create hero section
   - Add feature highlights
   - Implement pricing section
@@ -762,14 +707,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 13.2 Forms & Interactions
 
 - [ ] **Create form component library** `P1 | Phase 1 | 6h` 🎯 **MVP**
-
   - Build reusable form components
   - Implement form validation UI
   - Add form state management
   - Create form accessibility features
 
 - [ ] **Build modal and dialog system** `P1 | Phase 2 | 4h` 🎯 **MVP**
-
   - Create modal component
   - Implement confirmation dialogs
   - Add modal state management
@@ -784,7 +727,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 13.3 Responsive Design
 
 - [ ] **Implement mobile-first design** `P1 | Phase 1 | 6h` 🎯 **MVP**
-
   - Create mobile layout components
   - Implement touch-friendly interactions
   - Add mobile navigation
@@ -799,7 +741,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 13.4 Accessibility
 
 - [ ] **Implement accessibility features** `P1 | Phase 1 | 6h`
-
   - Add ARIA labels and roles
   - Implement keyboard navigation
   - Create screen reader support
@@ -818,14 +759,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 14.1 Unit Testing
 
 - [ ] **Setup Jest testing framework** `P1 | Phase 1 | 4h` 🎯 **MVP**
-
   - Configure Jest with Next.js
   - Setup React Testing Library
   - Create test utilities
   - Configure test coverage
 
 - [ ] **Create component test suite** `P1 | Phase 2 | 8h`
-
   - Write tests for all UI components
   - Test component interactions
   - Add snapshot testing
@@ -840,7 +779,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 14.2 Integration Testing
 
 - [ ] **Setup API testing framework** `P1 | Phase 2 | 4h`
-
   - Configure API testing tools
   - Create test database setup
   - Build test data factories
@@ -855,7 +793,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 14.3 End-to-End Testing
 
 - [ ] **Setup Playwright E2E testing** `P1 | Phase 3 | 6h`
-
   - Configure Playwright
   - Create E2E test utilities
   - Setup test data management
@@ -870,7 +807,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 14.4 Performance Testing
 
 - [ ] **Setup performance monitoring** `P2 | Phase 3 | 4h`
-
   - Configure Lighthouse CI
   - Setup performance budgets
   - Create performance tests
@@ -889,14 +825,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 15.1 Environment Setup
 
 - [ ] **Configure development environment** `P1 | Phase 1 | 4h` 🎯 **MVP**
-
   - Setup local development stack
   - Configure environment variables
   - Create development documentation
   - Setup local database
 
 - [ ] **Setup staging environment** `P1 | Phase 1 | 4h` 🎯 **MVP**
-
   - Configure Vercel preview deployments
   - Setup staging database
   - Configure staging environment variables
@@ -911,7 +845,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 15.2 CI/CD Pipeline
 
 - [ ] **Setup GitHub Actions workflow** `P1 | Phase 1 | 6h` 🎯 **MVP**
-
   - Create CI/CD pipeline
   - Configure automated testing
   - Setup deployment automation
@@ -926,14 +859,12 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 15.3 Monitoring & Logging
 
 - [ ] **Setup error tracking with Sentry** `P1 | Phase 1 | 4h` 🎯 **MVP**
-
   - Configure Sentry integration
   - Setup error alerting
   - Create error dashboards
   - Test error reporting
 
 - [ ] **Configure performance monitoring** `P1 | Phase 2 | 4h`
-
   - Setup Vercel Analytics
   - Configure Speed Insights
   - Create performance dashboards
@@ -948,7 +879,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 15.4 Security & Backup
 
 - [ ] **Configure security headers** `P1 | Phase 1 | 3h`
-
   - Setup CSP headers
   - Configure HSTS
   - Add security middleware
@@ -967,7 +897,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 16.1 Technical Documentation
 
 - [ ] **Create API documentation** `P2 | Phase 3 | 6h`
-
   - Generate OpenAPI specifications
   - Create API reference docs
   - Add code examples
@@ -982,7 +911,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 16.2 User Documentation
 
 - [ ] **Create user guide** `P1 | Phase 4 | 8h`
-
   - Write comprehensive user manual
   - Create feature tutorials
   - Add screenshots and videos
@@ -997,7 +925,6 @@ The MVP focuses on core combat tracking functionality to validate the product co
 ### 16.3 Support System
 
 - [ ] **Setup customer support** `P2 | Phase 4 | 4h`
-
   - Configure support ticketing
   - Create support templates
   - Setup support routing

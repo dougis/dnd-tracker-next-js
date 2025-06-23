@@ -20,7 +20,10 @@ export function calculateAbilityModifier(score: number): number {
  * @param bonus - Additional initiative bonus (default: 0)
  * @returns The initiative modifier
  */
-export function calculateInitiativeModifier(dexterityScore: number, bonus: number = 0): number {
+export function calculateInitiativeModifier(
+  dexterityScore: number,
+  bonus: number = 0
+): number {
   const dexModifier = calculateAbilityModifier(dexterityScore);
   return dexModifier + bonus;
 }
