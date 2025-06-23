@@ -34,22 +34,22 @@ describe('calculateInitiativeModifier', () => {
 describe('rollD20', () => {
   it('should return a value between 1 and 20 (no modifier)', () => {
     // Mock Math.random to return 0 (minimum)
-    jest.spyOn(Math, 'random').mockReturnValue(0);
+    const mockRandom = jest.spyOn(Math, 'random').mockReturnValue(0);
     expect(rollD20()).toBe(1);
     
     // Mock Math.random to return 0.999... (maximum)
-    jest.spyOn(Math, 'random').mockReturnValue(0.999);
+    mockRandom.mockReturnValue(0.999);
     expect(rollD20()).toBe(20);
     
-    Math.random.mockRestore();
+    mockRandom.mockRestore();
   });
 
   it('should add modifier correctly', () => {
-    jest.spyOn(Math, 'random').mockReturnValue(0.5); // Roll 11
+    const mockRandom = jest.spyOn(Math, 'random').mockReturnValue(0.5); // Roll 11
     expect(rollD20(5)).toBe(16); // 11 + 5
     expect(rollD20(-2)).toBe(9); // 11 - 2
     
-    Math.random.mockRestore();
+    mockRandom.mockRestore();
   });
 });
 
