@@ -1,20 +1,18 @@
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-4xl font-fantasy font-bold text-primary">
-            D&D Encounter Tracker
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Manage your D&D 5e combat encounters with ease
-          </p>
-        </div>
-      </header>
+    <div className="p-6">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-fantasy font-bold text-foreground">
+          Welcome to D&D Encounter Tracker
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          Manage your D&D 5e combat encounters with ease
+        </p>
+      </div>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      {/* Content */}
+      <div className="space-y-8">
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Combat Tracker Demo */}
           <section className="space-y-6">
@@ -183,14 +181,7 @@ export default function Home() {
             </div>
           </div>
         </section>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-border bg-muted/30 mt-12">
-        <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
-          <p>D&D Encounter Tracker - Built with Next.js 15 & Tailwind CSS</p>
-        </div>
-      </footer>
+      </div>
     </div>
   );
 }
