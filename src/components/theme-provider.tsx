@@ -10,10 +10,10 @@ type ThemeProviderProps = {
   storageKey?: string;
 };
 
-type ThemeProviderState = {
+interface ThemeProviderState {
   theme: Theme;
-  setTheme: (value: Theme) => void; // eslint-disable-line no-unused-vars
-};
+  setTheme: (_theme: Theme) => void;
+}
 
 const initialState: ThemeProviderState = {
   theme: 'system',
