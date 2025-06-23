@@ -239,9 +239,11 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               <div className="h-8 w-8 rounded-full bg-muted"></div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">
+                  {/* TODO: Replace with actual user data */}
                   Demo User
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
+                  {/* TODO: Replace with actual user email */}
                   demo@example.com
                 </p>
               </div>

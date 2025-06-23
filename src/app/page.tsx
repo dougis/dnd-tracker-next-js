@@ -4,6 +4,7 @@ export default function Home() {
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-fantasy font-bold text-foreground">
+          {/* TODO: Internationalize this text */}
           Welcome to D&D Encounter Tracker
         </h1>
         <p className="text-muted-foreground mt-2">
