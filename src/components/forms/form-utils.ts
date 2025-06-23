@@ -166,9 +166,10 @@ export function extractFormData(formElement: HTMLFormElement): FormData {
   const formData = new FormData(formElement);
   const data: FormData = {};
 
-  for (const [key, value] of formData.entries()) {
+  // Use Array.from to avoid downlevelIteration issues
+  Array.from(formData.entries()).forEach(([key, value]) => {
     data[key] = value;
-  }
+  });
 
   return data;
 }
