@@ -10,7 +10,7 @@ export type InfoModalType = 'character' | 'encounter' | 'generic' | 'combat';
 
 export interface InfoModalProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (_open: boolean) => void;
   title: string;
   subtitle?: string;
   type?: InfoModalType;

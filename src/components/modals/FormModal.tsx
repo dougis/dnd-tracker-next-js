@@ -7,15 +7,11 @@ import { FormSubmitButton } from '@/components/forms/FormSubmitButton';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-export interface FormModalProps extends Omit<FormWrapperProps, 'children'> {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+export interface FormModalConfig {
   title: string;
   description?: string;
-  children: React.ReactNode;
   submitText?: string;
   cancelText?: string;
-  onCancel?: () => void;
   showCancelButton?: boolean;
   className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'full';
@@ -23,24 +19,35 @@ export interface FormModalProps extends Omit<FormWrapperProps, 'children'> {
   resetOnClose?: boolean;
 }
 
+export interface FormModalProps extends Omit<FormWrapperProps, 'children'> {
+  open: boolean;
+  onOpenChange: (_open: boolean) => void;
+  children: React.ReactNode;
+  onCancel?: () => void;
+  config: FormModalConfig;
+}
+
 export function FormModal({
   open: _open,
   onOpenChange,
-  title,
-  description,
   children,
-  submitText = 'Submit',
-  cancelText = 'Cancel',
   onCancel,
-  showCancelButton = true,
-  className,
-  size = 'md',
-  preventCloseOnSubmit = false,
-  resetOnClose = true,
+  config,
   onSubmit,
   isSubmitting,
   ...formProps
 }: FormModalProps) {
+  const {
+    title,
+    description,
+    submitText = 'Submit',
+    cancelText = 'Cancel',
+    showCancelButton = true,
+    className,
+    size = 'md',
+    preventCloseOnSubmit = false,
+    resetOnClose = true,
+  } = config;
   const [localIsSubmitting, setLocalIsSubmitting] = React.useState(false);
 
   const handleCancel = React.useCallback(() => {
@@ -91,7 +98,7 @@ export function FormModal({
       }, 150);
       return () => clearTimeout(timer);
     }
-  }, [_open, resetOnClose, formProps.reset]);
+  }, [_open, resetOnClose, formProps]);
 
   const submitting = localIsSubmitting || isSubmitting;
 
@@ -142,11 +149,16 @@ export function FormModal({
 // Hook for easier form modal usage
 export function useFormModal() {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [config, setConfig] = React.useState<Partial<FormModalProps>>({});
+  const [modalConfig, setModalConfig] = React.useState<
+    Omit<FormModalProps, 'open' | 'onOpenChange'>
+  >({
+    children: null,
+    config: { title: '' },
+  });
 
   const openModal = React.useCallback(
-    (modalConfig: Omit<FormModalProps, 'open' | 'onOpenChange'>) => {
-      setConfig(modalConfig);
+    (config: Omit<FormModalProps, 'open' | 'onOpenChange'>) => {
+      setModalConfig(config);
       setIsOpen(true);
     },
     []
@@ -157,14 +169,8 @@ export function useFormModal() {
   }, []);
 
   const FormModalComponent = React.useCallback(
-    () => (
-      <FormModal
-        {...(config as FormModalProps)}
-        open={isOpen}
-        onOpenChange={setIsOpen}
-      />
-    ),
-    [isOpen, config]
+    () => <FormModal {...modalConfig} open={isOpen} onOpenChange={setIsOpen} />,
+    [isOpen, modalConfig]
   );
 
   return {
@@ -177,26 +183,25 @@ export function useFormModal() {
 
 // Quick form modal variants for common use cases
 export interface QuickFormModalProps extends Omit<FormModalProps, 'onSubmit'> {
-  onSubmit: (data: any) => Promise<void> | void;
+  onSubmit: (_data: any) => Promise<void> | void;
 }
 
 export function QuickAddModal(props: QuickFormModalProps) {
-  return (
-    <FormModal
-      {...props}
-      title={props.title || 'Add New Item'}
-      submitText={props.submitText || 'Add'}
-    />
-  );
+  const updatedConfig = {
+    ...props.config,
+    title: props.config.title || 'Add New Item',
+    submitText: props.config.submitText || 'Add',
+  };
+
+  return <FormModal {...props} config={updatedConfig} />;
 }
 
 export function QuickEditModal(props: QuickFormModalProps) {
-  const { data: _data, ...restProps } = props;
-  return (
-    <FormModal
-      {...restProps}
-      title={props.title || 'Edit Item'}
-      submitText={props.submitText || 'Save Changes'}
-    />
-  );
+  const updatedConfig = {
+    ...props.config,
+    title: props.config.title || 'Edit Item',
+    submitText: props.config.submitText || 'Save Changes',
+  };
+
+  return <FormModal {...props} config={updatedConfig} />;
 }

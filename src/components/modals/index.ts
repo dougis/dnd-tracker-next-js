@@ -7,7 +7,10 @@ export {
   ConfirmationDialog,
   useConfirmationDialog,
 } from './ConfirmationDialog';
-export type { ConfirmationDialogProps } from './ConfirmationDialog';
+export type {
+  ConfirmationDialogProps,
+  ConfirmationDialogConfig,
+} from './ConfirmationDialog';
 
 // Info Modal
 export {
@@ -27,7 +30,11 @@ export {
   QuickAddModal,
   QuickEditModal,
 } from './FormModal';
-export type { FormModalProps, QuickFormModalProps } from './FormModal';
+export type {
+  FormModalProps,
+  FormModalConfig,
+  QuickFormModalProps,
+} from './FormModal';
 
 // Modal Manager
 export {

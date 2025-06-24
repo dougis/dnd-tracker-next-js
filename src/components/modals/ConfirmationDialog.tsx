@@ -6,35 +6,42 @@ import { Modal } from './Modal';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-export interface ConfirmationDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+export interface ConfirmationDialogConfig {
   title: string;
   description: string;
   confirmText?: string;
   cancelText?: string;
-  onConfirm: () => void;
-  onCancel?: () => void;
   variant?: 'default' | 'destructive' | 'warning';
   loading?: boolean;
   children?: React.ReactNode;
   className?: string;
 }
 
+export interface ConfirmationDialogProps {
+  open: boolean;
+  onOpenChange: (_open: boolean) => void;
+  onConfirm: () => void;
+  onCancel?: () => void;
+  config: ConfirmationDialogConfig;
+}
+
 export function ConfirmationDialog({
   open: _open,
   onOpenChange,
-  title,
-  description,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
   onConfirm,
   onCancel,
-  variant = 'default',
-  loading = false,
-  children,
-  className,
+  config,
 }: ConfirmationDialogProps) {
+  const {
+    title,
+    description,
+    confirmText = 'Confirm',
+    cancelText = 'Cancel',
+    variant = 'default',
+    loading = false,
+    children,
+    className,
+  } = config;
   const handleCancel = React.useCallback(() => {
     if (loading) return;
     onCancel?.();
@@ -131,22 +138,33 @@ export function ConfirmationDialog({
 // Hook for easier confirmation dialog usage
 export function useConfirmationDialog() {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [config, setConfig] = React.useState<Partial<ConfirmationDialogProps>>(
-    {}
-  );
+  const [confirmProps, setConfirmProps] = React.useState<{
+    onConfirm: () => void;
+    onCancel?: () => void;
+    config: ConfirmationDialogConfig;
+  }>({
+    onConfirm: () => {},
+    config: { title: '', description: '' },
+  });
 
   const confirm = React.useCallback(
-    (props: Omit<ConfirmationDialogProps, 'open' | 'onOpenChange'>) => {
+    (
+      dialogConfig: ConfirmationDialogConfig & {
+        onConfirm: () => void;
+        onCancel?: () => void;
+      }
+    ) => {
       return new Promise<boolean>(resolve => {
-        setConfig({
-          ...props,
+        const { onConfirm, onCancel, ...config } = dialogConfig;
+        setConfirmProps({
+          config,
           onConfirm: () => {
-            props.onConfirm();
+            onConfirm();
             setIsOpen(false);
             resolve(true);
           },
           onCancel: () => {
-            props.onCancel?.();
+            onCancel?.();
             setIsOpen(false);
             resolve(false);
           },
@@ -160,12 +178,14 @@ export function useConfirmationDialog() {
   const ConfirmationDialogComponent = React.useCallback(
     () => (
       <ConfirmationDialog
-        {...(config as ConfirmationDialogProps)}
         open={isOpen}
         onOpenChange={setIsOpen}
+        onConfirm={confirmProps.onConfirm}
+        onCancel={confirmProps.onCancel}
+        config={confirmProps.config}
       />
     ),
-    [isOpen, config]
+    [isOpen, confirmProps]
   );
 
   return {

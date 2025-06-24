@@ -13,11 +13,11 @@ export interface ModalConfig {
 
 interface ModalManagerContextType {
   modals: ModalConfig[];
-  openModal: (config: Omit<ModalConfig, 'id'> & { id?: string }) => string;
-  closeModal: (id: string) => void;
+  openModal: (_config: Omit<ModalConfig, 'id'> & { id?: string }) => string;
+  closeModal: (_id: string) => void;
   closeAllModals: () => void;
   closeTopModal: () => void;
-  isModalOpen: (id: string) => boolean;
+  isModalOpen: (_id: string) => boolean;
   getTopModal: () => ModalConfig | null;
   getModalCount: () => number;
 }

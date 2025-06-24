@@ -10,9 +10,11 @@ describe('ConfirmationDialog', () => {
   const defaultProps = {
     open: true,
     onOpenChange: jest.fn(),
-    title: 'Confirm Action',
-    description: 'Are you sure you want to proceed?',
     onConfirm: jest.fn(),
+    config: {
+      title: 'Confirm Action',
+      description: 'Are you sure you want to proceed?',
+    },
   };
 
   beforeEach(() => {
@@ -39,8 +41,11 @@ describe('ConfirmationDialog', () => {
     render(
       <ConfirmationDialog
         {...defaultProps}
-        confirmText="Delete"
-        cancelText="Keep"
+        config={{
+          ...defaultProps.config,
+          confirmText: 'Delete',
+          cancelText: 'Keep',
+        }}
       />
     );
 
@@ -71,7 +76,15 @@ describe('ConfirmationDialog', () => {
   });
 
   it('shows loading state correctly', () => {
-    render(<ConfirmationDialog {...defaultProps} loading={true} />);
+    render(
+      <ConfirmationDialog
+        {...defaultProps}
+        config={{
+          ...defaultProps.config,
+          loading: true,
+        }}
+      />
+    );
 
     const confirmButton = screen.getByText('Confirm');
     const cancelButton = screen.getByText('Cancel');
@@ -82,23 +95,39 @@ describe('ConfirmationDialog', () => {
 
   it('shows different icons for different variants', () => {
     const { rerender } = render(
-      <ConfirmationDialog {...defaultProps} variant="destructive" />
+      <ConfirmationDialog
+        {...defaultProps}
+        config={{ ...defaultProps.config, variant: 'destructive' }}
+      />
     );
 
     // Test that the component renders (specific icon testing is complex)
     expect(screen.getByText('Confirm Action')).toBeInTheDocument();
 
-    rerender(<ConfirmationDialog {...defaultProps} variant="warning" />);
+    rerender(
+      <ConfirmationDialog
+        {...defaultProps}
+        config={{ ...defaultProps.config, variant: 'warning' }}
+      />
+    );
     expect(screen.getByText('Confirm Action')).toBeInTheDocument();
 
-    rerender(<ConfirmationDialog {...defaultProps} variant="default" />);
+    rerender(
+      <ConfirmationDialog
+        {...defaultProps}
+        config={{ ...defaultProps.config, variant: 'default' }}
+      />
+    );
     expect(screen.getByText('Confirm Action')).toBeInTheDocument();
   });
 
   it('renders custom children', () => {
     const customContent = <div>Additional warning text</div>;
     render(
-      <ConfirmationDialog {...defaultProps}>{customContent}</ConfirmationDialog>
+      <ConfirmationDialog
+        {...defaultProps}
+        config={{ ...defaultProps.config, children: customContent }}
+      />
     );
 
     expect(screen.getByText('Additional warning text')).toBeInTheDocument();
@@ -106,7 +135,12 @@ describe('ConfirmationDialog', () => {
 
   it('prevents interaction when loading', async () => {
     const user = userEvent.setup();
-    render(<ConfirmationDialog {...defaultProps} loading={true} />);
+    render(
+      <ConfirmationDialog
+        {...defaultProps}
+        config={{ ...defaultProps.config, loading: true }}
+      />
+    );
 
     const confirmButton = screen.getByText('Confirm');
     const cancelButton = screen.getByText('Cancel');

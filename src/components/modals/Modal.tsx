@@ -44,7 +44,7 @@ const modalVariants = cva(
 
 export interface ModalProps extends VariantProps<typeof modalVariants> {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (_open: boolean) => void;
   title?: string;
   description?: string;
   children: React.ReactNode;
