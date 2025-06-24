@@ -7,14 +7,23 @@
 
 // User service
 export { UserService } from './UserService';
-export type { ServiceResult, PaginatedResult, UserStats } from './UserService';
+export type { PaginatedResult, UserStats } from './UserService';
 
-// Export custom error classes for use in API routes
+// Export custom error classes and service types for use in API routes
 export {
+  ServiceResult,
   UserServiceError,
   UserNotFoundError,
   UserAlreadyExistsError,
   InvalidCredentialsError,
   TokenExpiredError,
   TokenInvalidError,
-} from './UserService';
+  handleServiceError,
+} from './UserServiceErrors';
+
+// Export helper functions for reuse in other services
+export {
+  checkUserExists,
+  checkProfileUpdateConflicts,
+  convertLeansUsersToPublic,
+} from './UserServiceHelpers';

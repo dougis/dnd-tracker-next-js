@@ -18,6 +18,22 @@ import {
   type SubscriptionTier,
 } from '../validations/user';
 
+// Import error handling and helper utilities
+import {
+  ServiceResult,
+  UserServiceError,
+  UserNotFoundError,
+  InvalidCredentialsError,
+  TokenInvalidError,
+  handleServiceError,
+} from './UserServiceErrors';
+
+import {
+  checkUserExists,
+  checkProfileUpdateConflicts,
+  convertLeansUsersToPublic,
+} from './UserServiceHelpers';
+
 /**
  * User Service Layer for D&D Encounter Tracker
  *
@@ -25,64 +41,6 @@ import {
  * and account operations. Abstracts database operations from
  * API routes and provides consistent error handling.
  */
-
-// Custom error classes for better error handling
-export class UserServiceError extends Error {
-  public code: string;
-  public statusCode: number;
-
-  constructor(message: string, code: string, statusCode: number = 400) {
-    super(message);
-    this.name = 'UserServiceError';
-    this.code = code;
-    this.statusCode = statusCode;
-  }
-}
-
-export class UserNotFoundError extends UserServiceError {
-  constructor(identifier: string) {
-    super(`User not found: ${identifier}`, 'USER_NOT_FOUND', 404);
-  }
-}
-
-export class UserAlreadyExistsError extends UserServiceError {
-  constructor(field: string, value: string) {
-    super(
-      `User already exists with ${field}: ${value}`,
-      'USER_ALREADY_EXISTS',
-      409
-    );
-  }
-}
-
-export class InvalidCredentialsError extends UserServiceError {
-  constructor() {
-    super('Invalid email or password', 'INVALID_CREDENTIALS', 401);
-  }
-}
-
-export class TokenExpiredError extends UserServiceError {
-  constructor(tokenType: string) {
-    super(`${tokenType} token has expired`, 'TOKEN_EXPIRED', 410);
-  }
-}
-
-export class TokenInvalidError extends UserServiceError {
-  constructor(tokenType: string) {
-    super(`Invalid ${tokenType} token`, 'TOKEN_INVALID', 400);
-  }
-}
-
-// Service response types
-export interface ServiceResult<T> {
-  success: boolean;
-  data?: T;
-  error?: {
-    message: string;
-    code: string;
-    statusCode: number;
-  };
-}
 
 export interface PaginatedResult<T> {
   data: T[];
@@ -113,17 +71,7 @@ export class UserService {
       const validatedData = userRegistrationSchema.parse(userData);
 
       // Check if user already exists
-      const existingUserByEmail = await User.findByEmail(validatedData.email);
-      if (existingUserByEmail) {
-        throw new UserAlreadyExistsError('email', validatedData.email);
-      }
-
-      const existingUserByUsername = await User.findByUsername(
-        validatedData.username
-      );
-      if (existingUserByUsername) {
-        throw new UserAlreadyExistsError('username', validatedData.username);
-      }
+      await checkUserExists(validatedData.email, validatedData.username);
 
       // Create new user
       const newUser = new User({
@@ -147,50 +95,11 @@ export class UserService {
         data: newUser.toPublicJSON(),
       };
     } catch (error) {
-      if (error instanceof UserServiceError) {
-        return {
-          success: false,
-          error: {
-            message: error.message,
-            code: error.code,
-            statusCode: error.statusCode,
-          },
-        };
-      }
-
-      // Handle validation errors
-      if (error instanceof Error && error.message.includes('validation')) {
-        return {
-          success: false,
-          error: {
-            message: 'Invalid user data provided',
-            code: 'VALIDATION_ERROR',
-            statusCode: 400,
-          },
-        };
-      }
-
-      // Handle duplicate key errors from MongoDB
-      if (error instanceof Error && 'code' in error && error.code === 11000) {
-        const field = error.message.includes('email') ? 'email' : 'username';
-        return {
-          success: false,
-          error: {
-            message: `User already exists with this ${field}`,
-            code: 'USER_ALREADY_EXISTS',
-            statusCode: 409,
-          },
-        };
-      }
-
-      return {
-        success: false,
-        error: {
-          message: 'Failed to create user',
-          code: 'USER_CREATION_FAILED',
-          statusCode: 500,
-        },
-      };
+      return handleServiceError(
+        error,
+        'Failed to create user',
+        'USER_CREATION_FAILED'
+      );
     }
   }
 
@@ -231,25 +140,12 @@ export class UserService {
         },
       };
     } catch (error) {
-      if (error instanceof UserServiceError) {
-        return {
-          success: false,
-          error: {
-            message: error.message,
-            code: error.code,
-            statusCode: error.statusCode,
-          },
-        };
-      }
-
-      return {
-        success: false,
-        error: {
-          message: 'Authentication failed',
-          code: 'AUTHENTICATION_FAILED',
-          statusCode: 401,
-        },
-      };
+      return handleServiceError(
+        error,
+        'Authentication failed',
+        'AUTHENTICATION_FAILED',
+        401
+      );
     }
   }
 
@@ -268,25 +164,11 @@ export class UserService {
         data: user.toPublicJSON(),
       };
     } catch (error) {
-      if (error instanceof UserServiceError) {
-        return {
-          success: false,
-          error: {
-            message: error.message,
-            code: error.code,
-            statusCode: error.statusCode,
-          },
-        };
-      }
-
-      return {
-        success: false,
-        error: {
-          message: 'Failed to retrieve user',
-          code: 'USER_RETRIEVAL_FAILED',
-          statusCode: 500,
-        },
-      };
+      return handleServiceError(
+        error,
+        'Failed to retrieve user',
+        'USER_RETRIEVAL_FAILED'
+      );
     }
   }
 
@@ -307,25 +189,11 @@ export class UserService {
         data: user.toPublicJSON(),
       };
     } catch (error) {
-      if (error instanceof UserServiceError) {
-        return {
-          success: false,
-          error: {
-            message: error.message,
-            code: error.code,
-            statusCode: error.statusCode,
-          },
-        };
-      }
-
-      return {
-        success: false,
-        error: {
-          message: 'Failed to retrieve user',
-          code: 'USER_RETRIEVAL_FAILED',
-          statusCode: 500,
-        },
-      };
+      return handleServiceError(
+        error,
+        'Failed to retrieve user',
+        'USER_RETRIEVAL_FAILED'
+      );
     }
   }
 
@@ -347,18 +215,21 @@ export class UserService {
       }
 
       // Check for conflicts if email or username is being updated
-      if (validatedData.email && validatedData.email !== user.email) {
-        const existingUser = await User.findByEmail(validatedData.email);
-        if (existingUser && existingUser._id.toString() !== userId) {
-          throw new UserAlreadyExistsError('email', validatedData.email);
-        }
-      }
+      const emailToCheck =
+        validatedData.email && validatedData.email !== user.email
+          ? validatedData.email
+          : undefined;
+      const usernameToCheck =
+        validatedData.username && validatedData.username !== user.username
+          ? validatedData.username
+          : undefined;
 
-      if (validatedData.username && validatedData.username !== user.username) {
-        const existingUser = await User.findByUsername(validatedData.username);
-        if (existingUser && existingUser._id.toString() !== userId) {
-          throw new UserAlreadyExistsError('username', validatedData.username);
-        }
+      if (emailToCheck || usernameToCheck) {
+        await checkProfileUpdateConflicts(
+          userId,
+          emailToCheck,
+          usernameToCheck
+        );
       }
 
       // Update user fields
@@ -370,25 +241,11 @@ export class UserService {
         data: user.toPublicJSON(),
       };
     } catch (error) {
-      if (error instanceof UserServiceError) {
-        return {
-          success: false,
-          error: {
-            message: error.message,
-            code: error.code,
-            statusCode: error.statusCode,
-          },
-        };
-      }
-
-      return {
-        success: false,
-        error: {
-          message: 'Failed to update user profile',
-          code: 'PROFILE_UPDATE_FAILED',
-          statusCode: 500,
-        },
-      };
+      return handleServiceError(
+        error,
+        'Failed to update user profile',
+        'PROFILE_UPDATE_FAILED'
+      );
     }
   }
 
@@ -429,25 +286,11 @@ export class UserService {
         success: true,
       };
     } catch (error) {
-      if (error instanceof UserServiceError) {
-        return {
-          success: false,
-          error: {
-            message: error.message,
-            code: error.code,
-            statusCode: error.statusCode,
-          },
-        };
-      }
-
-      return {
-        success: false,
-        error: {
-          message: 'Failed to change password',
-          code: 'PASSWORD_CHANGE_FAILED',
-          statusCode: 500,
-        },
-      };
+      return handleServiceError(
+        error,
+        'Failed to change password',
+        'PASSWORD_CHANGE_FAILED'
+      );
     }
   }
 
@@ -517,25 +360,11 @@ export class UserService {
         success: true,
       };
     } catch (error) {
-      if (error instanceof UserServiceError) {
-        return {
-          success: false,
-          error: {
-            message: error.message,
-            code: error.code,
-            statusCode: error.statusCode,
-          },
-        };
-      }
-
-      return {
-        success: false,
-        error: {
-          message: 'Failed to reset password',
-          code: 'PASSWORD_RESET_FAILED',
-          statusCode: 500,
-        },
-      };
+      return handleServiceError(
+        error,
+        'Failed to reset password',
+        'PASSWORD_RESET_FAILED'
+      );
     }
   }
 
@@ -565,25 +394,11 @@ export class UserService {
         data: user.toPublicJSON(),
       };
     } catch (error) {
-      if (error instanceof UserServiceError) {
-        return {
-          success: false,
-          error: {
-            message: error.message,
-            code: error.code,
-            statusCode: error.statusCode,
-          },
-        };
-      }
-
-      return {
-        success: false,
-        error: {
-          message: 'Failed to verify email',
-          code: 'EMAIL_VERIFICATION_FAILED',
-          statusCode: 500,
-        },
-      };
+      return handleServiceError(
+        error,
+        'Failed to verify email',
+        'EMAIL_VERIFICATION_FAILED'
+      );
     }
   }
 
@@ -608,17 +423,7 @@ export class UserService {
         User.countDocuments(query),
       ]);
 
-      const publicUsers = users.map(user => {
-        // Convert to public format manually since we're using lean()
-        const {
-          passwordHash: _passwordHash,
-          emailVerificationToken: _emailVerificationToken,
-          passwordResetToken: _passwordResetToken,
-          passwordResetExpires: _passwordResetExpires,
-          ...publicUser
-        } = user;
-        return publicUser as PublicUser;
-      });
+      const publicUsers = convertLeansUsersToPublic(users);
 
       const totalPages = Math.ceil(total / limit);
 
@@ -667,25 +472,11 @@ export class UserService {
         data: user.toPublicJSON(),
       };
     } catch (error) {
-      if (error instanceof UserServiceError) {
-        return {
-          success: false,
-          error: {
-            message: error.message,
-            code: error.code,
-            statusCode: error.statusCode,
-          },
-        };
-      }
-
-      return {
-        success: false,
-        error: {
-          message: 'Failed to update subscription',
-          code: 'SUBSCRIPTION_UPDATE_FAILED',
-          statusCode: 500,
-        },
-      };
+      return handleServiceError(
+        error,
+        'Failed to update subscription',
+        'SUBSCRIPTION_UPDATE_FAILED'
+      );
     }
   }
 
@@ -705,25 +496,11 @@ export class UserService {
         success: true,
       };
     } catch (error) {
-      if (error instanceof UserServiceError) {
-        return {
-          success: false,
-          error: {
-            message: error.message,
-            code: error.code,
-            statusCode: error.statusCode,
-          },
-        };
-      }
-
-      return {
-        success: false,
-        error: {
-          message: 'Failed to delete user',
-          code: 'USER_DELETION_FAILED',
-          statusCode: 500,
-        },
-      };
+      return handleServiceError(
+        error,
+        'Failed to delete user',
+        'USER_DELETION_FAILED'
+      );
     }
   }
 
