@@ -63,8 +63,9 @@ This project follows a **GitHub Flow** branching strategy optimized for continuo
 ### Automated Merge Policy
 
 **PRs are automatically merged when all checks pass:**
+
 - ✅ Build succeeds (`npm run build`)
-- ✅ All tests pass (`npm test`) 
+- ✅ All tests pass (`npm test`)
 - ✅ Linting passes (`npm run lint`)
 - ✅ TypeScript compiles (`npm run typecheck`)
 - ✅ Codacy quality gates pass
@@ -123,10 +124,10 @@ This project follows a **GitHub Flow** branching strategy optimized for continuo
 
    # Wait for checks to complete and handle results automatically
    sleep 60  # Wait for CI/CD checks to start and potentially complete
-   
+
    # Check PR status and handle accordingly
    PR_STATUS=$(gh pr view --json statusCheckRollup --jq '.statusCheckRollup[].state' | sort | uniq)
-   
+
    if [[ "$PR_STATUS" == "SUCCESS" ]]; then
      # All checks passed - merge automatically
      gh pr merge --auto --squash
