@@ -55,11 +55,11 @@ export function validateField<T extends FieldValues>(
 export async function validateFieldAsync<T extends FieldValues>(
   schema: z.ZodSchema<T>,
   fieldName: Path<T>,
-  value: unknown,
-  asyncValidator?: (value: unknown) => Promise<boolean | string>
+  _value: unknown,
+  asyncValidator?: (_value: unknown) => Promise<boolean | string>
 ): Promise<ValidationError | null> {
   // First run synchronous validation
-  const syncError = validateField(schema, fieldName, value);
+  const syncError = validateField(schema, fieldName, _value);
   if (syncError) {
     return syncError;
   }
@@ -67,7 +67,7 @@ export async function validateFieldAsync<T extends FieldValues>(
   // Then run async validation if provided
   if (asyncValidator) {
     try {
-      const asyncResult = await asyncValidator(value);
+      const asyncResult = await asyncValidator(_value);
 
       if (asyncResult === false) {
         return new ValidationError('Async validation failed', fieldName);
@@ -120,9 +120,9 @@ export function useFormValidation<T extends FieldValues>(
 
   const validateFieldAsync = async (
     fieldName: Path<T>,
-    value: unknown,
-    asyncValidator?: (value: unknown) => Promise<boolean | string>
-  ) => validateFieldAsync(schema, fieldName, value, asyncValidator);
+    _value: unknown,
+    asyncValidator?: (_value: unknown) => Promise<boolean | string>
+  ) => validateFieldAsync(schema, fieldName, _value, asyncValidator);
 
   return {
     validateSync,
@@ -205,9 +205,7 @@ export function createServerValidator<T extends FieldValues>(
       }
     },
 
-    validateApiInput(
-      input: unknown
-    ): FormValidationResult<T> {
+    validateApiInput(input: unknown): FormValidationResult<T> {
       return validateFormSubmission(schema, input);
     },
   };
