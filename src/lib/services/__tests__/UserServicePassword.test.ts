@@ -23,10 +23,15 @@ describe('UserService Password Management', () => {
 
       mockUser.findById.mockResolvedValue(mockPasswordUser as any);
 
-      const result = await UserService.changePassword('507f1f77bcf86cd799439011', passwordData);
+      const result = await UserService.changePassword(
+        '507f1f77bcf86cd799439011',
+        passwordData
+      );
 
       expect(result.success).toBe(true);
-      expect(mockPasswordUser.comparePassword).toHaveBeenCalledWith('OldPassword123!');
+      expect(mockPasswordUser.comparePassword).toHaveBeenCalledWith(
+        'OldPassword123!'
+      );
       expect(mockPasswordUser.save).toHaveBeenCalled();
     });
 
@@ -38,7 +43,10 @@ describe('UserService Password Management', () => {
 
       mockUser.findById.mockResolvedValue(mockPasswordUser as any);
 
-      const result = await UserService.changePassword('507f1f77bcf86cd799439011', passwordData);
+      const result = await UserService.changePassword(
+        '507f1f77bcf86cd799439011',
+        passwordData
+      );
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('INVALID_CURRENT_PASSWORD');
@@ -49,7 +57,9 @@ describe('UserService Password Management', () => {
     it('should generate reset token for existing user', async () => {
       const mockResetUser = {
         ...mockUserData,
-        generatePasswordResetToken: jest.fn().mockReturnValue('reset-token-123'),
+        generatePasswordResetToken: jest
+          .fn()
+          .mockReturnValue('reset-token-123'),
         save: jest.fn().mockResolvedValue(true),
       };
 
@@ -129,7 +139,9 @@ describe('UserService Password Management', () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(mockUser.findByVerificationToken).toHaveBeenCalledWith('valid-verification-token');
+      expect(mockUser.findByVerificationToken).toHaveBeenCalledWith(
+        'valid-verification-token'
+      );
       expect(mockVerifyUser.save).toHaveBeenCalled();
     });
 

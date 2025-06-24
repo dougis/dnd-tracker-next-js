@@ -25,7 +25,9 @@ describe('UserService Authentication', () => {
 
       const mockNewUser = {
         ...mockUserData,
-        generateEmailVerificationToken: jest.fn().mockReturnValue('verification-token'),
+        generateEmailVerificationToken: jest
+          .fn()
+          .mockReturnValue('verification-token'),
         save: jest.fn().mockResolvedValue(true),
         toPublicJSON: jest.fn().mockReturnValue({
           _id: mockUserData._id,
@@ -46,7 +48,9 @@ describe('UserService Authentication', () => {
       expect(result.data).toBeDefined();
       expect(result.data?.email).toBe(validUserData.email);
       expect(mockUser.findByEmail).toHaveBeenCalledWith(validUserData.email);
-      expect(mockUser.findByUsername).toHaveBeenCalledWith(validUserData.username);
+      expect(mockUser.findByUsername).toHaveBeenCalledWith(
+        validUserData.username
+      );
     });
 
     it('should return error if user with email already exists', async () => {
@@ -115,7 +119,9 @@ describe('UserService Authentication', () => {
       expect(result.success).toBe(true);
       expect(result.data?.user).toBeDefined();
       expect(result.data?.requiresVerification).toBe(true);
-      expect(mockAuthUser.comparePassword).toHaveBeenCalledWith(validLoginData.password);
+      expect(mockAuthUser.comparePassword).toHaveBeenCalledWith(
+        validLoginData.password
+      );
       expect(mockAuthUser.updateLastLogin).toHaveBeenCalled();
     });
 

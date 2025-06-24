@@ -28,7 +28,9 @@ describe('UserService Error Classes', () => {
   it('should create UserAlreadyExistsError with correct properties', () => {
     const error = new UserAlreadyExistsError('email', 'test@example.com');
 
-    expect(error.message).toBe('User already exists with email: test@example.com');
+    expect(error.message).toBe(
+      'User already exists with email: test@example.com'
+    );
     expect(error.code).toBe('USER_ALREADY_EXISTS');
     expect(error.statusCode).toBe(409);
   });

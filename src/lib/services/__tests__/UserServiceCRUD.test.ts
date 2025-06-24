@@ -24,7 +24,9 @@ describe('UserService CRUD Operations', () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(mockUser.findById).toHaveBeenCalledWith('507f1f77bcf86cd799439011');
+      expect(mockUser.findById).toHaveBeenCalledWith(
+        '507f1f77bcf86cd799439011'
+      );
     });
 
     it('should return error for non-existent user', async () => {
@@ -60,7 +62,10 @@ describe('UserService CRUD Operations', () => {
 
       mockUser.findById.mockResolvedValue(mockUpdateUser as any);
 
-      const result = await UserService.updateUserProfile('507f1f77bcf86cd799439011', updateData);
+      const result = await UserService.updateUserProfile(
+        '507f1f77bcf86cd799439011',
+        updateData
+      );
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
@@ -70,7 +75,10 @@ describe('UserService CRUD Operations', () => {
     it('should return error for non-existent user', async () => {
       mockUser.findById.mockResolvedValue(null);
 
-      const result = await UserService.updateUserProfile('507f1f77bcf86cd799439011', updateData);
+      const result = await UserService.updateUserProfile(
+        '507f1f77bcf86cd799439011',
+        updateData
+      );
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('USER_NOT_FOUND');
@@ -97,7 +105,10 @@ describe('UserService CRUD Operations', () => {
       mockUser.findById.mockResolvedValue(mockCurrentUser as any);
       mockUser.findByEmail.mockResolvedValue(mockConflictUser as any);
 
-      const result = await UserService.updateUserProfile('507f1f77bcf86cd799439011', updateWithEmail);
+      const result = await UserService.updateUserProfile(
+        '507f1f77bcf86cd799439011',
+        updateWithEmail
+      );
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('USER_ALREADY_EXISTS');
@@ -112,7 +123,9 @@ describe('UserService CRUD Operations', () => {
       const result = await UserService.deleteUser('507f1f77bcf86cd799439011');
 
       expect(result.success).toBe(true);
-      expect(mockUser.findByIdAndDelete).toHaveBeenCalledWith('507f1f77bcf86cd799439011');
+      expect(mockUser.findByIdAndDelete).toHaveBeenCalledWith(
+        '507f1f77bcf86cd799439011'
+      );
     });
 
     it('should return error for non-existent user', async () => {
@@ -190,7 +203,10 @@ describe('UserService CRUD Operations', () => {
 
       mockUser.findById.mockResolvedValue(mockSubUser as any);
 
-      const result = await UserService.updateSubscription('507f1f77bcf86cd799439011', 'expert');
+      const result = await UserService.updateSubscription(
+        '507f1f77bcf86cd799439011',
+        'expert'
+      );
 
       expect(result.success).toBe(true);
       expect(mockSubUser.save).toHaveBeenCalled();
