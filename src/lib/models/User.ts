@@ -402,6 +402,7 @@ const User: IUserModel =
   mongoose.models.User ||
   mongoose.model<IUser, IUserModel>('User', userSchemaDefinition);
 
+export { User };
 export default User;
 
 // Export types for use in other files
