@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom';
+require('@testing-library/jest-dom');
 
 // Mock IntersectionObserver which is not available in test environment
 global.IntersectionObserver = class IntersectionObserver {
