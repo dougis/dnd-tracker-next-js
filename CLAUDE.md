@@ -53,12 +53,23 @@ npm run db:seed      # Seed development data
 
 ### Branching Strategy
 
-This project follows a **GitHub Flow** branching strategy optimized for continuous deployment:
+This project follows a **GitHub Flow** branching strategy optimized for continuous deployment with **automated merging**:
 
 - **`main`** - Production-ready code, protected branch
 - **Feature branches** - `feature/issue-{number}-{short-description}` (e.g., `feature/issue-15-character-creation`)
 - **Bugfix branches** - `bugfix/issue-{number}-{short-description}` (e.g., `bugfix/issue-23-login-validation`)
 - **Hotfix branches** - `hotfix/critical-{description}` (for urgent production fixes)
+
+### Automated Merge Policy
+
+**PRs are automatically merged when all checks pass:**
+- ✅ Build succeeds (`npm run build`)
+- ✅ All tests pass (`npm test`) 
+- ✅ Linting passes (`npm run lint`)
+- ✅ TypeScript compiles (`npm run typecheck`)
+- ✅ Codacy quality gates pass
+- ⏳ **60-second wait period** for checks to complete before merge decision
+- 🔄 **Additional 60-second wait** if checks are still pending
 
 ### Development Workflow
 
@@ -77,7 +88,7 @@ This project follows a **GitHub Flow** branching strategy optimized for continuo
 2. **Development Process**
 
    ```bash
-   # Make changes and commit frequently with descriptive messages
+   # Upon each file change commit with descriptive messages and run a codacy scan, correcting any issues found
    git add .
    git commit -m "Add character creation form validation
 
@@ -110,20 +121,37 @@ This project follows a **GitHub Flow** branching strategy optimized for continuo
    gh pr create --title "Add character creation form validation" \
                 --body "Implements validation for character creation form as specified in #15"
 
-   check PR status after 90 seconds to see the results of all steps and address any failing ones
-   # Or create via GitHub web interface
+   # Wait for checks to complete and handle results automatically
+   sleep 60  # Wait for CI/CD checks to start and potentially complete
+   
+   # Check PR status and handle accordingly
+   PR_STATUS=$(gh pr view --json statusCheckRollup --jq '.statusCheckRollup[].state' | sort | uniq)
+   
+   if [[ "$PR_STATUS" == "SUCCESS" ]]; then
+     # All checks passed - merge automatically
+     gh pr merge --auto --squash
+     echo "✅ PR merged automatically - all checks passed"
+   elif [[ "$PR_STATUS" =~ "PENDING" ]]; then
+     # Some checks still running - wait longer
+     echo "⏳ Checks still running, waiting additional 60 seconds..."
+     sleep 60
+     # Re-check and merge if all pass, otherwise address issues
+   else
+     echo "❌ Some checks failed - address issues before merging"
+     gh pr view --json statusCheckRollup --jq '.statusCheckRollup[] | select(.state != "SUCCESS")'
+   fi
    ```
 
-5. **Code Review Process**
-   - All PRs require at least 1 approval
-   - Address all reviewer feedback
-   - Ensure CI/CD checks pass
-   - Maintain clean commit history
+5. **Automated Code Review Process**
+   - **Automatic Merging**: PRs are automatically merged when all checks pass
+   - **Required Checks**: Build, tests, linting, TypeScript compilation, Codacy quality gates
+   - **Manual Review Override**: Can be disabled for critical changes requiring human review
+   - **Check Monitoring**: System waits for checks to complete before making merge decisions
+   - **Failure Handling**: Failed checks must be addressed before re-attempting merge
 
 6. **Merge and Cleanup**
    ```bash
-   # After PR approval, merge via GitHub interface
-   # Then clean up locally
+   # After successful merge (automatic or manual), clean up locally
    git checkout main
    git pull origin main
    git branch -d feature/issue-{number}-{description}
