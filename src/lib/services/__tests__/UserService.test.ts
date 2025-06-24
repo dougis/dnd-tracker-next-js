@@ -1,12 +1,12 @@
+import { UserService } from '../UserService';
 import {
-  UserService,
   UserServiceError,
   UserNotFoundError,
   UserAlreadyExistsError,
   InvalidCredentialsError,
   TokenExpiredError,
   TokenInvalidError,
-} from '../UserService';
+} from '../UserServiceErrors';
 
 /**
  * Tests for UserService business logic
