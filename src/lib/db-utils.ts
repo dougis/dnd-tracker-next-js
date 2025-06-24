@@ -20,17 +20,17 @@ export async function checkDatabaseHealth(): Promise<DatabaseHealthCheck> {
 
   try {
     const startTime = Date.now();
-    
+
     // Check if already connected
     const isConnected = getConnectionStatus();
-    
+
     if (!isConnected) {
       // Attempt to connect if not already connected
       await connectToDatabase();
     }
-    
+
     const latency = Date.now() - startTime;
-    
+
     return {
       status: 'healthy',
       connected: true,
@@ -39,7 +39,7 @@ export async function checkDatabaseHealth(): Promise<DatabaseHealthCheck> {
     };
   } catch (error) {
     console.error('Database health check failed:', error);
-    
+
     return {
       status: 'unhealthy',
       connected: false,
@@ -81,7 +81,7 @@ export async function connectWithRetry(
   baseDelay: number = 1000
 ): Promise<void> {
   let lastError: Error | undefined;
-  
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       await connectToDatabase();
@@ -89,19 +89,19 @@ export async function connectWithRetry(
       return;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error('Unknown error');
-      
+
       if (attempt === maxRetries) {
         throw new Error(
           `Failed to connect to database after ${maxRetries} attempts. Last error: ${lastError.message}`
         );
       }
-      
+
       const delay = baseDelay * Math.pow(2, attempt - 1);
       console.warn(
         `Database connection attempt ${attempt} failed. Retrying in ${delay}ms...`,
         error
       );
-      
+
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -116,13 +116,13 @@ export function validateDatabaseConfig(): {
 } {
   const requiredVars = ['MONGODB_URI', 'MONGODB_DB_NAME'];
   const missingVars: string[] = [];
-  
+
   for (const varName of requiredVars) {
     if (!process.env[varName]) {
       missingVars.push(varName);
     }
   }
-  
+
   return {
     isValid: missingVars.length === 0,
     missingVars,

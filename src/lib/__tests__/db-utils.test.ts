@@ -35,25 +35,25 @@ describe('Database Utils', () => {
   describe('validateDatabaseConfig', () => {
     it('should return valid when all required vars are present', () => {
       const result = validateDatabaseConfig();
-      
+
       expect(result.isValid).toBe(true);
       expect(result.missingVars).toEqual([]);
     });
 
     it('should return invalid when MONGODB_URI is missing', () => {
       delete process.env.MONGODB_URI;
-      
+
       const result = validateDatabaseConfig();
-      
+
       expect(result.isValid).toBe(false);
       expect(result.missingVars).toContain('MONGODB_URI');
     });
 
     it('should return invalid when MONGODB_DB_NAME is missing', () => {
       delete process.env.MONGODB_DB_NAME;
-      
+
       const result = validateDatabaseConfig();
-      
+
       expect(result.isValid).toBe(false);
       expect(result.missingVars).toContain('MONGODB_DB_NAME');
     });
@@ -61,9 +61,9 @@ describe('Database Utils', () => {
     it('should return all missing vars when both are missing', () => {
       delete process.env.MONGODB_URI;
       delete process.env.MONGODB_DB_NAME;
-      
+
       const result = validateDatabaseConfig();
-      
+
       expect(result.isValid).toBe(false);
       expect(result.missingVars).toEqual(['MONGODB_URI', 'MONGODB_DB_NAME']);
     });

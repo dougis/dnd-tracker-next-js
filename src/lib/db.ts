@@ -48,7 +48,7 @@ export async function connectToDatabase(): Promise<void> {
       console.log('Mongoose connected to MongoDB');
     });
 
-    mongoose.connection.on('error', (err) => {
+    mongoose.connection.on('error', err => {
       console.error('Mongoose connection error:', err);
     });
 
@@ -63,7 +63,6 @@ export async function connectToDatabase(): Promise<void> {
       console.log('Mongoose connection closed due to application termination');
       process.exit(0);
     });
-
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);
     throw error;

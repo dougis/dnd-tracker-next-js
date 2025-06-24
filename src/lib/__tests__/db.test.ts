@@ -2,7 +2,8 @@
  * @jest-environment node
  */
 
-import { connectToDatabase, disconnectFromDatabase, getConnectionStatus } from '../db';
+// Import functions dynamically in tests to avoid unused import warnings
+// import { connectToDatabase, disconnectFromDatabase, getConnectionStatus } from '../db';
 
 // Mock mongoose
 jest.mock('mongoose', () => ({
@@ -36,7 +37,7 @@ describe('Database Connection', () => {
   describe('connectToDatabase', () => {
     it('should connect to MongoDB successfully', async () => {
       const mongoose = require('mongoose');
-      
+
       // Setup mongoose mock properly
       mongoose.connections = [{ readyState: 1 }];
       mongoose.connect.mockResolvedValue({
@@ -88,22 +89,22 @@ describe('Database Connection', () => {
 
     it('should not reconnect if already connected', async () => {
       const mongoose = require('mongoose');
-      
+
       // Setup mongoose mock properly
       mongoose.connections = [{ readyState: 1 }];
       mongoose.connect.mockResolvedValue({
         connections: [{ readyState: 1 }],
       });
-      
+
       const { connectToDatabase } = require('../db');
       await connectToDatabase();
-      
+
       // Reset mock calls
       mongoose.connect.mockClear();
-      
+
       // Second call should not trigger connect
       await connectToDatabase();
-      
+
       expect(mongoose.connect).not.toHaveBeenCalled();
     });
   });
@@ -111,29 +112,29 @@ describe('Database Connection', () => {
   describe('disconnectFromDatabase', () => {
     it('should disconnect from MongoDB', async () => {
       const mongoose = require('mongoose');
-      
+
       // Setup mongoose mock properly
       mongoose.connections = [{ readyState: 1 }];
       mongoose.connect.mockResolvedValue({
         connections: [{ readyState: 1 }],
       });
-      
+
       const { connectToDatabase, disconnectFromDatabase } = require('../db');
-      
+
       // Simulate connected state
       await connectToDatabase();
-      
+
       await disconnectFromDatabase();
-      
+
       expect(mongoose.connection.close).toHaveBeenCalled();
     });
 
     it('should handle disconnection when not connected', async () => {
       const mongoose = require('mongoose');
-      
+
       const { disconnectFromDatabase } = require('../db');
       await disconnectFromDatabase();
-      
+
       expect(mongoose.connection.close).not.toHaveBeenCalled();
     });
   });
@@ -146,16 +147,16 @@ describe('Database Connection', () => {
 
     it('should return true when connected', async () => {
       const mongoose = require('mongoose');
-      
+
       // Setup mongoose mock properly
       mongoose.connections = [{ readyState: 1 }];
       mongoose.connect.mockResolvedValue({
         connections: [{ readyState: 1 }],
       });
-      
+
       const { connectToDatabase, getConnectionStatus } = require('../db');
       await connectToDatabase();
-      
+
       expect(getConnectionStatus()).toBe(true);
     });
   });

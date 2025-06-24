@@ -4,14 +4,14 @@ import { checkDatabaseHealth, validateDatabaseConfig } from '@/lib/db-utils';
 /**
  * Database Health Check API Endpoint
  * GET /api/health/db
- * 
+ *
  * Returns the current status of the database connection
  */
 export async function GET() {
   try {
     // First validate configuration
     const configValidation = validateDatabaseConfig();
-    
+
     if (!configValidation.isValid) {
       return NextResponse.json(
         {
@@ -33,7 +33,7 @@ export async function GET() {
     return NextResponse.json(healthCheck, { status: httpStatus });
   } catch (error) {
     console.error('Database health check endpoint error:', error);
-    
+
     return NextResponse.json(
       {
         status: 'unhealthy',
