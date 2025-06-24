@@ -61,3 +61,4 @@ export const mockUserData = {
   save: jest.fn(),
   toPublicJSON: jest.fn(),
 };
+
