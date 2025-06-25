@@ -1,0 +1,65 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { ZodError } from 'zod';
+import { UserService } from '@/lib/services/UserService';
+import { userRegistrationSchema } from '@/lib/validations/user';
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    // Validate the request body
+    const validatedData = userRegistrationSchema.parse(body);
+
+    // Create the user
+    const userService = new UserService();
+    const result = await userService.createUser(validatedData);
+
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: result.error.message,
+          errors: result.error.details || [
+            { field: '', message: result.error.message },
+          ],
+        },
+        { status: result.error.statusCode || 400 }
+      );
+    }
+
+    // Return the user data (sensitive fields already removed by service)
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'User registered successfully',
+        user: result.data,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    // Handle Zod validation errors
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Validation error',
+          errors: error.errors.map(err => ({
+            field: err.path.join('.'),
+            message: err.message,
+          })),
+        },
+        { status: 400 }
+      );
+    }
+
+    // Handle unexpected errors
+    console.error('Registration error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'An unexpected error occurred',
+      },
+      { status: 500 }
+    );
+  }
+}

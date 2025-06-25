@@ -1,0 +1,145 @@
+import { NextRequest } from 'next/server';
+import { POST } from '../register/route';
+import { UserService } from '@/lib/services/UserService';
+
+// Mock the UserService
+jest.mock('@/lib/services/UserService', () => {
+  return {
+    UserService: jest.fn().mockImplementation(() => ({
+      createUser: jest.fn(),
+    })),
+  };
+});
+
+describe('POST /api/auth/register', () => {
+  const mockUserData = {
+    firstName: 'John',
+    lastName: 'Doe',
+    username: 'johndoe',
+    email: 'john.doe@example.com',
+    password: 'Password123!',
+    confirmPassword: 'Password123!',
+    agreeToTerms: true,
+    subscribeToNewsletter: false,
+  };
+
+  const createMockRequest = (body: any) => {
+    return {
+      json: jest.fn().mockResolvedValue(body),
+    } as unknown as NextRequest;
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('successfully registers a new user', async () => {
+    // Mock the UserService.createUser method to return success
+    const mockUserServiceInstance = {
+      createUser: jest.fn().mockResolvedValue({
+        success: true,
+        data: {
+          id: '12345',
+          email: 'john.doe@example.com',
+          username: 'johndoe',
+        },
+      }),
+    };
+    (UserService as jest.Mock).mockImplementation(
+      () => mockUserServiceInstance
+    );
+
+    const request = createMockRequest(mockUserData);
+    const response = await POST(request);
+    const responseData = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(responseData).toEqual({
+      success: true,
+      message: 'User registered successfully',
+      user: {
+        id: '12345',
+        email: 'john.doe@example.com',
+        username: 'johndoe',
+      },
+    });
+    expect(mockUserServiceInstance.createUser).toHaveBeenCalledWith(
+      mockUserData
+    );
+  });
+
+  it('returns validation errors for invalid data', async () => {
+    // Invalid data (missing required fields)
+    const invalidData = {
+      email: 'invalid-email',
+      password: 'short',
+    };
+
+    const request = createMockRequest(invalidData);
+    const response = await POST(request);
+    const responseData = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(responseData.success).toBe(false);
+    expect(responseData.message).toBe('Validation error');
+    expect(responseData.errors).toBeDefined();
+    expect(responseData.errors.length).toBeGreaterThan(0);
+    expect(mockUserServiceInstance.createUser).not.toHaveBeenCalled();
+  });
+
+  it('handles service errors', async () => {
+    // Mock the UserService.createUser method to return an error
+    const mockError = {
+      success: false,
+      error: {
+        message: 'Email already exists',
+        statusCode: 409,
+        details: [{ field: 'email', message: 'Email already exists' }],
+      },
+    };
+
+    const mockUserServiceInstance = {
+      createUser: jest.fn().mockResolvedValue(mockError),
+    };
+    (UserService as jest.Mock).mockImplementation(
+      () => mockUserServiceInstance
+    );
+
+    const request = createMockRequest(mockUserData);
+    const response = await POST(request);
+    const responseData = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(responseData).toEqual({
+      success: false,
+      message: 'Email already exists',
+      errors: [{ field: 'email', message: 'Email already exists' }],
+    });
+    expect(mockUserServiceInstance.createUser).toHaveBeenCalledWith(
+      mockUserData
+    );
+  });
+
+  it('handles unexpected errors', async () => {
+    // Mock the UserService.createUser method to throw an error
+    const mockUserServiceInstance = {
+      createUser: jest.fn().mockRejectedValue(new Error('Unexpected error')),
+    };
+    (UserService as jest.Mock).mockImplementation(
+      () => mockUserServiceInstance
+    );
+
+    const request = createMockRequest(mockUserData);
+    const response = await POST(request);
+    const responseData = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(responseData).toEqual({
+      success: false,
+      message: 'An unexpected error occurred',
+    });
+    expect(mockUserServiceInstance.createUser).toHaveBeenCalledWith(
+      mockUserData
+    );
+  });
+});
