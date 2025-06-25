@@ -466,12 +466,24 @@ function prepareUserPreferences(userData: CreateUserInput) {
   const preferences = userData.preferences || {};
   return {
     theme: preferences.theme || 'system',
-    emailNotifications: getPreferenceWithDefault(preferences.emailNotifications, true),
-    browserNotifications: getPreferenceWithDefault(preferences.browserNotifications, false),
+    emailNotifications: getPreferenceWithDefault(
+      preferences.emailNotifications,
+      true
+    ),
+    browserNotifications: getPreferenceWithDefault(
+      preferences.browserNotifications,
+      false
+    ),
     timezone: preferences.timezone || 'UTC',
     language: preferences.language || 'en',
-    diceRollAnimations: getPreferenceWithDefault(preferences.diceRollAnimations, true),
-    autoSaveEncounters: getPreferenceWithDefault(preferences.autoSaveEncounters, true),
+    diceRollAnimations: getPreferenceWithDefault(
+      preferences.diceRollAnimations,
+      true
+    ),
+    autoSaveEncounters: getPreferenceWithDefault(
+      preferences.autoSaveEncounters,
+      true
+    ),
   };
 }
 
