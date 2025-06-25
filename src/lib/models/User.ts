@@ -434,24 +434,47 @@ userSchema.statics.findByVerificationToken = async function (
   return this.findOne({ emailVerificationToken: token });
 };
 
-// Static method to create a new user
-userSchema.statics.createUser = async function (
+// Helper function to validate user data before creation
+async function validateUserData(
+  model: UserModel,
   userData: CreateUserInput
-): Promise<IUser> {
-  // Check if email or username already exists
-  const existingEmail = await this.findOne({
+): Promise<void> {
+  // Check if email already exists
+  const existingEmail = await model.findOne({
     email: userData.email.toLowerCase(),
   });
   if (existingEmail) {
     throw new Error('Email already exists');
   }
 
-  const existingUsername = await this.findOne({
+  // Check if username already exists
+  const existingUsername = await model.findOne({
     username: userData.username.toLowerCase(),
   });
   if (existingUsername) {
     throw new Error('Username already exists');
   }
+}
+
+// Helper function to prepare user preferences
+function prepareUserPreferences(userData: CreateUserInput) {
+  return {
+    theme: userData.preferences?.theme || 'system',
+    emailNotifications: userData.preferences?.emailNotifications ?? true,
+    browserNotifications: userData.preferences?.browserNotifications ?? false,
+    timezone: userData.preferences?.timezone || 'UTC',
+    language: userData.preferences?.language || 'en',
+    diceRollAnimations: userData.preferences?.diceRollAnimations ?? true,
+    autoSaveEncounters: userData.preferences?.autoSaveEncounters ?? true,
+  };
+}
+
+// Static method to create a new user
+userSchema.statics.createUser = async function (
+  userData: CreateUserInput
+): Promise<IUser> {
+  // Validate user data
+  await validateUserData(this, userData);
 
   // Create the user
   const user = new this({
@@ -462,15 +485,7 @@ userSchema.statics.createUser = async function (
     passwordHash: userData.password, // Will be hashed in pre-save hook
     role: userData.role || 'user',
     subscriptionTier: userData.subscriptionTier || 'free',
-    preferences: {
-      theme: userData.preferences?.theme || 'system',
-      emailNotifications: userData.preferences?.emailNotifications ?? true,
-      browserNotifications: userData.preferences?.browserNotifications ?? false,
-      timezone: userData.preferences?.timezone || 'UTC',
-      language: userData.preferences?.language || 'en',
-      diceRollAnimations: userData.preferences?.diceRollAnimations ?? true,
-      autoSaveEncounters: userData.preferences?.autoSaveEncounters ?? true,
-    },
+    preferences: prepareUserPreferences(userData),
   });
 
   await user.save();
