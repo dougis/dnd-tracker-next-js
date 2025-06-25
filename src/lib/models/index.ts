@@ -1,34 +1,20 @@
 /**
- * Central export file for all Mongoose models in the D&D Encounter Tracker
- *
- * This file provides a single point of import for all database models
- * used throughout the application.
+ * Central export file for all database models
  */
 
-// User model and types
-export { default as User } from './User';
+import User from './User';
+
+// Export models
+export { User };
+
+// Export interfaces
 export type {
   IUser,
-  IUserModel,
-  UserType,
+  UserModel,
   PublicUser,
-  SubscriptionTier,
-  UserRole,
-  UserPreferences,
+  CreateUserInput,
+  SubscriptionFeature,
 } from './User';
 
-// Re-export validation schemas for convenience
-export {
-  userSchema,
-  publicUserSchema,
-  userRegistrationSchema,
-  userLoginSchema,
-  userProfileUpdateSchema,
-  changePasswordSchema,
-  passwordResetSchema,
-  passwordResetRequestSchema,
-  userSessionSchema,
-  subscriptionTierSchema,
-  userRoleSchema,
-  userPreferencesSchema,
-} from '../validations/user';
+// Export subscription limits
+export { SUBSCRIPTION_LIMITS } from './User';
