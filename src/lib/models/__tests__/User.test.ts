@@ -1,448 +1,293 @@
-import bcrypt from 'bcryptjs';
-import { userSchema } from '../../validations/user';
-
 /**
- * Tests for User model validation and utility functions
- *
- * These tests focus on the validation logic and password hashing
- * without requiring a full MongoDB connection.
+ * @jest-environment node
  */
 
-// Test data
-const validUserData = {
-  email: 'test@example.com',
-  username: 'testuser',
-  firstName: 'Test',
-  lastName: 'User',
-  passwordHash: 'plainPassword123!',
-  role: 'user' as const,
-  subscriptionTier: 'free' as const,
-  preferences: {
-    theme: 'dark' as const,
-    emailNotifications: true,
-    browserNotifications: false,
-    timezone: 'America/New_York',
-    language: 'en',
-    diceRollAnimations: true,
-    autoSaveEncounters: true,
-  },
-  isEmailVerified: false,
-};
+import mongoose from 'mongoose';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import User, { CreateUserInput } from '../User';
 
-const adminUserData = {
-  email: 'admin@example.com',
-  username: 'adminuser',
-  firstName: 'Admin',
-  lastName: 'User',
-  passwordHash: 'adminPassword123!',
-  role: 'admin' as const,
-  subscriptionTier: 'guild' as const,
-};
+describe('User Model', () => {
+  let mongoServer: MongoMemoryServer;
 
-describe('User Model Validation', () => {
-  describe('Zod Schema Validation', () => {
-    it('should validate correct user data', () => {
-      const result = userSchema.safeParse(validUserData);
-      expect(result.success).toBe(true);
-
-      if (result.success) {
-        expect(result.data.email).toBe(validUserData.email);
-        expect(result.data.username).toBe(validUserData.username);
-        expect(result.data.firstName).toBe(validUserData.firstName);
-        expect(result.data.lastName).toBe(validUserData.lastName);
-        expect(result.data.role).toBe('user');
-        expect(result.data.subscriptionTier).toBe('free');
-      }
-    });
-
-    it('should validate admin user data', () => {
-      const result = userSchema.safeParse(adminUserData);
-      expect(result.success).toBe(true);
-
-      if (result.success) {
-        expect(result.data.role).toBe('admin');
-        expect(result.data.subscriptionTier).toBe('guild');
-      }
-    });
-
-    it('should set default values for optional fields', () => {
-      const minimalUserData = {
-        email: 'minimal@example.com',
-        username: 'minimaluser',
-        firstName: 'Minimal',
-        lastName: 'User',
-        passwordHash: 'password123!',
-      };
-
-      const result = userSchema.safeParse(minimalUserData);
-      expect(result.success).toBe(true);
-
-      if (result.success) {
-        expect(result.data.role).toBe('user');
-        expect(result.data.subscriptionTier).toBe('free');
-        expect(result.data.isEmailVerified).toBe(false);
-        expect(result.data.preferences.theme).toBe('system');
-        expect(result.data.preferences.emailNotifications).toBe(true);
-        expect(result.data.preferences.timezone).toBe('UTC');
-      }
-    });
-
-    it('should reject invalid email format', () => {
-      const invalidEmailUser = {
-        ...validUserData,
-        email: 'invalid-email',
-      };
-
-      const result = userSchema.safeParse(invalidEmailUser);
-      expect(result.success).toBe(false);
-
-      if (!result.success) {
-        expect(result.error.errors).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              path: ['email'],
-              message: expect.stringContaining('email'),
-            }),
-          ])
-        );
-      }
-    });
-
-    it('should reject invalid username format', () => {
-      const invalidUsernameUser = {
-        ...validUserData,
-        username: 'invalid user!',
-      };
-
-      const result = userSchema.safeParse(invalidUsernameUser);
-      expect(result.success).toBe(false);
-
-      if (!result.success) {
-        expect(result.error.errors).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              path: ['username'],
-            }),
-          ])
-        );
-      }
-    });
-
-    it('should reject invalid subscription tier', () => {
-      const invalidTierUser = {
-        ...validUserData,
-        subscriptionTier: 'premium' as any,
-      };
-
-      const result = userSchema.safeParse(invalidTierUser);
-      expect(result.success).toBe(false);
-    });
-
-    it('should reject invalid role', () => {
-      const invalidRoleUser = {
-        ...validUserData,
-        role: 'superuser' as any,
-      };
-
-      const result = userSchema.safeParse(invalidRoleUser);
-      expect(result.success).toBe(false);
-    });
-
-    it('should validate preferences schema', () => {
-      const customPreferences = {
-        theme: 'light' as const,
-        emailNotifications: false,
-        browserNotifications: true,
-        timezone: 'Europe/London',
-        language: 'es',
-        diceRollAnimations: false,
-        autoSaveEncounters: false,
-      };
-
-      const userWithCustomPrefs = {
-        ...validUserData,
-        preferences: customPreferences,
-      };
-
-      const result = userSchema.safeParse(userWithCustomPrefs);
-      expect(result.success).toBe(true);
-
-      if (result.success) {
-        expect(result.data.preferences).toEqual(customPreferences);
-      }
-    });
-
-    it('should handle optional fields correctly', () => {
-      const userWithOptionals = {
-        ...validUserData,
-        emailVerificationToken: 'verification-token-123',
-        passwordResetToken: 'reset-token-456',
-        passwordResetExpires: new Date().toISOString(),
-        lastLoginAt: new Date().toISOString(),
-      };
-
-      const result = userSchema.safeParse(userWithOptionals);
-      expect(result.success).toBe(true);
-
-      if (result.success) {
-        expect(result.data.emailVerificationToken).toBe(
-          'verification-token-123'
-        );
-        expect(result.data.passwordResetToken).toBe('reset-token-456');
-        expect(result.data.passwordResetExpires).toBeTruthy();
-        expect(result.data.lastLoginAt).toBeTruthy();
-      }
-    });
+  // Set up in-memory MongoDB server
+  beforeAll(async () => {
+    mongoServer = await MongoMemoryServer.create();
+    const uri = mongoServer.getUri();
+    await mongoose.connect(uri);
   });
 
-  describe('Password Hashing Utilities', () => {
-    const plainPassword = 'testPassword123!';
-    let hashedPassword: string;
-
-    beforeAll(async () => {
-      hashedPassword = await bcrypt.hash(plainPassword, 12);
-    });
-
-    it('should hash passwords correctly', async () => {
-      const hash = await bcrypt.hash(plainPassword, 12);
-
-      expect(hash).not.toBe(plainPassword);
-      expect(hash).toMatch(/^\$2[ab]\$/); // bcrypt hash format ($2a$ or $2b$)
-      expect(hash.length).toBeGreaterThan(50);
-    });
-
-    it('should verify correct passwords', async () => {
-      const isMatch = await bcrypt.compare(plainPassword, hashedPassword);
-      expect(isMatch).toBe(true);
-    });
-
-    it('should reject incorrect passwords', async () => {
-      const isMatch = await bcrypt.compare('wrongPassword', hashedPassword);
-      expect(isMatch).toBe(false);
-    });
-
-    it('should reject empty passwords', async () => {
-      const isMatch = await bcrypt.compare('', hashedPassword);
-      expect(isMatch).toBe(false);
-    });
-
-    it('should handle bcrypt comparison errors gracefully', async () => {
-      // Test with invalid hash format - bcrypt returns false for invalid hashes rather than throwing
-      const result = await bcrypt.compare(plainPassword, 'invalid-hash');
-      expect(result).toBe(false);
-    });
+  // Clean up after tests
+  afterAll(async () => {
+    await mongoose.disconnect();
+    await mongoServer.stop();
   });
 
-  describe('Subscription Tier Logic', () => {
-    const subscriptionLimits = {
-      free: { parties: 1, encounters: 3, creatures: 10 },
-      seasoned: { parties: 3, encounters: 15, creatures: 50 },
-      expert: { parties: 10, encounters: 50, creatures: 200 },
-      master: { parties: 25, encounters: 100, creatures: 500 },
-      guild: { parties: Infinity, encounters: Infinity, creatures: Infinity },
-    };
-
-    it('should have correct limits for each subscription tier', () => {
-      expect(subscriptionLimits.free.parties).toBe(1);
-      expect(subscriptionLimits.seasoned.encounters).toBe(15);
-      expect(subscriptionLimits.expert.creatures).toBe(200);
-      expect(subscriptionLimits.master.parties).toBe(25);
-      expect(subscriptionLimits.guild.creatures).toBe(Infinity);
-    });
-
-    it('should validate subscription tier progression', () => {
-      const tiers = ['free', 'seasoned', 'expert', 'master', 'guild'];
-
-      for (let i = 0; i < tiers.length - 1; i++) {
-        const currentTier = tiers[i] as keyof typeof subscriptionLimits;
-        const nextTier = tiers[i + 1] as keyof typeof subscriptionLimits;
-
-        expect(subscriptionLimits[nextTier].parties).toBeGreaterThanOrEqual(
-          subscriptionLimits[currentTier].parties
-        );
-        expect(subscriptionLimits[nextTier].encounters).toBeGreaterThanOrEqual(
-          subscriptionLimits[currentTier].encounters
-        );
-        expect(subscriptionLimits[nextTier].creatures).toBeGreaterThanOrEqual(
-          subscriptionLimits[currentTier].creatures
-        );
-      }
-    });
+  // Clear database between tests
+  afterEach(async () => {
+    await User.deleteMany({});
   });
 
-  describe('Token Generation Utilities', () => {
-    it('should generate random tokens of correct length', () => {
-      const crypto = require('crypto');
+  // Valid user data for testing
+  const validUserData: CreateUserInput = {
+    email: 'test@example.com',
+    username: 'testuser',
+    firstName: 'Test',
+    lastName: 'User',
+    password: 'Password123!',
+  };
 
-      // Test token generation similar to what the model would do
-      const token1 = crypto.randomBytes(32).toString('hex');
-      const token2 = crypto.randomBytes(32).toString('hex');
+  describe('User Schema Validation', () => {
+    it('should create a valid user', async () => {
+      const user = await User.createUser(validUserData);
 
-      expect(token1).toHaveLength(64); // 32 bytes in hex = 64 characters
-      expect(token2).toHaveLength(64);
-      expect(token1).not.toBe(token2); // Should be unique
-      expect(token1).toMatch(/^[a-f0-9]+$/); // Should be hex
+      expect(user).toBeDefined();
+      expect(user.email).toBe(validUserData.email);
+      expect(user.username).toBe(validUserData.username);
+      expect(user.firstName).toBe(validUserData.firstName);
+      expect(user.lastName).toBe(validUserData.lastName);
+      expect(user.passwordHash).toBeDefined();
+      expect(user.passwordHash).not.toBe(validUserData.password); // Should be hashed
+      expect(user.role).toBe('user'); // Default role
+      expect(user.subscriptionTier).toBe('free'); // Default tier
+      expect(user.isEmailVerified).toBe(false); // Default verification status
+      expect(user.createdAt).toBeDefined();
+      expect(user.updatedAt).toBeDefined();
     });
 
-    it('should generate different tokens each time', () => {
-      const crypto = require('crypto');
-      const tokens = new Set();
+    it('should not create a user with duplicate email', async () => {
+      await User.createUser(validUserData);
 
-      // Generate 100 tokens to check uniqueness
-      for (let i = 0; i < 100; i++) {
-        const token = crypto.randomBytes(32).toString('hex');
-        tokens.add(token);
-      }
-
-      expect(tokens.size).toBe(100); // All tokens should be unique
+      await expect(
+        User.createUser({
+          ...validUserData,
+          username: 'differentuser',
+        })
+      ).rejects.toThrow('Email already exists');
     });
-  });
 
-  describe('Email and Username Normalization', () => {
-    it('should handle email case normalization', () => {
-      const testEmails = [
-        'TEST@EXAMPLE.COM',
-        'Test@Example.Com',
-        'test@EXAMPLE.com',
-      ];
+    it('should not create a user with duplicate username', async () => {
+      await User.createUser(validUserData);
 
-      testEmails.forEach(email => {
-        const normalized = email.toLowerCase();
-        expect(normalized).toBe('test@example.com');
+      await expect(
+        User.createUser({
+          ...validUserData,
+          email: 'different@example.com',
+        })
+      ).rejects.toThrow('Username already exists');
+    });
+
+    it('should convert email and username to lowercase', async () => {
+      const userWithMixedCase = await User.createUser({
+        ...validUserData,
+        email: 'MixedCase@Example.com',
+        username: 'MixedCaseUser',
       });
+
+      expect(userWithMixedCase.email).toBe('mixedcase@example.com');
+      expect(userWithMixedCase.username).toBe('mixedcaseuser');
     });
 
-    it('should handle username case normalization', () => {
-      const testUsernames = ['TESTUSER', 'TestUser', 'testUSER'];
+    it('should set default values for preferences', async () => {
+      const user = await User.createUser(validUserData);
 
-      testUsernames.forEach(username => {
-        const normalized = username.toLowerCase();
-        expect(normalized).toBe('testuser');
+      expect(user.preferences).toBeDefined();
+      expect(user.preferences.theme).toBe('system');
+      expect(user.preferences.emailNotifications).toBe(true);
+      expect(user.preferences.browserNotifications).toBe(false);
+      expect(user.preferences.timezone).toBe('UTC');
+      expect(user.preferences.language).toBe('en');
+      expect(user.preferences.diceRollAnimations).toBe(true);
+      expect(user.preferences.autoSaveEncounters).toBe(true);
+    });
+
+    it('should accept custom preferences', async () => {
+      const userWithPreferences = await User.createUser({
+        ...validUserData,
+        preferences: {
+          theme: 'dark',
+          emailNotifications: false,
+          browserNotifications: true,
+          timezone: 'America/New_York',
+          language: 'es',
+          diceRollAnimations: false,
+          autoSaveEncounters: false,
+        },
       });
+
+      expect(userWithPreferences.preferences.theme).toBe('dark');
+      expect(userWithPreferences.preferences.emailNotifications).toBe(false);
+      expect(userWithPreferences.preferences.browserNotifications).toBe(true);
+      expect(userWithPreferences.preferences.timezone).toBe('America/New_York');
+      expect(userWithPreferences.preferences.language).toBe('es');
+      expect(userWithPreferences.preferences.diceRollAnimations).toBe(false);
+      expect(userWithPreferences.preferences.autoSaveEncounters).toBe(false);
     });
   });
 
-  describe('Date and Timestamp Handling', () => {
-    it('should handle ISO date strings', () => {
-      const now = new Date();
-      const isoString = now.toISOString();
+  describe('Static Methods', () => {
+    it('should find user by email', async () => {
+      const createdUser = await User.createUser(validUserData);
+      const foundUser = await User.findByEmail(validUserData.email);
 
-      expect(isoString).toMatch(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+      expect(foundUser).toBeDefined();
+      expect(foundUser?._id.toString()).toBe(createdUser._id.toString());
+    });
+
+    it('should find user by username', async () => {
+      const createdUser = await User.createUser(validUserData);
+      const foundUser = await User.findByUsername(validUserData.username);
+
+      expect(foundUser).toBeDefined();
+      expect(foundUser?._id.toString()).toBe(createdUser._id.toString());
+    });
+
+    it('should find user by reset token', async () => {
+      const createdUser = await User.createUser(validUserData);
+      const resetToken = await createdUser.generatePasswordResetToken();
+
+      const foundUser = await User.findByResetToken(resetToken);
+
+      expect(foundUser).toBeDefined();
+      expect(foundUser?._id.toString()).toBe(createdUser._id.toString());
+    });
+
+    it('should find user by verification token', async () => {
+      const createdUser = await User.createUser(validUserData);
+      const verificationToken =
+        await createdUser.generateEmailVerificationToken();
+
+      const foundUser = await User.findByVerificationToken(verificationToken);
+
+      expect(foundUser).toBeDefined();
+      expect(foundUser?._id.toString()).toBe(createdUser._id.toString());
+    });
+
+    it('should validate user with correct credentials', async () => {
+      await User.createUser(validUserData);
+
+      const validatedUser = await User.validateUser(
+        validUserData.email,
+        validUserData.password
       );
 
-      const parsed = new Date(isoString);
-      expect(parsed.getTime()).toBe(now.getTime());
+      expect(validatedUser).toBeDefined();
+      expect(validatedUser.email).toBe(validUserData.email);
+      expect(validatedUser.lastLoginAt).toBeDefined();
     });
 
-    it('should calculate password reset expiry correctly', () => {
-      const now = Date.now();
-      const expiry = new Date(now + 10 * 60 * 1000); // 10 minutes
+    it('should not validate user with incorrect password', async () => {
+      await User.createUser(validUserData);
 
-      expect(expiry.getTime()).toBe(now + 600000); // 600,000 ms = 10 minutes
-      expect(expiry.getTime()).toBeGreaterThan(now);
+      await expect(
+        User.validateUser(validUserData.email, 'WrongPassword123!')
+      ).rejects.toThrow('Invalid email or password');
     });
 
-    it('should validate date objects', () => {
-      const validDate = new Date();
-      const invalidDate = new Date('invalid');
-
-      expect(validDate.getTime()).not.toBeNaN();
-      expect(invalidDate.getTime()).toBeNaN();
+    it('should not validate non-existent user', async () => {
+      await expect(
+        User.validateUser('nonexistent@example.com', validUserData.password)
+      ).rejects.toThrow('Invalid email or password');
     });
   });
 
-  describe('User Preferences Validation', () => {
-    it('should validate theme enum values', () => {
-      const validThemes = ['light', 'dark', 'system'];
-      const invalidThemes = ['blue', 'red', 'auto'];
+  describe('Instance Methods', () => {
+    it('should compare password correctly', async () => {
+      const user = await User.createUser(validUserData);
 
-      validThemes.forEach(theme => {
-        const userData = {
-          ...validUserData,
-          preferences: { ...validUserData.preferences, theme: theme as any },
-        };
+      const isMatch = await user.comparePassword(validUserData.password);
+      expect(isMatch).toBe(true);
 
-        const result = userSchema.safeParse(userData);
-        expect(result.success).toBe(true);
-      });
-
-      invalidThemes.forEach(theme => {
-        const userData = {
-          ...validUserData,
-          preferences: { ...validUserData.preferences, theme: theme as any },
-        };
-
-        const result = userSchema.safeParse(userData);
-        expect(result.success).toBe(false);
-      });
+      const isNotMatch = await user.comparePassword('WrongPassword123!');
+      expect(isNotMatch).toBe(false);
     });
 
-    it('should validate boolean preferences', () => {
-      const booleanFields = [
-        'emailNotifications',
-        'browserNotifications',
-        'diceRollAnimations',
-        'autoSaveEncounters',
-      ];
+    it('should generate password reset token', async () => {
+      const user = await User.createUser(validUserData);
 
-      booleanFields.forEach(field => {
-        // Test with valid boolean values
-        [true, false].forEach(value => {
-          const userData = {
-            ...validUserData,
-            preferences: { ...validUserData.preferences, [field]: value },
-          };
+      const resetToken = await user.generatePasswordResetToken();
+      expect(resetToken).toBeDefined();
+      expect(user.passwordResetToken).toBeDefined();
+      expect(user.passwordResetExpires).toBeDefined();
 
-          const result = userSchema.safeParse(userData);
-          expect(result.success).toBe(true);
-        });
-
-        // Test with invalid values
-        ['yes', 'no', 1, 0, null].forEach(value => {
-          const userData = {
-            ...validUserData,
-            preferences: { ...validUserData.preferences, [field]: value },
-          };
-
-          const result = userSchema.safeParse(userData);
-          expect(result.success).toBe(false);
-        });
-      });
+      // Reset token should be valid
+      const foundUser = await User.findByResetToken(resetToken);
+      expect(foundUser).toBeDefined();
     });
 
-    it('should validate timezone strings', () => {
-      const validTimezones = [
-        'UTC',
-        'America/New_York',
-        'Europe/London',
-        'Asia/Tokyo',
-        'Australia/Sydney',
-      ];
+    it('should generate email verification token', async () => {
+      const user = await User.createUser(validUserData);
 
-      validTimezones.forEach(timezone => {
-        const userData = {
-          ...validUserData,
-          preferences: { ...validUserData.preferences, timezone },
-        };
+      const verificationToken = await user.generateEmailVerificationToken();
+      expect(verificationToken).toBeDefined();
+      expect(user.emailVerificationToken).toBeDefined();
 
-        const result = userSchema.safeParse(userData);
-        expect(result.success).toBe(true);
-      });
+      // Verification token should be valid
+      const foundUser = await User.findByVerificationToken(verificationToken);
+      expect(foundUser).toBeDefined();
     });
 
-    it('should validate language codes', () => {
-      const validLanguages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'zh'];
+    it('should update last login time', async () => {
+      const user = await User.createUser(validUserData);
+      expect(user.lastLoginAt).toBeUndefined();
 
-      validLanguages.forEach(language => {
-        const userData = {
-          ...validUserData,
-          preferences: { ...validUserData.preferences, language },
-        };
+      await user.updateLastLogin();
+      expect(user.lastLoginAt).toBeDefined();
+    });
 
-        const result = userSchema.safeParse(userData);
-        expect(result.success).toBe(true);
+    it('should check feature access based on subscription tier', async () => {
+      const freeUser = await User.createUser(validUserData);
+
+      // Free tier: 1 party, 3 encounters, 10 characters
+      expect(freeUser.canAccessFeature('parties', 1)).toBe(true);
+      expect(freeUser.canAccessFeature('parties', 2)).toBe(false);
+
+      expect(freeUser.canAccessFeature('encounters', 3)).toBe(true);
+      expect(freeUser.canAccessFeature('encounters', 4)).toBe(false);
+
+      expect(freeUser.canAccessFeature('characters', 10)).toBe(true);
+      expect(freeUser.canAccessFeature('characters', 11)).toBe(false);
+
+      // Create a user with expert tier
+      const expertUser = await User.createUser({
+        ...validUserData,
+        email: 'expert@example.com',
+        username: 'expertuser',
+        subscriptionTier: 'expert',
       });
+
+      // Expert tier: 10 parties, 50 encounters, 200 characters
+      expect(expertUser.canAccessFeature('parties', 10)).toBe(true);
+      expect(expertUser.canAccessFeature('parties', 11)).toBe(false);
+
+      expect(expertUser.canAccessFeature('encounters', 50)).toBe(true);
+      expect(expertUser.canAccessFeature('encounters', 51)).toBe(false);
+
+      expect(expertUser.canAccessFeature('characters', 200)).toBe(true);
+      expect(expertUser.canAccessFeature('characters', 201)).toBe(false);
+    });
+
+    it('should convert to public JSON representation', async () => {
+      const user = await User.createUser(validUserData);
+      const publicUser = user.toPublicJSON();
+
+      // Public representation should include these fields
+      expect(publicUser.id).toBeDefined();
+      expect(publicUser.email).toBe(user.email);
+      expect(publicUser.username).toBe(user.username);
+      expect(publicUser.firstName).toBe(user.firstName);
+      expect(publicUser.lastName).toBe(user.lastName);
+      expect(publicUser.role).toBe(user.role);
+      expect(publicUser.subscriptionTier).toBe(user.subscriptionTier);
+      expect(publicUser.isEmailVerified).toBe(user.isEmailVerified);
+      expect(publicUser.preferences).toEqual(user.preferences);
+      expect(publicUser.createdAt).toBeDefined();
+      expect(publicUser.updatedAt).toBeDefined();
+
+      // Sensitive fields should not be included
+      expect((publicUser as any).passwordHash).toBeUndefined();
+      expect((publicUser as any).emailVerificationToken).toBeUndefined();
+      expect((publicUser as any).passwordResetToken).toBeUndefined();
+      expect((publicUser as any).passwordResetExpires).toBeUndefined();
     });
   });
 });
