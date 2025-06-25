@@ -6,6 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-7.0+-green?logo=mongodb)](https://www.mongodb.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4+-blue?logo=tailwindcss)](https://tailwindcss.com/)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/bdc83f4c2f544b96ac52d06a62ae2d7f)](https://app.codacy.com/gh/dougis/dnd-tracker-next-js/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 
 ## 🎯 **Project Status: Ready for Development**
 
@@ -102,6 +103,7 @@ The D&D Encounter Tracker is a Next.js full-stack application that enables Dunge
 - **GitHub Actions** - CI/CD pipeline
 - **Jest** - Testing framework
 - **Sentry** - Error monitoring
+- **Codacy** - Code quality and test coverage analysis
 
 ---
 
