@@ -1,31 +1,33 @@
 import React from 'react';
 import userEvent from '@testing-library/user-event';
-import { render, screen, waitFor } from './test-utils';
-import { ModalManager, useModal, type ModalProps } from '../ModalManager';
+import { render, screen } from './test-utils';
+import { ModalManager, type ModalProps } from '../ModalManager';
 
 // Mock the Modal component to avoid issues with Dialog rendering
 jest.mock('../Modal', () => ({
-  Modal: ({ children, title, open, onOpenChange, footer }) => (
+  Modal: ({ children, title, open, onOpenChange, footer }) => 
     open ? (
       <div data-testid="mock-modal" data-title={title}>
         <div>{children}</div>
-        {footer && <div data-testid="modal-footer">{footer}</div>}
-        <button 
-          data-testid="close-modal" 
+        {footer && (
+          <div data-testid="modal-footer">{footer}</div>
+        )}
+        <button
+          data-testid="close-modal"
           onClick={() => onOpenChange(false)}
         >
           Close Modal
         </button>
       </div>
     ) : null
-  ),
+  ,
 }));
 
 // Mock implementation of useModal for tests
 jest.mock('../ModalManager', () => {
   const originalModule = jest.requireActual('../ModalManager');
   
-  let modals = {};
+  const modals = {};
   
   return {
     ...originalModule,
@@ -42,7 +44,7 @@ jest.mock('../ModalManager', () => {
             </div>
           );
         },
-        closeModal: (id) => {
+        closeModal: id => {
           modals[id] = { ...modals[id], open: false };
           // Remove modal from DOM for testing
           const modal = screen.queryByTestId('mock-modal');
@@ -59,6 +61,7 @@ jest.mock('../ModalManager', () => {
 });
 
 // Sample modal types for testing
+// eslint-disable-next-line no-unused-vars
 type TestModals = {
   basicModal: ModalProps;
   confirmModal: ModalProps & { onConfirm: () => void };

@@ -28,7 +28,7 @@ jest.mock('../ModalManager', () => {
     }),
     useModalManager: () => mockModalManager,
     ModalManagerContext: {
-      Provider: ({ children, value }) => <div>{children}</div>,
+      Provider: ({ children, _value }) => <div>{children}</div>,
     },
   };
 });

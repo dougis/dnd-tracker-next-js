@@ -52,7 +52,7 @@ export function rollD20(modifier: number = 0): number {
  */
 export function isValidEmail(email: string): boolean {
   if (!email) return false;
-  
+
   // Basic email validation regex
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);

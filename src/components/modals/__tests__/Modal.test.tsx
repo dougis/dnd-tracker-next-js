@@ -8,17 +8,22 @@ jest.mock('@/components/ui/dialog', () => ({
   Dialog: ({ children, open, onOpenChange }) => (
     <div data-testid="dialog" data-open={open}>
       {children}
-      <button 
-        data-testid="dialog-close" 
+      <button
+        data-testid="dialog-close"
         onClick={() => onOpenChange && onOpenChange(false)}
       >
         Close Dialog
       </button>
     </div>
   ),
-  DialogContent: ({ children, className, onEscapeKeyDown, onPointerDownOutside }) => (
-    <div 
-      data-testid="dialog-content" 
+  DialogContent: ({
+    children,
+    className,
+    onEscapeKeyDown,
+    onPointerDownOutside,
+  }) => (
+    <div
+      data-testid="dialog-content"
       className={className}
       data-escape-disabled={!!onEscapeKeyDown}
       data-overlay-disabled={!!onPointerDownOutside}
@@ -26,10 +31,18 @@ jest.mock('@/components/ui/dialog', () => ({
       {children}
     </div>
   ),
-  DialogHeader: ({ children }) => <div data-testid="dialog-header">{children}</div>,
-  DialogFooter: ({ children }) => <div data-testid="dialog-footer">{children}</div>,
-  DialogTitle: ({ children }) => <h2 data-testid="dialog-title">{children}</h2>,
-  DialogDescription: ({ children }) => <p data-testid="dialog-description">{children}</p>,
+  DialogHeader: ({ children }) => (
+    <div data-testid="dialog-header">{children}</div>
+  ),
+  DialogFooter: ({ children }) => (
+    <div data-testid="dialog-footer">{children}</div>
+  ),
+  DialogTitle: ({ children }) => (
+    <h2 data-testid="dialog-title">{children}</h2>
+  ),
+  DialogDescription: ({ children }) => (
+    <p data-testid="dialog-description">{children}</p>
+  ),
 }));
 
 describe('Modal', () => {
@@ -66,12 +79,7 @@ describe('Modal', () => {
   });
 
   it('renders footer content when provided', () => {
-    render(
-      <Modal
-        {...defaultProps}
-        footer={<button>Footer Button</button>}
-      />
-    );
+    render(<Modal {...defaultProps} footer={<button>Footer Button</button>} />);
     
     expect(screen.getByText('Footer Button')).toBeInTheDocument();
   });

@@ -179,13 +179,13 @@ jest.mock('../ConfirmationDialog', () => {
         description: '',
       });
       
-      const confirm = (dialogConfig) => {
+      const confirm = dialogConfig => {
         setConfig(dialogConfig);
         setIsOpen(true);
         return Promise.resolve(true);
       };
       
-      const ConfirmationDialog = () => (
+      const ConfirmationDialog = () =>
         isOpen && (
           <div data-testid="confirmation-dialog">
             <h3>{config.title}</h3>

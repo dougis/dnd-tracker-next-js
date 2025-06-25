@@ -1,5 +1,5 @@
 import { render, RenderOptions } from '@testing-library/react';
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 
 // Define a custom render method for tests
 const customRender = (
