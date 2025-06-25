@@ -456,16 +456,22 @@ async function validateUserData(
   }
 }
 
+// Helper function to get preference value with default
+function getPreferenceWithDefault<T>(value: T | undefined, defaultValue: T): T {
+  return value !== undefined ? value : defaultValue;
+}
+
 // Helper function to prepare user preferences
 function prepareUserPreferences(userData: CreateUserInput) {
+  const preferences = userData.preferences || {};
   return {
-    theme: userData.preferences?.theme || 'system',
-    emailNotifications: userData.preferences?.emailNotifications ?? true,
-    browserNotifications: userData.preferences?.browserNotifications ?? false,
-    timezone: userData.preferences?.timezone || 'UTC',
-    language: userData.preferences?.language || 'en',
-    diceRollAnimations: userData.preferences?.diceRollAnimations ?? true,
-    autoSaveEncounters: userData.preferences?.autoSaveEncounters ?? true,
+    theme: preferences.theme || 'system',
+    emailNotifications: getPreferenceWithDefault(preferences.emailNotifications, true),
+    browserNotifications: getPreferenceWithDefault(preferences.browserNotifications, false),
+    timezone: preferences.timezone || 'UTC',
+    language: preferences.language || 'en',
+    diceRollAnimations: getPreferenceWithDefault(preferences.diceRollAnimations, true),
+    autoSaveEncounters: getPreferenceWithDefault(preferences.autoSaveEncounters, true),
   };
 }
 
