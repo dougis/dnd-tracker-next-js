@@ -1,4 +1,13 @@
+// This adds custom jest matchers from jest-dom
 require('@testing-library/jest-dom');
+
+// Set up missing browser APIs
+global.MutationObserver = class {
+  constructor(callback) {}
+  disconnect() {}
+  observe(element, initObject) {}
+  takeRecords() { return []; }
+};
 
 // Mock IntersectionObserver which is not available in test environment
 global.IntersectionObserver = class IntersectionObserver {
@@ -32,3 +41,35 @@ if (typeof window !== 'undefined') {
     })),
   });
 }
+
+// Mock scrollTo
+global.scrollTo = jest.fn();
+
+// Mock requestAnimationFrame
+global.requestAnimationFrame = function(callback) {
+  return setTimeout(callback, 0);
+};
+
+// Mock cancelAnimationFrame
+global.cancelAnimationFrame = function(id) {
+  clearTimeout(id);
+};
+
+// Suppress React 18 console warnings in tests
+const originalConsoleError = console.error;
+console.error = (...args) => {
+  // Suppress React 18 scheduler errors (act warnings)
+  const reactSchedulerWarnings = [
+    'Warning: An update to %s inside a test was not wrapped in act',
+    'The current testing environment is not configured to support act',
+  ];
+
+  if (args.some(arg => 
+    typeof arg === 'string' && 
+    reactSchedulerWarnings.some(warning => arg.includes(warning))
+  )) {
+    return;
+  }
+
+  originalConsoleError(...args);
+};

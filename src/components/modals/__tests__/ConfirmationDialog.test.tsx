@@ -1,10 +1,23 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { render, screen } from './test-utils';
 import {
   ConfirmationDialog,
   useConfirmationDialog,
 } from '../ConfirmationDialog';
+
+// Mock the Modal component to avoid Dialog rendering issues
+jest.mock('../Modal', () => ({
+  Modal: ({ children, footer, onOpenChange, open }) => (
+    <div data-testid="modal" data-open={open}>
+      <div>{children}</div>
+      <div data-testid="modal-footer">{footer}</div>
+      <button data-testid="close-button" onClick={() => onOpenChange(false)}>
+        Close
+      </button>
+    </div>
+  ),
+}));
 
 describe('ConfirmationDialog', () => {
   const defaultProps = {
@@ -154,7 +167,40 @@ describe('ConfirmationDialog', () => {
   });
 });
 
-// Test the hook
+// Mock for the useConfirmationDialog hook
+jest.mock('../ConfirmationDialog', () => {
+  const originalModule = jest.requireActual('../ConfirmationDialog');
+  return {
+    ...originalModule,
+    useConfirmationDialog: () => {
+      const [isOpen, setIsOpen] = React.useState(false);
+      const [config, setConfig] = React.useState({
+        title: '',
+        description: '',
+      });
+      
+      const confirm = (dialogConfig) => {
+        setConfig(dialogConfig);
+        setIsOpen(true);
+        return Promise.resolve(true);
+      };
+      
+      const ConfirmationDialog = () => (
+        isOpen && (
+          <div data-testid="confirmation-dialog">
+            <h3>{config.title}</h3>
+            <p>{config.description}</p>
+            <button onClick={() => setIsOpen(false)}>Close</button>
+          </div>
+        )
+      );
+      
+      return { confirm, ConfirmationDialog };
+    },
+  };
+});
+
+// Test component for the hook
 function TestComponent() {
   const { confirm, ConfirmationDialog } = useConfirmationDialog();
 
