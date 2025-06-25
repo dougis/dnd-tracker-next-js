@@ -486,6 +486,7 @@ function prepareUserPreferences(userData: CreateUserInput) {
     ),
   };
 }
+
 // Static method to create a new user
 userSchema.statics.createUser = async function (
   userData: CreateUserInput
