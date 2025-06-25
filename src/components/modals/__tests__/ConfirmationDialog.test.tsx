@@ -192,8 +192,7 @@ jest.mock('../ConfirmationDialog', () => {
             <p>{config.description}</p>
             <button onClick={() => setIsOpen(false)}>Close</button>
           </div>
-        )
-      );
+        );
       
       return { confirm, ConfirmationDialog };
     },
