@@ -57,7 +57,7 @@ describe('UserService Authentication', () => {
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('USER_ALREADY_EXISTS');
       expect(result.error?.statusCode).toBe(409);
-      
+
       // Restore original method
       UserService.createUser = originalCreateUser;
     });
@@ -78,7 +78,7 @@ describe('UserService Authentication', () => {
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('USER_ALREADY_EXISTS');
       expect(result.error?.statusCode).toBe(409);
-      
+
       // Restore original method
       UserService.createUser = originalCreateUser;
     });
@@ -108,7 +108,7 @@ describe('UserService Authentication', () => {
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('VALIDATION_ERROR');
-      
+
       // Restore original method
       UserService.createUser = originalCreateUser;
     });
@@ -162,7 +162,7 @@ describe('UserService Authentication', () => {
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('INVALID_CREDENTIALS');
       expect(result.error?.statusCode).toBe(401);
-      
+
       // Restore original method
       UserService.authenticateUser = originalAuthenticateUser;
     });
@@ -183,7 +183,7 @@ describe('UserService Authentication', () => {
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('INVALID_CREDENTIALS');
       expect(result.error?.statusCode).toBe(401);
-      
+
       // Restore original method
       UserService.authenticateUser = originalAuthenticateUser;
     });

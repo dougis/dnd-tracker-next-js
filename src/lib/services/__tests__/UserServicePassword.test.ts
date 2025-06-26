@@ -27,7 +27,7 @@ describe('UserService Password Management', () => {
       );
 
       expect(result.success).toBe(true);
-      
+
       // Restore the original implementation for other tests
       UserService.changePassword = originalImplementation;
     });
@@ -51,7 +51,7 @@ describe('UserService Password Management', () => {
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('INVALID_CURRENT_PASSWORD');
-      
+
       // Restore the original implementation for other tests
       UserService.changePassword = originalImplementation;
     });
@@ -72,7 +72,7 @@ describe('UserService Password Management', () => {
 
       expect(result.success).toBe(true);
       expect(result.data?.token).toBe('reset-token-123');
-      
+
       // Restore the original implementation for other tests
       UserService.requestPasswordReset = originalImplementation;
     });
@@ -91,7 +91,7 @@ describe('UserService Password Management', () => {
 
       expect(result.success).toBe(true);
       expect(result.data?.token).toBe('dummy-token');
-      
+
       // Restore the original implementation for other tests
       UserService.requestPasswordReset = originalImplementation;
     });
@@ -112,7 +112,7 @@ describe('UserService Password Management', () => {
       });
 
       expect(result.success).toBe(true);
-      
+
       // Restore the original implementation for other tests
       UserService.resetPassword = originalImplementation;
     });
@@ -137,7 +137,7 @@ describe('UserService Password Management', () => {
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('TOKEN_INVALID');
-      
+
       // Restore the original implementation for other tests
       UserService.resetPassword = originalImplementation;
     });
@@ -161,7 +161,7 @@ describe('UserService Password Management', () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      
+
       // Restore the original implementation for other tests
       UserService.verifyEmail = originalImplementation;
     });
@@ -182,7 +182,7 @@ describe('UserService Password Management', () => {
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('TOKEN_INVALID');
-      
+
       // Restore the original implementation for other tests
       UserService.verifyEmail = originalImplementation;
     });

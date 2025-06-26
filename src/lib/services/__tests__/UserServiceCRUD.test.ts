@@ -26,7 +26,7 @@ describe('UserService CRUD Operations', () => {
           id: mockUserData._id,
           email: mockUserData.email,
           username: mockUserData.username,
-        }
+        },
       });
 
       // Run the test
@@ -36,7 +36,7 @@ describe('UserService CRUD Operations', () => {
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       expect(UserService.getUserById).toHaveBeenCalled();
-      
+
       // Restore the original implementation for other tests
       UserService.getUserById = originalImplementation;
     });
@@ -52,13 +52,13 @@ describe('UserService CRUD Operations', () => {
           statusCode: 404,
         }
       });
-      
+
       const result = await UserService.getUserById('507f1f77bcf86cd799439011');
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('USER_NOT_FOUND');
       expect(result.error?.statusCode).toBe(404);
-      
+
       // Restore the original implementation for other tests
       UserService.getUserById = originalImplementation;
     });
@@ -84,7 +84,7 @@ describe('UserService CRUD Operations', () => {
           lastName: 'Name',
         }
       });
-      
+
       const result = await UserService.updateUserProfile(
         '507f1f77bcf86cd799439011',
         updateData
@@ -92,7 +92,7 @@ describe('UserService CRUD Operations', () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      
+
       // Restore the original implementation for other tests
       UserService.updateUserProfile = originalImplementation;
     });
@@ -108,7 +108,7 @@ describe('UserService CRUD Operations', () => {
           statusCode: 404,
         }
       });
-      
+
       const result = await UserService.updateUserProfile(
         '507f1f77bcf86cd799439011',
         updateData
@@ -117,7 +117,7 @@ describe('UserService CRUD Operations', () => {
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('USER_NOT_FOUND');
       expect(result.error?.statusCode).toBe(404);
-      
+
       // Restore the original implementation for other tests
       UserService.updateUserProfile = originalImplementation;
     });
@@ -137,7 +137,7 @@ describe('UserService CRUD Operations', () => {
           statusCode: 409,
         }
       });
-      
+
       const result = await UserService.updateUserProfile(
         '507f1f77bcf86cd799439011',
         updateWithEmail
@@ -145,7 +145,7 @@ describe('UserService CRUD Operations', () => {
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('USER_ALREADY_EXISTS');
-      
+
       // Restore the original implementation for other tests
       UserService.updateUserProfile = originalImplementation;
     });
@@ -156,13 +156,13 @@ describe('UserService CRUD Operations', () => {
       // Create a custom implementation for this test
       const originalImplementation = UserService.deleteUser;
       UserService.deleteUser = jest.fn().mockResolvedValue({
-        success: true
+        success: true,
       });
-      
+
       const result = await UserService.deleteUser('507f1f77bcf86cd799439011');
 
       expect(result.success).toBe(true);
-      
+
       // Restore the original implementation for other tests
       UserService.deleteUser = originalImplementation;
     });
@@ -178,12 +178,12 @@ describe('UserService CRUD Operations', () => {
           statusCode: 404,
         }
       });
-      
+
       const result = await UserService.deleteUser('507f1f77bcf86cd799439011');
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('USER_NOT_FOUND');
-      
+
       // Restore the original implementation for other tests
       UserService.deleteUser = originalImplementation;
     });
@@ -208,14 +208,14 @@ describe('UserService CRUD Operations', () => {
           },
         }
       });
-      
+
       const result = await UserService.getUsers(1, 2);
 
       expect(result.success).toBe(true);
       expect(result.data?.data).toHaveLength(2);
       expect(result.data?.pagination.total).toBe(10);
       expect(result.data?.pagination.totalPages).toBe(5);
-      
+
       // Restore the original implementation for other tests
       UserService.getUsers = originalImplementation;
     });
@@ -225,7 +225,7 @@ describe('UserService CRUD Operations', () => {
       const originalImplementation = UserService.getUsers;
       const mockFind = jest.fn();
       User.find = mockFind;
-      
+
       UserService.getUsers = jest.fn()
         .mockImplementation(async (page, limit, filters) => {
           mockFind(filters || {});
@@ -237,7 +237,7 @@ describe('UserService CRUD Operations', () => {
             },
           };
       });
-      
+
       await UserService.getUsers(1, 10, {
         role: 'admin',
         isEmailVerified: true,
@@ -247,7 +247,7 @@ describe('UserService CRUD Operations', () => {
         role: 'admin',
         isEmailVerified: true,
       });
-      
+
       // Restore the original implementation for other tests
       UserService.getUsers = originalImplementation;
     });
@@ -264,14 +264,14 @@ describe('UserService CRUD Operations', () => {
           subscriptionTier: 'expert',
         }
       });
-      
+
       const result = await UserService.updateSubscription(
         '507f1f77bcf86cd799439011',
         'expert'
       );
 
       expect(result.success).toBe(true);
-      
+
       // Restore the original implementation for other tests
       UserService.updateSubscription = originalImplementation;
     });
@@ -296,7 +296,7 @@ describe('UserService CRUD Operations', () => {
           }
         }
       });
-      
+
       const result = await UserService.getUserStats();
 
       expect(result.success).toBe(true);
@@ -306,7 +306,7 @@ describe('UserService CRUD Operations', () => {
       expect(result.data?.subscriptionBreakdown.free).toBe(100);
       expect(result.data?.subscriptionBreakdown.expert).toBe(25);
       expect(result.data?.subscriptionBreakdown.guild).toBe(5);
-      
+
       // Restore the original implementation for other tests
       UserService.getUserStats = originalImplementation;
     });
