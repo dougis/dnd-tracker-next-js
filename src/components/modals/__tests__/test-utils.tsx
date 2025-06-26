@@ -4,7 +4,7 @@ import { render, RenderOptions } from '@testing-library/react';
 // Mock the ModalManagerContext to prevent context errors
 jest.mock('../ModalManager', () => {
   const originalModule = jest.requireActual('../ModalManager');
-  
+
   // Create a mock context with required methods
   const mockModalManager = {
     openModal: jest.fn(),
@@ -13,7 +13,7 @@ jest.mock('../ModalManager', () => {
     isModalOpen: jest.fn().mockReturnValue(false),
     getModalProps: jest.fn().mockReturnValue({}),
   };
-  
+
   return {
     ...originalModule,
     ModalManager: ({ children, maxModals }) => (

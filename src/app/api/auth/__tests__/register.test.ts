@@ -7,7 +7,7 @@ jest.mock('@/lib/services/UserService', () => {
   return {
     UserService: {
       createUser: jest.fn(),
-    }
+    },
   };
 });
 
