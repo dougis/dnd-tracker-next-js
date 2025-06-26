@@ -11,19 +11,15 @@ export async function POST(request: NextRequest) {
     const validatedData = passwordResetSchema.parse(body);
 
     // Reset the password
-    const userService = new UserService();
-    const result = await userService.resetPassword(
-      validatedData.token,
-      validatedData.password
-    );
+    const result = await UserService.resetPassword(validatedData);
 
     if (!result.success) {
       return NextResponse.json(
         {
           success: false,
-          message: result.error.message,
+          message: result.error?.message || 'Unknown error',
         },
-        { status: result.error.statusCode || 400 }
+        { status: result.error?.statusCode || 400 }
       );
     }
 

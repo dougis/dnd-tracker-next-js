@@ -9,7 +9,7 @@ declare global {
       toHaveClass(_className: string): R;
       toHaveValue(_value: string | number): R;
       toBeDisabled(): R;
-      toHaveAttribute(_attr: string, value?: string): R;
+      toHaveAttribute(_attr: string, _value?: string): R;
     }
   }
 }

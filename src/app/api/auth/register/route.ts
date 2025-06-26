@@ -11,19 +11,18 @@ export async function POST(request: NextRequest) {
     const validatedData = userRegistrationSchema.parse(body);
 
     // Create the user
-    const userService = new UserService();
-    const result = await userService.createUser(validatedData);
+    const result = await UserService.createUser(validatedData);
 
     if (!result.success) {
       return NextResponse.json(
         {
           success: false,
           message: result.error.message,
-          errors: result.error.details || [
-            { field: '', message: result.error.message },
+          errors: result.error?.details || [
+            { field: '', message: result.error?.message || 'Unknown error' },
           ],
         },
-        { status: result.error.statusCode || 400 }
+        { status: result.error?.statusCode || 400 }
       );
     }
 

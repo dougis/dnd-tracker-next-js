@@ -11,8 +11,7 @@ export async function POST(request: NextRequest) {
     const validatedData = getUserByEmailSchema.parse(body);
 
     // Resend verification email
-    const userService = new UserService();
-    const result = await userService.resendVerificationEmail(
+    const result = await UserService.resendVerificationEmail(
       validatedData.email
     );
 
@@ -20,9 +19,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: result.error.message,
+          message: result.error?.message || 'Unknown error',
         },
-        { status: result.error.statusCode || 400 }
+        { status: result.error?.statusCode || 400 }
       );
     }
 

@@ -10,6 +10,7 @@ export interface ServiceResult<T> {
     message: string;
     code: string;
     statusCode: number;
+    details?: Array<{ field: string; message: string }>;
   };
 }
 

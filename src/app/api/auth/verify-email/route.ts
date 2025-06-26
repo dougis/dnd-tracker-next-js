@@ -11,16 +11,15 @@ export async function POST(request: NextRequest) {
     const validatedData = emailVerificationSchema.parse(body);
 
     // Verify the email
-    const userService = new UserService();
-    const result = await userService.verifyEmail(validatedData.token);
+    const result = await UserService.verifyEmail(validatedData);
 
     if (!result.success) {
       return NextResponse.json(
         {
           success: false,
-          message: result.error.message,
+          message: result.error?.message || 'Unknown error',
         },
-        { status: result.error.statusCode || 400 }
+        { status: result.error?.statusCode || 400 }
       );
     }
 

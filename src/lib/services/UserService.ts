@@ -1,4 +1,4 @@
-import { User } from '../models/User';
+import User, { IUser } from '../models/User';
 import {
   userRegistrationSchema,
   userLoginSchema,
@@ -507,6 +507,53 @@ export class UserService {
   /**
    * Get user statistics (admin only)
    */
+  /**
+   * Resend verification email
+   */
+  static async resendVerificationEmail(
+    email: string
+  ): Promise<ServiceResult<void>> {
+    try {
+      // Find user by email
+      const user = await User.findByEmail(email);
+      if (!user) {
+        throw new UserNotFoundError(email);
+      }
+
+      // Check if already verified
+      if (user.isEmailVerified) {
+        return {
+          success: false,
+          error: {
+            message: 'Email is already verified',
+            code: 'EMAIL_ALREADY_VERIFIED',
+            statusCode: 400,
+          },
+        };
+      }
+
+      // Generate new verification token
+      user.generateEmailVerificationToken();
+      await user.save();
+
+      // In a real implementation, we would send the email here
+      // For now, we'll just return success
+
+      return {
+        success: true,
+      };
+    } catch (error) {
+      return handleServiceError(
+        error,
+        'Failed to resend verification email',
+        'VERIFICATION_EMAIL_FAILED'
+      );
+    }
+  }
+
+  /**
+   * Get user statistics (admin only)
+   */
   static async getUserStats(): Promise<ServiceResult<UserStats>> {
     try {
       const [totalUsers, verifiedUsers, activeUsers, subscriptionStats] =
@@ -529,7 +576,7 @@ export class UserService {
         ]);
 
       const subscriptionBreakdown = subscriptionStats.reduce(
-        (acc, stat) => {
+        (acc: Record<SubscriptionTier, number>, stat: { _id: string; count: number }) => {
           acc[stat._id as SubscriptionTier] = stat.count;
           return acc;
         },

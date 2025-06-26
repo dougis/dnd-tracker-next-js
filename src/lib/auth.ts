@@ -25,21 +25,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         try {
-          const userService = new UserService();
-
           // Get user by email
-          const user = await userService.getUserByEmail(credentials.email);
-          if (!user) {
+          const result = await UserService.getUserByEmail(credentials.email);
+          if (!result.success) {
             return null;
           }
+          const user = result.data;
 
-          // Verify password
-          const isValidPassword = await bcrypt.compare(
-            credentials.password,
-            user.password
-          );
+          // Authenticate user
+          const authResult = await UserService.authenticateUser({
+            email: credentials.email,
+            password: credentials.password,
+          });
 
-          if (!isValidPassword) {
+          if (!authResult.success) {
             return null;
           }
 
