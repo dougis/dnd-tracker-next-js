@@ -1,0 +1,111 @@
+diff --git a/docs/D&D Encounter Tracker - Project State Summary.md b/docs/D&D Encounter Tracker - Project State Summary.md
+--- a/docs/D&D Encounter Tracker - Project State Summary.md
++++ b/docs/D&D Encounter Tracker - Project State Summary.md
+@@ -193,1 +193,1 @@
+-### MVP Success (12 weeks):
++### MVP Success (12 weeks)
+@@ -202,1 +202,1 @@
+-### Business Success (12 months):
++### Business Success (12 months)
+@@ -231,1 +231,1 @@
+-- **Main Repository:** https://github.com/dougis/dnd-tracker-next-js
++- **Main Repository:** <https://github.com/dougis/dnd-tracker-next-js>
+@@ -232,1 +232,1 @@
+-- **Product Requirements:** https://github.com/dougis/dnd-tracker-next-js/blob/main/docs/Product%20Requirements%20Document.md
++- **Product Requirements:** <https://github.com/dougis/dnd-tracker-next-js/blob/main/docs/Product%20Requirements%20Document.md>
+@@ -233,1 +233,1 @@
+-- **Technical Design:** https://github.com/dougis/dnd-tracker-next-js/blob/technical-specification/docs/High%20Level%20Design.md
++- **Technical Design:** <https://github.com/dougis/dnd-tracker-next-js/blob/technical-specification/docs/High%20Level%20Design.md>
+@@ -234,1 +234,1 @@
+-- **Project Roadmap:** https://github.com/dougis/dnd-tracker-next-js/blob/technical-specification/docs/Project%20Roadmap.md
++- **Project Roadmap:** <https://github.com/dougis/dnd-tracker-next-js/blob/technical-specification/docs/Project%20Roadmap.md>
+@@ -235,1 +235,1 @@
+-- **All GitHub Issues:** https://github.com/dougis/dnd-tracker-next-js/issues
++- **All GitHub Issues:** <https://github.com/dougis/dnd-tracker-next-js/issues>
+diff --git a/CLAUDE.md b/CLAUDE.md
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -410,1 +410,1 @@
+-### Previous Service Layer Work:
++### Previous Service Layer Work
+diff --git a/docs/FINAL PROJECT PLANNING SUMMARY.md b/docs/FINAL PROJECT PLANNING SUMMARY.md
+--- a/docs/FINAL PROJECT PLANNING SUMMARY.md
++++ b/docs/FINAL PROJECT PLANNING SUMMARY.md
+@@ -126,1 +126,1 @@
+-- **GitHub:** https://github.com/dougis/dnd-tracker-next-js
++- **GitHub:** <https://github.com/dougis/dnd-tracker-next-js>
+@@ -127,1 +127,1 @@
+-- **Issues:** https://github.com/dougis/dnd-tracker-next-js/issues (46 MVP issues)
++- **Issues:** <https://github.com/dougis/dnd-tracker-next-js/issues> (46 MVP issues)
+diff --git a/src/lib/services/__tests__/UserServiceAuth.test.ts b/src/lib/services/__tests__/UserServiceAuth.test.ts
+--- a/src/lib/services/__tests__/UserServiceAuth.test.ts
++++ b/src/lib/services/__tests__/UserServiceAuth.test.ts
+@@ -60,1 +60,1 @@
+-      
++
+diff --git a/.github/BRANCH_PROTECTION_SETUP.md b/.github/BRANCH_PROTECTION_SETUP.md
+--- a/.github/BRANCH_PROTECTION_SETUP.md
++++ b/.github/BRANCH_PROTECTION_SETUP.md
+@@ -10,1 +10,1 @@
+-   - Go to: https://github.com/dougis/dnd-tracker-next-js/settings
++   - Go to: <https://github.com/dougis/dnd-tracker-next-js/settings>
+@@ -19,1 +19,1 @@
+-   ### Required Reviews
++   ### Required Reviews
+
+@@ -25,1 +25,1 @@
+-   ### Status Checks
++   ### Status Checks
+
+@@ -35,1 +35,1 @@
+-   ### Additional Restrictions
++   ### Additional Restrictions
+
+@@ -41,1 +41,1 @@
+-   ### Administrative Settings
++### Administrative Settings
+diff --git a/src/lib/services/__tests__/UserServiceCRUD.test.ts b/src/lib/services/__tests__/UserServiceCRUD.test.ts
+--- a/src/lib/services/__tests__/UserServiceCRUD.test.ts
++++ b/src/lib/services/__tests__/UserServiceCRUD.test.ts
+@@ -29,1 +29,1 @@
+-        }
++        },
+@@ -39,1 +39,1 @@
+-      
++
+@@ -159,1 +159,1 @@
+-        success: true
++        success: true,
+diff --git a/src/lib/services/__tests__/UserServicePassword.test.ts b/src/lib/services/__tests__/UserServicePassword.test.ts
+--- a/src/lib/services/__tests__/UserServicePassword.test.ts
++++ b/src/lib/services/__tests__/UserServicePassword.test.ts
+@@ -30,1 +30,1 @@
+-      
++
+diff --git a/src/lib/services/UserService.ts b/src/lib/services/UserService.ts
+--- a/src/lib/services/UserService.ts
++++ b/src/lib/services/UserService.ts
+@@ -338,1 +338,1 @@
+-            const userIdString = 
++            const userIdString =
+@@ -342,1 +342,1 @@
+-              
++
+@@ -633,1 +633,1 @@
+-        typeof UserModel.find === 'function' && 
++        typeof UserModel.find === 'function' &&
+@@ -745,1 +745,1 @@
+-          message: 
++          message:
+@@ -747,1 +747,1 @@
+-              ? error.message 
++              ? error.message
+diff --git a/README.md b/README.md
+--- a/README.md
++++ b/README.md
+@@ -210,1 +210,1 @@
+-- **Repository**: https://github.com/dougis/dnd-tracker-next-js
++- **Repository**: <https://github.com/dougis/dnd-tracker-next-js>
+@@ -211,1 +211,1 @@
+-- **Issues**: https://github.com/dougis/dnd-tracker-next-js/issues (46 MVP issues)
++- **Issues**: <https://github.com/dougis/dnd-tracker-next-js/issues> (46 MVP issues)
