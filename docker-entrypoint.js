@@ -18,7 +18,7 @@ function exec(command) {
   // Split the command into arguments safely to avoid shell: true
   const args = command.split(' ');
   const cmd = args.shift();
-  
+
   const child = spawn(cmd, args, { stdio: 'inherit', env });
   return new Promise((resolve, reject) => {
     child.on('exit', code => {

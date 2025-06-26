@@ -38,13 +38,16 @@ export function validateField<T extends FieldValues>(
 ): ValidationError | null {
   // Check if schema has a shape property
   if (!(schema as any)._def?.shape) {
-    return new ValidationError('Schema is not a ZodObject with shape', fieldName);
+    return new ValidationError(
+      'Schema is not a ZodObject with shape',
+      fieldName
+    );
   }
-  
+
   // Get the shape from the schema
   const shape = (schema as any)._def.shape;
   const fieldSchema = shape[fieldName as string];
-  
+
   if (!fieldSchema) {
     return new ValidationError('Field not found in schema', fieldName);
   }
@@ -65,7 +68,7 @@ export async function validateFieldAsync<T extends FieldValues>(
   schema: z.ZodSchema<T>,
   fieldName: Path<T>,
   value: unknown,
-  asyncValidator?: (value: unknown) => Promise<boolean | string>
+  asyncValidator?: (_value: unknown) => Promise<boolean | string>
 ): Promise<ValidationError | null> {
   // First run synchronous validation
   const syncError = validateField(schema, fieldName, value);
@@ -129,8 +132,8 @@ export function useFormValidation<T extends FieldValues>(
 
   const validateFieldAsyncFn = async (
     fieldName: Path<T>,
-    value: unknown,
-    asyncValidator?: (value: unknown) => Promise<boolean | string>
+    _value: unknown,
+    asyncValidator?: (_value: unknown) => Promise<boolean | string>
   ) => validateFieldAsync(schema, fieldName, value, asyncValidator);
 
   return {

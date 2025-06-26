@@ -37,9 +37,7 @@ jest.mock('@/components/ui/dialog', () => ({
   DialogFooter: ({ children }) => (
     <div data-testid="dialog-footer">{children}</div>
   ),
-  DialogTitle: ({ children }) => (
-    <h2 data-testid="dialog-title">{children}</h2>
-  ),
+  DialogTitle: ({ children }) => <h2 data-testid="dialog-title">{children}</h2>,
   DialogDescription: ({ children }) => (
     <p data-testid="dialog-description">{children}</p>
   ),
@@ -58,7 +56,7 @@ describe('Modal', () => {
 
   it('renders basic modal without title or description', () => {
     render(<Modal {...defaultProps} />);
-    
+
     expect(screen.getByText('Modal content')).toBeInTheDocument();
     expect(screen.queryByTestId('dialog-title')).not.toBeInTheDocument();
     expect(screen.queryByTestId('dialog-description')).not.toBeInTheDocument();
@@ -72,7 +70,7 @@ describe('Modal', () => {
         description="This is a test modal"
       />
     );
-    
+
     expect(screen.getByText('Modal content')).toBeInTheDocument();
     expect(screen.getByText('Test Modal')).toBeInTheDocument();
     expect(screen.getByText('This is a test modal')).toBeInTheDocument();
@@ -80,17 +78,17 @@ describe('Modal', () => {
 
   it('renders footer content when provided', () => {
     render(<Modal {...defaultProps} footer={<button>Footer Button</button>} />);
-    
+
     expect(screen.getByText('Footer Button')).toBeInTheDocument();
   });
 
   it('calls onOpenChange when dialog is closed', async () => {
     const user = userEvent.setup();
     render(<Modal {...defaultProps} />);
-    
+
     const closeButton = screen.getByTestId('dialog-close');
     await user.click(closeButton);
-    
+
     expect(defaultProps.onOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -98,28 +96,28 @@ describe('Modal', () => {
     const { rerender } = render(
       <Modal {...defaultProps} size="lg" type="info" />
     );
-    
+
     const content = screen.getByTestId('dialog-content');
     expect(content.className).toContain('max-w-lg');
     expect(content.className).toContain('border-blue-200');
-    
+
     // Test another size and type
     rerender(<Modal {...defaultProps} size="sm" type="error" />);
-    
+
     expect(content.className).toContain('max-w-sm');
     expect(content.className).toContain('border-red-200');
   });
 
   it('disables overlay click closing when specified', () => {
     render(<Modal {...defaultProps} closeOnOverlayClick={false} />);
-    
+
     const content = screen.getByTestId('dialog-content');
     expect(content.getAttribute('data-overlay-disabled')).toBe('true');
   });
 
   it('disables escape key closing when specified', () => {
     render(<Modal {...defaultProps} closeOnEscapeKey={false} />);
-    
+
     const content = screen.getByTestId('dialog-content');
     expect(content.getAttribute('data-escape-disabled')).toBe('true');
   });
