@@ -5,30 +5,24 @@ import { ModalManager, type ModalProps } from '../ModalManager';
 
 // Mock the Modal component to avoid issues with Dialog rendering
 jest.mock('../Modal', () => ({
-  Modal: ({ children, title, open, onOpenChange, footer }) => 
+  Modal: ({ children, title, open, onOpenChange, footer }) =>
     open ? (
       <div data-testid="mock-modal" data-title={title}>
         <div>{children}</div>
-        {footer && (
-          <div data-testid="modal-footer">{footer}</div>
-        )}
-        <button
-          data-testid="close-modal"
-          onClick={() => onOpenChange(false)}
-        >
+        {footer && <div data-testid="modal-footer">{footer}</div>}
+        <button data-testid="close-modal" onClick={() => onOpenChange(false)}>
           Close Modal
         </button>
       </div>
-    ) : null
-  ,
+    ) : null,
 }));
 
 // Mock implementation of useModal for tests
 jest.mock('../ModalManager', () => {
   const originalModule = jest.requireActual('../ModalManager');
-  
+
   const modals = {};
-  
+
   return {
     ...originalModule,
     useModal: () => {
@@ -39,7 +33,9 @@ jest.mock('../ModalManager', () => {
           render(
             <div data-testid="mock-modal" data-title={props.title}>
               <div>{props.children}</div>
-              {props.footer && <div data-testid="modal-footer">{props.footer}</div>}
+              {props.footer && (
+                <div data-testid="modal-footer">{props.footer}</div>
+              )}
               <button data-testid="close-modal">Close Modal</button>
             </div>
           );

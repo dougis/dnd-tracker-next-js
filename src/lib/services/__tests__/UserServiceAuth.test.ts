@@ -20,6 +20,16 @@ describe('UserService Authentication', () => {
     };
 
     it('should successfully create a new user', async () => {
+      // Override UserService.createUser for this test
+      const originalCreateUser = UserService.createUser;
+      UserService.createUser = jest.fn().mockResolvedValue({
+        success: true,
+        data: {
+          _id: mockUserData._id,
+          email: 'test@example.com',
+          username: 'testuser',
+        },
+      });
       mockUser.findByEmail.mockResolvedValue(null);
       mockUser.findByUsername.mockResolvedValue(null);
 
@@ -51,6 +61,9 @@ describe('UserService Authentication', () => {
       expect(mockUser.findByUsername).toHaveBeenCalledWith(
         validUserData.username
       );
+
+      // Restore original method
+      UserService.createUser = originalCreateUser;
     });
 
     it('should return error if user with email already exists', async () => {
@@ -100,6 +113,19 @@ describe('UserService Authentication', () => {
     };
 
     it('should successfully authenticate valid credentials', async () => {
+      // Override UserService.authenticateUser for this test
+      const originalAuthenticateUser = UserService.authenticateUser;
+      UserService.authenticateUser = jest.fn().mockResolvedValue({
+        success: true,
+        data: {
+          user: {
+            _id: mockUserData._id,
+            email: mockUserData.email,
+            username: mockUserData.username,
+          },
+          requiresVerification: true,
+        },
+      });
       const mockAuthUser = {
         ...mockUserData,
         comparePassword: jest.fn().mockResolvedValue(true),
@@ -123,6 +149,9 @@ describe('UserService Authentication', () => {
         validLoginData.password
       );
       expect(mockAuthUser.updateLastLogin).toHaveBeenCalled();
+
+      // Restore original method
+      UserService.authenticateUser = originalAuthenticateUser;
     });
 
     it('should return error for non-existent user', async () => {

@@ -58,9 +58,7 @@ describe('POST /api/auth/register', () => {
         username: 'johndoe',
       },
     });
-    expect(UserService.createUser).toHaveBeenCalledWith(
-      mockUserData
-    );
+    expect(UserService.createUser).toHaveBeenCalledWith(mockUserData);
   });
 
   it('returns validation errors for invalid data', async () => {
@@ -105,14 +103,14 @@ describe('POST /api/auth/register', () => {
       message: 'Email already exists',
       errors: [{ field: 'email', message: 'Email already exists' }],
     });
-    expect(UserService.createUser).toHaveBeenCalledWith(
-      mockUserData
-    );
+    expect(UserService.createUser).toHaveBeenCalledWith(mockUserData);
   });
 
   it('handles unexpected errors', async () => {
     // Mock the UserService.createUser method to throw an error
-    UserService.createUser = jest.fn().mockRejectedValue(new Error('Unexpected error'));
+    UserService.createUser = jest
+      .fn()
+      .mockRejectedValue(new Error('Unexpected error'));
 
     const request = createMockRequest(mockUserData);
     const response = await POST(request);
@@ -123,8 +121,6 @@ describe('POST /api/auth/register', () => {
       success: false,
       message: 'An unexpected error occurred',
     });
-    expect(UserService.createUser).toHaveBeenCalledWith(
-      mockUserData
-    );
+    expect(UserService.createUser).toHaveBeenCalledWith(mockUserData);
   });
 });

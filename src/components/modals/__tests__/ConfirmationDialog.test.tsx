@@ -178,13 +178,13 @@ jest.mock('../ConfirmationDialog', () => {
         title: '',
         description: '',
       });
-      
+
       const confirm = dialogConfig => {
         setConfig(dialogConfig);
         setIsOpen(true);
         return Promise.resolve(true);
       };
-      
+
       const ConfirmationDialog = () =>
         isOpen && (
           <div data-testid="confirmation-dialog">
@@ -193,7 +193,7 @@ jest.mock('../ConfirmationDialog', () => {
             <button onClick={() => setIsOpen(false)}>Close</button>
           </div>
         );
-      
+
       return { confirm, ConfirmationDialog };
     },
   };

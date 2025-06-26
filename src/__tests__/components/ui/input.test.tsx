@@ -22,7 +22,9 @@ describe('Input Component', () => {
     render(<Input data-testid="input" />);
 
     const input = screen.getByTestId('input');
-    expect(input).toHaveClass('flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base');
+    expect(input).toHaveClass(
+      'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base'
+    );
   });
 
   it('is disabled when disabled prop is true', () => {
