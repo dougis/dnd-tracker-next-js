@@ -1,4 +1,4 @@
-import User from '../models/User';
+import User, { IUser } from '../models/User';
 import { UserAlreadyExistsError } from './UserServiceErrors';
 import type { PublicUser } from '../validations/user';
 
