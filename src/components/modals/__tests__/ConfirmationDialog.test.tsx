@@ -9,7 +9,7 @@ import {
 // Mock the Modal component to avoid Dialog rendering issues
 jest.mock('../Modal', () => ({
   Modal: ({ children, footer, onOpenChange, open }) => (
-    <div data-testid="modal" data-open={open}>
+    <div data-testid="modal" data-open={open ? 'true' : 'false'}>
       <div>{children}</div>
       <div data-testid="modal-footer">{footer}</div>
       <button data-testid="close-button" onClick={() => onOpenChange(false)}>
