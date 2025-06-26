@@ -23,6 +23,7 @@ import {
   ServiceResult,
   UserServiceError,
   UserNotFoundError,
+  UserAlreadyExistsError,
   InvalidCredentialsError,
   TokenInvalidError,
   handleServiceError,
@@ -95,6 +96,17 @@ export class UserService {
         data: newUser.toPublicJSON(),
       };
     } catch (error) {
+      // Pass through the error directly if it's one of our custom errors
+      if (error instanceof UserAlreadyExistsError) {
+        return {
+          success: false,
+          error: {
+            message: error.message,
+            code: error.code,
+            statusCode: error.statusCode,
+          },
+        };
+      }
       return handleServiceError(
         error,
         'Failed to create user',
@@ -140,6 +152,17 @@ export class UserService {
         },
       };
     } catch (error) {
+      // Pass through the error directly if it's one of our custom errors
+      if (error instanceof InvalidCredentialsError) {
+        return {
+          success: false,
+          error: {
+            message: error.message,
+            code: error.code,
+            statusCode: error.statusCode,
+          },
+        };
+      }
       return handleServiceError(
         error,
         'Authentication failed',
@@ -164,6 +187,17 @@ export class UserService {
         data: user.toPublicJSON(),
       };
     } catch (error) {
+      // Pass through the error directly if it's one of our custom errors
+      if (error instanceof UserNotFoundError) {
+        return {
+          success: false,
+          error: {
+            message: error.message,
+            code: error.code,
+            statusCode: error.statusCode,
+          },
+        };
+      }
       return handleServiceError(
         error,
         'Failed to retrieve user',
@@ -189,6 +223,17 @@ export class UserService {
         data: user.toPublicJSON(),
       };
     } catch (error) {
+      // Pass through the error directly if it's one of our custom errors
+      if (error instanceof UserNotFoundError) {
+        return {
+          success: false,
+          error: {
+            message: error.message,
+            code: error.code,
+            statusCode: error.statusCode,
+          },
+        };
+      }
       return handleServiceError(
         error,
         'Failed to retrieve user',
@@ -241,6 +286,17 @@ export class UserService {
         data: user.toPublicJSON(),
       };
     } catch (error) {
+      // Pass through the error directly if it's one of our custom errors
+      if (error instanceof UserNotFoundError || error instanceof UserAlreadyExistsError) {
+        return {
+          success: false,
+          error: {
+            message: error.message,
+            code: error.code,
+            statusCode: error.statusCode,
+          },
+        };
+      }
       return handleServiceError(
         error,
         'Failed to update user profile',
@@ -286,6 +342,17 @@ export class UserService {
         success: true,
       };
     } catch (error) {
+      // Pass through the error directly if it's one of our custom errors
+      if (error instanceof UserNotFoundError || error instanceof UserServiceError) {
+        return {
+          success: false,
+          error: {
+            message: error.message,
+            code: error.code,
+            statusCode: error.statusCode,
+          },
+        };
+      }
       return handleServiceError(
         error,
         'Failed to change password',
@@ -323,14 +390,12 @@ export class UserService {
         data: { token: resetToken },
       };
     } catch (error) {
-      return {
-        success: false,
-        error: {
-          message: 'Failed to process password reset request',
-          code: 'PASSWORD_RESET_REQUEST_FAILED',
-          statusCode: 500,
-        },
-      };
+      return handleServiceError(
+        error,
+        'Failed to process password reset request',
+        'PASSWORD_RESET_REQUEST_FAILED',
+        500
+      );
     }
   }
 
@@ -360,6 +425,17 @@ export class UserService {
         success: true,
       };
     } catch (error) {
+      // Pass through the error directly if it's one of our custom errors
+      if (error instanceof TokenInvalidError) {
+        return {
+          success: false,
+          error: {
+            message: error.message,
+            code: error.code,
+            statusCode: error.statusCode,
+          },
+        };
+      }
       return handleServiceError(
         error,
         'Failed to reset password',
@@ -394,6 +470,17 @@ export class UserService {
         data: user.toPublicJSON(),
       };
     } catch (error) {
+      // Pass through the error directly if it's one of our custom errors
+      if (error instanceof TokenInvalidError) {
+        return {
+          success: false,
+          error: {
+            message: error.message,
+            code: error.code,
+            statusCode: error.statusCode,
+          },
+        };
+      }
       return handleServiceError(
         error,
         'Failed to verify email',
@@ -440,14 +527,12 @@ export class UserService {
         },
       };
     } catch (error) {
-      return {
-        success: false,
-        error: {
-          message: 'Failed to retrieve users',
-          code: 'USERS_RETRIEVAL_FAILED',
-          statusCode: 500,
-        },
-      };
+      return handleServiceError(
+        error,
+        'Failed to retrieve users',
+        'USERS_RETRIEVAL_FAILED',
+        500
+      );
     }
   }
 
@@ -472,6 +557,17 @@ export class UserService {
         data: user.toPublicJSON(),
       };
     } catch (error) {
+      // Pass through the error directly if it's one of our custom errors
+      if (error instanceof UserNotFoundError) {
+        return {
+          success: false,
+          error: {
+            message: error.message,
+            code: error.code,
+            statusCode: error.statusCode,
+          },
+        };
+      }
       return handleServiceError(
         error,
         'Failed to update subscription',
@@ -496,6 +592,17 @@ export class UserService {
         success: true,
       };
     } catch (error) {
+      // Pass through the error directly if it's one of our custom errors
+      if (error instanceof UserNotFoundError) {
+        return {
+          success: false,
+          error: {
+            message: error.message,
+            code: error.code,
+            statusCode: error.statusCode,
+          },
+        };
+      }
       return handleServiceError(
         error,
         'Failed to delete user',
@@ -543,6 +650,17 @@ export class UserService {
         success: true,
       };
     } catch (error) {
+      // Pass through the error directly if it's one of our custom errors
+      if (error instanceof UserNotFoundError) {
+        return {
+          success: false,
+          error: {
+            message: error.message,
+            code: error.code,
+            statusCode: error.statusCode,
+          },
+        };
+      }
       return handleServiceError(
         error,
         'Failed to resend verification email',
@@ -599,14 +717,12 @@ export class UserService {
         },
       };
     } catch (error) {
-      return {
-        success: false,
-        error: {
-          message: 'Failed to retrieve user statistics',
-          code: 'USER_STATS_FAILED',
-          statusCode: 500,
-        },
-      };
+      return handleServiceError(
+        error,
+        'Failed to retrieve user statistics',
+        'USER_STATS_FAILED',
+        500
+      );
     }
   }
 }
