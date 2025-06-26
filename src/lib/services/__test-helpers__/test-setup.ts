@@ -14,7 +14,7 @@ const aggregateMock = jest.fn();
 const findByIdAndDeleteMock = jest.fn();
 
 // Create a mock constructor
-const UserMock = jest.fn().mockImplementation((data) => {
+const UserMock = jest.fn().mockImplementation(data => {
   return {
     ...data,
     generateEmailVerificationToken: jest.fn().mockReturnValue('mock-token'),
@@ -53,7 +53,7 @@ UserMock.findByIdAndDelete = findByIdAndDeleteMock;
 
 // Mock the User model
 jest.mock('../../models/User', () => ({
-  default: UserMock
+  default: UserMock,
 }));
 
 // Mock bcrypt

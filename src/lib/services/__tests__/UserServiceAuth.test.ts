@@ -49,7 +49,7 @@ describe('UserService Authentication', () => {
           message: `User already exists with email: ${validUserData.email}`,
           code: 'USER_ALREADY_EXISTS',
           statusCode: 409,
-        }
+        },
       });
 
       const result = await UserService.createUser(validUserData);
@@ -70,7 +70,7 @@ describe('UserService Authentication', () => {
           message: `User already exists with username: ${validUserData.username}`,
           code: 'USER_ALREADY_EXISTS',
           statusCode: 409,
-        }
+        },
       });
 
       const result = await UserService.createUser(validUserData);
@@ -101,7 +101,7 @@ describe('UserService Authentication', () => {
           message: 'Invalid user data provided',
           code: 'VALIDATION_ERROR',
           statusCode: 400,
-        }
+        },
       });
 
       const result = await UserService.createUser(invalidData as any);
@@ -154,7 +154,7 @@ describe('UserService Authentication', () => {
           message: 'Invalid email or password',
           code: 'INVALID_CREDENTIALS',
           statusCode: 401,
-        }
+        },
       });
 
       const result = await UserService.authenticateUser(validLoginData);
@@ -175,7 +175,7 @@ describe('UserService Authentication', () => {
           message: 'Invalid email or password',
           code: 'INVALID_CREDENTIALS',
           statusCode: 401,
-        }
+        },
       });
 
       const result = await UserService.authenticateUser(validLoginData);

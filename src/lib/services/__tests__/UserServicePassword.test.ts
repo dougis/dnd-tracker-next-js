@@ -18,7 +18,7 @@ describe('UserService Password Management', () => {
       // Create a custom implementation for this test
       const originalImplementation = UserService.changePassword;
       UserService.changePassword = jest.fn().mockResolvedValue({
-        success: true
+        success: true,
       });
 
       const result = await UserService.changePassword(
@@ -41,7 +41,7 @@ describe('UserService Password Management', () => {
           message: 'Current password is incorrect',
           code: 'INVALID_CURRENT_PASSWORD',
           statusCode: 400,
-        }
+        },
       });
 
       const result = await UserService.changePassword(
@@ -63,7 +63,7 @@ describe('UserService Password Management', () => {
       const originalImplementation = UserService.requestPasswordReset;
       UserService.requestPasswordReset = jest.fn().mockResolvedValue({
         success: true,
-        data: { token: 'reset-token-123' }
+        data: { token: 'reset-token-123' },
       });
 
       const result = await UserService.requestPasswordReset({
@@ -82,7 +82,7 @@ describe('UserService Password Management', () => {
       const originalImplementation = UserService.requestPasswordReset;
       UserService.requestPasswordReset = jest.fn().mockResolvedValue({
         success: true,
-        data: { token: 'dummy-token' }
+        data: { token: 'dummy-token' },
       });
 
       const result = await UserService.requestPasswordReset({
@@ -102,7 +102,7 @@ describe('UserService Password Management', () => {
       // Create a custom implementation for this test
       const originalImplementation = UserService.resetPassword;
       UserService.resetPassword = jest.fn().mockResolvedValue({
-        success: true
+        success: true,
       });
 
       const result = await UserService.resetPassword({
@@ -126,7 +126,7 @@ describe('UserService Password Management', () => {
           message: 'Password reset token is invalid or expired',
           code: 'TOKEN_INVALID',
           statusCode: 400,
-        }
+        },
       });
 
       const result = await UserService.resetPassword({
@@ -152,7 +152,7 @@ describe('UserService Password Management', () => {
         data: {
           ...mockUserData,
           isEmailVerified: true,
-        }
+        },
       });
 
       const result = await UserService.verifyEmail({
@@ -175,7 +175,7 @@ describe('UserService Password Management', () => {
           message: 'Email verification token is invalid or expired',
           code: 'TOKEN_INVALID',
           statusCode: 400,
-        }
+        },
       });
 
       const result = await UserService.verifyEmail({ token: 'invalid-token' });
