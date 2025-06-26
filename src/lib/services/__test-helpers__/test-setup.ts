@@ -2,26 +2,59 @@
  * Shared test setup and mocks for UserService tests
  */
 
+// Create the complete mock functions for User model
+const findMock = jest.fn();
+const findByIdMock = jest.fn();
+const findByEmailMock = jest.fn();
+const findByUsernameMock = jest.fn();
+const findByResetTokenMock = jest.fn();
+const findByVerificationTokenMock = jest.fn();
+const countDocumentsMock = jest.fn();
+const aggregateMock = jest.fn();
+const findByIdAndDeleteMock = jest.fn();
+
+// Create a mock constructor
+const UserMock = jest.fn().mockImplementation(data => {
+  return {
+    ...data,
+    generateEmailVerificationToken: jest.fn().mockReturnValue('mock-token'),
+    save: jest.fn().mockResolvedValue(true),
+    toPublicJSON: jest.fn().mockReturnValue({
+      id: data._id || '507f1f77bcf86cd799439011',
+      email: data.email || 'test@example.com',
+      username: data.username || 'testuser',
+    }),
+    comparePassword: jest.fn().mockResolvedValue(true),
+    _id: { toString: () => data._id || '507f1f77bcf86cd799439011' },
+  };
+});
+
+// Setup for findMock to work with chainable syntax
+findMock.mockReturnValue({
+  sort: jest.fn().mockReturnValue({
+    skip: jest.fn().mockReturnValue({
+      limit: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
+      }),
+    }),
+  }),
+});
+
+// Assign static methods to the constructor
+UserMock.findByEmail = findByEmailMock;
+UserMock.findByUsername = findByUsernameMock;
+UserMock.findById = findByIdMock;
+UserMock.findByResetToken = findByResetTokenMock;
+UserMock.findByVerificationToken = findByVerificationTokenMock;
+UserMock.find = findMock;
+UserMock.countDocuments = countDocumentsMock;
+UserMock.aggregate = aggregateMock;
+UserMock.findByIdAndDelete = findByIdAndDeleteMock;
+
 // Mock the User model
 jest.mock('../../models/User', () => ({
-  User: jest.fn().mockImplementation(() => ({
-    generateEmailVerificationToken: jest.fn(),
-    save: jest.fn(),
-    toPublicJSON: jest.fn(),
-  })),
+  default: UserMock,
 }));
-
-// Add static methods to the mocked User constructor
-const MockedUser = jest.mocked(require('../../models/User').User);
-MockedUser.findByEmail = jest.fn();
-MockedUser.findByUsername = jest.fn();
-MockedUser.findById = jest.fn();
-MockedUser.findByResetToken = jest.fn();
-MockedUser.findByVerificationToken = jest.fn();
-MockedUser.find = jest.fn();
-MockedUser.countDocuments = jest.fn();
-MockedUser.aggregate = jest.fn();
-MockedUser.findByIdAndDelete = jest.fn();
 
 // Mock bcrypt
 jest.mock('bcryptjs', () => ({
@@ -30,7 +63,7 @@ jest.mock('bcryptjs', () => ({
 }));
 
 // Export mocked user for tests
-export const mockUser = MockedUser;
+export const mockUser = UserMock;
 
 // Mock user data
 export const mockUserData = {

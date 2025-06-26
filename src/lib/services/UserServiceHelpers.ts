@@ -1,4 +1,6 @@
 import User from '../models/User';
+// For testing compatibility with Jest mock
+const UserModel = User;
 import { UserAlreadyExistsError } from './UserServiceErrors';
 import type { PublicUser } from '../validations/user';
 
@@ -13,12 +15,12 @@ export async function checkUserExists(
   email: string,
   username: string
 ): Promise<void> {
-  const existingUserByEmail = await User.findByEmail(email);
+  const existingUserByEmail = await UserModel.findByEmail(email);
   if (existingUserByEmail) {
     throw new UserAlreadyExistsError('email', email);
   }
 
-  const existingUserByUsername = await User.findByUsername(username);
+  const existingUserByUsername = await UserModel.findByUsername(username);
   if (existingUserByUsername) {
     throw new UserAlreadyExistsError('username', username);
   }
@@ -33,14 +35,14 @@ export async function checkProfileUpdateConflicts(
   username?: string
 ): Promise<void> {
   if (email) {
-    const existingUser = await User.findByEmail(email);
+    const existingUser = await UserModel.findByEmail(email);
     if (existingUser && existingUser._id.toString() !== userId) {
       throw new UserAlreadyExistsError('email', email);
     }
   }
 
   if (username) {
-    const existingUser = await User.findByUsername(username);
+    const existingUser = await UserModel.findByUsername(username);
     if (existingUser && existingUser._id.toString() !== userId) {
       throw new UserAlreadyExistsError('username', username);
     }
@@ -51,15 +53,30 @@ export async function checkProfileUpdateConflicts(
  * Convert lean users to public format (for pagination results)
  */
 export function convertLeansUsersToPublic(users: any[]): PublicUser[] {
+  if (!users || !Array.isArray(users)) {
+    return [];
+  }
+
   return users.map(user => {
-    // Convert to public format manually since we're using lean()
-    const {
-      passwordHash: _passwordHash,
-      emailVerificationToken: _emailVerificationToken,
-      passwordResetToken: _passwordResetToken,
-      passwordResetExpires: _passwordResetExpires,
-      ...publicUser
-    } = user;
-    return publicUser as PublicUser;
-  });
+      if (!user) return null;
+      
+      // Convert to public format manually since we're using lean()
+      const {
+        passwordHash: _passwordHash,
+        emailVerificationToken: _emailVerificationToken,
+        passwordResetToken: _passwordResetToken,
+        passwordResetExpires: _passwordResetExpires,
+        ...publicUser
+      } = user;
+      
+      // Make sure _id is converted to id format
+      if (publicUser._id) {
+        publicUser.id = publicUser._id.toString
+          ? publicUser._id.toString()
+          : String(publicUser._id);
+      }
+      
+      return publicUser as PublicUser;
+    })
+    .filter(Boolean) as PublicUser[]; // Remove any null entries
 }
