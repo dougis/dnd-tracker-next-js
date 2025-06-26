@@ -207,8 +207,8 @@ dnd-tracker-next-js/
 
 ### **GitHub**
 
-- **Repository**: https://github.com/dougis/dnd-tracker-next-js
-- **Issues**: https://github.com/dougis/dnd-tracker-next-js/issues (46 MVP issues)
+- **Repository**: <https://github.com/dougis/dnd-tracker-next-js>
+- **Issues**: <https://github.com/dougis/dnd-tracker-next-js/issues> (46 MVP issues)
 - **Project Board**: _To be created during Week 1_
 
 ### **Planning Documents**

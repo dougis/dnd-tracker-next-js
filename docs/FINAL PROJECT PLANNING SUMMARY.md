@@ -123,8 +123,8 @@ The D&D Encounter Tracker MVP project planning is now **100% complete** with a c
 
 ### **Repository:**
 
-- **GitHub:** https://github.com/dougis/dnd-tracker-next-js
-- **Issues:** https://github.com/dougis/dnd-tracker-next-js/issues (46 MVP issues)
+- **GitHub:** <https://github.com/dougis/dnd-tracker-next-js>
+- **Issues:** <https://github.com/dougis/dnd-tracker-next-js/issues> (46 MVP issues)
 
 ## 🎖️ **ACHIEVEMENT HIGHLIGHTS**
 

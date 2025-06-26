@@ -7,7 +7,7 @@ Due to GitHub API limitations, branch protection rules need to be configured man
 ## Steps to Configure Branch Protection
 
 1. **Navigate to Repository Settings**
-   - Go to: https://github.com/dougis/dnd-tracker-next-js/settings
+   - Go to: <https://github.com/dougis/dnd-tracker-next-js/settings>
    - Click on "Branches" in the left sidebar
 
 2. **Add Branch Protection Rule**
@@ -16,13 +16,13 @@ Due to GitHub API limitations, branch protection rules need to be configured man
 
 3. **Configure Protection Settings**
 
-   ### Required Reviews
+### Required Reviews
    - ✅ **Require a pull request before merging**
    - ✅ **Require approvals**: 1
    - ✅ **Dismiss stale PR approvals when new commits are pushed**
    - ❌ **Require review from code owners** (not needed for solo development)
 
-   ### Status Checks
+### Status Checks
    - ✅ **Require status checks to pass before merging**
    - ✅ **Require branches to be up to date before merging**
 
@@ -32,13 +32,13 @@ Due to GitHub API limitations, branch protection rules need to be configured man
    - `lint` - ESLint validation
    - `typecheck` - TypeScript compilation
 
-   ### Additional Restrictions
+### Additional Restrictions
    - ✅ **Restrict pushes that create files larger than 100MB**
    - ✅ **Require signed commits** (recommended for security)
    - ❌ **Do not allow force pushes**
    - ❌ **Do not allow deletions**
 
-   ### Administrative Settings
+### Administrative Settings
    - ❌ **Allow force pushes** (for emergency situations only)
    - ❌ **Allow deletions**
 

@@ -335,11 +335,11 @@ export class UserService {
         try {
           // Only check conflicts if the user object has the _id property
           if (user._id) {
-            const userIdString = 
+            const userIdString =
               typeof user._id.toString === 'function'
                 ? user._id.toString()
                 : String(user._id);
-              
+
             await checkProfileUpdateConflicts(
               userIdString,
               emailToCheck,
@@ -630,7 +630,7 @@ export class UserService {
 
       // For test compatibility, handle mocked and real implementations
       if (
-        typeof UserModel.find === 'function' && 
+        typeof UserModel.find === 'function' &&
         typeof UserModel.find().sort !== 'function'
       ) {
         // We're likely in a test environment with a basic mock
@@ -742,9 +742,9 @@ export class UserService {
       return {
         success: false,
         error: {
-          message: 
+          message:
             error instanceof Error
-              ? error.message 
+              ? error.message
               : 'Failed to update subscription',
           code: 'SUBSCRIPTION_UPDATE_FAILED',
           statusCode: 500,

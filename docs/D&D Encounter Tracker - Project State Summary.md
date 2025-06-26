@@ -190,7 +190,7 @@ The MVP enables complete testing of the core D&D combat tracking workflow:
 
 ## 🎯 **BUSINESS SUCCESS METRICS**
 
-### MVP Success (12 weeks):
+### MVP Success (12 weeks)
 
 - [ ] Functional combat tracker deployed to production
 - [ ] User registration and authentication working
@@ -199,7 +199,7 @@ The MVP enables complete testing of the core D&D combat tracking workflow:
 - [ ] Error monitoring and analytics active
 - [ ] User feedback collection system operational
 
-### Business Success (12 months):
+### Business Success (12 months)
 
 - 5,000+ registered users with 15%+ paid conversion
 - $25,000+ MRR with clear path to profitability
@@ -228,11 +228,11 @@ The MVP enables complete testing of the core D&D combat tracking workflow:
 
 ## 🔗 **KEY REPOSITORY LINKS**
 
-- **Main Repository:** https://github.com/dougis/dnd-tracker-next-js
-- **Product Requirements:** https://github.com/dougis/dnd-tracker-next-js/blob/main/docs/Product%20Requirements%20Document.md
-- **Technical Design:** https://github.com/dougis/dnd-tracker-next-js/blob/technical-specification/docs/High%20Level%20Design.md
-- **Project Roadmap:** https://github.com/dougis/dnd-tracker-next-js/blob/technical-specification/docs/Project%20Roadmap.md
-- **All GitHub Issues:** https://github.com/dougis/dnd-tracker-next-js/issues
+- **Main Repository:** <https://github.com/dougis/dnd-tracker-next-js>
+- **Product Requirements:** <https://github.com/dougis/dnd-tracker-next-js/blob/main/docs/Product%20Requirements%20Document.md>
+- **Technical Design:** <https://github.com/dougis/dnd-tracker-next-js/blob/technical-specification/docs/High%20Level%20Design.md>
+- **Project Roadmap:** <https://github.com/dougis/dnd-tracker-next-js/blob/technical-specification/docs/Project%20Roadmap.md>
+- **All GitHub Issues:** <https://github.com/dougis/dnd-tracker-next-js/issues>
 
 ## 🎖️ **PROJECT COMPLETION STATUS**
 
