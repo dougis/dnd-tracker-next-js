@@ -5,7 +5,7 @@ import { ModalManager, type ModalProps } from '../ModalManager';
 
 // Mock the Modal component to avoid issues with Dialog rendering
 jest.mock('../Modal', () => ({
-  Modal: ({ children, title, open, onOpenChange, footer }) => 
+  Modal: ({ children, title, open, onOpenChange, footer }) =>
     open ? (
       <div data-testid="mock-modal" data-title={title}>
         <div>{children}</div>

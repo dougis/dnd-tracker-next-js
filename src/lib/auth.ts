@@ -2,7 +2,6 @@ import NextAuth from 'next-auth';
 import { MongoDBAdapter } from '@auth/mongodb-adapter';
 import { MongoClient } from 'mongodb';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import bcrypt from 'bcryptjs';
 import { UserService } from './services/UserService';
 
 const client = new MongoClient(process.env.MONGODB_URI!);
