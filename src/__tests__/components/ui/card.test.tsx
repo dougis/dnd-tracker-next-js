@@ -40,29 +40,11 @@ describe('Card Components', () => {
       </Card>
     );
 
-    expect(screen.getByTestId('card')).toHaveClass(
-      'rounded-xl',
-      'border',
-      'bg-card',
-      'text-card-foreground',
-      'shadow'
-    );
-    expect(screen.getByTestId('header')).toHaveClass(
-      'flex',
-      'flex-col',
-      'space-y-1.5',
-      'p-6'
-    );
-    expect(screen.getByTestId('title')).toHaveClass(
-      'font-semibold',
-      'leading-none',
-      'tracking-tight'
-    );
-    expect(screen.getByTestId('description')).toHaveClass(
-      'text-sm',
-      'text-muted-foreground'
-    );
-    expect(screen.getByTestId('content')).toHaveClass('p-6', 'pt-0');
+    expect(screen.getByTestId('card')).toHaveClass('rounded-xl border bg-card text-card-foreground shadow');
+    expect(screen.getByTestId('header')).toHaveClass('flex flex-col space-y-1.5 p-6');
+    expect(screen.getByTestId('title')).toHaveClass('font-semibold leading-none tracking-tight');
+    expect(screen.getByTestId('description')).toHaveClass('text-sm text-muted-foreground');
+    expect(screen.getByTestId('content')).toHaveClass('p-6 pt-0');
   });
 
   it('can be used with D&D-themed classes', () => {
@@ -72,9 +54,6 @@ describe('Card Components', () => {
       </Card>
     );
 
-    expect(screen.getByTestId('dnd-card')).toHaveClass(
-      'character-pc',
-      'combat-card'
-    );
+    expect(screen.getByTestId('dnd-card')).toHaveClass('character-pc combat-card');
   });
 });

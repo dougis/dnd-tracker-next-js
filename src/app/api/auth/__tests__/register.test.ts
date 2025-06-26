@@ -5,9 +5,9 @@ import { UserService } from '@/lib/services/UserService';
 // Mock the UserService
 jest.mock('@/lib/services/UserService', () => {
   return {
-    UserService: jest.fn().mockImplementation(() => ({
+    UserService: {
       createUser: jest.fn(),
-    })),
+    }
   };
 });
 
@@ -35,19 +35,14 @@ describe('POST /api/auth/register', () => {
 
   it('successfully registers a new user', async () => {
     // Mock the UserService.createUser method to return success
-    const mockUserServiceInstance = {
-      createUser: jest.fn().mockResolvedValue({
-        success: true,
-        data: {
-          id: '12345',
-          email: 'john.doe@example.com',
-          username: 'johndoe',
-        },
-      }),
-    };
-    (UserService as jest.Mock).mockImplementation(
-      () => mockUserServiceInstance
-    );
+    UserService.createUser = jest.fn().mockResolvedValue({
+      success: true,
+      data: {
+        id: '12345',
+        email: 'john.doe@example.com',
+        username: 'johndoe',
+      },
+    });
 
     const request = createMockRequest(mockUserData);
     const response = await POST(request);
@@ -63,7 +58,7 @@ describe('POST /api/auth/register', () => {
         username: 'johndoe',
       },
     });
-    expect(mockUserServiceInstance.createUser).toHaveBeenCalledWith(
+    expect(UserService.createUser).toHaveBeenCalledWith(
       mockUserData
     );
   });
@@ -84,7 +79,7 @@ describe('POST /api/auth/register', () => {
     expect(responseData.message).toBe('Validation error');
     expect(responseData.errors).toBeDefined();
     expect(responseData.errors.length).toBeGreaterThan(0);
-    expect(mockUserServiceInstance.createUser).not.toHaveBeenCalled();
+    expect(UserService.createUser).not.toHaveBeenCalled();
   });
 
   it('handles service errors', async () => {
@@ -98,12 +93,7 @@ describe('POST /api/auth/register', () => {
       },
     };
 
-    const mockUserServiceInstance = {
-      createUser: jest.fn().mockResolvedValue(mockError),
-    };
-    (UserService as jest.Mock).mockImplementation(
-      () => mockUserServiceInstance
-    );
+    UserService.createUser = jest.fn().mockResolvedValue(mockError);
 
     const request = createMockRequest(mockUserData);
     const response = await POST(request);
@@ -115,19 +105,14 @@ describe('POST /api/auth/register', () => {
       message: 'Email already exists',
       errors: [{ field: 'email', message: 'Email already exists' }],
     });
-    expect(mockUserServiceInstance.createUser).toHaveBeenCalledWith(
+    expect(UserService.createUser).toHaveBeenCalledWith(
       mockUserData
     );
   });
 
   it('handles unexpected errors', async () => {
     // Mock the UserService.createUser method to throw an error
-    const mockUserServiceInstance = {
-      createUser: jest.fn().mockRejectedValue(new Error('Unexpected error')),
-    };
-    (UserService as jest.Mock).mockImplementation(
-      () => mockUserServiceInstance
-    );
+    UserService.createUser = jest.fn().mockRejectedValue(new Error('Unexpected error'));
 
     const request = createMockRequest(mockUserData);
     const response = await POST(request);
@@ -138,7 +123,7 @@ describe('POST /api/auth/register', () => {
       success: false,
       message: 'An unexpected error occurred',
     });
-    expect(mockUserServiceInstance.createUser).toHaveBeenCalledWith(
+    expect(UserService.createUser).toHaveBeenCalledWith(
       mockUserData
     );
   });
