@@ -39,8 +39,8 @@ if (typeof window !== 'undefined') {
       removeListener: jest.fn(), // deprecated
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
-    })),
+      dispatchEvent: jest.fn()
+    }))
   });
 }
 
@@ -63,7 +63,7 @@ console.error = (...args) => {
   // Suppress React 18 scheduler errors (act warnings)
   const reactSchedulerWarnings = [
     'Warning: An update to %s inside a test was not wrapped in act',
-    'The current testing environment is not configured to support act',
+    'The current testing environment is not configured to support act'
   ];
 
   if (
