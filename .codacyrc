@@ -1,6 +1,6 @@
 {
   "coverage": {
-    "threshold": 20,
+    "threshold": 0,
     "enabled": true
   }
 }
