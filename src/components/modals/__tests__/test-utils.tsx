@@ -6,7 +6,7 @@ jest.mock('../ModalManager', () => {
   const originalModule = jest.requireActual('../ModalManager');
 
   // Create a mock context with required methods
-const mockModalManager = {
+  const mockModalManager = {
     openModal: jest.fn(),
     closeModal: jest.fn(),
     updateModal: jest.fn(),
