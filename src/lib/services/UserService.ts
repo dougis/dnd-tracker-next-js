@@ -322,7 +322,6 @@ export class UserService {
       // In tests, these might be undefined
       const userEmail = user.email || '';
       const userUsername = user.username || '';
-      
       const emailToCheck =
         validatedData.email && validatedData.email !== userEmail
           ? validatedData.email
@@ -336,9 +335,10 @@ export class UserService {
         try {
           // Only check conflicts if the user object has the _id property
           if (user._id) {
-            const userIdString = typeof user._id.toString === 'function' 
-              ? user._id.toString() 
-              : String(user._id);
+            const userIdString = 
+              typeof user._id.toString === 'function'
+                ? user._id.toString()
+                : String(user._id);
               
             await checkProfileUpdateConflicts(
               userIdString,
@@ -629,10 +629,13 @@ export class UserService {
       let total = 0;
 
       // For test compatibility, handle mocked and real implementations
-      if (typeof UserModel.find === 'function' && typeof UserModel.find().sort !== 'function') {
+      if (
+        typeof UserModel.find === 'function' && 
+        typeof UserModel.find().sort !== 'function'
+      ) {
         // We're likely in a test environment with a basic mock
-        users = await UserModel.find(query) || [];
-        total = await UserModel.countDocuments(query) || 0;
+        users = (await UserModel.find(query)) || [];
+        total = (await UserModel.countDocuments(query)) || 0;
       } else {
         // We're in a real environment with a full query chain
         const findQuery = UserModel.find(query);
@@ -739,7 +742,10 @@ export class UserService {
       return {
         success: false,
         error: {
-          message: error instanceof Error ? error.message : 'Failed to update subscription',
+          message: 
+            error instanceof Error
+              ? error.message 
+              : 'Failed to update subscription',
           code: 'SUBSCRIPTION_UPDATE_FAILED',
           statusCode: 500,
         },

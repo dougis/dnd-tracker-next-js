@@ -226,15 +226,16 @@ describe('UserService CRUD Operations', () => {
       const mockFind = jest.fn();
       User.find = mockFind;
       
-      UserService.getUsers = jest.fn().mockImplementation(async (page, limit, filters) => {
-        mockFind(filters || {});
-        return {
-          success: true,
-          data: {
-            data: [],
-            pagination: { page, limit, total: 0, totalPages: 0 }
-          }
-        };
+      UserService.getUsers = jest.fn()
+        .mockImplementation(async (page, limit, filters) => {
+          mockFind(filters || {});
+          return {
+            success: true,
+            data: {
+              data: [],
+              pagination: { page, limit, total: 0, totalPages: 0 },
+            },
+          };
       });
       
       await UserService.getUsers(1, 10, {
