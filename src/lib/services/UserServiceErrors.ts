@@ -71,6 +71,7 @@ export function handleServiceError(
   defaultStatusCode: number = 500
 ): ServiceResult<never> {
   if (error instanceof UserServiceError) {
+    // Directly return the error from the custom error class
     return {
       success: false,
       error: {
