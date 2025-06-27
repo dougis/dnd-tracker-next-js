@@ -1,6 +1,10 @@
 // This adds custom jest matchers from jest-dom
 require('@testing-library/jest-dom');
 
+// Set database environment variables for all tests
+process.env.MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+process.env.MONGODB_DB_NAME = process.env.MONGODB_DB_NAME || 'test-db';
+
 // Set up missing browser APIs
 global.MutationObserver = class {
   constructor(_callback) {}

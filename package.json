@@ -15,7 +15,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:coverage:watch": "jest --coverage --watch",
-    "test:ci": "jest --coverage --watchAll=false --ci"
+    "test:ci": "jest --coverage --watchAll=false --ci --forceExit --detectOpenHandles"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.10.0",

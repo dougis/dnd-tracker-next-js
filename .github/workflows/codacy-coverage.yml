@@ -27,6 +27,13 @@ jobs:
 
       - name: Run tests with coverage
         run: npm run test:ci
+        env:
+          # Set mock MongoDB environment variables for CI
+          MONGODB_URI: 'mongodb://localhost:27017'
+          MONGODB_DB_NAME: 'test-db'
+          # Add flag to indicate we're in CI environment
+          CI: true
+          NODE_ENV: 'test'
 
       - name: Run Codacy Coverage Reporter
         uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699 # v1
