@@ -20,7 +20,7 @@ jest.mock('mongoose', () => ({
 jest.mock('./mongodb-setup', () => ({
   setupTestMongoDB: jest.fn().mockResolvedValue({
     uri: 'mongodb://localhost:27017',
-    dbName: 'test-db'
+    dbName: 'test-db',
   }),
   validateMongoDBEnvironment: jest.fn(),
 }));
@@ -32,7 +32,7 @@ describe('Database Connection', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.resetModules(); // Reset module cache to ensure fresh state
-    
+
     // Setup for both CI and local environments
     process.env = {
       ...originalEnv,
