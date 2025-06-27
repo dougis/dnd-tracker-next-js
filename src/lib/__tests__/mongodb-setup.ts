@@ -34,7 +34,8 @@ export function validateMongoDBEnvironment() {
 
 export async function setupTestMongoDB() {
   // Check for the Codacy coverage environment (GitHub CI) with MongoDB service container
-  if (process.env.CI === 'true' && process.env.MONGODB_URI) {
+  // Note: GitHub Actions sets CI=true (not 'true' string)
+  if ((process.env.CI === 'true' || process.env.CI === true) && process.env.MONGODB_URI) {
     // In CI with MongoDB service container
     console.log(`Using CI MongoDB at ${process.env.MONGODB_URI}`);
     

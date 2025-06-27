@@ -16,15 +16,26 @@ jest.mock('../db', () => ({
   disconnectFromDatabase: jest.fn(),
 }));
 
+// Mock the MongoDB setup utilities
+jest.mock('./mongodb-setup', () => ({
+  setupTestMongoDB: jest.fn().mockResolvedValue({
+    uri: 'mongodb://localhost:27017',
+    dbName: 'test-db'
+  }),
+  validateMongoDBEnvironment: jest.fn(),
+}));
+
 const originalEnv = process.env;
 
 describe('Database Utils', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Use existing environment variables if they exist (for CI), otherwise use defaults
     process.env = {
       ...originalEnv,
-      MONGODB_URI: 'mongodb://localhost:27017',
-      MONGODB_DB_NAME: 'test-db',
+      MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017',
+      MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || 'test-db',
     };
   });
 
