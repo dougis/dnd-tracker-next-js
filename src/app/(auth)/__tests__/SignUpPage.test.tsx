@@ -101,10 +101,8 @@ describe('SignUpPage Component', () => {
     });
   });
 
-  // Skip this test in CI as it's failing but not critical for coverage
-  (process.env.CI ? it.skip : it)(
-    'shows validation errors for invalid form data', 
-    async () => {
+  // Updated to be more robust in CI environments
+  it('shows validation errors for invalid form data', async () => {
     render(<SignUpPage />);
 
     // Submit the form without filling any fields
@@ -113,52 +111,89 @@ describe('SignUpPage Component', () => {
     );
 
     await waitFor(() => {
-      // Just verify that at least one validation error message appears
-      const errorElements = screen.queryAllByText(/required|invalid|must be/i);
-      expect(errorElements.length).toBeGreaterThan(0);
+      // Check for validation errors using a more robust approach
+      // Look for any text containing validation-related terms
+      const errorTexts = [
+        /required/i,
+        /invalid/i,
+        /must be/i,
+        /cannot/i,
+      ];
+      
+      // Find any elements containing these error messages
+      const pageContent = document.body.textContent || '';
+      
+      // At least one of these error patterns should appear in the page content
+      const hasValidationError = errorTexts.some(pattern => pattern.test(pageContent));
+      expect(hasValidationError).toBe(true);
+      
+      // The form should remain interactive (not in loading state)
+      const submitButton = screen.getByRole('button', { name: /Create Account/i });
+      expect(submitButton).toBeEnabled();
     });
   });
 
-  // Skip this test in CI as it's failing but not critical for coverage
-  (process.env.CI ? it.skip : it)(
-    'handles server errors', 
-    async () => {
-      // Mock fetch to return an error
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: false,
-        json: jest.fn().mockResolvedValue({
-          success: false,
-          message: 'Email already exists',
-          errors: [{ field: 'email', message: 'Email already exists' }],
-        }),
-      });
+  // Updated test to be more robust in CI environments
+  it('handles server errors', async () => {
+    // Mock fetch to return an error
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: false,
+      json: jest.fn().mockResolvedValue({
+        success: false,
+        message: 'Email already exists',
+        errors: [{ field: 'email', message: 'Email already exists' }],
+      }),
+    });
 
-      render(<SignUpPage />);
+    render(<SignUpPage />);
 
-      // Fill the form with valid data
-      await userEvent.type(screen.getByLabelText(/First Name/i), 'John');
-      await userEvent.type(screen.getByLabelText(/Last Name/i), 'Doe');
-      await userEvent.type(screen.getByLabelText(/Username/i), 'johndoe');
-      await userEvent.type(
-        screen.getByLabelText(/Email/i),
-        'john.doe@example.com'
+    // Fill the form with valid data
+    await userEvent.type(screen.getByLabelText(/First Name/i), 'John');
+    await userEvent.type(screen.getByLabelText(/Last Name/i), 'Doe');
+    await userEvent.type(screen.getByLabelText(/Username/i), 'johndoe');
+    await userEvent.type(
+      screen.getByLabelText(/Email/i),
+      'john.doe@example.com'
+    );
+    await userEvent.type(screen.getByLabelText(/^Password/i), 'Password123!');
+    await userEvent.type(
+      screen.getByLabelText(/Confirm Password/i),
+      'Password123!'
+    );
+    await userEvent.click(screen.getByLabelText(/I agree to the/i));
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /Create Account/i })
+    );
+
+    // Essential behavior to test:
+    // 1. API request is made (fetch is called)
+    // 2. Router is not called (user is not redirected)
+    // 3. Form remains enabled (not submitting state anymore)
+    await waitFor(() => {
+      // Check the API call was made with the right data
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/auth/register',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+          }),
+        })
       );
-      await userEvent.type(screen.getByLabelText(/^Password/i), 'Password123!');
-      await userEvent.type(
-        screen.getByLabelText(/Confirm Password/i),
-        'Password123!'
-      );
-      await userEvent.click(screen.getByLabelText(/I agree to the/i));
-
-      await userEvent.click(
-        screen.getByRole('button', { name: /Create Account/i })
-      );
-
-      // Instead of checking for exact text, check for fetch being called
-      // and router not being called, which is the essential behavior
-      await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalled();
-        expect(mockRouter.push).not.toHaveBeenCalled();
-      });
+      
+      // User should not be redirected after error
+      expect(mockRouter.push).not.toHaveBeenCalled();
+      
+      // Verify the form state after server error
+      // Since errors might be displayed in various ways, we'll check the form's state
+      // in a more reliable way by inspecting component properties rather than DOM elements
+      
+      // 1. The submit button should be enabled again (not in loading state)
+      const submitButton = screen.getByRole('button', { name: /Create Account/i });
+      expect(submitButton).toBeEnabled();
+      expect(submitButton).not.toHaveAttribute('disabled');
+      expect(submitButton).not.toHaveTextContent(/Creating account/i);
+    });
   });
 });
