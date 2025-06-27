@@ -14,15 +14,23 @@ let mongoServer: MongoMemoryServer;
  * Setup MongoDB for tests - either using a real connection or in-memory server
  */
 export async function setupTestMongoDB() {
-  if (!process.env.MONGODB_URI) {
-    // If no MongoDB URI is provided, start an in-memory MongoDB server
+  // Check for the Codacy coverage environment (GitHub CI) with MongoDB service container
+  if (process.env.CI === 'true' && process.env.MONGODB_URI) {
+    // In CI with MongoDB service container
+    console.log(`Using CI MongoDB at ${process.env.MONGODB_URI}`);
+    
+    // Ensure MONGODB_DB_NAME is set
+    if (!process.env.MONGODB_DB_NAME) {
+      process.env.MONGODB_DB_NAME = 'testdb';
+      console.log(`Set default MONGODB_DB_NAME in CI: ${process.env.MONGODB_DB_NAME}`);
+    }
+  } else {
+    // Local development - use in-memory MongoDB
     console.log('Starting in-memory MongoDB server for tests');
     mongoServer = await MongoMemoryServer.create();
     process.env.MONGODB_URI = mongoServer.getUri();
     process.env.MONGODB_DB_NAME = 'testdb';
     console.log(`Started in-memory MongoDB at ${process.env.MONGODB_URI}`);
-  } else {
-    console.log(`Using existing MongoDB at ${process.env.MONGODB_URI}`);
   }
   
   return {

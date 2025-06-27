@@ -44,8 +44,10 @@ jobs:
           MONGODB_URI: 'mongodb://localhost:27017/testdb'
           MONGODB_DB_NAME: 'testdb'
           # Add flag to indicate we're in CI environment
-          CI: true
+          CI: 'true'
           NODE_ENV: 'test'
+          # Debug level for MongoDB connection issues
+          DEBUG: 'mongodb:*'
 
       - name: Run Codacy Coverage Reporter
         uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699 # v1
