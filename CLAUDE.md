@@ -114,7 +114,7 @@ This project follows a **GitHub Flow** branching strategy optimized for continuo
    npm test                 # All tests must pass
    npm run build            # Verify production build
    use the codacy mcp server to examine the code and fix any issues it finds
-   use the markdownlint-mcp server to evaluate all markdown files and fix any issues found in them
+   use the markdownlint-mcp server to evaluate all markdown files and fix any issues
    ```
 
 4. **Create Pull Request**
@@ -147,12 +147,16 @@ This project follows a **GitHub Flow** branching strategy optimized for continuo
 
 5. **Automated Code Review Process**
    - **Automatic Merging**: PRs are automatically merged when all checks pass
-   - **Required Checks**: Build, tests, linting, TypeScript compilation, Codacy quality gates
-   - **Manual Review Override**: Can be disabled for critical changes requiring human review
-   - **Check Monitoring**: System waits for checks to complete before making merge decisions
+   - **Required Checks**: Build, tests, linting, TypeScript compilation,
+     Codacy quality gates
+   - **Manual Review Override**: Can be disabled for critical changes requiring
+     human review
+   - **Check Monitoring**: System waits for checks to complete before making
+     merge decisions
    - **Failure Handling**: Failed checks must be addressed before re-attempting merge
 
 6. **Merge and Cleanup**
+
    ```bash
    # After successful merge (automatic or manual), clean up locally
    git checkout main
@@ -293,7 +297,7 @@ src/
 - **Party Manager:** Character creation/editing, player assignment
 - **Subscription Manager:** Freemium tier enforcement and upgrade flows
 
-## Development Workflow
+## Development Process
 
 ### Phase-Based Development (12 Weeks)
 
@@ -448,3 +452,5 @@ All comprehensive project documentation is in the `docs/` folder:
 **Next Phase:** Continue with Phase 2 authentication and data layer issues
 
 **Development Velocity:** Foundation phase completed efficiently with all quality gates passing
+
+
