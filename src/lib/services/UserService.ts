@@ -643,7 +643,6 @@ export class UserService {
         const skipQuery = sortQuery.skip(skip);
         const limitQuery = skipQuery.limit(limit);
         const leanQuery = limitQuery.lean();
-        
         [users, total] = await Promise.all([
           leanQuery,
           UserModel.countDocuments(query),
