@@ -3,6 +3,10 @@
  * 
  * This module provides mock implementations of MongoDB methods to allow
  * tests to run without an actual database connection.
+ * 
+ * This is used by tests that need to mock MongoDB operations but don't need
+ * a real database connection. For tests that need a real database connection,
+ * use the mongodb-setup.ts module instead.
  */
 
 // Create mock schema and model functionality
