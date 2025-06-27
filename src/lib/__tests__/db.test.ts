@@ -58,10 +58,11 @@ describe('Database Connection', () => {
       const { connectToDatabase } = require('../db');
       await connectToDatabase();
 
+      // Use environment variables instead of hardcoded values
       expect(mongoose.connect).toHaveBeenCalledWith(
-        'mongodb://localhost:27017',
+        process.env.MONGODB_URI,
         expect.objectContaining({
-          dbName: 'test-db',
+          dbName: process.env.MONGODB_DB_NAME,
           bufferCommands: false,
           maxPoolSize: 10,
           serverSelectionTimeoutMS: 5000,
