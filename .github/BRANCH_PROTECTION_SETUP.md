@@ -17,28 +17,33 @@ Due to GitHub API limitations, branch protection rules need to be configured man
 3. **Configure Protection Settings**
 
 ### Required Reviews
+
 - ✅ **Require a pull request before merging**
 - ✅ **Require approvals**: 1
 - ✅ **Dismiss stale PR approvals when new commits are pushed**
 - ❌ **Require review from code owners** (not needed for solo development)
 
 ### Status Checks
+
 - ✅ **Require status checks to pass before merging**
 - ✅ **Require branches to be up to date before merging**
 
-   **Required status checks to add when CI/CD is configured:**
+  **Required status checks to add when CI/CD is configured:**
+
 - `build` - Build process completion
 - `test` - Test suite execution
 - `lint` - ESLint validation
 - `typecheck` - TypeScript compilation
 
 ### Additional Restrictions
+
 - ✅ **Restrict pushes that create files larger than 100MB**
 - ✅ **Require signed commits** (recommended for security)
 - ❌ **Do not allow force pushes**
 - ❌ **Do not allow deletions**
 
 ### Administrative Settings
+
 - ❌ **Allow force pushes** (for emergency situations only)
 - ❌ **Allow deletions**
 

@@ -652,6 +652,6 @@ jobs:
 - [ ] Performance monitoring active
 - [ ] Security headers validated
 
-This High Level Design provides a comprehensive roadmap for implementing the D&D 
-Encounter Tracker, ensuring scalability, maintainability, and adherence to modern 
+This High Level Design provides a comprehensive roadmap for implementing the D&D
+Encounter Tracker, ensuring scalability, maintainability, and adherence to modern
 development practices.

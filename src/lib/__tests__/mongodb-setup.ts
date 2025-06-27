@@ -27,21 +27,26 @@ export function validateMongoDBEnvironment() {
       '🚨 MONGODB_DB_NAME environment variable is not defined! Tests cannot run without database name.'
     );
   }
-  
+
   console.log('✅ MongoDB environment variables validated');
 }
 
 export async function setupTestMongoDB() {
   // Check for the Codacy coverage environment (GitHub CI) with MongoDB service container
   // Note: GitHub Actions sets CI=true (not 'true' string)
-  if ((process.env.CI === 'true' || process.env.CI === true) && process.env.MONGODB_URI) {
+  if (
+    (process.env.CI === 'true' || process.env.CI === true) &&
+    process.env.MONGODB_URI
+  ) {
     // In CI with MongoDB service container
     console.log(`Using CI MongoDB at ${process.env.MONGODB_URI}`);
-    
+
     // Ensure MONGODB_DB_NAME is set
     if (!process.env.MONGODB_DB_NAME) {
       process.env.MONGODB_DB_NAME = 'testdb';
-      console.log(`Set default MONGODB_DB_NAME in CI: ${process.env.MONGODB_DB_NAME}`);
+      console.log(
+        `Set default MONGODB_DB_NAME in CI: ${process.env.MONGODB_DB_NAME}`
+      );
     }
   } else {
     // Local development - use in-memory MongoDB
@@ -51,10 +56,10 @@ export async function setupTestMongoDB() {
     process.env.MONGODB_DB_NAME = 'testdb';
     console.log(`Started in-memory MongoDB at ${process.env.MONGODB_URI}`);
   }
-  
+
   // Validate environment variables
   validateMongoDBEnvironment();
-  
+
   return {
     uri: process.env.MONGODB_URI,
     dbName: process.env.MONGODB_DB_NAME,
@@ -77,6 +82,6 @@ export async function teardownTestMongoDB() {
 export function getMongoDBConfig() {
   return {
     uri: process.env.MONGODB_URI,
-    dbName: process.env.MONGODB_DB_NAME
+    dbName: process.env.MONGODB_DB_NAME,
   };
 }

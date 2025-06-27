@@ -13,7 +13,9 @@ if (!process.env.MONGODB_DB_NAME) {
 }
 
 // Log the current MongoDB configuration for debugging
-console.log(`[Test Setup] Using MongoDB: ${process.env.MONGODB_URI}, DB: ${process.env.MONGODB_DB_NAME}`);
+console.log(
+  `[Test Setup] Using MongoDB: ${process.env.MONGODB_URI}, DB: ${process.env.MONGODB_DB_NAME}`
+);
 
 // Mock mongoose
 jest.mock('mongoose', () => ({

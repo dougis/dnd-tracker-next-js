@@ -1,58 +1,86 @@
 /**
- * Set up global objects required for Node.js testing environment
- * This file should be imported in jest.setup.js
+ * Setup global objects for testing Next.js API routes
+ * This file configures global objects like fetch, Request, Response, etc.
+ * that are needed for testing server-side Next.js functionality.
  */
 
-// Setup global.Request if running in a Node.js environment
-if (typeof global.Request === 'undefined') {
-  global.Request = class Request {
+// Import fetch for Node.js environment
+const {
+  default: fetch,
+  Request: NodeRequest,
+  Response: NodeResponse,
+} = require('node-fetch');
+
+// Mock fetch globally if not already available
+if (!global.fetch) {
+  global.fetch = fetch;
+}
+
+// Setup global Request class if not available
+if (!global.Request) {
+  global.Request = class Request extends NodeRequest {
     constructor(input, init = {}) {
-      this.url = input;
-      this.method = init.method || 'GET';
-      this.headers = new Headers(init.headers || {});
-      this.body = init.body;
+      super(input, init);
+
+      // Add json method if not present
+      if (!this.json) {
+        this.json = () => {
+          return this.text().then(text => JSON.parse(text));
+        };
+      }
     }
   };
 }
 
-// Setup Headers if needed
-if (typeof global.Headers === 'undefined') {
+// Setup global Response class if not available
+if (!global.Response) {
+  global.Response = class Response extends NodeResponse {
+    constructor(body, init = {}) {
+      super(body, init);
+
+      // Add json method if not present
+      if (!this.json) {
+        this.json = () => {
+          return this.text().then(text => JSON.parse(text));
+        };
+      }
+    }
+  };
+}
+
+// Setup global Headers class if not available
+if (!global.Headers) {
   global.Headers = class Headers {
     constructor(init = {}) {
-      this._headers = { ...init };
-    }
+      this._headers = new Map();
 
-    append(name, value) {
-      this._headers[name.toLowerCase()] = value;
+      if (init) {
+        if (typeof init.forEach === 'function') {
+          init.forEach((value, key) => this.set(key, value));
+        } else {
+          Object.entries(init).forEach(([key, value]) => this.set(key, value));
+        }
+      }
     }
 
     get(name) {
-      return this._headers[name.toLowerCase()];
+      return this._headers.get(name.toLowerCase());
+    }
+
+    set(name, value) {
+      this._headers.set(name.toLowerCase(), String(value));
     }
 
     has(name) {
-      return name.toLowerCase() in this._headers;
-    }
-  };
-}
-
-// Setup Response if needed
-if (typeof global.Response === 'undefined') {
-  global.Response = class Response {
-    constructor(body, init = {}) {
-      this.body = body;
-      this.status = init.status || 200;
-      this.statusText = init.statusText || '';
-      this.headers = new Headers(init.headers || {});
-      this._bodyText = typeof body === 'string' ? body : JSON.stringify(body);
+      return this._headers.has(name.toLowerCase());
     }
 
-    text() {
-      return Promise.resolve(this._bodyText);
+    delete(name) {
+      this._headers.delete(name.toLowerCase());
     }
 
-    json() {
-      return this.text().then(text => JSON.parse(text));
+    *[Symbol.iterator]() {
+      yield* this._headers;
     }
   };
 }

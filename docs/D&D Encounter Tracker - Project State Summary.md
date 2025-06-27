@@ -6,9 +6,9 @@
 
 ## Project Overview
 
-A Next.js full-stack application for D&D Dungeon Masters to efficiently manage 
-combat encounters with a freemium subscription model. The application supports 
-initiative tracking, HP/AC management, legendary actions, lair actions, and 
+A Next.js full-stack application for D&D Dungeon Masters to efficiently manage
+combat encounters with a freemium subscription model. The application supports
+initiative tracking, HP/AC management, legendary actions, lair actions, and
 advanced combat features.
 
 ## ✅ **COMPLETED WORK SUMMARY**

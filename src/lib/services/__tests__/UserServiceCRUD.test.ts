@@ -106,7 +106,7 @@ describe('UserService CRUD Operations', () => {
           message: 'User not found: 507f1f77bcf86cd799439011',
           code: 'USER_NOT_FOUND',
           statusCode: 404,
-        }
+        },
       });
 
       const result = await UserService.updateUserProfile(
@@ -135,7 +135,7 @@ describe('UserService CRUD Operations', () => {
           message: 'User already exists with email: newemail@example.com',
           code: 'USER_ALREADY_EXISTS',
           statusCode: 409,
-        }
+        },
       });
 
       const result = await UserService.updateUserProfile(
@@ -176,7 +176,7 @@ describe('UserService CRUD Operations', () => {
           message: 'User not found: 507f1f77bcf86cd799439011',
           code: 'USER_NOT_FOUND',
           statusCode: 404,
-        }
+        },
       });
 
       const result = await UserService.deleteUser('507f1f77bcf86cd799439011');
@@ -206,7 +206,7 @@ describe('UserService CRUD Operations', () => {
             total: 10,
             totalPages: 5,
           },
-        }
+        },
       });
 
       const result = await UserService.getUsers(1, 2);
@@ -226,7 +226,8 @@ describe('UserService CRUD Operations', () => {
       const mockFind = jest.fn();
       User.find = mockFind;
 
-      UserService.getUsers = jest.fn()
+      UserService.getUsers = jest
+        .fn()
         .mockImplementation(async (page, limit, filters) => {
           mockFind(filters || {});
           return {
@@ -262,7 +263,7 @@ describe('UserService CRUD Operations', () => {
         data: {
           ...mockUserData,
           subscriptionTier: 'expert',
-        }
+        },
       });
 
       const result = await UserService.updateSubscription(
@@ -293,8 +294,8 @@ describe('UserService CRUD Operations', () => {
             expert: 25,
             master: 0,
             guild: 5,
-          }
-        }
+          },
+        },
       });
 
       const result = await UserService.getUserStats();

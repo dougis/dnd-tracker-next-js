@@ -6,10 +6,10 @@
 
 ## 1. Purpose
 
-The D&D Encounter Tracker Web App enables Dungeon Masters to manage combat 
-efficiently with a freemium subscription model. It supports initiative tracking, 
-HP/AC management, class/race tracking, legendary actions, lair actions, and 
-Dexterity-based tiebreakers. The platform offers multiple subscription tiers to 
+The D&D Encounter Tracker Web App enables Dungeon Masters to manage combat
+efficiently with a freemium subscription model. It supports initiative tracking,
+HP/AC management, class/race tracking, legendary actions, lair actions, and
+Dexterity-based tiebreakers. The platform offers multiple subscription tiers to
 monetize advanced features while providing a robust free tier for new users.
 
 ## 2. Scope
@@ -413,6 +413,6 @@ monetize advanced features while providing a robust free tier for new users.
 - **Conditional Lair Actions**: Complex triggers based on HP thresholds or turn counts
 - **Lair Evolution**: Dynamic lair actions that change throughout combat
 
-This updated PRD reflects the integration of lair actions as a core combat feature 
-that enhances the tactical depth of encounter management while maintaining the 
+This updated PRD reflects the integration of lair actions as a core combat feature
+that enhances the tactical depth of encounter management while maintaining the
 freemium business model.

@@ -696,7 +696,6 @@ export class UserService {
 
       // Update subscription tier
       user.subscriptionTier = newTier;
-      
       // Save might be a mock in tests
       if (typeof user.save === 'function') {
         await user.save();
@@ -788,12 +787,13 @@ export class UserService {
           },
         };
       }
-      
+
       // Handle generic errors
       return {
         success: false,
         error: {
-          message: error instanceof Error ? error.message : 'Failed to delete user',
+          message:
+            error instanceof Error ? error.message : 'Failed to delete user',
           code: 'USER_DELETION_FAILED',
           statusCode: 500,
         },
