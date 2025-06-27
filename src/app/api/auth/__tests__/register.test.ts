@@ -1,6 +1,10 @@
+// Import mocked NextRequest - the real one will be replaced with our mock
 import { NextRequest } from 'next/server';
 import { POST } from '../register/route';
 import { UserService } from '@/lib/services/UserService';
+
+// Configure Jest to use our mocks
+jest.mock('next/server');
 
 // Mock the UserService
 jest.mock('@/lib/services/UserService', () => {
@@ -24,9 +28,10 @@ describe('POST /api/auth/register', () => {
   };
 
   const createMockRequest = (body: any) => {
-    return {
-      json: jest.fn().mockResolvedValue(body),
-    } as unknown as NextRequest;
+    const req = new NextRequest('https://example.com');
+    // Use the mocked json method
+    req.json.mockResolvedValue(body);
+    return req;
   };
 
   beforeEach(() => {

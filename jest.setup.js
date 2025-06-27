@@ -1,6 +1,9 @@
 // This adds custom jest matchers from jest-dom
 require('@testing-library/jest-dom');
 
+// Setup global objects needed for testing Next.js API routes
+require('./src/__mocks__/jest-setup-node-globals');
+
 // Set database environment variables for all tests
 // For CI environment, these should be set in the GitHub workflow
 // For local testing, we use these defaults
