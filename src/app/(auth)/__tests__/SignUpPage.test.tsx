@@ -74,12 +74,12 @@ describe('SignUpPage Component', () => {
     await waitFor(() => {
       // Use expect.objectContaining to handle potential differences in property order
       expect(global.fetch).toHaveBeenCalledWith('/api/auth/register', expect.objectContaining({
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }));
-      
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }));
+
       // Verify the body contains all expected fields regardless of order
       const actualCall = (global.fetch as jest.Mock).mock.calls[0][1];
       const parsedBody = JSON.parse(actualCall.body);

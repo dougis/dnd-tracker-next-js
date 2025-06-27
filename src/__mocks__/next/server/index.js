@@ -47,11 +47,11 @@ export class NextResponse extends Response {
     const response = new NextResponse(
       JSON.stringify(body),
       {
-        status: init?.status || 200,
-        headers: {
-          'content-type': 'application/json',
-          ...init?.headers,
-        },
+      status: init?.status || 200,
+      headers: {
+        'content-type': 'application/json',
+        ...init?.headers,
+      },
       }
     );
     return response;

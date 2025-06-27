@@ -1,6 +1,6 @@
 /**
  * MongoDB setup for tests
- * 
+ *
  * This module provides consistent MongoDB configuration for tests,
  * handling both real MongoDB connections and mocked ones depending on the environment.
  */
@@ -22,7 +22,6 @@ export function validateMongoDBEnvironment() {
       '🚨 MONGODB_URI environment variable is not defined! Tests cannot run without database connection.'
     );
   }
-  
   if (!process.env.MONGODB_DB_NAME) {
     throw new Error(
       '🚨 MONGODB_DB_NAME environment variable is not defined! Tests cannot run without database name.'
@@ -58,7 +57,7 @@ export async function setupTestMongoDB() {
   
   return {
     uri: process.env.MONGODB_URI,
-    dbName: process.env.MONGODB_DB_NAME
+    dbName: process.env.MONGODB_DB_NAME,
   };
 }
 
