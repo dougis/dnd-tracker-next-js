@@ -61,7 +61,7 @@ class MockSchema {
       set: (fn: Function) => {
         this.virtuals[name].setter = fn;
         return this.virtuals[name];
-      }
+      },
     };
     return this.virtuals[name];
   }
@@ -150,7 +150,7 @@ class MockQuery {
 
 // Create mock model generator
 function createMockModel(name: string, schema: any) {
-  const model: any = function(data: any) {
+  const model: any = function (data: any) {
     return {
       ...data,
       save: jest.fn().mockResolvedValue(data),
@@ -164,7 +164,7 @@ function createMockModel(name: string, schema: any) {
   model.find = jest.fn().mockImplementation(() => new MockQuery());
   model.findOne = jest.fn().mockImplementation(() => new MockQuery());
   model.findById = jest.fn().mockImplementation(() => new MockQuery());
-  model.create = jest.fn().mockImplementation((data) => Promise.resolve(data));
+  model.create = jest.fn().mockImplementation(data => Promise.resolve(data));
   model.updateOne = jest.fn().mockImplementation(() => Promise.resolve({ modifiedCount: 1 }));
   model.updateMany = jest.fn().mockImplementation(() => Promise.resolve({ modifiedCount: 2 }));
   model.deleteOne = jest.fn().mockImplementation(() => Promise.resolve({ deletedCount: 1 }));

@@ -20,7 +20,7 @@ jest.mock('../db', () => ({
 jest.mock('./mongodb-setup', () => ({
   setupTestMongoDB: jest.fn().mockResolvedValue({
     uri: 'mongodb://localhost:27017',
-    dbName: 'test-db'
+    dbName: 'test-db',
   }),
   validateMongoDBEnvironment: jest.fn(),
 }));
@@ -30,7 +30,7 @@ const originalEnv = process.env;
 describe('Database Utils', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Use existing environment variables if they exist (for CI), otherwise use defaults
     process.env = {
       ...originalEnv,

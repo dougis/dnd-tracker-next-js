@@ -265,5 +265,4 @@ development and delivery of the D&D Encounter Tracker project.**
 
 ### Documentation Credits
 
-Compiled by Claude (Anthropic) - June 9, 2025
 

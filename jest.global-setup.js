@@ -1,6 +1,6 @@
 /**
  * Global setup for Jest tests
- * 
+ *
  * This file runs once before all tests and is responsible for setting up
  * global test dependencies like MongoDB.
  */
@@ -10,7 +10,7 @@ const { setupTestMongoDB, validateMongoDBEnvironment } = require('./src/lib/__te
 
 module.exports = async () => {
   console.log('=== JEST GLOBAL SETUP ===');
-  
+
   // Setup MongoDB for tests - always use setupTestMongoDB
   // to ensure environment variables are set properly
   const { uri, dbName } = await setupTestMongoDB();

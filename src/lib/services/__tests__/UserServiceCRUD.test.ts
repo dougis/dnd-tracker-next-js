@@ -82,7 +82,7 @@ describe('UserService CRUD Operations', () => {
           ...mockUserData,
           firstName: 'Updated',
           lastName: 'Name',
-        }
+        },
       });
 
       const result = await UserService.updateUserProfile(
