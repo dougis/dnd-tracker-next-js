@@ -146,6 +146,7 @@
 
   body {
     @apply bg-background text-foreground font-sans;
+
     font-feature-settings:
       'rlig' 1,
       'calt' 1;
@@ -161,7 +162,7 @@
   }
 
   .font-fantasy {
-    font-family: 'Cinzel', serif;
+    font-family: Cinzel, serif;
     font-feature-settings: 'kern' 1;
   }
 }
@@ -240,14 +241,14 @@
   }
 
   .text-shadow-sm {
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 2px rgb(0 0 0 / 10%);
   }
 
   .text-shadow {
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 2px 4px rgb(0 0 0 / 10%);
   }
 
   .text-shadow-lg {
-    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    text-shadow: 0 4px 8px rgb(0 0 0 / 15%);
   }
 }

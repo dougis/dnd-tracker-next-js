@@ -1,17 +1,18 @@
 /**
- * Set up global objects required for Node.js testing environment
+ * Set up global objects required for Node.js
+ * testing environment
  * This file should be imported in jest.setup.js
  */
 
 // Setup global.Request if running in a Node.js environment
 if (typeof global.Request === 'undefined') {
-  global.Request = class Request {
-    constructor(input, init = {}) {
-      this.url = input;
-      this.method = init.method || 'GET';
-      this.headers = new Headers(init.headers || {});
-      this.body = init.body;
-    }
+  global.Request = function Request(input, init = {}) {
+    return {
+      url: input,
+      method: init.method || 'GET',
+      headers: new Headers(init.headers || {}),
+      body: init.body,
+    };
   };
 }
 

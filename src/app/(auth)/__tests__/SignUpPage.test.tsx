@@ -73,17 +73,20 @@ describe('SignUpPage Component', () => {
 
     await waitFor(() => {
       // Use expect.objectContaining to handle potential differences in property order
-      expect(global.fetch).toHaveBeenCalledWith('/api/auth/register', expect.objectContaining({
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/auth/register',
+        expect.objectContaining({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-        }));
+        })
+      );
 
       // Verify the body contains all expected fields regardless of order
       const actualCall = (global.fetch as jest.Mock).mock.calls[0][1];
       const parsedBody = JSON.parse(actualCall.body);
-      
+
       expect(parsedBody).toEqual({
         firstName: 'John',
         lastName: 'Doe',
@@ -113,22 +116,21 @@ describe('SignUpPage Component', () => {
     await waitFor(() => {
       // Check for validation errors using a more robust approach
       // Look for any text containing validation-related terms
-      const errorTexts = [
-        /required/i,
-        /invalid/i,
-        /must be/i,
-        /cannot/i,
-      ];
-      
+      const errorTexts = [/required/i, /invalid/i, /must be/i, /cannot/i];
+
       // Find any elements containing these error messages
       const pageContent = document.body.textContent || '';
-      
+
       // At least one of these error patterns should appear in the page content
-      const hasValidationError = errorTexts.some(pattern => pattern.test(pageContent));
+      const hasValidationError = errorTexts.some(pattern =>
+        pattern.test(pageContent)
+      );
       expect(hasValidationError).toBe(true);
-      
+
       // The form should remain interactive (not in loading state)
-      const submitButton = screen.getByRole('button', { name: /Create Account/i });
+      const submitButton = screen.getByRole('button', {
+        name: /Create Account/i,
+      });
       expect(submitButton).toBeEnabled();
     });
   });
@@ -181,16 +183,18 @@ describe('SignUpPage Component', () => {
           }),
         })
       );
-      
+
       // User should not be redirected after error
       expect(mockRouter.push).not.toHaveBeenCalled();
-      
+
       // Verify the form state after server error
       // Since errors might be displayed in various ways, we'll check the form's state
       // in a more reliable way by inspecting component properties rather than DOM elements
-      
+
       // 1. The submit button should be enabled again (not in loading state)
-      const submitButton = screen.getByRole('button', { name: /Create Account/i });
+      const submitButton = screen.getByRole('button', {
+        name: /Create Account/i,
+      });
       expect(submitButton).toBeEnabled();
       expect(submitButton).not.toHaveAttribute('disabled');
       expect(submitButton).not.toHaveTextContent(/Creating account/i);

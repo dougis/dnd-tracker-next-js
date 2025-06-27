@@ -2,7 +2,7 @@
 
 **Date:** June 9, 2025  
 **Repository:** dougis/dnd-tracker-next-js  
-**Total MVP Issues:** 46 issues | **Total Effort:** 268 hours | 
+**Total MVP Issues:** 46 issues | **Total Effort:** 268 hours |
 **Average:** 22.3 hours/week
 
 ## 📊 **PHASE OVERVIEW**
@@ -48,13 +48,13 @@
 **Theme:** UI foundation and database configuration  
 **Total Effort:** 23 hours | **Issues:** 5
 
-| Issue | Title                               | Priority | Effort | Dependencies |
-| ----- | ----------------------------------- | -------- | ------ | ------------ |
-| #5    | Install and configure Tailwind CSS  | P1       | 3h     | #2           |
-| #6    | Setup shadcn/ui component library   | P1       | 4h     | #5           |
-| #7    | Create design system foundations    | P1       | 6h     | #6           |
-| #9    | Install and configure Mongoose      | P1       | 4h     | #8           |
-| #46   | Configure automated deployment      | P1       | 6h     | #45          |
+| Issue | Title                              | Priority | Effort | Dependencies |
+| ----- | ---------------------------------- | -------- | ------ | ------------ |
+| #5    | Install and configure Tailwind CSS | P1       | 3h     | #2           |
+| #6    | Setup shadcn/ui component library  | P1       | 4h     | #5           |
+| #7    | Create design system foundations   | P1       | 6h     | #6           |
+| #9    | Install and configure Mongoose     | P1       | 4h     | #8           |
+| #46   | Configure automated deployment     | P1       | 6h     | #45          |
 
 **Week 2 Deliverables:**
 
@@ -70,12 +70,12 @@
 **Theme:** Authentication setup and reusable components  
 **Total Effort:** 24 hours | **Issues:** 4
 
-| Issue | Title                            | Priority | Effort | Dependencies |
-| ----- | -------------------------------- | -------- | ------ | ------------ |
-| #10   | Install and configure NextAuth.js| P1       | 6h     | #9           |
-| #40   | Create application layout        | P1       | 6h     | #7           |
-| #43   | Create form component library    | P1       | 6h     | #7           |
-| #20   | Implement data validation with Zod| P1      | 6h     | #9           |
+| Issue | Title                              | Priority | Effort | Dependencies |
+| ----- | ---------------------------------- | -------- | ------ | ------------ |
+| #10   | Install and configure NextAuth.js  | P1       | 6h     | #9           |
+| #40   | Create application layout          | P1       | 6h     | #7           |
+| #43   | Create form component library      | P1       | 6h     | #7           |
+| #20   | Implement data validation with Zod | P1       | 6h     | #9           |
 
 **Week 3 Deliverables:**
 
@@ -91,13 +91,13 @@
 **Theme:** Complete authentication flow and user data layer  
 **Total Effort:** 24 hours | **Issues:** 5
 
-| Issue | Title                     | Priority | Effort | Dependencies |
-| ----- | ------------------------- | -------- | ------ | ------------ |
-| #11   | Create user registration  | P1       | 6h     | #10          |
-| #21   | Implement session middleware| P1     | 4h     | #10          |
-| #14   | Create User schema and model| P1     | 4h     | #20          |
-| #17   | Create User service layer | P1       | 4h     | #14          |
-| #41   | Build landing page        | P1       | 6h     | #40          |
+| Issue | Title                        | Priority | Effort | Dependencies |
+| ----- | ---------------------------- | -------- | ------ | ------------ |
+| #11   | Create user registration     | P1       | 6h     | #10          |
+| #21   | Implement session middleware | P1       | 4h     | #10          |
+| #14   | Create User schema and model | P1       | 4h     | #20          |
+| #17   | Create User service layer    | P1       | 4h     | #14          |
+| #41   | Build landing page           | P1       | 6h     | #40          |
 
 **Week 4 Deliverables:**
 
@@ -113,12 +113,12 @@
 **Theme:** Character system foundation and creation  
 **Total Effort:** 22 hours | **Issues:** 4
 
-| Issue | Title                         | Priority | Effort | Dependencies |
-| ----- | ----------------------------- | -------- | ------ | ------------ |
-| #15   | Create Character schema       | P1       | 4h     | #20          |
-| #18   | Create Character service      | P1       | 4h     | #15          |
-| #12   | Build character creation form | P1       | 8h     | #18, #43     |
-| #22   | Add character stats management| P1       | 6h     | #12          |
+| Issue | Title                          | Priority | Effort | Dependencies |
+| ----- | ------------------------------ | -------- | ------ | ------------ |
+| #15   | Create Character schema        | P1       | 4h     | #20          |
+| #18   | Create Character service       | P1       | 4h     | #15          |
+| #12   | Build character creation form  | P1       | 8h     | #18, #43     |
+| #22   | Add character stats management | P1       | 6h     | #12          |
 
 **Week 5 Deliverables:**
 
@@ -134,12 +134,12 @@
 **Theme:** Complete character management interface  
 **Total Effort:** 24 hours | **Issues:** 4
 
-| Issue | Title                               | Priority | Effort | Dependencies |
-| ----- | ----------------------------------- | -------- | ------ | ------------ |
-| #23   | Create character list view          | P1       | 6h     | #18          |
-| #24   | Create character editing interface  | P1       | 8h     | #22          |
-| #25   | Character validation and errors     | P1       | 4h     | #20          |
-| #26   | Implement character detail view     | P2       | 6h     | #24          |
+| Issue | Title                              | Priority | Effort | Dependencies |
+| ----- | ---------------------------------- | -------- | ------ | ------------ |
+| #23   | Create character list view         | P1       | 6h     | #18          |
+| #24   | Create character editing interface | P1       | 8h     | #22          |
+| #25   | Character validation and errors    | P1       | 4h     | #20          |
+| #26   | Implement character detail view    | P2       | 6h     | #24          |
 
 **Week 6 Deliverables:**
 
@@ -197,12 +197,12 @@
 **Theme:** Core combat system setup  
 **Total Effort:** 24 hours | **Issues:** 4
 
-| Issue | Title                            | Priority | Effort | Dependencies |
-| ----- | -------------------------------- | -------- | ------ | ------------ |
-| #37   | Create combat state management   | P1       | 8h     | #30          |
-| #13   | Create initiative tracking UI    | P1       | 6h     | #37          |
-| #35   | Implement initiative rolling     | P1       | 6h     | #33          |
-| #39   | Create round tracking system     | P1       | 4h     | #33          |
+| Issue | Title                          | Priority | Effort | Dependencies |
+| ----- | ------------------------------ | -------- | ------ | ------------ |
+| #37   | Create combat state management | P1       | 8h     | #30          |
+| #13   | Create initiative tracking UI  | P1       | 6h     | #37          |
+| #35   | Implement initiative rolling   | P1       | 6h     | #33          |
+| #39   | Create round tracking system   | P1       | 4h     | #33          |
 
 **Week 9 Deliverables:**
 
@@ -218,11 +218,11 @@
 **Theme:** Turn management and HP tracking  
 **Total Effort:** 21 hours | **Issues:** 3
 
-| Issue | Title                    | Priority | Effort | Dependencies |
-| ----- | ------------------------ | -------- | ------ | ------------ |
-| #33   | Build turn management    | P1       | 8h     | #13          |
-| #34   | Create HP tracking UI    | P1       | 8h     | #37          |
-| #36   | Build combat toolbar     | P1       | 5h     | #37          |
+| Issue | Title                 | Priority | Effort | Dependencies |
+| ----- | --------------------- | -------- | ------ | ------------ |
+| #33   | Build turn management | P1       | 8h     | #13          |
+| #34   | Create HP tracking UI | P1       | 8h     | #37          |
+| #36   | Build combat toolbar  | P1       | 5h     | #37          |
 
 **Week 10 Deliverables:**
 
@@ -280,20 +280,20 @@
 
 ### **Effort Distribution by Week:**
 
-| Week | Theme                             | Hours | Issues | Cumulative |
-| ---- | --------------------------------- | ----- | ------ | ---------- |
-| 1    | Project Foundation                | 17h   | 5      | 17h        |
-| 2    | UI Foundation & Database          | 23h   | 5      | 40h        |
-| 3    | Authentication & Core Components  | 24h   | 4      | 64h        |
-| 4    | Auth Complete & Data Models       | 24h   | 5      | 88h        |
-| 5    | Character Data Layer              | 22h   | 4      | 110h       |
-| 6    | Character Management              | 24h   | 4      | 134h       |
-| 7    | Encounter Data Layer & NPCs       | 22h   | 4      | 156h       |
-| 8    | Encounter Management              | 24h   | 4      | 180h       |
-| 9    | Combat Foundation                 | 24h   | 4      | 204h       |
-| 10   | Combat Core Systems               | 21h   | 3      | 225h       |
-| 11   | Advanced Combat & Settings        | 16h   | 3      | 241h       |
-| 12   | Final Polish & Completion         | 20h   | Buffer | 261h       |
+| Week | Theme                            | Hours | Issues | Cumulative |
+| ---- | -------------------------------- | ----- | ------ | ---------- |
+| 1    | Project Foundation               | 17h   | 5      | 17h        |
+| 2    | UI Foundation & Database         | 23h   | 5      | 40h        |
+| 3    | Authentication & Core Components | 24h   | 4      | 64h        |
+| 4    | Auth Complete & Data Models      | 24h   | 5      | 88h        |
+| 5    | Character Data Layer             | 22h   | 4      | 110h       |
+| 6    | Character Management             | 24h   | 4      | 134h       |
+| 7    | Encounter Data Layer & NPCs      | 22h   | 4      | 156h       |
+| 8    | Encounter Management             | 24h   | 4      | 180h       |
+| 9    | Combat Foundation                | 24h   | 4      | 204h       |
+| 10   | Combat Core Systems              | 21h   | 3      | 225h       |
+| 11   | Advanced Combat & Settings       | 16h   | 3      | 241h       |
+| 12   | Final Polish & Completion        | 20h   | Buffer | 261h       |
 
 ### **Priority Distribution:**
 
@@ -372,5 +372,5 @@ Week Focus: [Brief description]
 3. **Set up Sprint automation** for weekly planning
 4. **Configure progress tracking** and burndown charts
 
-**This 12-week plan provides a systematic approach to MVP development with clear 
+**This 12-week plan provides a systematic approach to MVP development with clear
 milestones, dependencies, and deliverables for each week.**

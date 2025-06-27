@@ -264,5 +264,3 @@ Tracker MVP project. All documentation is ready for team and stakeholder use.
 development and delivery of the D&D Encounter Tracker project.**
 
 ### Documentation Credits
-
-

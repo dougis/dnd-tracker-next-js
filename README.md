@@ -127,18 +127,18 @@ to efficiently manage D&D 5e combat encounters with features like:
 
 | Week | Theme                            | Hours | Key Deliverables                     |
 | ---- | -------------------------------- | ----- | ------------------------------------ |
-| 1    | Project Foundation              | 17h   | Next.js setup, MongoDB, Testing      |
-| 2    | UI Foundation & Database        | 23h   | Tailwind, shadcn/ui, Mongoose, CI/CD |
-| 3    | Authentication & Core Components| 24h   | NextAuth.js, Layout, Forms           |
-| 4    | Authentication & Data Models    | 24h   | User registration, Models, Landing   |
-| 5    | Character Data Layer            | 22h   | Character models, Creation, Stats    |
-| 6    | Character Management            | 24h   | Character list, Editing, Validation  |
-| 7    | Encounter Data Layer & NPCs     | 22h   | Encounter models, NPCs, Modals       |
-| 8    | Encounter Management            | 24h   | Participants, Lists, Dashboard       |
-| 9    | Combat Foundation               | 24h   | Combat state, Initiative, Rounds     |
-| 10   | Combat Core Systems             | 21h   | Turn management, HP tracking         |
-| 11   | Advanced Combat & Settings      | 16h   | Damage calculations, Import/export   |
-| 12   | Final Polish & Completion       | 20h   | Bug fixes, Optimization, Deployment  |
+| 1    | Project Foundation               | 17h   | Next.js setup, MongoDB, Testing      |
+| 2    | UI Foundation & Database         | 23h   | Tailwind, shadcn/ui, Mongoose, CI/CD |
+| 3    | Authentication & Core Components | 24h   | NextAuth.js, Layout, Forms           |
+| 4    | Authentication & Data Models     | 24h   | User registration, Models, Landing   |
+| 5    | Character Data Layer             | 22h   | Character models, Creation, Stats    |
+| 6    | Character Management             | 24h   | Character list, Editing, Validation  |
+| 7    | Encounter Data Layer & NPCs      | 22h   | Encounter models, NPCs, Modals       |
+| 8    | Encounter Management             | 24h   | Participants, Lists, Dashboard       |
+| 9    | Combat Foundation                | 24h   | Combat state, Initiative, Rounds     |
+| 10   | Combat Core Systems              | 21h   | Turn management, HP tracking         |
+| 11   | Advanced Combat & Settings       | 16h   | Damage calculations, Import/export   |
+| 12   | Final Polish & Completion        | 20h   | Bug fixes, Optimization, Deployment  |
 
 #### Development Metrics
 

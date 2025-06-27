@@ -65,6 +65,85 @@ export interface UserStats {
 
 export class UserService {
   /**
+   * Helper function to find user by ID and return standardized error if not found
+   */
+  private static async findUserOrError(
+    userId: string
+  ): Promise<ServiceResult<any>> {
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return {
+        success: false,
+        error: {
+          message: `User not found: ${userId}`,
+          code: 'USER_NOT_FOUND',
+          statusCode: 404,
+        },
+      };
+    }
+    return { success: true, data: user };
+  }
+
+  /**
+   * Helper function to safely convert user to public JSON with fallback
+   */
+  private static safeToPublicJSON(user: any): PublicUser {
+    if (typeof user.toPublicJSON === 'function') {
+      return user.toPublicJSON();
+    }
+    return {
+      id: user._id?.toString() || '',
+      email: user.email || '',
+      username: user.username || '',
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      role: user.role || 'user',
+      subscriptionTier: user.subscriptionTier || 'free',
+      isEmailVerified: user.isEmailVerified || false,
+      createdAt: user.createdAt || new Date(),
+      updatedAt: user.updatedAt || new Date(),
+    } as PublicUser;
+  }
+
+  /**
+   * Helper function to handle custom errors consistently
+   */
+  private static handleCustomError(
+    error: any,
+    defaultMessage: string,
+    defaultCode: string
+  ): ServiceResult<any> {
+    if (error instanceof UserNotFoundError) {
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'USER_NOT_FOUND',
+          statusCode: error.statusCode,
+        },
+      };
+    }
+    if (error instanceof UserServiceError) {
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: error.code,
+          statusCode: error.statusCode,
+        },
+      };
+    }
+    return {
+      success: false,
+      error: {
+        message: error instanceof Error ? error.message : defaultMessage,
+        code: defaultCode,
+        statusCode: 500,
+      },
+    };
+  }
+
+  /**
    * Create a new user account
    */
   static async createUser(
@@ -197,46 +276,16 @@ export class UserService {
    */
   static async getUserById(userId: string): Promise<ServiceResult<PublicUser>> {
     try {
-      const user = await UserModel.findById(userId);
-      if (!user) {
-        return {
-          success: false,
-          error: {
-            message: `User not found: ${userId}`,
-            code: 'USER_NOT_FOUND',
-            statusCode: 404,
-          },
-        };
-      }
-
-      // Make sure the user object has the expected method before calling it
-      if (typeof user.toPublicJSON !== 'function') {
-        return {
-          success: false,
-          error: {
-            message: 'Invalid user object returned',
-            code: 'INTERNAL_ERROR',
-            statusCode: 500,
-          },
-        };
+      const userResult = await this.findUserOrError(userId);
+      if (!userResult.success) {
+        return userResult;
       }
 
       return {
         success: true,
-        data: user.toPublicJSON(),
+        data: this.safeToPublicJSON(userResult.data),
       };
     } catch (error) {
-      // Pass through the error directly if it's one of our custom errors
-      if (error instanceof UserNotFoundError) {
-        return {
-          success: false,
-          error: {
-            message: error.message,
-            code: error.code,
-            statusCode: error.statusCode,
-          },
-        };
-      }
       // Ensure compatibility with tests
       if (error instanceof Error && error.message.includes('validation')) {
         return handleServiceError(
@@ -246,15 +295,7 @@ export class UserService {
         );
       }
 
-      // This ensures compatibility with tests expecting USER_NOT_FOUND
-      return {
-        success: false,
-        error: {
-          message: 'User not found',
-          code: 'USER_NOT_FOUND',
-          statusCode: 404,
-        },
-      };
+      return this.handleCustomError(error, 'User not found', 'USER_NOT_FOUND');
     }
   }
 
@@ -272,21 +313,10 @@ export class UserService {
 
       return {
         success: true,
-        data: user.toPublicJSON(),
+        data: this.safeToPublicJSON(user),
       };
     } catch (error) {
-      // Pass through the error directly if it's one of our custom errors
-      if (error instanceof UserNotFoundError) {
-        return {
-          success: false,
-          error: {
-            message: error.message,
-            code: error.code,
-            statusCode: error.statusCode,
-          },
-        };
-      }
-      return handleServiceError(
+      return this.handleCustomError(
         error,
         'Failed to retrieve user',
         'USER_RETRIEVAL_FAILED'
@@ -682,73 +712,28 @@ export class UserService {
     newTier: SubscriptionTier
   ): Promise<ServiceResult<PublicUser>> {
     try {
-      const user = await UserModel.findById(userId);
-      if (!user) {
-        return {
-          success: false,
-          error: {
-            message: `User not found: ${userId}`,
-            code: 'USER_NOT_FOUND',
-            statusCode: 404,
-          },
-        };
+      const userResult = await this.findUserOrError(userId);
+      if (!userResult.success) {
+        return userResult;
       }
 
-      // Update subscription tier
+      const user = userResult.data;
       user.subscriptionTier = newTier;
-      
       // Save might be a mock in tests
       if (typeof user.save === 'function') {
         await user.save();
       }
 
-      // Make sure toPublicJSON is available
-      if (typeof user.toPublicJSON !== 'function') {
-        return {
-          success: true,
-          data: {
-            id: user._id?.toString() || '',
-            email: user.email || '',
-            username: user.username || '',
-            firstName: user.firstName || '',
-            lastName: user.lastName || '',
-            role: user.role || 'user',
-            subscriptionTier: user.subscriptionTier || 'free',
-            isEmailVerified: user.isEmailVerified || false,
-            createdAt: user.createdAt || new Date(),
-            updatedAt: user.updatedAt || new Date(),
-          } as PublicUser,
-        };
-      }
-
       return {
         success: true,
-        data: user.toPublicJSON(),
+        data: this.safeToPublicJSON(user),
       };
     } catch (error) {
-      // Pass through the error directly if it's one of our custom errors
-      if (error instanceof UserNotFoundError) {
-        return {
-          success: false,
-          error: {
-            message: error.message,
-            code: 'USER_NOT_FOUND',
-            statusCode: error.statusCode,
-          },
-        };
-      }
-      // Return a specific error type for test compatibility
-      return {
-        success: false,
-        error: {
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to update subscription',
-          code: 'SUBSCRIPTION_UPDATE_FAILED',
-          statusCode: 500,
-        },
-      };
+      return this.handleCustomError(
+        error,
+        'Failed to update subscription',
+        'SUBSCRIPTION_UPDATE_FAILED'
+      );
     }
   }
 
@@ -758,16 +743,9 @@ export class UserService {
   static async deleteUser(userId: string): Promise<ServiceResult<void>> {
     try {
       // First check if user exists
-      const user = await UserModel.findById(userId);
-      if (!user) {
-        return {
-          success: false,
-          error: {
-            message: `User not found: ${userId}`,
-            code: 'USER_NOT_FOUND',
-            statusCode: 404,
-          },
-        };
+      const userResult = await this.findUserOrError(userId);
+      if (!userResult.success) {
+        return userResult;
       }
 
       // Now delete the user
@@ -777,27 +755,11 @@ export class UserService {
         success: true,
       };
     } catch (error) {
-      // Pass through the error directly if it's one of our custom errors
-      if (error instanceof UserNotFoundError) {
-        return {
-          success: false,
-          error: {
-            message: error.message,
-            code: 'USER_NOT_FOUND',
-            statusCode: error.statusCode,
-          },
-        };
-      }
-      
-      // Handle generic errors
-      return {
-        success: false,
-        error: {
-          message: error instanceof Error ? error.message : 'Failed to delete user',
-          code: 'USER_DELETION_FAILED',
-          statusCode: 500,
-        },
-      };
+      return this.handleCustomError(
+        error,
+        'Failed to delete user',
+        'USER_DELETION_FAILED'
+      );
     }
   }
 

@@ -1,210 +1,247 @@
 /**
  * MongoDB mocking module for tests
- * 
+ *
  * This module provides mock implementations of MongoDB methods to allow
  * tests to run without an actual database connection.
- * 
+ *
  * This is used by tests that need to mock MongoDB operations but don't need
  * a real database connection. For tests that need a real database connection,
- * use the mongodb-setup.ts module instead.
+ * use the mongodb-setup module instead.
  */
 
-// Create mock schema and model functionality
+import { jest } from '@jest/globals';
+
+// Mock query object that can be chained
+class MockQuery {
+  private results: any[] = [];
+  private errorToThrow: Error | null = null;
+
+  mockResolvedValue(value: any) {
+    this.results = Array.isArray(value) ? value : [value];
+    return this;
+  }
+
+  mockRejectedValue(error: Error) {
+    this.errorToThrow = error;
+    return this;
+  }
+
+  find(_query?: any) {
+    return this;
+  }
+
+  findOne(_query?: any) {
+    return this;
+  }
+
+  findById(_id?: any) {
+    return this;
+  }
+
+  sort(_sortOptions?: any) {
+    return this;
+  }
+
+  limit(_limitValue?: number) {
+    return this;
+  }
+
+  skip(_skipValue?: number) {
+    return this;
+  }
+
+  select(_fields?: any) {
+    return this;
+  }
+
+  populate(_path?: any) {
+    return this;
+  }
+
+  lean() {
+    return this;
+  }
+
+  exec() {
+    if (this.errorToThrow) {
+      return Promise.reject(this.errorToThrow);
+    }
+    return Promise.resolve(
+      this.results.length === 1 ? this.results[0] : this.results
+    );
+  }
+
+  then(onFulfilled?: any, onRejected?: any) {
+    return this.exec().then(onFulfilled, onRejected);
+  }
+
+  catch(onRejected?: any) {
+    return this.exec().catch(onRejected);
+  }
+}
+
+// Mock schema class
 class MockSchema {
-  private hooks: Record<string, any> = {};
-  private methods: Record<string, any> = {};
-  private statics: Record<string, any> = {};
-  private virtuals: Record<string, any> = {};
+  methods: Record<string, any> = {};
+  statics: Record<string, any> = {};
 
-  constructor(definition: any, options: any = {}) {
-    // Store schema definition and options for reference
-    this.definition = definition;
-    this.options = options;
+  constructor(_definition: any, _options?: any) {
+    // Schema constructor logic would go here
   }
 
-  // Pre and post hooks
-  pre(hookName: string, fn: Function) {
-    if (!this.hooks[hookName]) {
-      this.hooks[hookName] = [];
-    }
-    this.hooks[hookName].push(fn);
+  pre(_method: string, _fn: Function) {
     return this;
   }
 
-  post(hookName: string, fn: Function) {
-    if (!this.hooks[`post_${hookName}`]) {
-      this.hooks[`post_${hookName}`] = [];
-    }
-    this.hooks[`post_${hookName}`].push(fn);
+  post(_method: string, _fn: Function) {
     return this;
   }
 
-  // Add instance method
+  virtual(_name: string) {
+    return {
+      get: jest.fn().mockReturnThis(),
+      set: jest.fn().mockReturnThis(),
+    };
+  }
+
   method(name: string, fn: Function) {
     this.methods[name] = fn;
     return this;
   }
 
-  // Add static method
   static(name: string, fn: Function) {
     this.statics[name] = fn;
     return this;
   }
 
-  // Add virtual property
-  virtual(name: string) {
-    this.virtuals[name] = {
-      get: (fn: Function) => {
-        this.virtuals[name].getter = fn;
-        return this.virtuals[name];
-      },
-      set: (fn: Function) => {
-        this.virtuals[name].setter = fn;
-        return this.virtuals[name];
-      },
-    };
-    return this.virtuals[name];
+  set(_key: string, _value: any) {
+    return this;
   }
 
-  // Configuration methods
-  set(key: string, value: any) {
-    this.options[key] = value;
+  index(_fields: any, _options?: any) {
+    return this;
+  }
+
+  plugin(_fn: Function, _opts?: any) {
+    return this;
+  }
+
+  add(_obj: any, _prefix?: string) {
     return this;
   }
 }
 
-// Create a mock query builder that is chainable
-class MockQuery {
-  constructor(private data: any[] = []) {}
-
-  // Query methods
-  find(_conditions: any = {}) {
-    return this;
-  }
-
-  findOne(_conditions: any = {}) {
-    return this;
-  }
-
-  findById(id: string) {
-    return this;
-  }
-
-  // Modification methods
-  updateOne(_conditions: any, _update: any) {
-    return Promise.resolve({ modifiedCount: 1, acknowledged: true });
-  }
-
-  updateMany(_conditions: any, _update: any) {
-    return Promise.resolve({ modifiedCount: 2, acknowledged: true });
-  }
-
-  deleteOne(_conditions: any) {
-    return Promise.resolve({ deletedCount: 1, acknowledged: true });
-  }
-
-  deleteMany(_conditions: any) {
-    return Promise.resolve({ deletedCount: 2, acknowledged: true });
-  }
-
-  // Aggregation and counting
-  countDocuments(_conditions: any = {}) {
-    return Promise.resolve(this.data.length);
-  }
-
-  aggregate(_pipeline: any[]) {
-    return this;
-  }
-
-  // Pagination methods
-  sort(_criteria: any) {
-    return this;
-  }
-
-  skip(_n: number) {
-    return this;
-  }
-
-  limit(_n: number) {
-    return this;
-  }
-
-  // Result methods
-  lean() {
-    return this;
-  }
-
-  populate(_path: string | any) {
-    return this;
-  }
-
-  select(_fields: string | any) {
-    return this;
-  }
-
-  // Execute and return results
-  exec() {
-    return Promise.resolve(this.data);
-  }
-}
-
-// Create mock model generator
-function createMockModel(name: string, schema: any) {
-  const model: any = function (data: any) {
+// Mock model factory
+function createMockModel(name: string) {
+  const model = function (data?: any) {
     return {
       ...data,
       save: jest.fn().mockResolvedValue(data),
-      populate: jest.fn().mockReturnThis(),
-      execPopulate: jest.fn().mockResolvedValue(data),
-      remove: jest.fn().mockResolvedValue({ deletedCount: 1 }),
+      remove: jest.fn().mockResolvedValue(data),
+      deleteOne: jest.fn().mockResolvedValue({ deletedCount: 1 }),
+      updateOne: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
+      toObject: jest.fn().mockReturnValue(data),
+      toJSON: jest.fn().mockReturnValue(data),
+      set: jest.fn().mockReturnThis(),
+      get: jest.fn().mockReturnValue(undefined),
+      validate: jest.fn().mockResolvedValue(true),
+      validateSync: jest.fn().mockReturnValue(null),
+      isNew: false,
+      isModified: jest.fn().mockReturnValue(false),
+      markModified: jest.fn(),
     };
   };
 
-  // Add static methods
+  // Add static methods to the model
   model.find = jest.fn().mockImplementation(() => new MockQuery());
   model.findOne = jest.fn().mockImplementation(() => new MockQuery());
   model.findById = jest.fn().mockImplementation(() => new MockQuery());
   model.create = jest.fn().mockImplementation(data => Promise.resolve(data));
-  model.updateOne = jest.fn().mockImplementation(() => Promise.resolve({ modifiedCount: 1 }));
-  model.updateMany = jest.fn().mockImplementation(() => Promise.resolve({ modifiedCount: 2 }));
-  model.deleteOne = jest.fn().mockImplementation(() => Promise.resolve({ deletedCount: 1 }));
-  model.deleteMany = jest.fn().mockImplementation(() => Promise.resolve({ deletedCount: 2 }));
+  model.updateOne = jest
+    .fn()
+    .mockImplementation(() => Promise.resolve({ modifiedCount: 1 }));
+  model.updateMany = jest
+    .fn()
+    .mockImplementation(() => Promise.resolve({ modifiedCount: 2 }));
+  model.deleteOne = jest
+    .fn()
+    .mockImplementation(() => Promise.resolve({ deletedCount: 1 }));
+  model.deleteMany = jest
+    .fn()
+    .mockImplementation(() => Promise.resolve({ deletedCount: 2 }));
   model.countDocuments = jest.fn().mockImplementation(() => Promise.resolve(0));
   model.aggregate = jest.fn().mockImplementation(() => new MockQuery());
+  model.distinct = jest.fn().mockImplementation(() => Promise.resolve([]));
+  model.findOneAndUpdate = jest.fn().mockImplementation(() => new MockQuery());
+  model.findOneAndDelete = jest.fn().mockImplementation(() => new MockQuery());
+  model.findByIdAndUpdate = jest.fn().mockImplementation(() => new MockQuery());
+  model.findByIdAndDelete = jest.fn().mockImplementation(() => new MockQuery());
+  model.insertMany = jest
+    .fn()
+    .mockImplementation(docs => Promise.resolve(docs));
+  model.bulkWrite = jest
+    .fn()
+    .mockImplementation(() =>
+      Promise.resolve({ insertedCount: 0, modifiedCount: 0, deletedCount: 0 })
+    );
+  model.watch = jest.fn().mockImplementation(() => ({
+    on: jest.fn(),
+    close: jest.fn(),
+  }));
 
-  // Add additional methods from schema if provided
-  if (schema && schema.statics) {
-    Object.keys(schema.statics).forEach(key => {
-      model[key] = schema.statics[key];
-    });
-  }
+  // Model metadata
+  model.modelName = name;
+  model.collection = {
+    name: name.toLowerCase(),
+    collectionName: name.toLowerCase(),
+    drop: jest.fn().mockResolvedValue(true),
+    createIndex: jest.fn().mockResolvedValue(true),
+    dropIndex: jest.fn().mockResolvedValue(true),
+    indexes: jest.fn().mockResolvedValue([]),
+  };
+
+  model.schema = new MockSchema({});
 
   return model;
 }
 
-// Mock mongoose module
+// Main mongoose mock object
 const mongoose = {
   connect: jest.fn().mockResolvedValue({
+    connection: { readyState: 1 },
     connections: [{ readyState: 1 }],
   }),
+  disconnect: jest.fn().mockResolvedValue(undefined),
   connection: {
-    close: jest.fn().mockResolvedValue(true),
-    on: jest.fn(),
     readyState: 1,
-  },
-  connections: [{ readyState: 1 }],
-  Schema: jest.fn().mockImplementation((definition, options) => new MockSchema(definition, options)),
-  model: jest.fn().mockImplementation((name, schema) => createMockModel(name, schema)),
-  Types: {
-    ObjectId: class ObjectId {
-      constructor(id?: string) {
-        this.id = id || 'mock-object-id';
-      }
-      toString() {
-        return this.id;
-      }
+    close: jest.fn().mockResolvedValue(undefined),
+    on: jest.fn(),
+    once: jest.fn(),
+    off: jest.fn(),
+    removeAllListeners: jest.fn(),
+    db: {
+      dropDatabase: jest.fn().mockResolvedValue(true),
     },
   },
+  connections: [{ readyState: 1 }],
+  Schema: MockSchema,
+  model: jest.fn().mockImplementation(createMockModel),
+  models: {},
+  Types: {
+    ObjectId: jest.fn().mockImplementation((id?: string) => ({
+      toString: () => id || '507f1f77bcf86cd799439011',
+      toHexString: () => id || '507f1f77bcf86cd799439011',
+      equals: jest.fn().mockReturnValue(true),
+    })),
+  },
+  isValidObjectId: jest.fn().mockReturnValue(true),
+  startSession: jest.fn().mockResolvedValue({
+    startTransaction: jest.fn(),
+    commitTransaction: jest.fn().mockResolvedValue(undefined),
+    abortTransaction: jest.fn().mockResolvedValue(undefined),
+    endSession: jest.fn().mockResolvedValue(undefined),
+    withTransaction: jest.fn().mockImplementation(async fn => await fn()),
+  }),
 };
 
 // Export the mock mongoose

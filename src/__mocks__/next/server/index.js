@@ -19,16 +19,16 @@ if (typeof global.Request === 'undefined') {
 export class NextRequest extends global.Request {
   constructor(input, init = {}) {
     super(input || 'https://example.com', init);
-    
+
     // Add any additional properties or methods used in tests
     this._mockData = {};
-    
+
     // Override json method
     this.json = jest.fn().mockImplementation(() => {
       return Promise.resolve(this._mockData);
     });
   }
-  
+
   // Helper for tests to set the mock data
   _setMockData(data) {
     this._mockData = data;
@@ -41,22 +41,19 @@ export class NextResponse extends Response {
   constructor(body, init = {}) {
     super(typeof body === 'object' ? JSON.stringify(body) : body, init);
   }
-  
+
   // Static json method
   static json(body, init = {}) {
-    const response = new NextResponse(
-      JSON.stringify(body),
-      {
+    const response = new NextResponse(JSON.stringify(body), {
       status: init?.status || 200,
       headers: {
         'content-type': 'application/json',
         ...init?.headers,
       },
-      }
-    );
+    });
     return response;
   }
-  
+
   // Add json method to parse response body
   json() {
     return this.text().then(text => {

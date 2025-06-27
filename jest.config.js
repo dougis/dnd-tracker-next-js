@@ -7,9 +7,7 @@ const createJestConfig = nextJest({
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
-  setupFilesAfterEnv: [
-    '<rootDir>/jest.setup.js'
-  ],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   globalSetup: '<rootDir>/jest.global-setup.js', // Added global setup for MongoDB
   globalTeardown: '<rootDir>/jest.global-teardown.js', // Added global teardown for MongoDB
   testEnvironment: 'jest-environment-jsdom',
@@ -41,9 +39,8 @@ const customJestConfig = {
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    },
+  },
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
 module.exports = createJestConfig(customJestConfig);
-
