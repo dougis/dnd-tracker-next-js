@@ -10,6 +10,18 @@ jobs:
   codacy-coverage-report:
     runs-on: ubuntu-latest
 
+    # Setup MongoDB as a service container
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "echo 'db.runCommand({serverStatus:1}).ok' | mongosh --quiet"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,6 +39,15 @@ jobs:
 
       - name: Run tests with coverage
         run: npm run test:ci
+        env:
+          # MongoDB configuration - connecting to service container
+          MONGODB_URI: 'mongodb://localhost:27017/testdb'
+          MONGODB_DB_NAME: 'testdb'
+          # Add flag to indicate we're in CI environment
+          CI: 'true'
+          NODE_ENV: 'test'
+          # Debug level for MongoDB connection issues
+          DEBUG: 'mongodb:*'
 
       - name: Run Codacy Coverage Reporter
         uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699 # v1

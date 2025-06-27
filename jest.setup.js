@@ -1,6 +1,25 @@
 // This adds custom jest matchers from jest-dom
 require('@testing-library/jest-dom');
 
+// Setup global objects needed for testing Next.js API routes
+require('./src/__mocks__/jest-setup-node-globals');
+
+// Set database environment variables for all tests
+// For CI environment, these should be set in the GitHub workflow
+// For local testing, we use these defaults
+if (!process.env.MONGODB_URI) {
+  console.log('Setting default MONGODB_URI for tests');
+  process.env.MONGODB_URI = 'mongodb://localhost:27017/testdb';
+}
+
+if (!process.env.MONGODB_DB_NAME) {
+  console.log('Setting default MONGODB_DB_NAME for tests');
+  process.env.MONGODB_DB_NAME = 'testdb';
+}
+
+// Log the MongoDB connection details for debugging
+console.log(`Using MongoDB: ${process.env.MONGODB_URI}, DB: ${process.env.MONGODB_DB_NAME}`);
+
 // Set up missing browser APIs
 global.MutationObserver = class {
   constructor(_callback) {}

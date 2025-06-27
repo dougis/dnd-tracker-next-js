@@ -363,7 +363,7 @@ export class UserService {
 
       // Update user fields
       Object.assign(user, validatedData);
-      
+
       // Save might be a mock in tests
       if (typeof user.save === 'function') {
         await user.save();

@@ -16,6 +16,15 @@ jest.mock('mongoose', () => ({
   connections: [{ readyState: 1 }],
 }));
 
+// Import MongoDB setup utilities to ensure proper test environment
+jest.mock('./mongodb-setup', () => ({
+  setupTestMongoDB: jest.fn().mockResolvedValue({
+    uri: 'mongodb://localhost:27017',
+    dbName: 'test-db'
+  }),
+  validateMongoDBEnvironment: jest.fn(),
+}));
+
 // Mock environment variables
 const originalEnv = process.env;
 
@@ -23,10 +32,12 @@ describe('Database Connection', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.resetModules(); // Reset module cache to ensure fresh state
+    
+    // Setup for both CI and local environments
     process.env = {
       ...originalEnv,
-      MONGODB_URI: 'mongodb://localhost:27017',
-      MONGODB_DB_NAME: 'test-db',
+      MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017',
+      MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || 'test-db',
     };
   });
 
@@ -47,10 +58,11 @@ describe('Database Connection', () => {
       const { connectToDatabase } = require('../db');
       await connectToDatabase();
 
+      // Use environment variables instead of hardcoded values
       expect(mongoose.connect).toHaveBeenCalledWith(
-        'mongodb://localhost:27017',
+        process.env.MONGODB_URI,
         expect.objectContaining({
-          dbName: 'test-db',
+          dbName: process.env.MONGODB_DB_NAME,
           bufferCommands: false,
           maxPoolSize: 10,
           serverSelectionTimeoutMS: 5000,
