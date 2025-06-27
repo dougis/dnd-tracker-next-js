@@ -13,7 +13,7 @@ if (!global.fetch) {
     ok: true,
     status: 200,
     json: () => Promise.resolve({}),
-    text: () => Promise.resolve('')
+    text: () => Promise.resolve(''),
   });
 }
 
