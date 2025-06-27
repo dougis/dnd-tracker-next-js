@@ -73,14 +73,12 @@ describe('SignUpPage Component', () => {
 
     await waitFor(() => {
       // Use expect.objectContaining to handle potential differences in property order
-      expect(global.fetch).toHaveBeenCalledWith('/api/auth/register', 
-        expect.objectContaining({
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-      );
+      expect(global.fetch).toHaveBeenCalledWith('/api/auth/register', expect.objectContaining({
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }));
       
       // Verify the body contains all expected fields regardless of order
       const actualCall = (global.fetch as jest.Mock).mock.calls[0][1];
@@ -104,7 +102,9 @@ describe('SignUpPage Component', () => {
   });
 
   // Skip this test in CI as it's failing but not critical for coverage
-  (process.env.CI ? it.skip : it)('shows validation errors for invalid form data', async () => {
+  (process.env.CI ? it.skip : it)(
+    'shows validation errors for invalid form data', 
+    async () => {
     render(<SignUpPage />);
 
     // Submit the form without filling any fields

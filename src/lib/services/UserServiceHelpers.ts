@@ -59,7 +59,7 @@ export function convertLeansUsersToPublic(users: any[]): PublicUser[] {
 
   return users.map(user => {
     if (!user) return null;
-    
+
     // Convert to public format manually since we're using lean()
     const {
       passwordHash: _passwordHash,

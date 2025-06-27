@@ -43,6 +43,7 @@ npm run typecheck    # TypeScript compilation check
 npm test             # Run Jest tests
 npm run test:watch   # Run tests in watch mode
 npm run test:coverage # Run tests with coverage report
+run codacy static analysis
 
 # Database operations (to be implemented in Week 1-2)
 npm run db:migrate   # Run database migrations
@@ -69,8 +70,8 @@ This project follows a **GitHub Flow** branching strategy optimized for continuo
 - ✅ Linting passes (`npm run lint`)
 - ✅ TypeScript compiles (`npm run typecheck`)
 - ✅ Codacy quality gates pass
-- ⏳ **60-second wait period** for checks to complete before merge decision
-- 🔄 **Additional 60-second wait** if checks are still pending
+- ⏳ **120-second wait period** for checks to complete before merge decision
+- 🔄 **Additional 90-second wait** if checks are still pending
 
 ### Development Workflow
 
@@ -99,7 +100,7 @@ This project follows a **GitHub Flow** branching strategy optimized for continuo
 
    Relates to #15"
 
-   # Push changes regularly
+   # Commit and push changes for each file edited
    git push origin feature/issue-{number}-{description}
    ```
 
@@ -113,6 +114,7 @@ This project follows a **GitHub Flow** branching strategy optimized for continuo
    npm test                 # All tests must pass
    npm run build            # Verify production build
    use the codacy mcp server to examine the code and fix any issues it finds
+   use the markdownlint-mcp server to evaluate all markdown files and fix any issues found in them
    ```
 
 4. **Create Pull Request**
@@ -123,7 +125,7 @@ This project follows a **GitHub Flow** branching strategy optimized for continuo
                 --body "Implements validation for character creation form as specified in #15"
 
    # Wait for checks to complete and handle results automatically
-   sleep 60  # Wait for CI/CD checks to start and potentially complete
+   sleep 120  # Wait for CI/CD checks to start and potentially complete
 
    # Check PR status and handle accordingly
    PR_STATUS=$(gh pr view --json statusCheckRollup --jq '.statusCheckRollup[].state' | sort | uniq)

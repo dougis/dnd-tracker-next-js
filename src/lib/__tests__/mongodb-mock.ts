@@ -78,11 +78,11 @@ class MockQuery {
   constructor(private data: any[] = []) {}
 
   // Query methods
-  find(conditions: any = {}) {
+  find(_conditions: any = {}) {
     return this;
   }
 
-  findOne(conditions: any = {}) {
+  findOne(_conditions: any = {}) {
     return this;
   }
 
@@ -91,41 +91,41 @@ class MockQuery {
   }
 
   // Modification methods
-  updateOne(conditions: any, update: any) {
+  updateOne(_conditions: any, _update: any) {
     return Promise.resolve({ modifiedCount: 1, acknowledged: true });
   }
 
-  updateMany(conditions: any, update: any) {
+  updateMany(_conditions: any, _update: any) {
     return Promise.resolve({ modifiedCount: 2, acknowledged: true });
   }
 
-  deleteOne(conditions: any) {
+  deleteOne(_conditions: any) {
     return Promise.resolve({ deletedCount: 1, acknowledged: true });
   }
 
-  deleteMany(conditions: any) {
+  deleteMany(_conditions: any) {
     return Promise.resolve({ deletedCount: 2, acknowledged: true });
   }
 
   // Aggregation and counting
-  countDocuments(conditions: any = {}) {
+  countDocuments(_conditions: any = {}) {
     return Promise.resolve(this.data.length);
   }
 
-  aggregate(pipeline: any[]) {
+  aggregate(_pipeline: any[]) {
     return this;
   }
 
   // Pagination methods
-  sort(criteria: any) {
+  sort(_criteria: any) {
     return this;
   }
 
-  skip(n: number) {
+  skip(_n: number) {
     return this;
   }
 
-  limit(n: number) {
+  limit(_n: number) {
     return this;
   }
 
@@ -134,11 +134,11 @@ class MockQuery {
     return this;
   }
 
-  populate(path: string | any) {
+  populate(_path: string | any) {
     return this;
   }
 
-  select(fields: string | any) {
+  select(_fields: string | any) {
     return this;
   }
 
