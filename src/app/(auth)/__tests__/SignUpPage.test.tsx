@@ -78,7 +78,7 @@ describe('SignUpPage Component', () => {
           headers: {
             'Content-Type': 'application/json',
           },
-        })
+        }));
 
       // Verify the body contains all expected fields regardless of order
       const actualCall = (global.fetch as jest.Mock).mock.calls[0][1];
