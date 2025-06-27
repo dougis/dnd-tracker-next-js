@@ -1,0 +1,39 @@
+﻿2025-06-27T05:57:06.4176791Z Current runner version: '2.325.0'
+2025-06-27T05:57:06.4210172Z ##[group]Runner Image Provisioner
+2025-06-27T05:57:06.4211909Z Hosted Compute Agent
+2025-06-27T05:57:06.4212956Z Version: 20250620.352
+2025-06-27T05:57:06.4213979Z Commit: f262f3aba23b10ea191b2a62bdee1ca4c3d344da
+2025-06-27T05:57:06.4215274Z Build Date: 2025-06-20T19:27:17Z
+2025-06-27T05:57:06.4216292Z ##[endgroup]
+2025-06-27T05:57:06.4217257Z ##[group]Operating System
+2025-06-27T05:57:06.4218302Z Ubuntu
+2025-06-27T05:57:06.4219042Z 24.04.2
+2025-06-27T05:57:06.4219785Z LTS
+2025-06-27T05:57:06.4220454Z ##[endgroup]
+2025-06-27T05:57:06.4221947Z ##[group]Runner Image
+2025-06-27T05:57:06.4223034Z Image: ubuntu-24.04
+2025-06-27T05:57:06.4223874Z Version: 20250622.1.0
+2025-06-27T05:57:06.4225762Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250622.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-06-27T05:57:06.4228274Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250622.1
+2025-06-27T05:57:06.4230333Z ##[endgroup]
+2025-06-27T05:57:06.4232623Z ##[group]GITHUB_TOKEN Permissions
+2025-06-27T05:57:06.4235569Z Contents: read
+2025-06-27T05:57:06.4236400Z Metadata: read
+2025-06-27T05:57:06.4237371Z Packages: read
+2025-06-27T05:57:06.4238226Z ##[endgroup]
+2025-06-27T05:57:06.4240965Z Secret source: Actions
+2025-06-27T05:57:06.4242545Z Prepare workflow directory
+2025-06-27T05:57:06.4884877Z Prepare all required actions
+2025-06-27T05:57:06.4942544Z Getting action download info
+2025-06-27T05:57:06.7405466Z ##[group]Download immutable action package 'actions/checkout@v4'
+2025-06-27T05:57:06.7406580Z Version: 4.2.2
+2025-06-27T05:57:06.7407684Z Digest: sha256:ccb2698953eaebd21c7bf6268a94f9c26518a7e38e27e0b83c1fe1ad049819b1
+2025-06-27T05:57:06.7408816Z Source commit SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+2025-06-27T05:57:06.7409595Z ##[endgroup]
+2025-06-27T05:57:06.8426563Z ##[group]Download immutable action package 'actions/setup-node@v4'
+2025-06-27T05:57:06.8427330Z Version: 4.4.0
+2025-06-27T05:57:06.8428194Z Digest: sha256:9427cefe82346e992fb5b949e3569b39d537ae41aa3086483b14eceebfc16bc1
+2025-06-27T05:57:06.8429181Z Source commit SHA: 49933ea5288caeca8642d1e84afbd3f7d6820020
+2025-06-27T05:57:06.8429817Z ##[endgroup]
+2025-06-27T05:57:06.9875873Z Download action repository 'codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699' (SHA:89d6c85cfafaec52c72b6c5e8b2878d33104c699)
+2025-06-27T05:57:07.3175078Z Complete job name: codacy-coverage-report

@@ -6,7 +6,10 @@
 
 ## Project Overview
 
-A Next.js full-stack application for D&D Dungeon Masters to efficiently manage combat encounters with a freemium subscription model. The application supports initiative tracking, HP/AC management, legendary actions, lair actions, and advanced combat features.
+A Next.js full-stack application for D&D Dungeon Masters to efficiently manage 
+combat encounters with a freemium subscription model. The application supports 
+initiative tracking, HP/AC management, legendary actions, lair actions, and 
+advanced combat features.
 
 ## ✅ **COMPLETED WORK SUMMARY**
 
@@ -302,7 +305,7 @@ The MVP enables complete testing of the core D&D combat tracking workflow:
 - **Risk Mitigation:** 20% time buffer and clearly mapped dependencies
 - **Quality Assurance:** Testing framework and CI/CD pipeline included
 
-**Next Action:** Begin Phase 1 foundation development with issues #2-4 (Project Setup)\*\*
+**Next Action:** Begin Phase 1 foundation development with issues #2-4 (Project Setup)
 
 ---
 

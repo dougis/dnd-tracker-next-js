@@ -1,0 +1,502 @@
+﻿2025-06-27T05:57:50.0505434Z ##[group]Run npm run test:ci
+2025-06-27T05:57:50.0505756Z [36;1mnpm run test:ci[0m
+2025-06-27T05:57:50.0570379Z shell: /usr/bin/bash -e {0}
+2025-06-27T05:57:50.0570614Z env:
+2025-06-27T05:57:50.0570844Z   MONGODB_URI: mongodb://localhost:27017/testdb
+2025-06-27T05:57:50.0571360Z   MONGODB_DB_NAME: testdb
+2025-06-27T05:57:50.0571561Z   CI: true
+2025-06-27T05:57:50.0571718Z   NODE_ENV: test
+2025-06-27T05:57:50.0571891Z   DEBUG: mongodb:*
+2025-06-27T05:57:50.0572061Z ##[endgroup]
+2025-06-27T05:57:50.1729072Z 
+2025-06-27T05:57:50.1729759Z > dnd-tracker-next-js@0.1.0 test:ci
+2025-06-27T05:57:50.1730465Z > jest --coverage --watchAll=false --ci --forceExit --detectOpenHandles --runInBand
+2025-06-27T05:57:50.1730817Z 
+2025-06-27T05:57:51.1509886Z === JEST GLOBAL SETUP ===
+2025-06-27T05:57:51.1516998Z Using CI MongoDB at mongodb://localhost:27017/testdb
+2025-06-27T05:57:51.1518258Z ✅ MongoDB environment variables validated
+2025-06-27T05:57:51.1519135Z MongoDB configured: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:57:51.1520021Z === JEST GLOBAL SETUP COMPLETE ===
+2025-06-27T05:57:51.7467303Z PASS src/lib/validations/__tests__/base.test.ts
+2025-06-27T05:57:51.7563858Z   ● Console
+2025-06-27T05:57:51.7564119Z 
+2025-06-27T05:57:51.7564288Z     console.log
+2025-06-27T05:57:51.7564972Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:57:51.7565494Z 
+2025-06-27T05:57:51.7565747Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:57:51.7566107Z 
+2025-06-27T05:58:00.8798241Z PASS src/lib/models/__tests__/User.test.ts (9.112 s)
+2025-06-27T05:58:00.8807889Z   ● Console
+2025-06-27T05:58:00.8808096Z 
+2025-06-27T05:58:00.8808228Z     console.log
+2025-06-27T05:58:00.8808762Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:00.8809195Z 
+2025-06-27T05:58:00.8809400Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:00.8810048Z 
+2025-06-27T05:58:01.1292366Z PASS src/lib/validations/__tests__/user.test.ts
+2025-06-27T05:58:01.1293213Z   ● Console
+2025-06-27T05:58:01.1293466Z 
+2025-06-27T05:58:01.1293841Z     console.log
+2025-06-27T05:58:01.1294625Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:01.1295387Z 
+2025-06-27T05:58:01.1295829Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:01.1296502Z 
+2025-06-27T05:58:01.9272443Z PASS src/lib/services/__tests__/UserServiceCRUD.test.ts
+2025-06-27T05:58:01.9278338Z   ● Console
+2025-06-27T05:58:01.9278531Z 
+2025-06-27T05:58:01.9278685Z     console.log
+2025-06-27T05:58:01.9279269Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:01.9279715Z 
+2025-06-27T05:58:01.9279934Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:01.9280250Z 
+2025-06-27T05:58:02.2014999Z PASS src/lib/validations/__tests__/form-integration.test.ts
+2025-06-27T05:58:02.2020801Z   ● Console
+2025-06-27T05:58:02.2021007Z 
+2025-06-27T05:58:02.2021298Z     console.log
+2025-06-27T05:58:02.2021800Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:02.2022227Z 
+2025-06-27T05:58:02.2022426Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:02.2022699Z 
+2025-06-27T05:58:03.7719581Z PASS src/app/(auth)/__tests__/SignUpPage.test.tsx
+2025-06-27T05:58:03.7725365Z   ● Console
+2025-06-27T05:58:03.7725901Z 
+2025-06-27T05:58:03.7726075Z     console.log
+2025-06-27T05:58:03.7726623Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:03.7726989Z 
+2025-06-27T05:58:03.7727159Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:03.7727336Z 
+2025-06-27T05:58:04.2496403Z PASS src/components/modals/__tests__/ConfirmationDialog.test.tsx
+2025-06-27T05:58:04.2504102Z   ● Console
+2025-06-27T05:58:04.2504231Z 
+2025-06-27T05:58:04.2504317Z     console.log
+2025-06-27T05:58:04.2504668Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:04.2504954Z 
+2025-06-27T05:58:04.2505090Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:04.2505273Z 
+2025-06-27T05:58:04.4371993Z PASS src/lib/services/__tests__/UserServicePassword.test.ts
+2025-06-27T05:58:04.4376420Z   ● Console
+2025-06-27T05:58:04.4376640Z 
+2025-06-27T05:58:04.4376788Z     console.log
+2025-06-27T05:58:04.4377353Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:04.4377792Z 
+2025-06-27T05:58:04.4378009Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:04.4378318Z 
+2025-06-27T05:58:04.6250764Z PASS src/lib/services/__tests__/UserServiceAuth.test.ts
+2025-06-27T05:58:04.6254509Z   ● Console
+2025-06-27T05:58:04.6254673Z 
+2025-06-27T05:58:04.6254776Z     console.log
+2025-06-27T05:58:04.6255156Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:04.6255449Z 
+2025-06-27T05:58:04.6255810Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:04.6256081Z 
+2025-06-27T05:58:04.8878319Z PASS src/lib/__tests__/db-utils.test.ts
+2025-06-27T05:58:04.8944916Z   ● Console
+2025-06-27T05:58:04.8945131Z 
+2025-06-27T05:58:04.8945471Z     console.log
+2025-06-27T05:58:04.8946092Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:04.8946530Z 
+2025-06-27T05:58:04.8946742Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:04.8947036Z 
+2025-06-27T05:58:04.8947166Z     console.error
+2025-06-27T05:58:04.8948742Z       Database health check failed: Error: Connection failed
+2025-06-27T05:58:04.8949940Z           at Object.<anonymous> (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/__tests__/db-utils.test.ts:101:43)
+2025-06-27T05:58:04.8951869Z           at Promise.finally.completed (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1559:28)
+2025-06-27T05:58:04.8953034Z           at new Promise (<anonymous>)
+2025-06-27T05:58:04.8954238Z           at callAsyncCircusFn (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1499:10)
+2025-06-27T05:58:04.8956390Z           at _callCircusTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1009:40)
+2025-06-27T05:58:04.8958088Z           at _runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:949:3)
+2025-06-27T05:58:04.8959840Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:839:13)
+2025-06-27T05:58:04.8961911Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:04.8963787Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:04.8965462Z           at run (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:757:3)
+2025-06-27T05:58:04.8967271Z           at runAndTransformResultsToJestFormat (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1920:21)
+2025-06-27T05:58:04.8969125Z           at jestAdapter (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/runner.js:101:19)
+2025-06-27T05:58:04.8970716Z           at runTestInternal (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:272:16)
+2025-06-27T05:58:04.8972452Z           at runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:340:7)
+2025-06-27T05:58:04.8973202Z 
+2025-06-27T05:58:04.8973459Z     [0m [90m 93 |[39m   }
+2025-06-27T05:58:04.8973864Z      [90m 94 |[39m
+2025-06-27T05:58:04.8974598Z     [31m[1m>[22m[39m[90m 95 |[39m   originalConsoleError([33m...[39margs)[33m;[39m
+2025-06-27T05:58:04.8975333Z      [90m    |[39m   [31m[1m^[22m[39m
+2025-06-27T05:58:04.8975844Z      [90m 96 |[39m }[33m;[39m
+2025-06-27T05:58:04.8976555Z      [90m 97 |[39m[0m
+2025-06-27T05:58:04.8976766Z 
+2025-06-27T05:58:04.8977131Z       at console.originalConsoleError [as error] (jest.setup.js:95:3)
+2025-06-27T05:58:04.8977786Z       at error (src/lib/db-utils.ts:41:13)
+2025-06-27T05:58:04.8978422Z       at Object.<anonymous> (src/lib/__tests__/db-utils.test.ts:103:22)
+2025-06-27T05:58:04.8978848Z 
+2025-06-27T05:58:04.8978974Z     console.log
+2025-06-27T05:58:04.8979393Z       Database connected successfully on attempt 1
+2025-06-27T05:58:04.8979737Z 
+2025-06-27T05:58:04.8979929Z       at log (src/lib/db-utils.ts:88:15)
+2025-06-27T05:58:04.8980219Z 
+2025-06-27T05:58:04.8980346Z     console.warn
+2025-06-27T05:58:04.8981012Z       Database connection attempt 1 failed. Retrying in 10ms... Error: First attempt failed
+2025-06-27T05:58:04.8982498Z           at Object.<anonymous> (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/__tests__/db-utils.test.ts:144:32)
+2025-06-27T05:58:04.8984204Z           at Promise.finally.completed (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1559:28)
+2025-06-27T05:58:04.8985350Z           at new Promise (<anonymous>)
+2025-06-27T05:58:04.8986532Z           at callAsyncCircusFn (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1499:10)
+2025-06-27T05:58:04.8988339Z           at _callCircusTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1009:40)
+2025-06-27T05:58:04.8989718Z           at _runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:949:3)
+2025-06-27T05:58:04.8990704Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:839:13)
+2025-06-27T05:58:04.8992145Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:04.8993190Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:04.8994115Z           at run (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:757:3)
+2025-06-27T05:58:04.8995109Z           at runAndTransformResultsToJestFormat (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1920:21)
+2025-06-27T05:58:04.8996097Z           at jestAdapter (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/runner.js:101:19)
+2025-06-27T05:58:04.8996956Z           at runTestInternal (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:272:16)
+2025-06-27T05:58:04.8997785Z           at runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:340:7)
+2025-06-27T05:58:04.8998206Z 
+2025-06-27T05:58:04.8998363Z     [0m [90m  98 |[39m
+2025-06-27T05:58:04.8999076Z      [90m  99 |[39m       [36mconst[39m delay [33m=[39m baseDelay [33m*[39m [33mMath[39m[33m.[39mpow([35m2[39m[33m,[39m attempt [33m-[39m [35m1[39m)[33m;[39m
+2025-06-27T05:58:04.8999733Z     [31m[1m>[22m[39m[90m 100 |[39m       console[33m.[39mwarn(
+2025-06-27T05:58:04.9000120Z      [90m     |[39m               [31m[1m^[22m[39m
+2025-06-27T05:58:04.9000724Z      [90m 101 |[39m         [32m`Database connection attempt ${attempt} failed. Retrying in ${delay}ms...`[39m[33m,[39m
+2025-06-27T05:58:04.9001330Z      [90m 102 |[39m         error
+2025-06-27T05:58:04.9001631Z      [90m 103 |[39m       )[33m;[39m[0m
+2025-06-27T05:58:04.9001789Z 
+2025-06-27T05:58:04.9001912Z       at warn (src/lib/db-utils.ts:100:15)
+2025-06-27T05:58:04.9002272Z       at Object.<anonymous> (src/lib/__tests__/db-utils.test.ts:148:7)
+2025-06-27T05:58:04.9002634Z 
+2025-06-27T05:58:04.9002715Z     console.warn
+2025-06-27T05:58:04.9003092Z       Database connection attempt 2 failed. Retrying in 20ms... Error: Second attempt failed
+2025-06-27T05:58:04.9003805Z           at Object.<anonymous> (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/__tests__/db-utils.test.ts:145:32)
+2025-06-27T05:58:04.9004751Z           at Promise.finally.completed (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1559:28)
+2025-06-27T05:58:04.9005375Z           at new Promise (<anonymous>)
+2025-06-27T05:58:04.9006011Z           at callAsyncCircusFn (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1499:10)
+2025-06-27T05:58:04.9006961Z           at _callCircusTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1009:40)
+2025-06-27T05:58:04.9007862Z           at _runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:949:3)
+2025-06-27T05:58:04.9008823Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:839:13)
+2025-06-27T05:58:04.9009845Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:04.9010854Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:04.9011873Z           at run (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:757:3)
+2025-06-27T05:58:04.9012862Z           at runAndTransformResultsToJestFormat (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1920:21)
+2025-06-27T05:58:04.9013964Z           at jestAdapter (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/runner.js:101:19)
+2025-06-27T05:58:04.9014819Z           at runTestInternal (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:272:16)
+2025-06-27T05:58:04.9015640Z           at runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:340:7)
+2025-06-27T05:58:04.9016054Z 
+2025-06-27T05:58:04.9016169Z     [0m [90m  98 |[39m
+2025-06-27T05:58:04.9016841Z      [90m  99 |[39m       [36mconst[39m delay [33m=[39m baseDelay [33m*[39m [33mMath[39m[33m.[39mpow([35m2[39m[33m,[39m attempt [33m-[39m [35m1[39m)[33m;[39m
+2025-06-27T05:58:04.9017480Z     [31m[1m>[22m[39m[90m 100 |[39m       console[33m.[39mwarn(
+2025-06-27T05:58:04.9017855Z      [90m     |[39m               [31m[1m^[22m[39m
+2025-06-27T05:58:04.9018465Z      [90m 101 |[39m         [32m`Database connection attempt ${attempt} failed. Retrying in ${delay}ms...`[39m[33m,[39m
+2025-06-27T05:58:04.9018942Z      [90m 102 |[39m         error
+2025-06-27T05:58:04.9019234Z      [90m 103 |[39m       )[33m;[39m[0m
+2025-06-27T05:58:04.9019392Z 
+2025-06-27T05:58:04.9019506Z       at warn (src/lib/db-utils.ts:100:15)
+2025-06-27T05:58:04.9019870Z       at Object.<anonymous> (src/lib/__tests__/db-utils.test.ts:148:7)
+2025-06-27T05:58:04.9020107Z 
+2025-06-27T05:58:04.9020178Z     console.log
+2025-06-27T05:58:04.9020421Z       Database connected successfully on attempt 3
+2025-06-27T05:58:04.9020611Z 
+2025-06-27T05:58:04.9020722Z       at log (src/lib/db-utils.ts:88:15)
+2025-06-27T05:58:04.9020890Z 
+2025-06-27T05:58:04.9020957Z     console.warn
+2025-06-27T05:58:04.9021407Z       Database connection attempt 1 failed. Retrying in 10ms... Error: Always fails
+2025-06-27T05:58:04.9022111Z           at Object.<anonymous> (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/__tests__/db-utils.test.ts:154:43)
+2025-06-27T05:58:04.9023170Z           at Promise.finally.completed (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1559:28)
+2025-06-27T05:58:04.9023800Z           at new Promise (<anonymous>)
+2025-06-27T05:58:04.9024437Z           at callAsyncCircusFn (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1499:10)
+2025-06-27T05:58:04.9025391Z           at _callCircusTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1009:40)
+2025-06-27T05:58:04.9026295Z           at _runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:949:3)
+2025-06-27T05:58:04.9027256Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:839:13)
+2025-06-27T05:58:04.9028305Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:04.9029327Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:04.9030251Z           at run (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:757:3)
+2025-06-27T05:58:04.9031366Z           at runAndTransformResultsToJestFormat (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1920:21)
+2025-06-27T05:58:04.9032357Z           at jestAdapter (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/runner.js:101:19)
+2025-06-27T05:58:04.9033340Z           at runTestInternal (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:272:16)
+2025-06-27T05:58:04.9034175Z           at runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:340:7)
+2025-06-27T05:58:04.9034583Z 
+2025-06-27T05:58:04.9034702Z     [0m [90m  98 |[39m
+2025-06-27T05:58:04.9035377Z      [90m  99 |[39m       [36mconst[39m delay [33m=[39m baseDelay [33m*[39m [33mMath[39m[33m.[39mpow([35m2[39m[33m,[39m attempt [33m-[39m [35m1[39m)[33m;[39m
+2025-06-27T05:58:04.9036014Z     [31m[1m>[22m[39m[90m 100 |[39m       console[33m.[39mwarn(
+2025-06-27T05:58:04.9036389Z      [90m     |[39m               [31m[1m^[22m[39m
+2025-06-27T05:58:04.9036968Z      [90m 101 |[39m         [32m`Database connection attempt ${attempt} failed. Retrying in ${delay}ms...`[39m[33m,[39m
+2025-06-27T05:58:04.9037431Z      [90m 102 |[39m         error
+2025-06-27T05:58:04.9037724Z      [90m 103 |[39m       )[33m;[39m[0m
+2025-06-27T05:58:04.9037883Z 
+2025-06-27T05:58:04.9038001Z       at warn (src/lib/db-utils.ts:100:15)
+2025-06-27T05:58:04.9038349Z       at Object.<anonymous> (src/lib/__tests__/db-utils.test.ts:156:7)
+2025-06-27T05:58:04.9038587Z 
+2025-06-27T05:58:05.1053899Z PASS src/lib/__tests__/db.test.ts
+2025-06-27T05:58:05.1085904Z   ● Console
+2025-06-27T05:58:05.1086120Z 
+2025-06-27T05:58:05.1086784Z     console.log
+2025-06-27T05:58:05.1087360Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:05.1087796Z 
+2025-06-27T05:58:05.1088018Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:05.1088322Z 
+2025-06-27T05:58:05.1088449Z     console.log
+2025-06-27T05:58:05.1088831Z       Successfully connected to MongoDB
+2025-06-27T05:58:05.1089133Z 
+2025-06-27T05:58:05.1089312Z       at log (src/lib/db.ts:44:13)
+2025-06-27T05:58:05.1089578Z 
+2025-06-27T05:58:05.1089710Z     console.error
+2025-06-27T05:58:05.1090364Z       Error connecting to MongoDB: Error: MONGODB_URI environment variable is not defined
+2025-06-27T05:58:05.1091759Z           at connectToDatabase (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/db.ts:22:13)
+2025-06-27T05:58:05.1093585Z           at Object.connectToDatabase (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/__tests__/db.test.ts:67:20)
+2025-06-27T05:58:05.1095373Z           at Promise.finally.completed (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1559:28)
+2025-06-27T05:58:05.1096545Z           at new Promise (<anonymous>)
+2025-06-27T05:58:05.1097752Z           at callAsyncCircusFn (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1499:10)
+2025-06-27T05:58:05.1099547Z           at _callCircusTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1009:40)
+2025-06-27T05:58:05.1101437Z           at _runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:949:3)
+2025-06-27T05:58:05.1103199Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:839:13)
+2025-06-27T05:58:05.1105127Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:05.1107030Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:05.1108759Z           at run (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:757:3)
+2025-06-27T05:58:05.1110583Z           at runAndTransformResultsToJestFormat (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1920:21)
+2025-06-27T05:58:05.1112835Z           at jestAdapter (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/runner.js:101:19)
+2025-06-27T05:58:05.1114429Z           at runTestInternal (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:272:16)
+2025-06-27T05:58:05.1115980Z           at runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:340:7)
+2025-06-27T05:58:05.1116475Z 
+2025-06-27T05:58:05.1116661Z     [0m [90m 93 |[39m   }
+2025-06-27T05:58:05.1116905Z      [90m 94 |[39m
+2025-06-27T05:58:05.1117313Z     [31m[1m>[22m[39m[90m 95 |[39m   originalConsoleError([33m...[39margs)[33m;[39m
+2025-06-27T05:58:05.1117713Z      [90m    |[39m   [31m[1m^[22m[39m
+2025-06-27T05:58:05.1118014Z      [90m 96 |[39m }[33m;[39m
+2025-06-27T05:58:05.1118254Z      [90m 97 |[39m[0m
+2025-06-27T05:58:05.1118387Z 
+2025-06-27T05:58:05.1118598Z       at console.originalConsoleError [as error] (jest.setup.js:95:3)
+2025-06-27T05:58:05.1118967Z       at error (src/lib/db.ts:67:13)
+2025-06-27T05:58:05.1119330Z       at Object.connectToDatabase (src/lib/__tests__/db.test.ts:67:20)
+2025-06-27T05:58:05.1119579Z 
+2025-06-27T05:58:05.1119653Z     console.error
+2025-06-27T05:58:05.1120043Z       Error connecting to MongoDB: Error: MONGODB_DB_NAME environment variable is not defined
+2025-06-27T05:58:05.1120707Z           at connectToDatabase (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/db.ts:26:13)
+2025-06-27T05:58:05.1121681Z           at Object.connectToDatabase (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/__tests__/db.test.ts:76:20)
+2025-06-27T05:58:05.1122621Z           at Promise.finally.completed (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1559:28)
+2025-06-27T05:58:05.1123246Z           at new Promise (<anonymous>)
+2025-06-27T05:58:05.1123892Z           at callAsyncCircusFn (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1499:10)
+2025-06-27T05:58:05.1125028Z           at _callCircusTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1009:40)
+2025-06-27T05:58:05.1125947Z           at _runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:949:3)
+2025-06-27T05:58:05.1126914Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:839:13)
+2025-06-27T05:58:05.1127934Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:05.1128944Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:05.1129863Z           at run (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:757:3)
+2025-06-27T05:58:05.1130845Z           at runAndTransformResultsToJestFormat (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1920:21)
+2025-06-27T05:58:05.1131964Z           at jestAdapter (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/runner.js:101:19)
+2025-06-27T05:58:05.1132821Z           at runTestInternal (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:272:16)
+2025-06-27T05:58:05.1133659Z           at runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:340:7)
+2025-06-27T05:58:05.1134067Z 
+2025-06-27T05:58:05.1134195Z     [0m [90m 93 |[39m   }
+2025-06-27T05:58:05.1134421Z      [90m 94 |[39m
+2025-06-27T05:58:05.1134826Z     [31m[1m>[22m[39m[90m 95 |[39m   originalConsoleError([33m...[39margs)[33m;[39m
+2025-06-27T05:58:05.1135378Z      [90m    |[39m   [31m[1m^[22m[39m
+2025-06-27T05:58:05.1135671Z      [90m 96 |[39m }[33m;[39m
+2025-06-27T05:58:05.1135915Z      [90m 97 |[39m[0m
+2025-06-27T05:58:05.1136033Z 
+2025-06-27T05:58:05.1136246Z       at console.originalConsoleError [as error] (jest.setup.js:95:3)
+2025-06-27T05:58:05.1136600Z       at error (src/lib/db.ts:67:13)
+2025-06-27T05:58:05.1136949Z       at Object.connectToDatabase (src/lib/__tests__/db.test.ts:76:20)
+2025-06-27T05:58:05.1137195Z 
+2025-06-27T05:58:05.1137271Z     console.error
+2025-06-27T05:58:05.1137551Z       Error connecting to MongoDB: Error: Connection failed
+2025-06-27T05:58:05.1138144Z           at Object.<anonymous> (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/__tests__/db.test.ts:83:31)
+2025-06-27T05:58:05.1139061Z           at Promise.finally.completed (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1559:28)
+2025-06-27T05:58:05.1139691Z           at new Promise (<anonymous>)
+2025-06-27T05:58:05.1140327Z           at callAsyncCircusFn (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1499:10)
+2025-06-27T05:58:05.1141385Z           at _callCircusTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1009:40)
+2025-06-27T05:58:05.1142284Z           at _runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:949:3)
+2025-06-27T05:58:05.1162215Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:839:13)
+2025-06-27T05:58:05.1163341Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:05.1164405Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:05.1165582Z           at run (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:757:3)
+2025-06-27T05:58:05.1166600Z           at runAndTransformResultsToJestFormat (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1920:21)
+2025-06-27T05:58:05.1167580Z           at jestAdapter (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/runner.js:101:19)
+2025-06-27T05:58:05.1168440Z           at runTestInternal (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:272:16)
+2025-06-27T05:58:05.1169261Z           at runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:340:7)
+2025-06-27T05:58:05.1169696Z 
+2025-06-27T05:58:05.1169868Z     [0m [90m 93 |[39m   }
+2025-06-27T05:58:05.1170115Z      [90m 94 |[39m
+2025-06-27T05:58:05.1170704Z     [31m[1m>[22m[39m[90m 95 |[39m   originalConsoleError([33m...[39margs)[33m;[39m
+2025-06-27T05:58:05.1171492Z      [90m    |[39m   [31m[1m^[22m[39m
+2025-06-27T05:58:05.1171904Z      [90m 96 |[39m }[33m;[39m
+2025-06-27T05:58:05.1172160Z      [90m 97 |[39m[0m
+2025-06-27T05:58:05.1172285Z 
+2025-06-27T05:58:05.1172499Z       at console.originalConsoleError [as error] (jest.setup.js:95:3)
+2025-06-27T05:58:05.1172865Z       at error (src/lib/db.ts:67:13)
+2025-06-27T05:58:05.1173192Z       at Object.<anonymous> (src/lib/__tests__/db.test.ts:87:7)
+2025-06-27T05:58:05.1173408Z 
+2025-06-27T05:58:05.1173489Z     console.log
+2025-06-27T05:58:05.1173703Z       Successfully connected to MongoDB
+2025-06-27T05:58:05.1173873Z 
+2025-06-27T05:58:05.1173979Z       at log (src/lib/db.ts:44:13)
+2025-06-27T05:58:05.1174127Z 
+2025-06-27T05:58:05.1174201Z     console.log
+2025-06-27T05:58:05.1174572Z       Already connected to MongoDB
+2025-06-27T05:58:05.1174729Z 
+2025-06-27T05:58:05.1174827Z       at log (src/lib/db.ts:12:13)
+2025-06-27T05:58:05.1174979Z 
+2025-06-27T05:58:05.1175051Z     console.log
+2025-06-27T05:58:05.1175261Z       Successfully connected to MongoDB
+2025-06-27T05:58:05.1175422Z 
+2025-06-27T05:58:05.1175519Z       at log (src/lib/db.ts:44:13)
+2025-06-27T05:58:05.1175673Z 
+2025-06-27T05:58:05.1175746Z     console.log
+2025-06-27T05:58:05.1175954Z       Disconnected from MongoDB
+2025-06-27T05:58:05.1176093Z 
+2025-06-27T05:58:05.1176199Z       at log (src/lib/db.ts:76:13)
+2025-06-27T05:58:05.1176343Z 
+2025-06-27T05:58:05.1176410Z     console.log
+2025-06-27T05:58:05.1176618Z       Successfully connected to MongoDB
+2025-06-27T05:58:05.1176778Z 
+2025-06-27T05:58:05.1176884Z       at log (src/lib/db.ts:44:13)
+2025-06-27T05:58:05.1177026Z 
+2025-06-27T05:58:05.8334328Z PASS src/app/(auth)/__tests__/SignInPage.test.tsx
+2025-06-27T05:58:05.8337237Z   ● Console
+2025-06-27T05:58:05.8337383Z 
+2025-06-27T05:58:05.8337464Z     console.log
+2025-06-27T05:58:05.8337805Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:05.8338080Z 
+2025-06-27T05:58:05.8338211Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:05.8338387Z 
+2025-06-27T05:58:06.1510807Z PASS src/components/modals/__tests__/Modal.test.tsx
+2025-06-27T05:58:06.1513728Z   ● Console
+2025-06-27T05:58:06.1513960Z 
+2025-06-27T05:58:06.1514114Z     console.log
+2025-06-27T05:58:06.1514704Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:06.1515026Z 
+2025-06-27T05:58:06.1515197Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:06.1515433Z 
+2025-06-27T05:58:06.3206508Z FAIL src/app/api/auth/__tests__/register.test.ts
+2025-06-27T05:58:06.3207537Z   ● Test suite failed to run
+2025-06-27T05:58:06.3207865Z 
+2025-06-27T05:58:06.3208054Z     ReferenceError: Request is not defined
+2025-06-27T05:58:06.3208292Z 
+2025-06-27T05:58:06.3208451Z     [0m [90m  9 |[39m
+2025-06-27T05:58:06.3208923Z      [90m 10 |[39m     [90m// Validate the request body[39m
+2025-06-27T05:58:06.3210095Z     [31m[1m>[22m[39m[90m 11 |[39m     [36mconst[39m validatedData [33m=[39m userRegistrationSchema[33m.[39mparse(body)[33m;[39m
+2025-06-27T05:58:06.3212477Z      [90m    |[39m                 [31m[1m^[22m[39m
+2025-06-27T05:58:06.3213125Z      [90m 12 |[39m
+2025-06-27T05:58:06.3213765Z      [90m 13 |[39m     [90m// Create the user[39m
+2025-06-27T05:58:06.3215309Z      [90m 14 |[39m     [36mconst[39m result [33m=[39m [36mawait[39m [33mUserService[39m[33m.[39mcreateUser(validatedData)[33m;[39m[0m
+2025-06-27T05:58:06.3216200Z 
+2025-06-27T05:58:06.3216725Z       at Object.Request (node_modules/next/src/server/web/spec-extension/request.ts:14:34)
+2025-06-27T05:58:06.3217581Z       at Object.<anonymous> (node_modules/next/server.js:2:16)
+2025-06-27T05:58:06.3218296Z       at Object.<anonymous> (src/app/api/auth/register/route.ts:11:17)
+2025-06-27T05:58:06.3219130Z       at Object.<anonymous> (src/app/api/auth/__tests__/register.test.ts:13:16)
+2025-06-27T05:58:06.3219616Z 
+2025-06-27T05:58:06.5836012Z PASS src/components/modals/__tests__/ModalManager.test.tsx
+2025-06-27T05:58:06.5839136Z   ● Console
+2025-06-27T05:58:06.5839355Z 
+2025-06-27T05:58:06.5839489Z     console.log
+2025-06-27T05:58:06.5840036Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:06.5840469Z 
+2025-06-27T05:58:06.5840682Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:06.5840982Z 
+2025-06-27T05:58:06.7542754Z PASS src/__tests__/utils.test.ts
+2025-06-27T05:58:06.7546055Z   ● Console
+2025-06-27T05:58:06.7546345Z 
+2025-06-27T05:58:06.7546676Z     console.log
+2025-06-27T05:58:06.7547437Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:06.7548097Z 
+2025-06-27T05:58:06.7548455Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:06.7549035Z 
+2025-06-27T05:58:06.9114852Z PASS src/lib/services/__tests__/UserServiceErrors.test.ts
+2025-06-27T05:58:06.9117875Z   ● Console
+2025-06-27T05:58:06.9118056Z 
+2025-06-27T05:58:06.9118152Z     console.log
+2025-06-27T05:58:06.9118507Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:06.9118763Z 
+2025-06-27T05:58:06.9118890Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:06.9119066Z 
+2025-06-27T05:58:07.1564112Z PASS src/__tests__/components/ui/card.test.tsx
+2025-06-27T05:58:07.1567039Z   ● Console
+2025-06-27T05:58:07.1567233Z 
+2025-06-27T05:58:07.1567346Z     console.log
+2025-06-27T05:58:07.1567754Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:07.1568086Z 
+2025-06-27T05:58:07.1568251Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:07.1568475Z 
+2025-06-27T05:58:07.4507301Z PASS src/__tests__/components/ui/button.test.tsx
+2025-06-27T05:58:07.4511329Z   ● Console
+2025-06-27T05:58:07.4511705Z 
+2025-06-27T05:58:07.4512033Z     console.log
+2025-06-27T05:58:07.4518056Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:07.4518716Z 
+2025-06-27T05:58:07.4519121Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:07.4519616Z 
+2025-06-27T05:58:07.7610959Z PASS src/__tests__/components/ui/input.test.tsx
+2025-06-27T05:58:07.7614268Z   ● Console
+2025-06-27T05:58:07.7614546Z 
+2025-06-27T05:58:07.7614862Z     console.log
+2025-06-27T05:58:07.7615395Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:07.7615817Z 
+2025-06-27T05:58:07.7616032Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:07.7616353Z 
+2025-06-27T05:58:08.8041412Z -----------------------------------|---------|----------|---------|---------|-------------------------------------------
+2025-06-27T05:58:08.8043955Z File                               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                         
+2025-06-27T05:58:08.8045008Z -----------------------------------|---------|----------|---------|---------|-------------------------------------------
+2025-06-27T05:58:08.8051570Z All files                          |   34.41 |    20.09 |   28.48 |   34.69 |                                           
+2025-06-27T05:58:08.8052636Z  src                               |       0 |        0 |       0 |       0 |                                           
+2025-06-27T05:58:08.8053732Z   middleware.ts                    |       0 |        0 |       0 |       0 | 1-37                                      
+2025-06-27T05:58:08.8054392Z  src/components                    |       0 |        0 |       0 |       0 |                                           
+2025-06-27T05:58:08.8055057Z   theme-provider.tsx               |       0 |        0 |       0 |       0 | 3-75                                      
+2025-06-27T05:58:08.8055775Z   theme-toggle.tsx                 |       0 |      100 |       0 |       0 | 3-34                                      
+2025-06-27T05:58:08.8056464Z  src/components/forms              |   50.86 |    26.72 |   36.36 |   55.23 |                                           
+2025-06-27T05:58:08.8056969Z   FormGroup.tsx                    |   57.14 |        0 |       0 |   57.14 | 25-31,57                                  
+2025-06-27T05:58:08.8057843Z   FormInput.tsx                    |     100 |      100 |     100 |     100 |                                           
+2025-06-27T05:58:08.8058764Z   FormSelect.tsx                   |      60 |        0 |       0 |      60 | 55-88,122                                 
+2025-06-27T05:58:08.8059547Z   FormSubmitButton.tsx             |     100 |    88.88 |     100 |     100 | 26                                        
+2025-06-27T05:58:08.8060210Z   FormTextarea.tsx                 |    62.5 |        0 |       0 |    62.5 | 30-31,84                                  
+2025-06-27T05:58:08.8060904Z   FormWrapper.tsx                  |   81.81 |       50 |   66.66 |      85 | 31,58-59                                  
+2025-06-27T05:58:08.8061809Z   form-utils.ts                    |   15.68 |     9.75 |   28.57 |   19.04 | 25-27,33,38-48,57-58,65-66,73-109,165-181 
+2025-06-27T05:58:08.8062918Z  src/components/layout             |       0 |        0 |       0 |       0 |                                           
+2025-06-27T05:58:08.8063599Z   AppLayout.tsx                    |       0 |        0 |       0 |       0 | 3-48                                      
+2025-06-27T05:58:08.8064193Z   Breadcrumbs.tsx                  |       0 |        0 |       0 |       0 | 3-85                                      
+2025-06-27T05:58:08.8064794Z   MobileMenu.tsx                   |       0 |        0 |       0 |       0 | 3-218                                     
+2025-06-27T05:58:08.8065341Z   Sidebar.tsx                      |       0 |        0 |       0 |       0 | 3-226                                     
+2025-06-27T05:58:08.8065980Z  src/components/modals             |   20.68 |     25.8 |   13.88 |   21.71 |                                           
+2025-06-27T05:58:08.8066890Z   ConfirmationDialog.tsx           |      60 |    86.66 |   46.15 |   62.79 | 140-191                                   
+2025-06-27T05:58:08.8067780Z   FormModal.tsx                    |       0 |        0 |       0 |       0 | 3-200                                     
+2025-06-27T05:58:08.8068626Z   InfoModal.tsx                    |       0 |        0 |       0 |       0 | 3-171                                     
+2025-06-27T05:58:08.8069458Z   Modal.tsx                        |   68.18 |       76 |   57.14 |   68.18 | 77,86-88,112-134                          
+2025-06-27T05:58:08.8070338Z   ModalManager.tsx                 |    6.31 |        0 |       0 |    6.66 | 38-179,192-196,201-223,233-248            
+2025-06-27T05:58:08.8071531Z  src/components/modals/__tests__   |   83.33 |      100 |      60 |   83.33 |                                           
+2025-06-27T05:58:08.8072520Z   test-utils.tsx                   |   83.33 |      100 |      60 |   83.33 | 24-29                                     
+2025-06-27T05:58:08.8073456Z  src/components/ui                 |   32.47 |    11.11 |   18.18 |   32.97 |                                           
+2025-06-27T05:58:08.8074617Z   alert.tsx                        |      90 |      100 |     100 |     100 |                                           
+2025-06-27T05:58:08.8076476Z   avatar.tsx                       |       0 |      100 |     100 |       0 | 3-50                                      
+2025-06-27T05:58:08.8077271Z   badge.tsx                        |       0 |      100 |       0 |       0 | 1-36                                      
+2025-06-27T05:58:08.8078034Z   button.tsx                       |      90 |      100 |     100 |     100 |                                           
+2025-06-27T05:58:08.8078805Z   card.tsx                         |   92.85 |      100 |     100 |   92.85 | 79                                        
+2025-06-27T05:58:08.8079584Z   checkbox.tsx                     |     100 |      100 |     100 |     100 |                                           
+2025-06-27T05:58:08.8080380Z   dialog.tsx                       |       0 |      100 |     100 |       0 | 3-121                                     
+2025-06-27T05:58:08.8081394Z   dropdown-menu.tsx                |       0 |        0 |       0 |       0 | 3-200                                     
+2025-06-27T05:58:08.8082171Z   form.tsx                         |       0 |        0 |       0 |       0 | 3-178                                     
+2025-06-27T05:58:08.8082902Z   input.tsx                        |     100 |      100 |     100 |     100 |                                           
+2025-06-27T05:58:08.8083665Z   label.tsx                        |     100 |      100 |     100 |     100 |                                           
+2025-06-27T05:58:08.8084432Z   select.tsx                       |   58.33 |        0 |     100 |   58.33 | 149-158                                   
+2025-06-27T05:58:08.8085196Z  src/lib                           |    63.9 |    54.16 |   59.09 |    65.6 |                                           
+2025-06-27T05:58:08.8086112Z   auth.ts                          |       0 |        0 |       0 |       0 | 1-78                                      
+2025-06-27T05:58:08.8086851Z   db-utils.ts                      |   81.81 |    71.42 |   71.42 |   82.92 | 65-72                                     
+2025-06-27T05:58:08.8087593Z   db.ts                            |   78.94 |      100 |   42.85 |   78.94 | 48,52,56-57,62-64,85                      
+2025-06-27T05:58:08.8088292Z   utils.ts                         |     100 |      100 |     100 |     100 |                                           
+2025-06-27T05:58:08.8088731Z  src/lib/__tests__                 |       0 |        0 |       0 |       0 |                                           
+2025-06-27T05:58:08.8089165Z   mongodb-mock.ts                  |       0 |        0 |       0 |       0 | 14-211                                    
+2025-06-27T05:58:08.8089608Z   mongodb-setup.ts                 |       0 |        0 |       0 |       0 | 8-78                                      
+2025-06-27T05:58:08.8090030Z   setup.ts                         |       0 |        0 |       0 |       0 | 7-67                                      
+2025-06-27T05:58:08.8090472Z  src/lib/models                    |   86.95 |      100 |   89.47 |   86.66 |                                           
+2025-06-27T05:58:08.8090918Z   User.ts                          |   86.95 |      100 |   89.47 |   86.66 | 111,268-275,310,321,393                   
+2025-06-27T05:58:08.8091599Z  src/lib/services                  |   10.04 |        0 |   23.07 |   10.08 |                                           
+2025-06-27T05:58:08.8092065Z   UserService.ts                   |    3.22 |        0 |       0 |    3.22 | 73-914                                    
+2025-06-27T05:58:08.8092537Z   UserServiceErrors.ts             |    62.5 |        0 |   85.71 |    62.5 | 67-114                                    
+2025-06-27T05:58:08.8093033Z   UserServiceHelpers.ts            |   10.34 |        0 |       0 |   10.71 | 14-79                                     
+2025-06-27T05:58:08.8093566Z  src/lib/services/__test-helpers__ |   86.66 |        0 |      25 |    92.3 |                                           
+2025-06-27T05:58:08.8094222Z   test-setup.ts                    |   86.66 |        0 |      25 |    92.3 | 18-28                                     
+2025-06-27T05:58:08.8094698Z  src/lib/validations               |   54.82 |    30.55 |   60.46 |   56.72 |                                           
+2025-06-27T05:58:08.8095158Z   base.ts                          |   96.29 |       50 |     100 |     100 | 102-103                                   
+2025-06-27T05:58:08.8095568Z   character.ts                     |       0 |      100 |       0 |       0 | 1-263                                     
+2025-06-27T05:58:08.8096025Z   form-integration.ts              |   43.37 |    28.12 |      55 |    43.9 | 34-99,125-183                             
+2025-06-27T05:58:08.8096475Z   user.ts                          |   78.72 |      100 |   77.77 |    93.1 | 128-129                                   
+2025-06-27T05:58:08.8096991Z -----------------------------------|---------|----------|---------|---------|-------------------------------------------
+2025-06-27T05:58:08.8868424Z 
+2025-06-27T05:58:08.8876334Z Test Suites: 1 failed, 19 passed, 20 total
+2025-06-27T05:58:08.8877001Z Tests:       6 skipped, 199 passed, 205 total
+2025-06-27T05:58:08.8877468Z Snapshots:   0 total
+2025-06-27T05:58:08.8877814Z Time:        17.723 s
+2025-06-27T05:58:08.8878163Z Ran all test suites.
+2025-06-27T05:58:08.9007221Z === JEST GLOBAL TEARDOWN ===
+2025-06-27T05:58:08.9011494Z === JEST GLOBAL TEARDOWN COMPLETE ===
+2025-06-27T05:58:08.9623564Z ##[error]Process completed with exit code 1.

@@ -1,0 +1,904 @@
+﻿2025-06-27T05:57:06.4177636Z Current runner version: '2.325.0'
+2025-06-27T05:57:06.4210205Z ##[group]Runner Image Provisioner
+2025-06-27T05:57:06.4211934Z Hosted Compute Agent
+2025-06-27T05:57:06.4212978Z Version: 20250620.352
+2025-06-27T05:57:06.4213997Z Commit: f262f3aba23b10ea191b2a62bdee1ca4c3d344da
+2025-06-27T05:57:06.4215291Z Build Date: 2025-06-20T19:27:17Z
+2025-06-27T05:57:06.4216307Z ##[endgroup]
+2025-06-27T05:57:06.4217272Z ##[group]Operating System
+2025-06-27T05:57:06.4218318Z Ubuntu
+2025-06-27T05:57:06.4219050Z 24.04.2
+2025-06-27T05:57:06.4219797Z LTS
+2025-06-27T05:57:06.4220464Z ##[endgroup]
+2025-06-27T05:57:06.4221969Z ##[group]Runner Image
+2025-06-27T05:57:06.4223056Z Image: ubuntu-24.04
+2025-06-27T05:57:06.4223892Z Version: 20250622.1.0
+2025-06-27T05:57:06.4225781Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250622.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-06-27T05:57:06.4228472Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250622.1
+2025-06-27T05:57:06.4230359Z ##[endgroup]
+2025-06-27T05:57:06.4232648Z ##[group]GITHUB_TOKEN Permissions
+2025-06-27T05:57:06.4235594Z Contents: read
+2025-06-27T05:57:06.4236411Z Metadata: read
+2025-06-27T05:57:06.4237386Z Packages: read
+2025-06-27T05:57:06.4238238Z ##[endgroup]
+2025-06-27T05:57:06.4240993Z Secret source: Actions
+2025-06-27T05:57:06.4242570Z Prepare workflow directory
+2025-06-27T05:57:06.4884925Z Prepare all required actions
+2025-06-27T05:57:06.4942585Z Getting action download info
+2025-06-27T05:57:06.7405502Z ##[group]Download immutable action package 'actions/checkout@v4'
+2025-06-27T05:57:06.7406598Z Version: 4.2.2
+2025-06-27T05:57:06.7407694Z Digest: sha256:ccb2698953eaebd21c7bf6268a94f9c26518a7e38e27e0b83c1fe1ad049819b1
+2025-06-27T05:57:06.7408825Z Source commit SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+2025-06-27T05:57:06.7409599Z ##[endgroup]
+2025-06-27T05:57:06.8426592Z ##[group]Download immutable action package 'actions/setup-node@v4'
+2025-06-27T05:57:06.8427461Z Version: 4.4.0
+2025-06-27T05:57:06.8428198Z Digest: sha256:9427cefe82346e992fb5b949e3569b39d537ae41aa3086483b14eceebfc16bc1
+2025-06-27T05:57:06.8429185Z Source commit SHA: 49933ea5288caeca8642d1e84afbd3f7d6820020
+2025-06-27T05:57:06.8429821Z ##[endgroup]
+2025-06-27T05:57:06.9875902Z Download action repository 'codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699' (SHA:89d6c85cfafaec52c72b6c5e8b2878d33104c699)
+2025-06-27T05:57:07.3175104Z Complete job name: codacy-coverage-report
+2025-06-27T05:57:07.3639517Z ##[group]Checking docker version
+2025-06-27T05:57:07.3652865Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+2025-06-27T05:57:07.4433784Z '1.48'
+2025-06-27T05:57:07.4453949Z Docker daemon API version: '1.48'
+2025-06-27T05:57:07.4455205Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+2025-06-27T05:57:07.4636049Z '1.48'
+2025-06-27T05:57:07.4650551Z Docker client API version: '1.48'
+2025-06-27T05:57:07.4655537Z ##[endgroup]
+2025-06-27T05:57:07.4658392Z ##[group]Clean up resources from previous jobs
+2025-06-27T05:57:07.4664041Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=12a796"
+2025-06-27T05:57:07.4830134Z ##[command]/usr/bin/docker network prune --force --filter "label=12a796"
+2025-06-27T05:57:07.4960660Z ##[endgroup]
+2025-06-27T05:57:07.4961413Z ##[group]Create local container network
+2025-06-27T05:57:07.4971650Z ##[command]/usr/bin/docker network create --label 12a796 github_network_d94f7a032b6840bb80b92fd305095b61
+2025-06-27T05:57:07.5475546Z 2e637afec1b8e3c5283aec844bbd95f0e5cbb6896335b246af98800792168a93
+2025-06-27T05:57:07.5494988Z ##[endgroup]
+2025-06-27T05:57:07.5518478Z ##[group]Starting mongodb service container
+2025-06-27T05:57:07.5538142Z ##[command]/usr/bin/docker pull mongo:6.0
+2025-06-27T05:57:07.8198753Z 6.0: Pulling from library/mongo
+2025-06-27T05:57:07.8771796Z 89dc6ea4eae2: Pulling fs layer
+2025-06-27T05:57:07.8773070Z 159a29ccbce7: Pulling fs layer
+2025-06-27T05:57:07.8773918Z 03b36943d08f: Pulling fs layer
+2025-06-27T05:57:07.8775108Z d40f5033967d: Pulling fs layer
+2025-06-27T05:57:07.8775928Z b60bc6403a22: Pulling fs layer
+2025-06-27T05:57:07.8776745Z f0134ae75612: Pulling fs layer
+2025-06-27T05:57:07.8777567Z 96577fad2c40: Pulling fs layer
+2025-06-27T05:57:07.8778374Z 62defe137215: Pulling fs layer
+2025-06-27T05:57:07.8779173Z d40f5033967d: Waiting
+2025-06-27T05:57:07.8779919Z b60bc6403a22: Waiting
+2025-06-27T05:57:07.8780651Z f0134ae75612: Waiting
+2025-06-27T05:57:07.8781657Z 96577fad2c40: Waiting
+2025-06-27T05:57:07.8782421Z 62defe137215: Waiting
+2025-06-27T05:57:07.9391731Z 159a29ccbce7: Verifying Checksum
+2025-06-27T05:57:07.9393244Z 159a29ccbce7: Download complete
+2025-06-27T05:57:07.9500599Z 03b36943d08f: Verifying Checksum
+2025-06-27T05:57:07.9502168Z 03b36943d08f: Download complete
+2025-06-27T05:57:07.9900030Z d40f5033967d: Verifying Checksum
+2025-06-27T05:57:07.9901676Z d40f5033967d: Download complete
+2025-06-27T05:57:07.9961394Z b60bc6403a22: Download complete
+2025-06-27T05:57:08.0562974Z f0134ae75612: Download complete
+2025-06-27T05:57:08.1340493Z 89dc6ea4eae2: Verifying Checksum
+2025-06-27T05:57:08.1342319Z 89dc6ea4eae2: Download complete
+2025-06-27T05:57:08.1345287Z 62defe137215: Verifying Checksum
+2025-06-27T05:57:08.1348738Z 62defe137215: Download complete
+2025-06-27T05:57:08.9186704Z 96577fad2c40: Verifying Checksum
+2025-06-27T05:57:08.9188651Z 96577fad2c40: Download complete
+2025-06-27T05:57:09.2419091Z 89dc6ea4eae2: Pull complete
+2025-06-27T05:57:09.7967734Z 159a29ccbce7: Pull complete
+2025-06-27T05:57:09.9467433Z 03b36943d08f: Pull complete
+2025-06-27T05:57:09.9984238Z d40f5033967d: Pull complete
+2025-06-27T05:57:10.0096545Z b60bc6403a22: Pull complete
+2025-06-27T05:57:10.0219862Z f0134ae75612: Pull complete
+2025-06-27T05:57:14.4588379Z 96577fad2c40: Pull complete
+2025-06-27T05:57:14.4748323Z 62defe137215: Pull complete
+2025-06-27T05:57:14.4793529Z Digest: sha256:2c6f0a6f33856597ad3d467a71af506bec71e73d945ead65b1af119be38b4c43
+2025-06-27T05:57:14.4808956Z Status: Downloaded newer image for mongo:6.0
+2025-06-27T05:57:14.4822981Z docker.io/library/mongo:6.0
+2025-06-27T05:57:14.4868183Z ##[command]/usr/bin/docker create --name f020d210afc44abe80dc69fd2dfde05e_mongo60_cf93ab --label 12a796 --network github_network_d94f7a032b6840bb80b92fd305095b61 --network-alias mongodb -p 27017:27017 --health-cmd "echo 'db.runCommand({serverStatus:1}).ok' | mongosh --quiet" --health-interval 10s --health-timeout 5s --health-retries 5 -e GITHUB_ACTIONS=true -e CI=true mongo:6.0
+2025-06-27T05:57:14.5147173Z 22b5b979820d08a88aab5df5d722408d4408947ead46080fb13e27f3945d9bed
+2025-06-27T05:57:14.5169028Z ##[command]/usr/bin/docker start 22b5b979820d08a88aab5df5d722408d4408947ead46080fb13e27f3945d9bed
+2025-06-27T05:57:14.8265426Z 22b5b979820d08a88aab5df5d722408d4408947ead46080fb13e27f3945d9bed
+2025-06-27T05:57:14.8286666Z ##[command]/usr/bin/docker ps --all --filter id=22b5b979820d08a88aab5df5d722408d4408947ead46080fb13e27f3945d9bed --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+2025-06-27T05:57:14.8416299Z 22b5b979820d08a88aab5df5d722408d4408947ead46080fb13e27f3945d9bed Up Less than a second (health: starting)
+2025-06-27T05:57:14.8435373Z ##[command]/usr/bin/docker port 22b5b979820d08a88aab5df5d722408d4408947ead46080fb13e27f3945d9bed
+2025-06-27T05:57:14.8551982Z 27017/tcp -> 0.0.0.0:27017
+2025-06-27T05:57:14.8552434Z 27017/tcp -> [::]:27017
+2025-06-27T05:57:14.8602858Z ##[endgroup]
+2025-06-27T05:57:14.8611758Z ##[group]Waiting for all services to be ready
+2025-06-27T05:57:14.8625788Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" 22b5b979820d08a88aab5df5d722408d4408947ead46080fb13e27f3945d9bed
+2025-06-27T05:57:14.8764119Z starting
+2025-06-27T05:57:14.8783825Z mongodb service is starting, waiting 2 seconds before checking again.
+2025-06-27T05:57:16.8787828Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" 22b5b979820d08a88aab5df5d722408d4408947ead46080fb13e27f3945d9bed
+2025-06-27T05:57:16.8908803Z starting
+2025-06-27T05:57:16.8922039Z mongodb service is starting, waiting 4 seconds before checking again.
+2025-06-27T05:57:21.0946721Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" 22b5b979820d08a88aab5df5d722408d4408947ead46080fb13e27f3945d9bed
+2025-06-27T05:57:21.1075192Z starting
+2025-06-27T05:57:21.1088131Z mongodb service is starting, waiting 8 seconds before checking again.
+2025-06-27T05:57:29.2797141Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" 22b5b979820d08a88aab5df5d722408d4408947ead46080fb13e27f3945d9bed
+2025-06-27T05:57:29.2922551Z healthy
+2025-06-27T05:57:29.2938984Z mongodb service is healthy.
+2025-06-27T05:57:29.2939641Z ##[endgroup]
+2025-06-27T05:57:29.3175655Z ##[group]Run actions/checkout@v4
+2025-06-27T05:57:29.3176178Z with:
+2025-06-27T05:57:29.3176361Z   fetch-depth: 0
+2025-06-27T05:57:29.3176574Z   repository: dougis/dnd-tracker-next-js
+2025-06-27T05:57:29.3176972Z   token: ***
+2025-06-27T05:57:29.3177166Z   ssh-strict: true
+2025-06-27T05:57:29.3177338Z   ssh-user: git
+2025-06-27T05:57:29.3177515Z   persist-credentials: true
+2025-06-27T05:57:29.3177721Z   clean: true
+2025-06-27T05:57:29.3177897Z   sparse-checkout-cone-mode: true
+2025-06-27T05:57:29.3178129Z   fetch-tags: false
+2025-06-27T05:57:29.3178306Z   show-progress: true
+2025-06-27T05:57:29.3178488Z   lfs: false
+2025-06-27T05:57:29.3178651Z   submodules: false
+2025-06-27T05:57:29.3178826Z   set-safe-directory: true
+2025-06-27T05:57:29.3179209Z ##[endgroup]
+2025-06-27T05:57:29.4222796Z Syncing repository: dougis/dnd-tracker-next-js
+2025-06-27T05:57:29.4224148Z ##[group]Getting Git version info
+2025-06-27T05:57:29.4289227Z Working directory is '/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js'
+2025-06-27T05:57:29.4290243Z [command]/usr/bin/git version
+2025-06-27T05:57:29.4301958Z git version 2.49.0
+2025-06-27T05:57:29.4327528Z ##[endgroup]
+2025-06-27T05:57:29.4343264Z Temporarily overriding HOME='/home/runner/work/_temp/bcb4996d-e395-4298-956b-26ab6e6eee1a' before making global git config changes
+2025-06-27T05:57:29.4344599Z Adding repository directory to the temporary git global config as a safe directory
+2025-06-27T05:57:29.4349376Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js
+2025-06-27T05:57:29.4394367Z Deleting the contents of '/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js'
+2025-06-27T05:57:29.4397807Z ##[group]Initializing the repository
+2025-06-27T05:57:29.4402355Z [command]/usr/bin/git init /home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js
+2025-06-27T05:57:29.4473918Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-06-27T05:57:29.4474936Z hint: is subject to change. To configure the initial branch name to use in all
+2025-06-27T05:57:29.4475793Z hint: of your new repositories, which will suppress this warning, call:
+2025-06-27T05:57:29.4476360Z hint:
+2025-06-27T05:57:29.4476757Z hint: 	git config --global init.defaultBranch <name>
+2025-06-27T05:57:29.4477217Z hint:
+2025-06-27T05:57:29.4477660Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-06-27T05:57:29.4478391Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-06-27T05:57:29.4478736Z hint:
+2025-06-27T05:57:29.4478919Z hint: 	git branch -m <name>
+2025-06-27T05:57:29.4482532Z Initialized empty Git repository in /home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/.git/
+2025-06-27T05:57:29.4492875Z [command]/usr/bin/git remote add origin https://github.com/dougis/dnd-tracker-next-js
+2025-06-27T05:57:29.4525445Z ##[endgroup]
+2025-06-27T05:57:29.4526027Z ##[group]Disabling automatic garbage collection
+2025-06-27T05:57:29.4530053Z [command]/usr/bin/git config --local gc.auto 0
+2025-06-27T05:57:29.4557445Z ##[endgroup]
+2025-06-27T05:57:29.4558040Z ##[group]Setting up auth
+2025-06-27T05:57:29.4565207Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-06-27T05:57:29.4594580Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-06-27T05:57:29.4896268Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-06-27T05:57:29.4924757Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-06-27T05:57:29.5141429Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-06-27T05:57:29.5182017Z ##[endgroup]
+2025-06-27T05:57:29.5182615Z ##[group]Fetching the repository
+2025-06-27T05:57:29.5190505Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +f6da0f03032bdcf169d47896d5f1e3f231178a8d:refs/remotes/pull/92/merge
+2025-06-27T05:57:29.8335539Z From https://github.com/dougis/dnd-tracker-next-js
+2025-06-27T05:57:29.8336802Z  * [new branch]      add-claude-github-actions-1750867671806  -> origin/add-claude-github-actions-1750867671806
+2025-06-27T05:57:29.8338011Z  * [new branch]      add-claude-github-actions-1750867671854  -> origin/add-claude-github-actions-1750867671854
+2025-06-27T05:57:29.8339885Z  * [new branch]      bugfix/issue-73-fix-tests-and-types      -> origin/bugfix/issue-73-fix-tests-and-types
+2025-06-27T05:57:29.8342788Z  * [new branch]      bugfix/issue-73-fix-tests-and-types-2    -> origin/bugfix/issue-73-fix-tests-and-types-2
+2025-06-27T05:57:29.8344946Z  * [new branch]      bugfix/issue-81-fix-failing-user-service-tests -> origin/bugfix/issue-81-fix-failing-user-service-tests
+2025-06-27T05:57:29.8346558Z  * [new branch]      codacy-auto-fixes                        -> origin/codacy-auto-fixes
+2025-06-27T05:57:29.8349170Z  * [new branch]      codacy-quality-fixes                     -> origin/codacy-quality-fixes
+2025-06-27T05:57:29.8353250Z  * [new branch]      feature/apply-codacy-fixes-manually      -> origin/feature/apply-codacy-fixes-manually
+2025-06-27T05:57:29.8355899Z  * [new branch]      feature/issue-10-nextauth-setup          -> origin/feature/issue-10-nextauth-setup
+2025-06-27T05:57:29.8358277Z  * [new branch]      feature/issue-11-user-registration-flow  -> origin/feature/issue-11-user-registration-flow
+2025-06-27T05:57:29.8360472Z  * [new branch]      feature/issue-14-user-schema             -> origin/feature/issue-14-user-schema
+2025-06-27T05:57:29.8362706Z  * [new branch]      feature/issue-14-user-schema-model       -> origin/feature/issue-14-user-schema-model
+2025-06-27T05:57:29.8364990Z  * [new branch]      feature/issue-17-user-service            -> origin/feature/issue-17-user-service
+2025-06-27T05:57:29.8367216Z  * [new branch]      feature/issue-2-nextjs-setup             -> origin/feature/issue-2-nextjs-setup
+2025-06-27T05:57:29.8369815Z  * [new branch]      feature/issue-20-zod-validation          -> origin/feature/issue-20-zod-validation
+2025-06-27T05:57:29.8372323Z  * [new branch]      feature/issue-20-zod-validation-pr       -> origin/feature/issue-20-zod-validation-pr
+2025-06-27T05:57:29.8374537Z  * [new branch]      feature/issue-3-dev-environment          -> origin/feature/issue-3-dev-environment
+2025-06-27T05:57:29.8376807Z  * [new branch]      feature/issue-40-application-layout      -> origin/feature/issue-40-application-layout
+2025-06-27T05:57:29.8379280Z  * [new branch]      feature/issue-43-form-component-library  -> origin/feature/issue-43-form-component-library
+2025-06-27T05:57:29.8381888Z  * [new branch]      feature/issue-44-modal-dialog-system     -> origin/feature/issue-44-modal-dialog-system
+2025-06-27T05:57:29.8384293Z  * [new branch]      feature/issue-6-shadcn-ui-setup          -> origin/feature/issue-6-shadcn-ui-setup
+2025-06-27T05:57:29.8386826Z  * [new branch]      feature/issue-7-design-system-foundations -> origin/feature/issue-7-design-system-foundations
+2025-06-27T05:57:29.8389275Z  * [new branch]      feature/issue-70-fix-failing-tests       -> origin/feature/issue-70-fix-failing-tests
+2025-06-27T05:57:29.8391788Z  * [new branch]      feature/issue-77-codacy-test-coverage    -> origin/feature/issue-77-codacy-test-coverage
+2025-06-27T05:57:29.8394126Z  * [new branch]      feature/issue-77-fix-code-coverage       -> origin/feature/issue-77-fix-code-coverage
+2025-06-27T05:57:29.8396379Z  * [new branch]      feature/issue-9-mongoose-setup           -> origin/feature/issue-9-mongoose-setup
+2025-06-27T05:57:29.8399139Z  * [new branch]      feature/test-coverage-codacy-integration -> origin/feature/test-coverage-codacy-integration
+2025-06-27T05:57:29.8401783Z  * [new branch]      fix-coverage-with-mongodb-container      -> origin/fix-coverage-with-mongodb-container
+2025-06-27T05:57:29.8403992Z  * [new branch]      fix-signup-page-test                     -> origin/fix-signup-page-test
+2025-06-27T05:57:29.8407344Z  * [new branch]      fix/codacy-quality-issues                -> origin/fix/codacy-quality-issues
+2025-06-27T05:57:29.8409830Z  * [new branch]      fix/failing-tests                        -> origin/fix/failing-tests
+2025-06-27T05:57:29.8412284Z  * [new branch]      flyio-new-files                          -> origin/flyio-new-files
+2025-06-27T05:57:29.8414722Z  * [new branch]      main                                     -> origin/main
+2025-06-27T05:57:29.8416902Z  * [new branch]      prd-creation                             -> origin/prd-creation
+2025-06-27T05:57:29.8419047Z  * [new branch]      project-plan-and-mvp                     -> origin/project-plan-and-mvp
+2025-06-27T05:57:29.8421534Z  * [new branch]      technical-specification                  -> origin/technical-specification
+2025-06-27T05:57:29.8425776Z  * [new ref]         f6da0f03032bdcf169d47896d5f1e3f231178a8d -> pull/92/merge
+2025-06-27T05:57:29.8468277Z ##[endgroup]
+2025-06-27T05:57:29.8468915Z ##[group]Determining the checkout info
+2025-06-27T05:57:29.8472264Z ##[endgroup]
+2025-06-27T05:57:29.8475361Z [command]/usr/bin/git sparse-checkout disable
+2025-06-27T05:57:29.8514424Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-06-27T05:57:29.8541802Z ##[group]Checking out the ref
+2025-06-27T05:57:29.8545687Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/92/merge
+2025-06-27T05:57:29.8691641Z Note: switching to 'refs/remotes/pull/92/merge'.
+2025-06-27T05:57:29.8692233Z 
+2025-06-27T05:57:29.8692671Z You are in 'detached HEAD' state. You can look around, make experimental
+2025-06-27T05:57:29.8693517Z changes and commit them, and you can discard any commits you make in this
+2025-06-27T05:57:29.8694324Z state without impacting any branches by switching back to a branch.
+2025-06-27T05:57:29.8694811Z 
+2025-06-27T05:57:29.8695129Z If you want to create a new branch to retain commits you create, you may
+2025-06-27T05:57:29.8695836Z do so (now or later) by using -c with the switch command. Example:
+2025-06-27T05:57:29.8696234Z 
+2025-06-27T05:57:29.8696404Z   git switch -c <new-branch-name>
+2025-06-27T05:57:29.8696681Z 
+2025-06-27T05:57:29.8696842Z Or undo this operation with:
+2025-06-27T05:57:29.8697081Z 
+2025-06-27T05:57:29.8697215Z   git switch -
+2025-06-27T05:57:29.8697390Z 
+2025-06-27T05:57:29.8697753Z Turn off this advice by setting config variable advice.detachedHead to false
+2025-06-27T05:57:29.8698136Z 
+2025-06-27T05:57:29.8698505Z HEAD is now at f6da0f0 Merge 9d02eb90e469c4661efca692a711078a737f4e97 into 19a350f66e5c5fc2ef5d523a087ac2f3ae8f576f
+2025-06-27T05:57:29.8702563Z ##[endgroup]
+2025-06-27T05:57:29.8740698Z [command]/usr/bin/git log -1 --format=%H
+2025-06-27T05:57:29.8764412Z f6da0f03032bdcf169d47896d5f1e3f231178a8d
+2025-06-27T05:57:29.8979850Z ##[group]Run actions/setup-node@v4
+2025-06-27T05:57:29.8980116Z with:
+2025-06-27T05:57:29.8980288Z   node-version: 20
+2025-06-27T05:57:29.8980467Z   cache: npm
+2025-06-27T05:57:29.8980636Z   always-auth: false
+2025-06-27T05:57:29.8980814Z   check-latest: false
+2025-06-27T05:57:29.8981476Z   token: ***
+2025-06-27T05:57:29.8981655Z ##[endgroup]
+2025-06-27T05:57:30.1112920Z Found in cache @ /opt/hostedtoolcache/node/20.19.2/x64
+2025-06-27T05:57:30.1118902Z ##[group]Environment details
+2025-06-27T05:57:32.1418806Z node: v20.19.2
+2025-06-27T05:57:32.1419320Z npm: 10.8.2
+2025-06-27T05:57:32.1419602Z yarn: 1.22.22
+2025-06-27T05:57:32.1421282Z ##[endgroup]
+2025-06-27T05:57:32.1440860Z [command]/opt/hostedtoolcache/node/20.19.2/x64/bin/npm config get cache
+2025-06-27T05:57:32.3777615Z /home/runner/.npm
+2025-06-27T05:57:32.4898289Z npm cache is not found
+2025-06-27T05:57:32.5016396Z ##[group]Run npm ci
+2025-06-27T05:57:32.5016652Z [36;1mnpm ci[0m
+2025-06-27T05:57:32.5116741Z shell: /usr/bin/bash -e {0}
+2025-06-27T05:57:32.5116995Z ##[endgroup]
+2025-06-27T05:57:36.6585623Z npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+2025-06-27T05:57:37.3697926Z npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+2025-06-27T05:57:38.7698979Z npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+2025-06-27T05:57:38.7912369Z npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+2025-06-27T05:57:39.1952066Z npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+2025-06-27T05:57:39.3346358Z npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+2025-06-27T05:57:41.3827705Z npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+2025-06-27T05:57:50.0075867Z 
+2025-06-27T05:57:50.0076672Z added 826 packages, and audited 827 packages in 17s
+2025-06-27T05:57:50.0077160Z 
+2025-06-27T05:57:50.0077465Z 199 packages are looking for funding
+2025-06-27T05:57:50.0077993Z   run `npm fund` for details
+2025-06-27T05:57:50.0089426Z 
+2025-06-27T05:57:50.0089892Z found 0 vulnerabilities
+2025-06-27T05:57:50.0505445Z ##[group]Run npm run test:ci
+2025-06-27T05:57:50.0505759Z [36;1mnpm run test:ci[0m
+2025-06-27T05:57:50.0570385Z shell: /usr/bin/bash -e {0}
+2025-06-27T05:57:50.0570617Z env:
+2025-06-27T05:57:50.0570846Z   MONGODB_URI: mongodb://localhost:27017/testdb
+2025-06-27T05:57:50.0571363Z   MONGODB_DB_NAME: testdb
+2025-06-27T05:57:50.0571564Z   CI: true
+2025-06-27T05:57:50.0571720Z   NODE_ENV: test
+2025-06-27T05:57:50.0571893Z   DEBUG: mongodb:*
+2025-06-27T05:57:50.0572063Z ##[endgroup]
+2025-06-27T05:57:50.1729125Z 
+2025-06-27T05:57:50.1729765Z > dnd-tracker-next-js@0.1.0 test:ci
+2025-06-27T05:57:50.1730469Z > jest --coverage --watchAll=false --ci --forceExit --detectOpenHandles --runInBand
+2025-06-27T05:57:50.1730819Z 
+2025-06-27T05:57:51.1509930Z === JEST GLOBAL SETUP ===
+2025-06-27T05:57:51.1517013Z Using CI MongoDB at mongodb://localhost:27017/testdb
+2025-06-27T05:57:51.1518270Z ✅ MongoDB environment variables validated
+2025-06-27T05:57:51.1519229Z MongoDB configured: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:57:51.1520030Z === JEST GLOBAL SETUP COMPLETE ===
+2025-06-27T05:57:51.7467343Z PASS src/lib/validations/__tests__/base.test.ts
+2025-06-27T05:57:51.7563874Z   ● Console
+2025-06-27T05:57:51.7564130Z 
+2025-06-27T05:57:51.7564293Z     console.log
+2025-06-27T05:57:51.7564977Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:57:51.7565499Z 
+2025-06-27T05:57:51.7565751Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:57:51.7566110Z 
+2025-06-27T05:58:00.8798281Z PASS src/lib/models/__tests__/User.test.ts (9.112 s)
+2025-06-27T05:58:00.8807898Z   ● Console
+2025-06-27T05:58:00.8808104Z 
+2025-06-27T05:58:00.8808234Z     console.log
+2025-06-27T05:58:00.8808766Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:00.8809199Z 
+2025-06-27T05:58:00.8809407Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:00.8810053Z 
+2025-06-27T05:58:01.1292410Z PASS src/lib/validations/__tests__/user.test.ts
+2025-06-27T05:58:01.1293268Z   ● Console
+2025-06-27T05:58:01.1293475Z 
+2025-06-27T05:58:01.1293847Z     console.log
+2025-06-27T05:58:01.1294631Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:01.1295395Z 
+2025-06-27T05:58:01.1295833Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:01.1296510Z 
+2025-06-27T05:58:01.9272483Z PASS src/lib/services/__tests__/UserServiceCRUD.test.ts
+2025-06-27T05:58:01.9278346Z   ● Console
+2025-06-27T05:58:01.9278540Z 
+2025-06-27T05:58:01.9278689Z     console.log
+2025-06-27T05:58:01.9279273Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:01.9279718Z 
+2025-06-27T05:58:01.9279937Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:01.9280253Z 
+2025-06-27T05:58:02.2015039Z PASS src/lib/validations/__tests__/form-integration.test.ts
+2025-06-27T05:58:02.2020812Z   ● Console
+2025-06-27T05:58:02.2021014Z 
+2025-06-27T05:58:02.2021304Z     console.log
+2025-06-27T05:58:02.2021828Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:02.2022233Z 
+2025-06-27T05:58:02.2022430Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:02.2022702Z 
+2025-06-27T05:58:03.7719619Z PASS src/app/(auth)/__tests__/SignUpPage.test.tsx
+2025-06-27T05:58:03.7725374Z   ● Console
+2025-06-27T05:58:03.7725914Z 
+2025-06-27T05:58:03.7726088Z     console.log
+2025-06-27T05:58:03.7726627Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:03.7726992Z 
+2025-06-27T05:58:03.7727162Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:03.7727339Z 
+2025-06-27T05:58:04.2496444Z PASS src/components/modals/__tests__/ConfirmationDialog.test.tsx
+2025-06-27T05:58:04.2504109Z   ● Console
+2025-06-27T05:58:04.2504238Z 
+2025-06-27T05:58:04.2504320Z     console.log
+2025-06-27T05:58:04.2504671Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:04.2504957Z 
+2025-06-27T05:58:04.2505093Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:04.2505274Z 
+2025-06-27T05:58:04.4372670Z PASS src/lib/services/__tests__/UserServicePassword.test.ts
+2025-06-27T05:58:04.4376433Z   ● Console
+2025-06-27T05:58:04.4376649Z 
+2025-06-27T05:58:04.4376792Z     console.log
+2025-06-27T05:58:04.4377368Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:04.4377796Z 
+2025-06-27T05:58:04.4378012Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:04.4378321Z 
+2025-06-27T05:58:04.6250802Z PASS src/lib/services/__tests__/UserServiceAuth.test.ts
+2025-06-27T05:58:04.6254524Z   ● Console
+2025-06-27T05:58:04.6254679Z 
+2025-06-27T05:58:04.6254778Z     console.log
+2025-06-27T05:58:04.6255159Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:04.6255451Z 
+2025-06-27T05:58:04.6255815Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:04.6256084Z 
+2025-06-27T05:58:04.8878362Z PASS src/lib/__tests__/db-utils.test.ts
+2025-06-27T05:58:04.8944933Z   ● Console
+2025-06-27T05:58:04.8945140Z 
+2025-06-27T05:58:04.8945500Z     console.log
+2025-06-27T05:58:04.8946096Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:04.8946534Z 
+2025-06-27T05:58:04.8946745Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:04.8947039Z 
+2025-06-27T05:58:04.8947169Z     console.error
+2025-06-27T05:58:04.8948747Z       Database health check failed: Error: Connection failed
+2025-06-27T05:58:04.8949945Z           at Object.<anonymous> (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/__tests__/db-utils.test.ts:101:43)
+2025-06-27T05:58:04.8951875Z           at Promise.finally.completed (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1559:28)
+2025-06-27T05:58:04.8953038Z           at new Promise (<anonymous>)
+2025-06-27T05:58:04.8954243Z           at callAsyncCircusFn (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1499:10)
+2025-06-27T05:58:04.8956406Z           at _callCircusTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1009:40)
+2025-06-27T05:58:04.8958092Z           at _runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:949:3)
+2025-06-27T05:58:04.8959853Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:839:13)
+2025-06-27T05:58:04.8961916Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:04.8963792Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:04.8965468Z           at run (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:757:3)
+2025-06-27T05:58:04.8967284Z           at runAndTransformResultsToJestFormat (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1920:21)
+2025-06-27T05:58:04.8969138Z           at jestAdapter (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/runner.js:101:19)
+2025-06-27T05:58:04.8970721Z           at runTestInternal (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:272:16)
+2025-06-27T05:58:04.8972456Z           at runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:340:7)
+2025-06-27T05:58:04.8973207Z 
+2025-06-27T05:58:04.8973462Z     [0m [90m 93 |[39m   }
+2025-06-27T05:58:04.8973868Z      [90m 94 |[39m
+2025-06-27T05:58:04.8974602Z     [31m[1m>[22m[39m[90m 95 |[39m   originalConsoleError([33m...[39margs)[33m;[39m
+2025-06-27T05:58:04.8975337Z      [90m    |[39m   [31m[1m^[22m[39m
+2025-06-27T05:58:04.8976108Z      [90m 96 |[39m }[33m;[39m
+2025-06-27T05:58:04.8976558Z      [90m 97 |[39m[0m
+2025-06-27T05:58:04.8976770Z 
+2025-06-27T05:58:04.8977135Z       at console.originalConsoleError [as error] (jest.setup.js:95:3)
+2025-06-27T05:58:04.8977789Z       at error (src/lib/db-utils.ts:41:13)
+2025-06-27T05:58:04.8978426Z       at Object.<anonymous> (src/lib/__tests__/db-utils.test.ts:103:22)
+2025-06-27T05:58:04.8978851Z 
+2025-06-27T05:58:04.8978977Z     console.log
+2025-06-27T05:58:04.8979397Z       Database connected successfully on attempt 1
+2025-06-27T05:58:04.8979741Z 
+2025-06-27T05:58:04.8979932Z       at log (src/lib/db-utils.ts:88:15)
+2025-06-27T05:58:04.8980222Z 
+2025-06-27T05:58:04.8980349Z     console.warn
+2025-06-27T05:58:04.8981016Z       Database connection attempt 1 failed. Retrying in 10ms... Error: First attempt failed
+2025-06-27T05:58:04.8982503Z           at Object.<anonymous> (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/__tests__/db-utils.test.ts:144:32)
+2025-06-27T05:58:04.8984215Z           at Promise.finally.completed (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1559:28)
+2025-06-27T05:58:04.8985353Z           at new Promise (<anonymous>)
+2025-06-27T05:58:04.8986537Z           at callAsyncCircusFn (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1499:10)
+2025-06-27T05:58:04.8988344Z           at _callCircusTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1009:40)
+2025-06-27T05:58:04.8989723Z           at _runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:949:3)
+2025-06-27T05:58:04.8990707Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:839:13)
+2025-06-27T05:58:04.8992154Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:04.8993192Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:04.8994118Z           at run (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:757:3)
+2025-06-27T05:58:04.8995112Z           at runAndTransformResultsToJestFormat (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1920:21)
+2025-06-27T05:58:04.8996100Z           at jestAdapter (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/runner.js:101:19)
+2025-06-27T05:58:04.8996958Z           at runTestInternal (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:272:16)
+2025-06-27T05:58:04.8997791Z           at runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:340:7)
+2025-06-27T05:58:04.8998210Z 
+2025-06-27T05:58:04.8998366Z     [0m [90m  98 |[39m
+2025-06-27T05:58:04.8999079Z      [90m  99 |[39m       [36mconst[39m delay [33m=[39m baseDelay [33m*[39m [33mMath[39m[33m.[39mpow([35m2[39m[33m,[39m attempt [33m-[39m [35m1[39m)[33m;[39m
+2025-06-27T05:58:04.8999736Z     [31m[1m>[22m[39m[90m 100 |[39m       console[33m.[39mwarn(
+2025-06-27T05:58:04.9000123Z      [90m     |[39m               [31m[1m^[22m[39m
+2025-06-27T05:58:04.9000727Z      [90m 101 |[39m         [32m`Database connection attempt ${attempt} failed. Retrying in ${delay}ms...`[39m[33m,[39m
+2025-06-27T05:58:04.9001333Z      [90m 102 |[39m         error
+2025-06-27T05:58:04.9001633Z      [90m 103 |[39m       )[33m;[39m[0m
+2025-06-27T05:58:04.9001791Z 
+2025-06-27T05:58:04.9001914Z       at warn (src/lib/db-utils.ts:100:15)
+2025-06-27T05:58:04.9002396Z       at Object.<anonymous> (src/lib/__tests__/db-utils.test.ts:148:7)
+2025-06-27T05:58:04.9002636Z 
+2025-06-27T05:58:04.9002717Z     console.warn
+2025-06-27T05:58:04.9003095Z       Database connection attempt 2 failed. Retrying in 20ms... Error: Second attempt failed
+2025-06-27T05:58:04.9003807Z           at Object.<anonymous> (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/__tests__/db-utils.test.ts:145:32)
+2025-06-27T05:58:04.9004753Z           at Promise.finally.completed (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1559:28)
+2025-06-27T05:58:04.9005377Z           at new Promise (<anonymous>)
+2025-06-27T05:58:04.9006014Z           at callAsyncCircusFn (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1499:10)
+2025-06-27T05:58:04.9006963Z           at _callCircusTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1009:40)
+2025-06-27T05:58:04.9007868Z           at _runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:949:3)
+2025-06-27T05:58:04.9008826Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:839:13)
+2025-06-27T05:58:04.9009848Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:04.9010856Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:04.9011875Z           at run (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:757:3)
+2025-06-27T05:58:04.9012868Z           at runAndTransformResultsToJestFormat (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1920:21)
+2025-06-27T05:58:04.9013967Z           at jestAdapter (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/runner.js:101:19)
+2025-06-27T05:58:04.9014822Z           at runTestInternal (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:272:16)
+2025-06-27T05:58:04.9015648Z           at runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:340:7)
+2025-06-27T05:58:04.9016057Z 
+2025-06-27T05:58:04.9016171Z     [0m [90m  98 |[39m
+2025-06-27T05:58:04.9016844Z      [90m  99 |[39m       [36mconst[39m delay [33m=[39m baseDelay [33m*[39m [33mMath[39m[33m.[39mpow([35m2[39m[33m,[39m attempt [33m-[39m [35m1[39m)[33m;[39m
+2025-06-27T05:58:04.9017482Z     [31m[1m>[22m[39m[90m 100 |[39m       console[33m.[39mwarn(
+2025-06-27T05:58:04.9017858Z      [90m     |[39m               [31m[1m^[22m[39m
+2025-06-27T05:58:04.9018472Z      [90m 101 |[39m         [32m`Database connection attempt ${attempt} failed. Retrying in ${delay}ms...`[39m[33m,[39m
+2025-06-27T05:58:04.9018945Z      [90m 102 |[39m         error
+2025-06-27T05:58:04.9019236Z      [90m 103 |[39m       )[33m;[39m[0m
+2025-06-27T05:58:04.9019394Z 
+2025-06-27T05:58:04.9019508Z       at warn (src/lib/db-utils.ts:100:15)
+2025-06-27T05:58:04.9019872Z       at Object.<anonymous> (src/lib/__tests__/db-utils.test.ts:148:7)
+2025-06-27T05:58:04.9020109Z 
+2025-06-27T05:58:04.9020179Z     console.log
+2025-06-27T05:58:04.9020424Z       Database connected successfully on attempt 3
+2025-06-27T05:58:04.9020613Z 
+2025-06-27T05:58:04.9020724Z       at log (src/lib/db-utils.ts:88:15)
+2025-06-27T05:58:04.9020892Z 
+2025-06-27T05:58:04.9020959Z     console.warn
+2025-06-27T05:58:04.9021410Z       Database connection attempt 1 failed. Retrying in 10ms... Error: Always fails
+2025-06-27T05:58:04.9022230Z           at Object.<anonymous> (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/__tests__/db-utils.test.ts:154:43)
+2025-06-27T05:58:04.9023173Z           at Promise.finally.completed (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1559:28)
+2025-06-27T05:58:04.9023803Z           at new Promise (<anonymous>)
+2025-06-27T05:58:04.9024439Z           at callAsyncCircusFn (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1499:10)
+2025-06-27T05:58:04.9025393Z           at _callCircusTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1009:40)
+2025-06-27T05:58:04.9026298Z           at _runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:949:3)
+2025-06-27T05:58:04.9027262Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:839:13)
+2025-06-27T05:58:04.9028307Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:04.9029330Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:04.9030254Z           at run (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:757:3)
+2025-06-27T05:58:04.9031369Z           at runAndTransformResultsToJestFormat (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1920:21)
+2025-06-27T05:58:04.9032360Z           at jestAdapter (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/runner.js:101:19)
+2025-06-27T05:58:04.9033347Z           at runTestInternal (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:272:16)
+2025-06-27T05:58:04.9034178Z           at runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:340:7)
+2025-06-27T05:58:04.9034585Z 
+2025-06-27T05:58:04.9034704Z     [0m [90m  98 |[39m
+2025-06-27T05:58:04.9035380Z      [90m  99 |[39m       [36mconst[39m delay [33m=[39m baseDelay [33m*[39m [33mMath[39m[33m.[39mpow([35m2[39m[33m,[39m attempt [33m-[39m [35m1[39m)[33m;[39m
+2025-06-27T05:58:04.9036017Z     [31m[1m>[22m[39m[90m 100 |[39m       console[33m.[39mwarn(
+2025-06-27T05:58:04.9036392Z      [90m     |[39m               [31m[1m^[22m[39m
+2025-06-27T05:58:04.9036971Z      [90m 101 |[39m         [32m`Database connection attempt ${attempt} failed. Retrying in ${delay}ms...`[39m[33m,[39m
+2025-06-27T05:58:04.9037434Z      [90m 102 |[39m         error
+2025-06-27T05:58:04.9037726Z      [90m 103 |[39m       )[33m;[39m[0m
+2025-06-27T05:58:04.9037885Z 
+2025-06-27T05:58:04.9038006Z       at warn (src/lib/db-utils.ts:100:15)
+2025-06-27T05:58:04.9038352Z       at Object.<anonymous> (src/lib/__tests__/db-utils.test.ts:156:7)
+2025-06-27T05:58:04.9038589Z 
+2025-06-27T05:58:05.1053944Z PASS src/lib/__tests__/db.test.ts
+2025-06-27T05:58:05.1085916Z   ● Console
+2025-06-27T05:58:05.1086126Z 
+2025-06-27T05:58:05.1086788Z     console.log
+2025-06-27T05:58:05.1087364Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:05.1087800Z 
+2025-06-27T05:58:05.1088024Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:05.1088325Z 
+2025-06-27T05:58:05.1088453Z     console.log
+2025-06-27T05:58:05.1088835Z       Successfully connected to MongoDB
+2025-06-27T05:58:05.1089136Z 
+2025-06-27T05:58:05.1089316Z       at log (src/lib/db.ts:44:13)
+2025-06-27T05:58:05.1089581Z 
+2025-06-27T05:58:05.1089714Z     console.error
+2025-06-27T05:58:05.1090372Z       Error connecting to MongoDB: Error: MONGODB_URI environment variable is not defined
+2025-06-27T05:58:05.1092134Z           at connectToDatabase (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/db.ts:22:13)
+2025-06-27T05:58:05.1093590Z           at Object.connectToDatabase (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/__tests__/db.test.ts:67:20)
+2025-06-27T05:58:05.1095378Z           at Promise.finally.completed (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1559:28)
+2025-06-27T05:58:05.1096549Z           at new Promise (<anonymous>)
+2025-06-27T05:58:05.1097757Z           at callAsyncCircusFn (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1499:10)
+2025-06-27T05:58:05.1099552Z           at _callCircusTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1009:40)
+2025-06-27T05:58:05.1101451Z           at _runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:949:3)
+2025-06-27T05:58:05.1103205Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:839:13)
+2025-06-27T05:58:05.1105132Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:05.1107034Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:05.1108764Z           at run (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:757:3)
+2025-06-27T05:58:05.1110587Z           at runAndTransformResultsToJestFormat (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1920:21)
+2025-06-27T05:58:05.1112848Z           at jestAdapter (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/runner.js:101:19)
+2025-06-27T05:58:05.1114435Z           at runTestInternal (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:272:16)
+2025-06-27T05:58:05.1115986Z           at runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:340:7)
+2025-06-27T05:58:05.1116479Z 
+2025-06-27T05:58:05.1116664Z     [0m [90m 93 |[39m   }
+2025-06-27T05:58:05.1116908Z      [90m 94 |[39m
+2025-06-27T05:58:05.1117316Z     [31m[1m>[22m[39m[90m 95 |[39m   originalConsoleError([33m...[39margs)[33m;[39m
+2025-06-27T05:58:05.1117716Z      [90m    |[39m   [31m[1m^[22m[39m
+2025-06-27T05:58:05.1118016Z      [90m 96 |[39m }[33m;[39m
+2025-06-27T05:58:05.1118256Z      [90m 97 |[39m[0m
+2025-06-27T05:58:05.1118390Z 
+2025-06-27T05:58:05.1118601Z       at console.originalConsoleError [as error] (jest.setup.js:95:3)
+2025-06-27T05:58:05.1118970Z       at error (src/lib/db.ts:67:13)
+2025-06-27T05:58:05.1119336Z       at Object.connectToDatabase (src/lib/__tests__/db.test.ts:67:20)
+2025-06-27T05:58:05.1119581Z 
+2025-06-27T05:58:05.1119655Z     console.error
+2025-06-27T05:58:05.1120045Z       Error connecting to MongoDB: Error: MONGODB_DB_NAME environment variable is not defined
+2025-06-27T05:58:05.1120710Z           at connectToDatabase (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/db.ts:26:13)
+2025-06-27T05:58:05.1121684Z           at Object.connectToDatabase (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/__tests__/db.test.ts:76:20)
+2025-06-27T05:58:05.1122623Z           at Promise.finally.completed (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1559:28)
+2025-06-27T05:58:05.1123248Z           at new Promise (<anonymous>)
+2025-06-27T05:58:05.1124059Z           at callAsyncCircusFn (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1499:10)
+2025-06-27T05:58:05.1125031Z           at _callCircusTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1009:40)
+2025-06-27T05:58:05.1125949Z           at _runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:949:3)
+2025-06-27T05:58:05.1126916Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:839:13)
+2025-06-27T05:58:05.1127936Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:05.1128947Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:05.1129870Z           at run (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:757:3)
+2025-06-27T05:58:05.1130848Z           at runAndTransformResultsToJestFormat (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1920:21)
+2025-06-27T05:58:05.1131966Z           at jestAdapter (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/runner.js:101:19)
+2025-06-27T05:58:05.1132824Z           at runTestInternal (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:272:16)
+2025-06-27T05:58:05.1133661Z           at runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:340:7)
+2025-06-27T05:58:05.1134070Z 
+2025-06-27T05:58:05.1134197Z     [0m [90m 93 |[39m   }
+2025-06-27T05:58:05.1134423Z      [90m 94 |[39m
+2025-06-27T05:58:05.1134829Z     [31m[1m>[22m[39m[90m 95 |[39m   originalConsoleError([33m...[39margs)[33m;[39m
+2025-06-27T05:58:05.1135386Z      [90m    |[39m   [31m[1m^[22m[39m
+2025-06-27T05:58:05.1135674Z      [90m 96 |[39m }[33m;[39m
+2025-06-27T05:58:05.1135917Z      [90m 97 |[39m[0m
+2025-06-27T05:58:05.1136036Z 
+2025-06-27T05:58:05.1136249Z       at console.originalConsoleError [as error] (jest.setup.js:95:3)
+2025-06-27T05:58:05.1136602Z       at error (src/lib/db.ts:67:13)
+2025-06-27T05:58:05.1136951Z       at Object.connectToDatabase (src/lib/__tests__/db.test.ts:76:20)
+2025-06-27T05:58:05.1137197Z 
+2025-06-27T05:58:05.1137273Z     console.error
+2025-06-27T05:58:05.1137554Z       Error connecting to MongoDB: Error: Connection failed
+2025-06-27T05:58:05.1138146Z           at Object.<anonymous> (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/src/lib/__tests__/db.test.ts:83:31)
+2025-06-27T05:58:05.1139063Z           at Promise.finally.completed (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1559:28)
+2025-06-27T05:58:05.1139693Z           at new Promise (<anonymous>)
+2025-06-27T05:58:05.1140333Z           at callAsyncCircusFn (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1499:10)
+2025-06-27T05:58:05.1141393Z           at _callCircusTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1009:40)
+2025-06-27T05:58:05.1142396Z           at _runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:949:3)
+2025-06-27T05:58:05.1162227Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:839:13)
+2025-06-27T05:58:05.1163344Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:05.1164611Z           at _runTestsForDescribeBlock (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+2025-06-27T05:58:05.1165585Z           at run (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:757:3)
+2025-06-27T05:58:05.1166603Z           at runAndTransformResultsToJestFormat (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/jestAdapterInit.js:1920:21)
+2025-06-27T05:58:05.1167583Z           at jestAdapter (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-circus/build/runner.js:101:19)
+2025-06-27T05:58:05.1168442Z           at runTestInternal (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:272:16)
+2025-06-27T05:58:05.1169271Z           at runTest (/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/node_modules/jest-runner/build/index.js:340:7)
+2025-06-27T05:58:05.1169700Z 
+2025-06-27T05:58:05.1169870Z     [0m [90m 93 |[39m   }
+2025-06-27T05:58:05.1170121Z      [90m 94 |[39m
+2025-06-27T05:58:05.1170708Z     [31m[1m>[22m[39m[90m 95 |[39m   originalConsoleError([33m...[39margs)[33m;[39m
+2025-06-27T05:58:05.1171496Z      [90m    |[39m   [31m[1m^[22m[39m
+2025-06-27T05:58:05.1171907Z      [90m 96 |[39m }[33m;[39m
+2025-06-27T05:58:05.1172163Z      [90m 97 |[39m[0m
+2025-06-27T05:58:05.1172288Z 
+2025-06-27T05:58:05.1172508Z       at console.originalConsoleError [as error] (jest.setup.js:95:3)
+2025-06-27T05:58:05.1172867Z       at error (src/lib/db.ts:67:13)
+2025-06-27T05:58:05.1173194Z       at Object.<anonymous> (src/lib/__tests__/db.test.ts:87:7)
+2025-06-27T05:58:05.1173410Z 
+2025-06-27T05:58:05.1173491Z     console.log
+2025-06-27T05:58:05.1173705Z       Successfully connected to MongoDB
+2025-06-27T05:58:05.1173875Z 
+2025-06-27T05:58:05.1173981Z       at log (src/lib/db.ts:44:13)
+2025-06-27T05:58:05.1174129Z 
+2025-06-27T05:58:05.1174203Z     console.log
+2025-06-27T05:58:05.1174581Z       Already connected to MongoDB
+2025-06-27T05:58:05.1174731Z 
+2025-06-27T05:58:05.1174833Z       at log (src/lib/db.ts:12:13)
+2025-06-27T05:58:05.1174982Z 
+2025-06-27T05:58:05.1175053Z     console.log
+2025-06-27T05:58:05.1175263Z       Successfully connected to MongoDB
+2025-06-27T05:58:05.1175424Z 
+2025-06-27T05:58:05.1175521Z       at log (src/lib/db.ts:44:13)
+2025-06-27T05:58:05.1175675Z 
+2025-06-27T05:58:05.1175748Z     console.log
+2025-06-27T05:58:05.1175956Z       Disconnected from MongoDB
+2025-06-27T05:58:05.1176095Z 
+2025-06-27T05:58:05.1176201Z       at log (src/lib/db.ts:76:13)
+2025-06-27T05:58:05.1176345Z 
+2025-06-27T05:58:05.1176412Z     console.log
+2025-06-27T05:58:05.1176620Z       Successfully connected to MongoDB
+2025-06-27T05:58:05.1176780Z 
+2025-06-27T05:58:05.1176886Z       at log (src/lib/db.ts:44:13)
+2025-06-27T05:58:05.1177028Z 
+2025-06-27T05:58:05.8334362Z PASS src/app/(auth)/__tests__/SignInPage.test.tsx
+2025-06-27T05:58:05.8337243Z   ● Console
+2025-06-27T05:58:05.8337391Z 
+2025-06-27T05:58:05.8337468Z     console.log
+2025-06-27T05:58:05.8337823Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:05.8338083Z 
+2025-06-27T05:58:05.8338213Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:05.8338389Z 
+2025-06-27T05:58:06.1510848Z PASS src/components/modals/__tests__/Modal.test.tsx
+2025-06-27T05:58:06.1513738Z   ● Console
+2025-06-27T05:58:06.1513968Z 
+2025-06-27T05:58:06.1514117Z     console.log
+2025-06-27T05:58:06.1514707Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:06.1515029Z 
+2025-06-27T05:58:06.1515199Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:06.1515435Z 
+2025-06-27T05:58:06.3206549Z FAIL src/app/api/auth/__tests__/register.test.ts
+2025-06-27T05:58:06.3207545Z   ● Test suite failed to run
+2025-06-27T05:58:06.3207873Z 
+2025-06-27T05:58:06.3208058Z     ReferenceError: Request is not defined
+2025-06-27T05:58:06.3208295Z 
+2025-06-27T05:58:06.3208454Z     [0m [90m  9 |[39m
+2025-06-27T05:58:06.3208928Z      [90m 10 |[39m     [90m// Validate the request body[39m
+2025-06-27T05:58:06.3210821Z     [31m[1m>[22m[39m[90m 11 |[39m     [36mconst[39m validatedData [33m=[39m userRegistrationSchema[33m.[39mparse(body)[33m;[39m
+2025-06-27T05:58:06.3212488Z      [90m    |[39m                 [31m[1m^[22m[39m
+2025-06-27T05:58:06.3213130Z      [90m 12 |[39m
+2025-06-27T05:58:06.3213772Z      [90m 13 |[39m     [90m// Create the user[39m
+2025-06-27T05:58:06.3215315Z      [90m 14 |[39m     [36mconst[39m result [33m=[39m [36mawait[39m [33mUserService[39m[33m.[39mcreateUser(validatedData)[33m;[39m[0m
+2025-06-27T05:58:06.3216208Z 
+2025-06-27T05:58:06.3216729Z       at Object.Request (node_modules/next/src/server/web/spec-extension/request.ts:14:34)
+2025-06-27T05:58:06.3217585Z       at Object.<anonymous> (node_modules/next/server.js:2:16)
+2025-06-27T05:58:06.3218300Z       at Object.<anonymous> (src/app/api/auth/register/route.ts:11:17)
+2025-06-27T05:58:06.3219134Z       at Object.<anonymous> (src/app/api/auth/__tests__/register.test.ts:13:16)
+2025-06-27T05:58:06.3219628Z 
+2025-06-27T05:58:06.5836053Z PASS src/components/modals/__tests__/ModalManager.test.tsx
+2025-06-27T05:58:06.5839148Z   ● Console
+2025-06-27T05:58:06.5839362Z 
+2025-06-27T05:58:06.5839504Z     console.log
+2025-06-27T05:58:06.5840041Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:06.5840472Z 
+2025-06-27T05:58:06.5840686Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:06.5840986Z 
+2025-06-27T05:58:06.7542793Z PASS src/__tests__/utils.test.ts
+2025-06-27T05:58:06.7546063Z   ● Console
+2025-06-27T05:58:06.7546353Z 
+2025-06-27T05:58:06.7546680Z     console.log
+2025-06-27T05:58:06.7547442Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:06.7548102Z 
+2025-06-27T05:58:06.7548460Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:06.7549051Z 
+2025-06-27T05:58:06.9114885Z PASS src/lib/services/__tests__/UserServiceErrors.test.ts
+2025-06-27T05:58:06.9117883Z   ● Console
+2025-06-27T05:58:06.9118062Z 
+2025-06-27T05:58:06.9118172Z     console.log
+2025-06-27T05:58:06.9118509Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:06.9118766Z 
+2025-06-27T05:58:06.9118892Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:06.9119068Z 
+2025-06-27T05:58:07.1564153Z PASS src/__tests__/components/ui/card.test.tsx
+2025-06-27T05:58:07.1567048Z   ● Console
+2025-06-27T05:58:07.1567240Z 
+2025-06-27T05:58:07.1567348Z     console.log
+2025-06-27T05:58:07.1567767Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:07.1568089Z 
+2025-06-27T05:58:07.1568254Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:07.1568477Z 
+2025-06-27T05:58:07.4507341Z PASS src/__tests__/components/ui/button.test.tsx
+2025-06-27T05:58:07.4511339Z   ● Console
+2025-06-27T05:58:07.4511714Z 
+2025-06-27T05:58:07.4512038Z     console.log
+2025-06-27T05:58:07.4518067Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:07.4518722Z 
+2025-06-27T05:58:07.4519154Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:07.4519620Z 
+2025-06-27T05:58:07.7611002Z PASS src/__tests__/components/ui/input.test.tsx
+2025-06-27T05:58:07.7614279Z   ● Console
+2025-06-27T05:58:07.7614553Z 
+2025-06-27T05:58:07.7614866Z     console.log
+2025-06-27T05:58:07.7615399Z       Using MongoDB: mongodb://localhost:27017/testdb, DB: testdb
+2025-06-27T05:58:07.7615822Z 
+2025-06-27T05:58:07.7616036Z       at Object.log (jest.setup.js:18:9)
+2025-06-27T05:58:07.7616356Z 
+2025-06-27T05:58:08.8041459Z -----------------------------------|---------|----------|---------|---------|-------------------------------------------
+2025-06-27T05:58:08.8043963Z File                               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                         
+2025-06-27T05:58:08.8045014Z -----------------------------------|---------|----------|---------|---------|-------------------------------------------
+2025-06-27T05:58:08.8051922Z All files                          |   34.41 |    20.09 |   28.48 |   34.69 |                                           
+2025-06-27T05:58:08.8052641Z  src                               |       0 |        0 |       0 |       0 |                                           
+2025-06-27T05:58:08.8053736Z   middleware.ts                    |       0 |        0 |       0 |       0 | 1-37                                      
+2025-06-27T05:58:08.8054395Z  src/components                    |       0 |        0 |       0 |       0 |                                           
+2025-06-27T05:58:08.8055060Z   theme-provider.tsx               |       0 |        0 |       0 |       0 | 3-75                                      
+2025-06-27T05:58:08.8055779Z   theme-toggle.tsx                 |       0 |      100 |       0 |       0 | 3-34                                      
+2025-06-27T05:58:08.8056467Z  src/components/forms              |   50.86 |    26.72 |   36.36 |   55.23 |                                           
+2025-06-27T05:58:08.8056977Z   FormGroup.tsx                    |   57.14 |        0 |       0 |   57.14 | 25-31,57                                  
+2025-06-27T05:58:08.8057846Z   FormInput.tsx                    |     100 |      100 |     100 |     100 |                                           
+2025-06-27T05:58:08.8058767Z   FormSelect.tsx                   |      60 |        0 |       0 |      60 | 55-88,122                                 
+2025-06-27T05:58:08.8059550Z   FormSubmitButton.tsx             |     100 |    88.88 |     100 |     100 | 26                                        
+2025-06-27T05:58:08.8060213Z   FormTextarea.tsx                 |    62.5 |        0 |       0 |    62.5 | 30-31,84                                  
+2025-06-27T05:58:08.8060909Z   FormWrapper.tsx                  |   81.81 |       50 |   66.66 |      85 | 31,58-59                                  
+2025-06-27T05:58:08.8061814Z   form-utils.ts                    |   15.68 |     9.75 |   28.57 |   19.04 | 25-27,33,38-48,57-58,65-66,73-109,165-181 
+2025-06-27T05:58:08.8062932Z  src/components/layout             |       0 |        0 |       0 |       0 |                                           
+2025-06-27T05:58:08.8063603Z   AppLayout.tsx                    |       0 |        0 |       0 |       0 | 3-48                                      
+2025-06-27T05:58:08.8064196Z   Breadcrumbs.tsx                  |       0 |        0 |       0 |       0 | 3-85                                      
+2025-06-27T05:58:08.8064798Z   MobileMenu.tsx                   |       0 |        0 |       0 |       0 | 3-218                                     
+2025-06-27T05:58:08.8065343Z   Sidebar.tsx                      |       0 |        0 |       0 |       0 | 3-226                                     
+2025-06-27T05:58:08.8065986Z  src/components/modals             |   20.68 |     25.8 |   13.88 |   21.71 |                                           
+2025-06-27T05:58:08.8066904Z   ConfirmationDialog.tsx           |      60 |    86.66 |   46.15 |   62.79 | 140-191                                   
+2025-06-27T05:58:08.8067795Z   FormModal.tsx                    |       0 |        0 |       0 |       0 | 3-200                                     
+2025-06-27T05:58:08.8068631Z   InfoModal.tsx                    |       0 |        0 |       0 |       0 | 3-171                                     
+2025-06-27T05:58:08.8069463Z   Modal.tsx                        |   68.18 |       76 |   57.14 |   68.18 | 77,86-88,112-134                          
+2025-06-27T05:58:08.8070343Z   ModalManager.tsx                 |    6.31 |        0 |       0 |    6.66 | 38-179,192-196,201-223,233-248            
+2025-06-27T05:58:08.8071536Z  src/components/modals/__tests__   |   83.33 |      100 |      60 |   83.33 |                                           
+2025-06-27T05:58:08.8072524Z   test-utils.tsx                   |   83.33 |      100 |      60 |   83.33 | 24-29                                     
+2025-06-27T05:58:08.8073703Z  src/components/ui                 |   32.47 |    11.11 |   18.18 |   32.97 |                                           
+2025-06-27T05:58:08.8074621Z   alert.tsx                        |      90 |      100 |     100 |     100 |                                           
+2025-06-27T05:58:08.8076484Z   avatar.tsx                       |       0 |      100 |     100 |       0 | 3-50                                      
+2025-06-27T05:58:08.8077277Z   badge.tsx                        |       0 |      100 |       0 |       0 | 1-36                                      
+2025-06-27T05:58:08.8078037Z   button.tsx                       |      90 |      100 |     100 |     100 |                                           
+2025-06-27T05:58:08.8078809Z   card.tsx                         |   92.85 |      100 |     100 |   92.85 | 79                                        
+2025-06-27T05:58:08.8079587Z   checkbox.tsx                     |     100 |      100 |     100 |     100 |                                           
+2025-06-27T05:58:08.8080395Z   dialog.tsx                       |       0 |      100 |     100 |       0 | 3-121                                     
+2025-06-27T05:58:08.8081399Z   dropdown-menu.tsx                |       0 |        0 |       0 |       0 | 3-200                                     
+2025-06-27T05:58:08.8082175Z   form.tsx                         |       0 |        0 |       0 |       0 | 3-178                                     
+2025-06-27T05:58:08.8082905Z   input.tsx                        |     100 |      100 |     100 |     100 |                                           
+2025-06-27T05:58:08.8083669Z   label.tsx                        |     100 |      100 |     100 |     100 |                                           
+2025-06-27T05:58:08.8084435Z   select.tsx                       |   58.33 |        0 |     100 |   58.33 | 149-158                                   
+2025-06-27T05:58:08.8085199Z  src/lib                           |    63.9 |    54.16 |   59.09 |    65.6 |                                           
+2025-06-27T05:58:08.8086129Z   auth.ts                          |       0 |        0 |       0 |       0 | 1-78                                      
+2025-06-27T05:58:08.8086854Z   db-utils.ts                      |   81.81 |    71.42 |   71.42 |   82.92 | 65-72                                     
+2025-06-27T05:58:08.8087596Z   db.ts                            |   78.94 |      100 |   42.85 |   78.94 | 48,52,56-57,62-64,85                      
+2025-06-27T05:58:08.8088296Z   utils.ts                         |     100 |      100 |     100 |     100 |                                           
+2025-06-27T05:58:08.8088733Z  src/lib/__tests__                 |       0 |        0 |       0 |       0 |                                           
+2025-06-27T05:58:08.8089167Z   mongodb-mock.ts                  |       0 |        0 |       0 |       0 | 14-211                                    
+2025-06-27T05:58:08.8089611Z   mongodb-setup.ts                 |       0 |        0 |       0 |       0 | 8-78                                      
+2025-06-27T05:58:08.8090037Z   setup.ts                         |       0 |        0 |       0 |       0 | 7-67                                      
+2025-06-27T05:58:08.8090475Z  src/lib/models                    |   86.95 |      100 |   89.47 |   86.66 |                                           
+2025-06-27T05:58:08.8090920Z   User.ts                          |   86.95 |      100 |   89.47 |   86.66 | 111,268-275,310,321,393                   
+2025-06-27T05:58:08.8091602Z  src/lib/services                  |   10.04 |        0 |   23.07 |   10.08 |                                           
+2025-06-27T05:58:08.8092067Z   UserService.ts                   |    3.22 |        0 |       0 |    3.22 | 73-914                                    
+2025-06-27T05:58:08.8092540Z   UserServiceErrors.ts             |    62.5 |        0 |   85.71 |    62.5 | 67-114                                    
+2025-06-27T05:58:08.8093036Z   UserServiceHelpers.ts            |   10.34 |        0 |       0 |   10.71 | 14-79                                     
+2025-06-27T05:58:08.8093719Z  src/lib/services/__test-helpers__ |   86.66 |        0 |      25 |    92.3 |                                           
+2025-06-27T05:58:08.8094225Z   test-setup.ts                    |   86.66 |        0 |      25 |    92.3 | 18-28                                     
+2025-06-27T05:58:08.8094701Z  src/lib/validations               |   54.82 |    30.55 |   60.46 |   56.72 |                                           
+2025-06-27T05:58:08.8095161Z   base.ts                          |   96.29 |       50 |     100 |     100 | 102-103                                   
+2025-06-27T05:58:08.8095576Z   character.ts                     |       0 |      100 |       0 |       0 | 1-263                                     
+2025-06-27T05:58:08.8096027Z   form-integration.ts              |   43.37 |    28.12 |      55 |    43.9 | 34-99,125-183                             
+2025-06-27T05:58:08.8096477Z   user.ts                          |   78.72 |      100 |   77.77 |    93.1 | 128-129                                   
+2025-06-27T05:58:08.8096998Z -----------------------------------|---------|----------|---------|---------|-------------------------------------------
+2025-06-27T05:58:08.8868476Z 
+2025-06-27T05:58:08.8876341Z Test Suites: 1 failed, 19 passed, 20 total
+2025-06-27T05:58:08.8877005Z Tests:       6 skipped, 199 passed, 205 total
+2025-06-27T05:58:08.8877472Z Snapshots:   0 total
+2025-06-27T05:58:08.8877817Z Time:        17.723 s
+2025-06-27T05:58:08.8878166Z Ran all test suites.
+2025-06-27T05:58:08.9007238Z === JEST GLOBAL TEARDOWN ===
+2025-06-27T05:58:08.9011502Z === JEST GLOBAL TEARDOWN COMPLETE ===
+2025-06-27T05:58:08.9623585Z ##[error]Process completed with exit code 1.
+2025-06-27T05:58:08.9700985Z Post job cleanup.
+2025-06-27T05:58:09.0633995Z [command]/usr/bin/git version
+2025-06-27T05:58:09.0677533Z git version 2.49.0
+2025-06-27T05:58:09.0719400Z Temporarily overriding HOME='/home/runner/work/_temp/6892fd7b-3039-4961-ae62-2aa450577c9a' before making global git config changes
+2025-06-27T05:58:09.0721049Z Adding repository directory to the temporary git global config as a safe directory
+2025-06-27T05:58:09.0724782Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js
+2025-06-27T05:58:09.0757944Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-06-27T05:58:09.0789599Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-06-27T05:58:09.1013058Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-06-27T05:58:09.1033043Z http.https://github.com/.extraheader
+2025-06-27T05:58:09.1045681Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-06-27T05:58:09.1076185Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-06-27T05:58:09.1376545Z Print service container logs: f020d210afc44abe80dc69fd2dfde05e_mongo60_cf93ab
+2025-06-27T05:58:09.1381724Z ##[command]/usr/bin/docker logs --details 22b5b979820d08a88aab5df5d722408d4408947ead46080fb13e27f3945d9bed
+2025-06-27T05:58:09.1505367Z  {"t":{"$date":"2025-06-27T05:57:14.858+00:00"},"s":"I",  "c":"NETWORK",  "id":4915701, "ctx":"-","msg":"Initialized wire specification","attr":{"spec":{"incomingExternalClient":{"minWireVersion":0,"maxWireVersion":17},"incomingInternalClient":{"minWireVersion":0,"maxWireVersion":17},"outgoing":{"minWireVersion":6,"maxWireVersion":17},"isInternalClient":true}}}
+2025-06-27T05:58:09.1508282Z  {"t":{"$date":"2025-06-27T05:57:14.859+00:00"},"s":"I",  "c":"CONTROL",  "id":23285,   "ctx":"main","msg":"Automatically disabling TLS 1.0, to force-enable TLS 1.0 specify --sslDisabledProtocols 'none'"}
+2025-06-27T05:58:09.1510308Z  {"t":{"$date":"2025-06-27T05:57:14.860+00:00"},"s":"I",  "c":"NETWORK",  "id":4648601, "ctx":"main","msg":"Implicit TCP FastOpen unavailable. If TCP FastOpen is required, set tcpFastOpenServer, tcpFastOpenClient, and tcpFastOpenQueueSize."}
+2025-06-27T05:58:09.1512587Z  {"t":{"$date":"2025-06-27T05:57:14.861+00:00"},"s":"I",  "c":"REPL",     "id":5123008, "ctx":"main","msg":"Successfully registered PrimaryOnlyService","attr":{"service":"TenantMigrationDonorService","namespace":"config.tenantMigrationDonors"}}
+2025-06-27T05:58:09.1514754Z  {"t":{"$date":"2025-06-27T05:57:14.861+00:00"},"s":"I",  "c":"REPL",     "id":5123008, "ctx":"main","msg":"Successfully registered PrimaryOnlyService","attr":{"service":"TenantMigrationRecipientService","namespace":"config.tenantMigrationRecipients"}}
+2025-06-27T05:58:09.1516842Z  {"t":{"$date":"2025-06-27T05:57:14.861+00:00"},"s":"I",  "c":"REPL",     "id":5123008, "ctx":"main","msg":"Successfully registered PrimaryOnlyService","attr":{"service":"ShardSplitDonorService","namespace":"config.tenantSplitDonors"}}
+2025-06-27T05:58:09.1518281Z  {"t":{"$date":"2025-06-27T05:57:14.861+00:00"},"s":"I",  "c":"CONTROL",  "id":5945603, "ctx":"main","msg":"Multi threading initialized"}
+2025-06-27T05:58:09.1519644Z  {"t":{"$date":"2025-06-27T05:57:14.861+00:00"},"s":"I",  "c":"CONTROL",  "id":4615611, "ctx":"initandlisten","msg":"MongoDB starting","attr":{"pid":1,"port":27017,"dbPath":"/data/db","architecture":"64-bit","host":"22b5b979820d"}}
+2025-06-27T05:58:09.1522362Z  {"t":{"$date":"2025-06-27T05:57:14.861+00:00"},"s":"I",  "c":"CONTROL",  "id":23403,   "ctx":"initandlisten","msg":"Build Info","attr":{"buildInfo":{"version":"6.0.24","gitVersion":"1b052b94a23863fd12be97aaa4e4b1d96456e5cc","openSSLVersion":"OpenSSL 3.0.2 15 Mar 2022","modules":[],"allocator":"tcmalloc","environment":{"distmod":"ubuntu2204","distarch":"x86_64","target_arch":"x86_64"}}}}
+2025-06-27T05:58:09.1524753Z  {"t":{"$date":"2025-06-27T05:57:14.861+00:00"},"s":"I",  "c":"CONTROL",  "id":51765,   "ctx":"initandlisten","msg":"Operating System","attr":{"os":{"name":"Ubuntu","version":"22.04"}}}
+2025-06-27T05:58:09.1526559Z  {"t":{"$date":"2025-06-27T05:57:14.861+00:00"},"s":"I",  "c":"CONTROL",  "id":21951,   "ctx":"initandlisten","msg":"Options set by command line","attr":{"options":{"net":{"bindIp":"*"}}}}
+2025-06-27T05:58:09.1527972Z  {"t":{"$date":"2025-06-27T05:57:14.863+00:00"},"s":"I",  "c":"STORAGE",  "id":22297,   "ctx":"initandlisten","msg":"Using the XFS filesystem is strongly recommended with the WiredTiger storage engine. See http://dochub.mongodb.org/core/prodnotes-filesystem","tags":["startupWarnings"]}
+2025-06-27T05:58:09.1530874Z  {"t":{"$date":"2025-06-27T05:57:14.863+00:00"},"s":"I",  "c":"STORAGE",  "id":22315,   "ctx":"initandlisten","msg":"Opening WiredTiger","attr":{"config":"create,cache_size=7485M,session_max=33000,eviction=(threads_min=4,threads_max=4),config_base=false,statistics=(fast),log=(enabled=true,remove=true,path=journal,compressor=snappy),builtin_extension_config=(zstd=(compression_level=6)),file_manager=(close_idle_time=600,close_scan_interval=10,close_handle_minimum=2000),statistics_log=(wait=0),json_output=(error,message),verbose=[recovery_progress:1,checkpoint_progress:1,compact_progress:1,backup:0,checkpoint:0,compact:0,evict:0,history_store:0,recovery:0,rts:0,salvage:0,tiered:0,timestamp:0,transaction:0,verify:0,log:0],"}}
+2025-06-27T05:58:09.1534130Z  {"t":{"$date":"2025-06-27T05:57:15.005+00:00"},"s":"I",  "c":"WTRECOV",  "id":22430,   "ctx":"initandlisten","msg":"WiredTiger message","attr":{"message":{"ts_sec":1751003835,"ts_usec":5919,"thread":"1:0x7fa688085cc0","session_name":"txn-recover","category":"WT_VERB_RECOVERY_PROGRESS","category_id":30,"verbose_level":"DEBUG","verbose_level_id":1,"msg":"recovery log replay has successfully finished and ran for 0 milliseconds"}}}
+2025-06-27T05:58:09.1536081Z  {"t":{"$date":"2025-06-27T05:57:15.006+00:00"},"s":"I",  "c":"WTRECOV",  "id":22430,   "ctx":"initandlisten","msg":"WiredTiger message","attr":{"message":{"ts_sec":1751003835,"ts_usec":6005,"thread":"1:0x7fa688085cc0","session_name":"txn-recover","category":"WT_VERB_RECOVERY_PROGRESS","category_id":30,"verbose_level":"DEBUG","verbose_level_id":1,"msg":"Set global recovery timestamp: (0, 0)"}}}
+2025-06-27T05:58:09.1537916Z  {"t":{"$date":"2025-06-27T05:57:15.006+00:00"},"s":"I",  "c":"WTRECOV",  "id":22430,   "ctx":"initandlisten","msg":"WiredTiger message","attr":{"message":{"ts_sec":1751003835,"ts_usec":6028,"thread":"1:0x7fa688085cc0","session_name":"txn-recover","category":"WT_VERB_RECOVERY_PROGRESS","category_id":30,"verbose_level":"DEBUG","verbose_level_id":1,"msg":"Set global oldest timestamp: (0, 0)"}}}
+2025-06-27T05:58:09.1540047Z  {"t":{"$date":"2025-06-27T05:57:15.006+00:00"},"s":"I",  "c":"WTRECOV",  "id":22430,   "ctx":"initandlisten","msg":"WiredTiger message","attr":{"message":{"ts_sec":1751003835,"ts_usec":6063,"thread":"1:0x7fa688085cc0","session_name":"txn-recover","category":"WT_VERB_RECOVERY_PROGRESS","category_id":30,"verbose_level":"DEBUG","verbose_level_id":1,"msg":"recovery was completed successfully and took 0ms, including 0ms for the log replay, 0ms for the rollback to stable, and 0ms for the checkpoint."}}}
+2025-06-27T05:58:09.1541787Z  {"t":{"$date":"2025-06-27T05:57:15.009+00:00"},"s":"I",  "c":"STORAGE",  "id":4795906, "ctx":"initandlisten","msg":"WiredTiger opened","attr":{"durationMillis":146}}
+2025-06-27T05:58:09.1542606Z  {"t":{"$date":"2025-06-27T05:57:15.010+00:00"},"s":"I",  "c":"RECOVERY", "id":23987,   "ctx":"initandlisten","msg":"WiredTiger recoveryTimestamp","attr":{"recoveryTimestamp":{"$timestamp":{"t":0,"i":0}}}}
+2025-06-27T05:58:09.1543683Z  {"t":{"$date":"2025-06-27T05:57:15.017+00:00"},"s":"W",  "c":"CONTROL",  "id":22120,   "ctx":"initandlisten","msg":"Access control is not enabled for the database. Read and write access to data and configuration is unrestricted","tags":["startupWarnings"]}
+2025-06-27T05:58:09.1544898Z  {"t":{"$date":"2025-06-27T05:57:15.017+00:00"},"s":"W",  "c":"CONTROL",  "id":22178,   "ctx":"initandlisten","msg":"/sys/kernel/mm/transparent_hugepage/enabled is 'always'. We suggest setting it to 'never' in this binary version","tags":["startupWarnings"]}
+2025-06-27T05:58:09.1546221Z  {"t":{"$date":"2025-06-27T05:57:15.017+00:00"},"s":"W",  "c":"CONTROL",  "id":5123300, "ctx":"initandlisten","msg":"vm.max_map_count is too low","attr":{"currentValue":262144,"recommendedMinimum":1677720,"maxConns":838860},"tags":["startupWarnings"]}
+2025-06-27T05:58:09.1547606Z  {"t":{"$date":"2025-06-27T05:57:15.017+00:00"},"s":"I",  "c":"STORAGE",  "id":20320,   "ctx":"initandlisten","msg":"createCollection","attr":{"namespace":"admin.system.version","uuidDisposition":"provided","uuid":{"uuid":{"$uuid":"ccac76a7-5926-458d-9dbe-d901f290b95a"}},"options":{"uuid":{"$uuid":"ccac76a7-5926-458d-9dbe-d901f290b95a"}}}}
+2025-06-27T05:58:09.1549588Z  {"t":{"$date":"2025-06-27T05:57:15.023+00:00"},"s":"I",  "c":"INDEX",    "id":20345,   "ctx":"initandlisten","msg":"Index build: done building","attr":{"buildUUID":null,"collectionUUID":{"uuid":{"$uuid":"ccac76a7-5926-458d-9dbe-d901f290b95a"}},"namespace":"admin.system.version","index":"_id_","ident":"index-1--8419243483400667569","collectionIdent":"collection-0--8419243483400667569","commitTimestamp":null}}
+2025-06-27T05:58:09.1551006Z  {"t":{"$date":"2025-06-27T05:57:15.023+00:00"},"s":"I",  "c":"REPL",     "id":20459,   "ctx":"initandlisten","msg":"Setting featureCompatibilityVersion","attr":{"newVersion":"6.0"}}
+2025-06-27T05:58:09.1552100Z  {"t":{"$date":"2025-06-27T05:57:15.023+00:00"},"s":"I",  "c":"REPL",     "id":5853300, "ctx":"initandlisten","msg":"current featureCompatibilityVersion value","attr":{"featureCompatibilityVersion":"6.0","context":"setFCV"}}
+2025-06-27T05:58:09.1554201Z  {"t":{"$date":"2025-06-27T05:57:15.023+00:00"},"s":"I",  "c":"NETWORK",  "id":4915702, "ctx":"initandlisten","msg":"Updated wire specification","attr":{"oldSpec":{"incomingExternalClient":{"minWireVersion":0,"maxWireVersion":17},"incomingInternalClient":{"minWireVersion":0,"maxWireVersion":17},"outgoing":{"minWireVersion":6,"maxWireVersion":17},"isInternalClient":true},"newSpec":{"incomingExternalClient":{"minWireVersion":0,"maxWireVersion":17},"incomingInternalClient":{"minWireVersion":17,"maxWireVersion":17},"outgoing":{"minWireVersion":17,"maxWireVersion":17},"isInternalClient":true}}}
+2025-06-27T05:58:09.1557349Z  {"t":{"$date":"2025-06-27T05:57:15.023+00:00"},"s":"I",  "c":"NETWORK",  "id":4915702, "ctx":"initandlisten","msg":"Updated wire specification","attr":{"oldSpec":{"incomingExternalClient":{"minWireVersion":0,"maxWireVersion":17},"incomingInternalClient":{"minWireVersion":17,"maxWireVersion":17},"outgoing":{"minWireVersion":17,"maxWireVersion":17},"isInternalClient":true},"newSpec":{"incomingExternalClient":{"minWireVersion":0,"maxWireVersion":17},"incomingInternalClient":{"minWireVersion":17,"maxWireVersion":17},"outgoing":{"minWireVersion":17,"maxWireVersion":17},"isInternalClient":true}}}
+2025-06-27T05:58:09.1559454Z  {"t":{"$date":"2025-06-27T05:57:15.023+00:00"},"s":"I",  "c":"REPL",     "id":5853300, "ctx":"initandlisten","msg":"current featureCompatibilityVersion value","attr":{"featureCompatibilityVersion":"6.0","context":"startup"}}
+2025-06-27T05:58:09.1560281Z  {"t":{"$date":"2025-06-27T05:57:15.023+00:00"},"s":"I",  "c":"STORAGE",  "id":5071100, "ctx":"initandlisten","msg":"Clearing temp directory"}
+2025-06-27T05:58:09.1560900Z  {"t":{"$date":"2025-06-27T05:57:15.024+00:00"},"s":"I",  "c":"CONTROL",  "id":20536,   "ctx":"initandlisten","msg":"Flow Control is enabled on this deployment"}
+2025-06-27T05:58:09.1561963Z  {"t":{"$date":"2025-06-27T05:57:15.024+00:00"},"s":"I",  "c":"FTDC",     "id":20625,   "ctx":"initandlisten","msg":"Initializing full-time diagnostic data capture","attr":{"dataDirectory":"/data/db/diagnostic.data"}}
+2025-06-27T05:58:09.1563201Z  {"t":{"$date":"2025-06-27T05:57:15.025+00:00"},"s":"I",  "c":"STORAGE",  "id":20320,   "ctx":"initandlisten","msg":"createCollection","attr":{"namespace":"local.startup_log","uuidDisposition":"generated","uuid":{"uuid":{"$uuid":"fae0e2b3-1e0a-427a-bf4f-1c97aaabac44"}},"options":{"capped":true,"size":10485760}}}
+2025-06-27T05:58:09.1565114Z  {"t":{"$date":"2025-06-27T05:57:15.031+00:00"},"s":"I",  "c":"INDEX",    "id":20345,   "ctx":"initandlisten","msg":"Index build: done building","attr":{"buildUUID":null,"collectionUUID":{"uuid":{"$uuid":"fae0e2b3-1e0a-427a-bf4f-1c97aaabac44"}},"namespace":"local.startup_log","index":"_id_","ident":"index-3--8419243483400667569","collectionIdent":"collection-2--8419243483400667569","commitTimestamp":null}}
+2025-06-27T05:58:09.1566622Z  {"t":{"$date":"2025-06-27T05:57:15.031+00:00"},"s":"I",  "c":"REPL",     "id":6015317, "ctx":"initandlisten","msg":"Setting new configuration state","attr":{"newState":"ConfigReplicationDisabled","oldState":"ConfigPreStart"}}
+2025-06-27T05:58:09.1567435Z  {"t":{"$date":"2025-06-27T05:57:15.031+00:00"},"s":"I",  "c":"STORAGE",  "id":22262,   "ctx":"initandlisten","msg":"Timestamp monitor starting"}
+2025-06-27T05:58:09.1568525Z  {"t":{"$date":"2025-06-27T05:57:15.032+00:00"},"s":"I",  "c":"CONTROL",  "id":20712,   "ctx":"LogicalSessionCacheReap","msg":"Sessions collection is not set up; waiting until next sessions reap interval","attr":{"error":"NamespaceNotFound: config.system.sessions does not exist"}}
+2025-06-27T05:58:09.1569968Z  {"t":{"$date":"2025-06-27T05:57:15.032+00:00"},"s":"I",  "c":"STORAGE",  "id":20320,   "ctx":"LogicalSessionCacheRefresh","msg":"createCollection","attr":{"namespace":"config.system.sessions","uuidDisposition":"generated","uuid":{"uuid":{"$uuid":"d54e2ed5-255b-480c-8347-74ac7580532e"}},"options":{}}}
+2025-06-27T05:58:09.1571055Z  {"t":{"$date":"2025-06-27T05:57:15.032+00:00"},"s":"I",  "c":"NETWORK",  "id":23015,   "ctx":"listener","msg":"Listening on","attr":{"address":"/tmp/mongodb-27017.sock"}}
+2025-06-27T05:58:09.1571902Z  {"t":{"$date":"2025-06-27T05:57:15.032+00:00"},"s":"I",  "c":"NETWORK",  "id":23015,   "ctx":"listener","msg":"Listening on","attr":{"address":"0.0.0.0"}}
+2025-06-27T05:58:09.1572565Z  {"t":{"$date":"2025-06-27T05:57:15.032+00:00"},"s":"I",  "c":"NETWORK",  "id":23016,   "ctx":"listener","msg":"Waiting for connections","attr":{"port":27017,"ssl":"off"}}
+2025-06-27T05:58:09.1576516Z  {"t":{"$date":"2025-06-27T05:57:15.032+00:00"},"s":"I",  "c":"CONTROL",  "id":8423403, "ctx":"initandlisten","msg":"mongod startup complete","attr":{"Summary of time elapsed":{"Startup from clean shutdown?":true,"Statistics":{"Transport layer setup":"0 ms","Run initial syncer crash recovery":"0 ms","Create storage engine lock file in the data directory":"0 ms","Create storage engine lock file in the data directory":"0 ms","Get metadata describing storage engine":"0 ms","Get metadata describing storage engine":"0 ms","Create storage engine":"0 ms","Create storage engine":"153 ms","Write current PID to file":"0 ms","Write current PID to file":"0 ms","Write a new metadata for storage engine":"0 ms","Write a new metadata for storage engine":"0 ms","Initialize FCV before rebuilding indexes":"0 ms","Initialize FCV before rebuilding indexes":"0 ms","Drop abandoned idents and get back indexes that need to be rebuilt or builds that need to be restarted":"0 ms","Drop abandoned idents and get back indexes that need to be rebuilt or builds that need to be restarted":"0 ms","Rebuild indexes for collections":"0 ms","Rebuild indexes for collections":"0 ms","Build user and roles graph":"0 ms","Set up the background thread pool responsible for waiting for opTimes to be majority committed":"0 ms","Start up the replication coordinator":"0 ms","Start transport layer":"0 ms","_initAndListen total elapsed time":"171 ms"}}}}
+2025-06-27T05:58:09.1581618Z  {"t":{"$date":"2025-06-27T05:57:15.040+00:00"},"s":"I",  "c":"INDEX",    "id":20345,   "ctx":"LogicalSessionCacheRefresh","msg":"Index build: done building","attr":{"buildUUID":null,"collectionUUID":{"uuid":{"$uuid":"d54e2ed5-255b-480c-8347-74ac7580532e"}},"namespace":"config.system.sessions","index":"_id_","ident":"index-5--8419243483400667569","collectionIdent":"collection-4--8419243483400667569","commitTimestamp":null}}
+2025-06-27T05:58:09.1583966Z  {"t":{"$date":"2025-06-27T05:57:15.040+00:00"},"s":"I",  "c":"INDEX",    "id":20345,   "ctx":"LogicalSessionCacheRefresh","msg":"Index build: done building","attr":{"buildUUID":null,"collectionUUID":{"uuid":{"$uuid":"d54e2ed5-255b-480c-8347-74ac7580532e"}},"namespace":"config.system.sessions","index":"lsidTTLIndex","ident":"index-6--8419243483400667569","collectionIdent":"collection-4--8419243483400667569","commitTimestamp":null}}
+2025-06-27T05:58:09.1585630Z  {"t":{"$date":"2025-06-27T05:57:25.100+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:43292","uuid":"40e24a4c-a8e8-4d7b-a588-902c5a8dc4c0","connectionId":1,"connectionCount":1}}
+2025-06-27T05:58:09.1587332Z  {"t":{"$date":"2025-06-27T05:57:25.103+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn1","msg":"client metadata","attr":{"remote":"127.0.0.1:43292","client":"conn1","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1588946Z  {"t":{"$date":"2025-06-27T05:57:25.134+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:43300","uuid":"6c22a7ac-99e5-48a1-9a1f-cd387e637b0f","connectionId":2,"connectionCount":2}}
+2025-06-27T05:58:09.1590062Z  {"t":{"$date":"2025-06-27T05:57:25.134+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:43306","uuid":"d37392e8-b23f-4afc-a958-e1f2df017ba5","connectionId":3,"connectionCount":3}}
+2025-06-27T05:58:09.1591870Z  {"t":{"$date":"2025-06-27T05:57:25.136+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn2","msg":"client metadata","attr":{"remote":"127.0.0.1:43300","client":"conn2","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1593915Z  {"t":{"$date":"2025-06-27T05:57:25.136+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn3","msg":"client metadata","attr":{"remote":"127.0.0.1:43306","client":"conn3","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1595480Z  {"t":{"$date":"2025-06-27T05:57:25.139+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:43310","uuid":"bcca163e-9a79-42b2-a765-569504cd28bd","connectionId":4,"connectionCount":4}}
+2025-06-27T05:58:09.1597055Z  {"t":{"$date":"2025-06-27T05:57:25.142+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn4","msg":"client metadata","attr":{"remote":"127.0.0.1:43310","client":"conn4","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1598609Z  {"t":{"$date":"2025-06-27T05:57:25.345+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn1","msg":"Connection ended","attr":{"remote":"127.0.0.1:43292","uuid":"40e24a4c-a8e8-4d7b-a588-902c5a8dc4c0","connectionId":1,"connectionCount":3}}
+2025-06-27T05:58:09.1599665Z  {"t":{"$date":"2025-06-27T05:57:25.345+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn4","msg":"Connection ended","attr":{"remote":"127.0.0.1:43310","uuid":"bcca163e-9a79-42b2-a765-569504cd28bd","connectionId":4,"connectionCount":2}}
+2025-06-27T05:58:09.1600914Z  {"t":{"$date":"2025-06-27T05:57:25.345+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn3","msg":"Connection ended","attr":{"remote":"127.0.0.1:43306","uuid":"d37392e8-b23f-4afc-a958-e1f2df017ba5","connectionId":3,"connectionCount":1}}
+2025-06-27T05:58:09.1602141Z  {"t":{"$date":"2025-06-27T05:57:25.345+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn2","msg":"Connection ended","attr":{"remote":"127.0.0.1:43300","uuid":"6c22a7ac-99e5-48a1-9a1f-cd387e637b0f","connectionId":2,"connectionCount":0}}
+2025-06-27T05:58:09.1603224Z  {"t":{"$date":"2025-06-27T05:57:35.684+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:57720","uuid":"90d32df1-e770-4fe8-aeac-beacef6d5674","connectionId":5,"connectionCount":1}}
+2025-06-27T05:58:09.1604908Z  {"t":{"$date":"2025-06-27T05:57:35.689+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn5","msg":"client metadata","attr":{"remote":"127.0.0.1:57720","client":"conn5","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1606487Z  {"t":{"$date":"2025-06-27T05:57:35.741+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:57734","uuid":"9ecab9db-872e-446b-9c96-ac5ec063287f","connectionId":6,"connectionCount":2}}
+2025-06-27T05:58:09.1607586Z  {"t":{"$date":"2025-06-27T05:57:35.741+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:57738","uuid":"51ff0696-323b-4a1b-9927-d459972bc26c","connectionId":7,"connectionCount":3}}
+2025-06-27T05:58:09.1609155Z  {"t":{"$date":"2025-06-27T05:57:35.743+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn6","msg":"client metadata","attr":{"remote":"127.0.0.1:57734","client":"conn6","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1611357Z  {"t":{"$date":"2025-06-27T05:57:35.744+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn7","msg":"client metadata","attr":{"remote":"127.0.0.1:57738","client":"conn7","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1612956Z  {"t":{"$date":"2025-06-27T05:57:35.748+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:57744","uuid":"aac1ef72-c859-44cb-86c5-995f13407a64","connectionId":8,"connectionCount":4}}
+2025-06-27T05:58:09.1614054Z  {"t":{"$date":"2025-06-27T05:57:35.750+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:57752","uuid":"16f418e5-5f56-4e35-9eb5-ba0983738e03","connectionId":9,"connectionCount":5}}
+2025-06-27T05:58:09.1615621Z  {"t":{"$date":"2025-06-27T05:57:35.754+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn8","msg":"client metadata","attr":{"remote":"127.0.0.1:57744","client":"conn8","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1617767Z  {"t":{"$date":"2025-06-27T05:57:35.755+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn9","msg":"client metadata","attr":{"remote":"127.0.0.1:57752","client":"conn9","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1619320Z  {"t":{"$date":"2025-06-27T05:57:36.040+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn5","msg":"Connection ended","attr":{"remote":"127.0.0.1:57720","uuid":"90d32df1-e770-4fe8-aeac-beacef6d5674","connectionId":5,"connectionCount":4}}
+2025-06-27T05:58:09.1620371Z  {"t":{"$date":"2025-06-27T05:57:36.041+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn9","msg":"Connection ended","attr":{"remote":"127.0.0.1:57752","uuid":"16f418e5-5f56-4e35-9eb5-ba0983738e03","connectionId":9,"connectionCount":3}}
+2025-06-27T05:58:09.1621685Z  {"t":{"$date":"2025-06-27T05:57:36.041+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn8","msg":"Connection ended","attr":{"remote":"127.0.0.1:57744","uuid":"aac1ef72-c859-44cb-86c5-995f13407a64","connectionId":8,"connectionCount":1}}
+2025-06-27T05:58:09.1622772Z  {"t":{"$date":"2025-06-27T05:57:36.041+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn7","msg":"Connection ended","attr":{"remote":"127.0.0.1:57738","uuid":"51ff0696-323b-4a1b-9927-d459972bc26c","connectionId":7,"connectionCount":2}}
+2025-06-27T05:58:09.1623863Z  {"t":{"$date":"2025-06-27T05:57:36.041+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn6","msg":"Connection ended","attr":{"remote":"127.0.0.1:57734","uuid":"9ecab9db-872e-446b-9c96-ac5ec063287f","connectionId":6,"connectionCount":0}}
+2025-06-27T05:58:09.1624958Z  {"t":{"$date":"2025-06-27T05:57:46.401+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:59280","uuid":"932f8808-78f8-43c4-8c9c-8407d87059ad","connectionId":10,"connectionCount":1}}
+2025-06-27T05:58:09.1626564Z  {"t":{"$date":"2025-06-27T05:57:46.404+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn10","msg":"client metadata","attr":{"remote":"127.0.0.1:59280","client":"conn10","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1628173Z  {"t":{"$date":"2025-06-27T05:57:46.441+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:59284","uuid":"dce90bd4-6f0b-4ea0-8336-fc953534f643","connectionId":11,"connectionCount":2}}
+2025-06-27T05:58:09.1629311Z  {"t":{"$date":"2025-06-27T05:57:46.441+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:59286","uuid":"ac8dfdad-1bde-493c-8d25-463fb56d7f2b","connectionId":12,"connectionCount":3}}
+2025-06-27T05:58:09.1630897Z  {"t":{"$date":"2025-06-27T05:57:46.443+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn11","msg":"client metadata","attr":{"remote":"127.0.0.1:59284","client":"conn11","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1633206Z  {"t":{"$date":"2025-06-27T05:57:46.444+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn12","msg":"client metadata","attr":{"remote":"127.0.0.1:59286","client":"conn12","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1634921Z  {"t":{"$date":"2025-06-27T05:57:46.447+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:59292","uuid":"5eb6e0a7-3db0-4759-b8d2-348dc1decbbd","connectionId":13,"connectionCount":4}}
+2025-06-27T05:58:09.1636505Z  {"t":{"$date":"2025-06-27T05:57:46.450+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn13","msg":"client metadata","attr":{"remote":"127.0.0.1:59292","client":"conn13","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1638180Z  {"t":{"$date":"2025-06-27T05:57:46.741+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn10","msg":"Connection ended","attr":{"remote":"127.0.0.1:59280","uuid":"932f8808-78f8-43c4-8c9c-8407d87059ad","connectionId":10,"connectionCount":3}}
+2025-06-27T05:58:09.1639256Z  {"t":{"$date":"2025-06-27T05:57:46.741+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn13","msg":"Connection ended","attr":{"remote":"127.0.0.1:59292","uuid":"5eb6e0a7-3db0-4759-b8d2-348dc1decbbd","connectionId":13,"connectionCount":2}}
+2025-06-27T05:58:09.1640332Z  {"t":{"$date":"2025-06-27T05:57:46.741+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn12","msg":"Connection ended","attr":{"remote":"127.0.0.1:59286","uuid":"ac8dfdad-1bde-493c-8d25-463fb56d7f2b","connectionId":12,"connectionCount":1}}
+2025-06-27T05:58:09.1641570Z  {"t":{"$date":"2025-06-27T05:57:46.742+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn11","msg":"Connection ended","attr":{"remote":"127.0.0.1:59284","uuid":"dce90bd4-6f0b-4ea0-8336-fc953534f643","connectionId":11,"connectionCount":0}}
+2025-06-27T05:58:09.1642678Z  {"t":{"$date":"2025-06-27T05:57:57.055+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:55012","uuid":"48fe977a-cf8a-4c5c-9d9a-516e32c3946b","connectionId":14,"connectionCount":1}}
+2025-06-27T05:58:09.1644287Z  {"t":{"$date":"2025-06-27T05:57:57.058+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn14","msg":"client metadata","attr":{"remote":"127.0.0.1:55012","client":"conn14","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1645886Z  {"t":{"$date":"2025-06-27T05:57:57.090+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:55022","uuid":"85f98fe4-ea61-4f50-a98b-d4166a82c254","connectionId":15,"connectionCount":2}}
+2025-06-27T05:58:09.1647008Z  {"t":{"$date":"2025-06-27T05:57:57.090+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:55038","uuid":"5252a719-e2d8-41a3-bed1-9a0695fc7a61","connectionId":16,"connectionCount":3}}
+2025-06-27T05:58:09.1648592Z  {"t":{"$date":"2025-06-27T05:57:57.091+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn15","msg":"client metadata","attr":{"remote":"127.0.0.1:55022","client":"conn15","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1650756Z  {"t":{"$date":"2025-06-27T05:57:57.092+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn16","msg":"client metadata","attr":{"remote":"127.0.0.1:55038","client":"conn16","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1652515Z  {"t":{"$date":"2025-06-27T05:57:57.094+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:55046","uuid":"4fb48c9f-4082-4ece-a28a-eb8b9adb929f","connectionId":17,"connectionCount":4}}
+2025-06-27T05:58:09.1654211Z  {"t":{"$date":"2025-06-27T05:57:57.098+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn17","msg":"client metadata","attr":{"remote":"127.0.0.1:55046","client":"conn17","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1655800Z  {"t":{"$date":"2025-06-27T05:57:57.311+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn14","msg":"Connection ended","attr":{"remote":"127.0.0.1:55012","uuid":"48fe977a-cf8a-4c5c-9d9a-516e32c3946b","connectionId":14,"connectionCount":3}}
+2025-06-27T05:58:09.1656884Z  {"t":{"$date":"2025-06-27T05:57:57.311+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn17","msg":"Connection ended","attr":{"remote":"127.0.0.1:55046","uuid":"4fb48c9f-4082-4ece-a28a-eb8b9adb929f","connectionId":17,"connectionCount":2}}
+2025-06-27T05:58:09.1657965Z  {"t":{"$date":"2025-06-27T05:57:57.312+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn15","msg":"Connection ended","attr":{"remote":"127.0.0.1:55022","uuid":"85f98fe4-ea61-4f50-a98b-d4166a82c254","connectionId":15,"connectionCount":1}}
+2025-06-27T05:58:09.1659036Z  {"t":{"$date":"2025-06-27T05:57:57.312+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn16","msg":"Connection ended","attr":{"remote":"127.0.0.1:55038","uuid":"5252a719-e2d8-41a3-bed1-9a0695fc7a61","connectionId":16,"connectionCount":0}}
+2025-06-27T05:58:09.1660128Z  {"t":{"$date":"2025-06-27T05:58:07.632+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:48578","uuid":"d3d5dd01-8459-4366-a015-3ac07d7a411d","connectionId":18,"connectionCount":1}}
+2025-06-27T05:58:09.1661871Z  {"t":{"$date":"2025-06-27T05:58:07.635+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn18","msg":"client metadata","attr":{"remote":"127.0.0.1:48578","client":"conn18","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1663474Z  {"t":{"$date":"2025-06-27T05:58:07.667+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:48584","uuid":"4345530b-da4d-4940-a74d-d5f0b932c9a9","connectionId":19,"connectionCount":2}}
+2025-06-27T05:58:09.1664586Z  {"t":{"$date":"2025-06-27T05:58:07.667+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:48598","uuid":"8fd30e6b-503c-49ec-a5aa-0a0863335bb6","connectionId":20,"connectionCount":3}}
+2025-06-27T05:58:09.1666170Z  {"t":{"$date":"2025-06-27T05:58:07.669+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn19","msg":"client metadata","attr":{"remote":"127.0.0.1:48584","client":"conn19","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1668358Z  {"t":{"$date":"2025-06-27T05:58:07.670+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn20","msg":"client metadata","attr":{"remote":"127.0.0.1:48598","client":"conn20","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1669947Z  {"t":{"$date":"2025-06-27T05:58:07.672+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:48612","uuid":"eea392ee-83f2-4c9f-ab60-f9c0436f63bd","connectionId":21,"connectionCount":4}}
+2025-06-27T05:58:09.1671865Z  {"t":{"$date":"2025-06-27T05:58:07.676+00:00"},"s":"I",  "c":"NETWORK",  "id":51800,   "ctx":"conn21","msg":"client metadata","attr":{"remote":"127.0.0.1:48612","client":"conn21","negotiatedCompressors":[],"doc":{"application":{"name":"mongosh 2.5.2"},"driver":{"name":"nodejs|mongosh","version":"6.16.0|2.5.2"},"platform":"Node.js v20.19.2, LE","os":{"name":"linux","architecture":"x64","version":"3.10.0-327.22.2.el7.x86_64","type":"Linux"},"env":{"container":{"runtime":"docker"}}}}}
+2025-06-27T05:58:09.1673444Z  {"t":{"$date":"2025-06-27T05:58:07.904+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn18","msg":"Connection ended","attr":{"remote":"127.0.0.1:48578","uuid":"d3d5dd01-8459-4366-a015-3ac07d7a411d","connectionId":18,"connectionCount":3}}
+2025-06-27T05:58:09.1674517Z  {"t":{"$date":"2025-06-27T05:58:07.904+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn21","msg":"Connection ended","attr":{"remote":"127.0.0.1:48612","uuid":"eea392ee-83f2-4c9f-ab60-f9c0436f63bd","connectionId":21,"connectionCount":2}}
+2025-06-27T05:58:09.1675594Z  {"t":{"$date":"2025-06-27T05:58:07.905+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn20","msg":"Connection ended","attr":{"remote":"127.0.0.1:48598","uuid":"8fd30e6b-503c-49ec-a5aa-0a0863335bb6","connectionId":20,"connectionCount":1}}
+2025-06-27T05:58:09.1676662Z  {"t":{"$date":"2025-06-27T05:58:07.905+00:00"},"s":"I",  "c":"NETWORK",  "id":22944,   "ctx":"conn19","msg":"Connection ended","attr":{"remote":"127.0.0.1:48584","uuid":"4345530b-da4d-4940-a74d-d5f0b932c9a9","connectionId":19,"connectionCount":0}}
+2025-06-27T05:58:09.1683140Z Stop and remove container: f020d210afc44abe80dc69fd2dfde05e_mongo60_cf93ab
+2025-06-27T05:58:09.1687663Z ##[command]/usr/bin/docker rm --force 22b5b979820d08a88aab5df5d722408d4408947ead46080fb13e27f3945d9bed
+2025-06-27T05:58:11.0030162Z 22b5b979820d08a88aab5df5d722408d4408947ead46080fb13e27f3945d9bed
+2025-06-27T05:58:11.0057632Z Remove container network: github_network_d94f7a032b6840bb80b92fd305095b61
+2025-06-27T05:58:11.0062441Z ##[command]/usr/bin/docker network rm github_network_d94f7a032b6840bb80b92fd305095b61
+2025-06-27T05:58:11.1312700Z github_network_d94f7a032b6840bb80b92fd305095b61
+2025-06-27T05:58:11.1370213Z Cleaning up orphan processes
