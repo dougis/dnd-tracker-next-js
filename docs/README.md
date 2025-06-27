@@ -1,8 +1,9 @@
 # D&D Tracker Documentation Index
 
-**Complete Project Planning & Documentation Repository**
+## Complete Project Planning & Documentation Repository
 
-This folder contains all the comprehensive planning artifacts for the D&D Encounter Tracker MVP project. All documentation is ready for development team and stakeholder use.
+This folder contains all the comprehensive planning artifacts for the D&D Encounter
+Tracker MVP project. All documentation is ready for team and stakeholder use.
 
 ---
 
@@ -63,7 +64,9 @@ This folder contains all the comprehensive planning artifacts for the D&D Encoun
 
 ### **🗓️ IMPLEMENTATION PLANNING**
 
-#### **5. [12-Week MVP Development Phase Plan.md](./12-Week%20MVP%20Development%20Phase%20Plan.md)** ⭐ **CORE DEVELOPMENT GUIDE**
+#### **5. [12-Week MVP Development Phase Plan.md](./12-Week%20MVP%20Development%20Phase%20Plan.md)**
+
+⭐ **CORE DEVELOPMENT GUIDE**
 
 - **Purpose**: Detailed weekly development schedule for MVP delivery
 - **Audience**: Development team, project managers, sprint planners
@@ -125,35 +128,49 @@ This folder contains all the comprehensive planning artifacts for the D&D Encoun
 
 **Read in this order:**
 
-1. [Project State Summary](./D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md) - Get oriented
-2. [Product Requirements Document](./Product%20Requirements%20Document.md) - Understand the business
-3. [High Level Design](./High%20Level%20Design.md) - Learn the architecture
-4. [12-Week MVP Plan](./12-Week%20MVP%20Development%20Phase%20Plan.md) - See your development schedule
+1. [Project State Summary](./D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md)
+   - Project orientation
+2. [Product Requirements Document](./Product%20Requirements%20Document.md)
+   - Business overview
+3. [High Level Design](./High%20Level%20Design.md)
+   - Learn the architecture
+4. [12-Week MVP Plan](./12-Week%20MVP%20Development%20Phase%20Plan.md)
+   - See your development schedule
 
 ### **📋 For Project Managers**
 
 **Read in this order:**
 
-1. [Final Planning Summary](./FINAL%20PROJECT%20PLANNING%20SUMMARY.md) - Overview of deliverables
-2. [12-Week MVP Plan](./12-Week%20MVP%20Development%20Phase%20Plan.md) - Sprint planning guide
-3. [GitHub Issues Update Guide](./GitHub%20Issues%20Update%20Guide%20-%20Phase%20Assignments.md) - Setup project board
-4. [GitHub Issues Progress](./D%26D%20Tracker%20MVP%20GitHub%20Issues%20-%20Progress%20State.md) - Track completion
+1. [Final Planning Summary](./FINAL%20PROJECT%20PLANNING%20SUMMARY.md)
+   - Overview of deliverables
+2. [12-Week MVP Plan](./12-Week%20MVP%20Development%20Phase%20Plan.md)
+   - Sprint planning guide
+3. [GitHub Issues Guide](./GitHub%20Issues%20Update%20Guide%20-%20Phase%20Assignments.md)
+   - Setup project board
+4. [GitHub Issues Progress](./D%26D%20Tracker%20MVP%20GitHub%20Issues%20-%20Progress%20State.md)
+   - Progress tracking
 
 ### **🎯 For Stakeholders & Business**
 
 **Read in this order:**
 
-1. [Product Requirements Document](./Product%20Requirements%20Document.md) - Business case and model
-2. [Project State Summary](./D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md) - Timeline and readiness
-3. [Final Planning Summary](./FINAL%20PROJECT%20PLANNING%20SUMMARY.md) - Achievement overview
+1. [Product Requirements Document](./Product%20Requirements%20Document.md)
+   - Business case and model
+2. [Project State Summary](./D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md)
+   - Project timeline
+3. [Final Planning Summary](./FINAL%20PROJECT%20PLANNING%20SUMMARY.md)
+   - Achievement overview
 
 ### **🏗️ For Technical Architects**
 
 **Read in this order:**
 
-1. [High Level Design](./High%20Level%20Design.md) - System architecture
-2. [Project Roadmap](./Project%20Roadmap.md) - Implementation details
-3. [12-Week MVP Plan](./12-Week%20MVP%20Development%20Phase%20Plan.md) - Development sequence
+1. [High Level Design](./High%20Level%20Design.md)
+   - System architecture
+2. [Project Roadmap](./Project%20Roadmap.md)
+   - Implementation details
+3. [12-Week MVP Plan](./12-Week%20MVP%20Development%20Phase%20Plan.md)
+   - Development sequence
 
 ---
 
@@ -211,7 +228,7 @@ This folder contains all the comprehensive planning artifacts for the D&D Encoun
 ### **For Development Team**
 
 1. ✅ **Phase 1 Complete** - Foundation infrastructure fully deployed
-2. ✅ **Project Setup Complete** - Next.js 15, TypeScript, Tailwind CSS, shadcn/ui ready
+2. ✅ **Project Setup Complete** - Next.js 15, TypeScript, Tailwind CSS ready
 3. ✅ **Database & Testing Ready** - MongoDB Atlas and Jest framework configured
 4. 🚀 **Begin Phase 2** - Continue with authentication and data layer development
 5. 📊 **Track Progress** - 13 of 46 MVP issues completed (28% progress)
@@ -243,6 +260,10 @@ This folder contains all the comprehensive planning artifacts for the D&D Encoun
 
 ---
 
-**This documentation represents a complete planning foundation for successful MVP development and delivery of the D&D Encounter Tracker project.**
+**This documentation represents a complete planning foundation for successful MVP
+development and delivery of the D&D Encounter Tracker project.**
 
-_Documentation compiled and organized by Claude (Anthropic) - June 9, 2025_
+### Documentation Credits
+
+Compiled by Claude (Anthropic) - June 9, 2025
+
