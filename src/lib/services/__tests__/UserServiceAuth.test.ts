@@ -1,6 +1,6 @@
 import '../__test-helpers__/test-setup';
 import { UserService } from '../UserService';
-import { mockUser, mockUserData } from '../__test-helpers__/test-setup';
+import { mockUserData } from '../__test-helpers__/test-setup';
 
 describe('UserService Authentication', () => {
   beforeEach(() => {
