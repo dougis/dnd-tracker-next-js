@@ -50,7 +50,7 @@ describe('UserService CRUD Operations', () => {
           message: 'User not found: 507f1f77bcf86cd799439011',
           code: 'USER_NOT_FOUND',
           statusCode: 404,
-        }
+        },
       });
 
       const result = await UserService.getUserById('507f1f77bcf86cd799439011');
@@ -236,7 +236,7 @@ describe('UserService CRUD Operations', () => {
               pagination: { page, limit, total: 0, totalPages: 0 },
             },
           };
-      });
+        });
 
       await UserService.getUsers(1, 10, {
         role: 'admin',

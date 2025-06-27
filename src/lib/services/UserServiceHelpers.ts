@@ -58,25 +58,25 @@ export function convertLeansUsersToPublic(users: any[]): PublicUser[] {
   }
 
   return users.map(user => {
-      if (!user) return null;
-      
-      // Convert to public format manually since we're using lean()
-      const {
-        passwordHash: _passwordHash,
-        emailVerificationToken: _emailVerificationToken,
-        passwordResetToken: _passwordResetToken,
-        passwordResetExpires: _passwordResetExpires,
-        ...publicUser
-      } = user;
-      
-      // Make sure _id is converted to id format
-      if (publicUser._id) {
-        publicUser.id = publicUser._id.toString
-          ? publicUser._id.toString()
-          : String(publicUser._id);
-      }
-      
-      return publicUser as PublicUser;
-    })
+    if (!user) return null;
+    
+    // Convert to public format manually since we're using lean()
+    const {
+      passwordHash: _passwordHash,
+      emailVerificationToken: _emailVerificationToken,
+      passwordResetToken: _passwordResetToken,
+      passwordResetExpires: _passwordResetExpires,
+      ...publicUser
+    } = user;
+    
+    // Make sure _id is converted to id format
+    if (publicUser._id) {
+      publicUser.id = publicUser._id.toString
+        ? publicUser._id.toString()
+        : String(publicUser._id);
+    }
+    
+    return publicUser as PublicUser;
+  })
     .filter(Boolean) as PublicUser[]; // Remove any null entries
 }
