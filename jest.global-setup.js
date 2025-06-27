@@ -7,8 +7,7 @@
 
 // Using CommonJS require syntax for Jest compatibility
 const {
-  setupTestMongoDB,
-  validateMongoDBEnvironment,
+  setupTestMongoDB
 } = require('./src/lib/__tests__/mongodb-setup');
 
 module.exports = async () => {
