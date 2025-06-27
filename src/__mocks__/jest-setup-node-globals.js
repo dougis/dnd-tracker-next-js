@@ -4,46 +4,56 @@
  * that are needed for testing server-side Next.js functionality.
  */
 
-// Import fetch for Node.js environment
-const {
-  default: fetch,
-  Request: NodeRequest,
-  Response: NodeResponse,
-} = require('node-fetch');
+// Use Node.js 18+ native fetch (no need for node-fetch)
+// These are available globally in Node.js 18+
 
-// Mock fetch globally if not already available
+// Mock fetch globally if not already available (Node.js 18+ has native fetch)
 if (!global.fetch) {
-  global.fetch = fetch;
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    status: 200,
+    json: () => Promise.resolve({}),
+    text: () => Promise.resolve(''),
+  });
 }
 
-// Setup global Request class if not available
+// Setup global Request class if not available (use native or mock)
 if (!global.Request) {
-  global.Request = class Request extends NodeRequest {
+  global.Request = class Request {
     constructor(input, init = {}) {
-      super(input, init);
+      this.url = input;
+      this.method = init.method || 'GET';
+      this.headers = new Headers(init.headers);
+      this.body = init.body;
+    }
 
-      // Add json method if not present
-      if (!this.json) {
-        this.json = () => {
-          return this.text().then(text => JSON.parse(text));
-        };
-      }
+    json() {
+      return this.text().then(text => JSON.parse(text));
+    }
+
+    text() {
+      return Promise.resolve(this.body || '');
     }
   };
 }
 
-// Setup global Response class if not available
+// Setup global Response class if not available (use native or mock)
 if (!global.Response) {
-  global.Response = class Response extends NodeResponse {
+  global.Response = class Response {
     constructor(body, init = {}) {
-      super(body, init);
+      this.body = body;
+      this.status = init.status || 200;
+      this.statusText = init.statusText || 'OK';
+      this.ok = this.status >= 200 && this.status < 300;
+      this.headers = new Headers(init.headers);
+    }
 
-      // Add json method if not present
-      if (!this.json) {
-        this.json = () => {
-          return this.text().then(text => JSON.parse(text));
-        };
-      }
+    json() {
+      return Promise.resolve(JSON.parse(this.body));
+    }
+
+    text() {
+      return Promise.resolve(this.body);
     }
   };
 }
