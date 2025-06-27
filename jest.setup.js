@@ -40,7 +40,7 @@ if (typeof window !== 'undefined') {
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
       dispatchEvent: jest.fn()
-    }))
+    })),
   });
 }
 
