@@ -9,7 +9,7 @@
 
 // Mock fetch globally if not already available (Node.js 18+ has native fetch)
 if (!global.fetch) {
-  global.fetch = jest.fn().mockResolvedValue({
+  global.fetch = jest.fn().mockResolvedValue({ ok: true, status: 200, json: () => Promise.resolve() });
     ok: true,
     status: 200,
     json: () => Promise.resolve({}),
