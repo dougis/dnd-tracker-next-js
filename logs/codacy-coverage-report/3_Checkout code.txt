@@ -1,0 +1,119 @@
+﻿2025-06-27T05:57:29.3175645Z ##[group]Run actions/checkout@v4
+2025-06-27T05:57:29.3176173Z with:
+2025-06-27T05:57:29.3176358Z   fetch-depth: 0
+2025-06-27T05:57:29.3176572Z   repository: dougis/dnd-tracker-next-js
+2025-06-27T05:57:29.3176970Z   token: ***
+2025-06-27T05:57:29.3177163Z   ssh-strict: true
+2025-06-27T05:57:29.3177336Z   ssh-user: git
+2025-06-27T05:57:29.3177513Z   persist-credentials: true
+2025-06-27T05:57:29.3177719Z   clean: true
+2025-06-27T05:57:29.3177894Z   sparse-checkout-cone-mode: true
+2025-06-27T05:57:29.3178127Z   fetch-tags: false
+2025-06-27T05:57:29.3178304Z   show-progress: true
+2025-06-27T05:57:29.3178486Z   lfs: false
+2025-06-27T05:57:29.3178648Z   submodules: false
+2025-06-27T05:57:29.3178824Z   set-safe-directory: true
+2025-06-27T05:57:29.3179205Z ##[endgroup]
+2025-06-27T05:57:29.4222774Z Syncing repository: dougis/dnd-tracker-next-js
+2025-06-27T05:57:29.4224139Z ##[group]Getting Git version info
+2025-06-27T05:57:29.4289143Z Working directory is '/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js'
+2025-06-27T05:57:29.4290238Z [command]/usr/bin/git version
+2025-06-27T05:57:29.4301945Z git version 2.49.0
+2025-06-27T05:57:29.4327516Z ##[endgroup]
+2025-06-27T05:57:29.4343248Z Temporarily overriding HOME='/home/runner/work/_temp/bcb4996d-e395-4298-956b-26ab6e6eee1a' before making global git config changes
+2025-06-27T05:57:29.4344589Z Adding repository directory to the temporary git global config as a safe directory
+2025-06-27T05:57:29.4349363Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js
+2025-06-27T05:57:29.4394353Z Deleting the contents of '/home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js'
+2025-06-27T05:57:29.4397797Z ##[group]Initializing the repository
+2025-06-27T05:57:29.4402342Z [command]/usr/bin/git init /home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js
+2025-06-27T05:57:29.4473904Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-06-27T05:57:29.4474913Z hint: is subject to change. To configure the initial branch name to use in all
+2025-06-27T05:57:29.4475785Z hint: of your new repositories, which will suppress this warning, call:
+2025-06-27T05:57:29.4476355Z hint:
+2025-06-27T05:57:29.4476753Z hint: 	git config --global init.defaultBranch <name>
+2025-06-27T05:57:29.4477213Z hint:
+2025-06-27T05:57:29.4477656Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-06-27T05:57:29.4478381Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-06-27T05:57:29.4478734Z hint:
+2025-06-27T05:57:29.4478916Z hint: 	git branch -m <name>
+2025-06-27T05:57:29.4482520Z Initialized empty Git repository in /home/runner/work/dnd-tracker-next-js/dnd-tracker-next-js/.git/
+2025-06-27T05:57:29.4492866Z [command]/usr/bin/git remote add origin https://github.com/dougis/dnd-tracker-next-js
+2025-06-27T05:57:29.4525434Z ##[endgroup]
+2025-06-27T05:57:29.4526022Z ##[group]Disabling automatic garbage collection
+2025-06-27T05:57:29.4530027Z [command]/usr/bin/git config --local gc.auto 0
+2025-06-27T05:57:29.4557434Z ##[endgroup]
+2025-06-27T05:57:29.4558034Z ##[group]Setting up auth
+2025-06-27T05:57:29.4565192Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-06-27T05:57:29.4594565Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-06-27T05:57:29.4896253Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-06-27T05:57:29.4924742Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-06-27T05:57:29.5141415Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-06-27T05:57:29.5182007Z ##[endgroup]
+2025-06-27T05:57:29.5182394Z ##[group]Fetching the repository
+2025-06-27T05:57:29.5190490Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +f6da0f03032bdcf169d47896d5f1e3f231178a8d:refs/remotes/pull/92/merge
+2025-06-27T05:57:29.8335507Z From https://github.com/dougis/dnd-tracker-next-js
+2025-06-27T05:57:29.8336782Z  * [new branch]      add-claude-github-actions-1750867671806  -> origin/add-claude-github-actions-1750867671806
+2025-06-27T05:57:29.8338006Z  * [new branch]      add-claude-github-actions-1750867671854  -> origin/add-claude-github-actions-1750867671854
+2025-06-27T05:57:29.8339875Z  * [new branch]      bugfix/issue-73-fix-tests-and-types      -> origin/bugfix/issue-73-fix-tests-and-types
+2025-06-27T05:57:29.8342775Z  * [new branch]      bugfix/issue-73-fix-tests-and-types-2    -> origin/bugfix/issue-73-fix-tests-and-types-2
+2025-06-27T05:57:29.8344915Z  * [new branch]      bugfix/issue-81-fix-failing-user-service-tests -> origin/bugfix/issue-81-fix-failing-user-service-tests
+2025-06-27T05:57:29.8346549Z  * [new branch]      codacy-auto-fixes                        -> origin/codacy-auto-fixes
+2025-06-27T05:57:29.8349159Z  * [new branch]      codacy-quality-fixes                     -> origin/codacy-quality-fixes
+2025-06-27T05:57:29.8353239Z  * [new branch]      feature/apply-codacy-fixes-manually      -> origin/feature/apply-codacy-fixes-manually
+2025-06-27T05:57:29.8355889Z  * [new branch]      feature/issue-10-nextauth-setup          -> origin/feature/issue-10-nextauth-setup
+2025-06-27T05:57:29.8358266Z  * [new branch]      feature/issue-11-user-registration-flow  -> origin/feature/issue-11-user-registration-flow
+2025-06-27T05:57:29.8360461Z  * [new branch]      feature/issue-14-user-schema             -> origin/feature/issue-14-user-schema
+2025-06-27T05:57:29.8362696Z  * [new branch]      feature/issue-14-user-schema-model       -> origin/feature/issue-14-user-schema-model
+2025-06-27T05:57:29.8364970Z  * [new branch]      feature/issue-17-user-service            -> origin/feature/issue-17-user-service
+2025-06-27T05:57:29.8367206Z  * [new branch]      feature/issue-2-nextjs-setup             -> origin/feature/issue-2-nextjs-setup
+2025-06-27T05:57:29.8369806Z  * [new branch]      feature/issue-20-zod-validation          -> origin/feature/issue-20-zod-validation
+2025-06-27T05:57:29.8372312Z  * [new branch]      feature/issue-20-zod-validation-pr       -> origin/feature/issue-20-zod-validation-pr
+2025-06-27T05:57:29.8374526Z  * [new branch]      feature/issue-3-dev-environment          -> origin/feature/issue-3-dev-environment
+2025-06-27T05:57:29.8376797Z  * [new branch]      feature/issue-40-application-layout      -> origin/feature/issue-40-application-layout
+2025-06-27T05:57:29.8379270Z  * [new branch]      feature/issue-43-form-component-library  -> origin/feature/issue-43-form-component-library
+2025-06-27T05:57:29.8381866Z  * [new branch]      feature/issue-44-modal-dialog-system     -> origin/feature/issue-44-modal-dialog-system
+2025-06-27T05:57:29.8384283Z  * [new branch]      feature/issue-6-shadcn-ui-setup          -> origin/feature/issue-6-shadcn-ui-setup
+2025-06-27T05:57:29.8386814Z  * [new branch]      feature/issue-7-design-system-foundations -> origin/feature/issue-7-design-system-foundations
+2025-06-27T05:57:29.8389265Z  * [new branch]      feature/issue-70-fix-failing-tests       -> origin/feature/issue-70-fix-failing-tests
+2025-06-27T05:57:29.8391779Z  * [new branch]      feature/issue-77-codacy-test-coverage    -> origin/feature/issue-77-codacy-test-coverage
+2025-06-27T05:57:29.8394117Z  * [new branch]      feature/issue-77-fix-code-coverage       -> origin/feature/issue-77-fix-code-coverage
+2025-06-27T05:57:29.8396371Z  * [new branch]      feature/issue-9-mongoose-setup           -> origin/feature/issue-9-mongoose-setup
+2025-06-27T05:57:29.8399131Z  * [new branch]      feature/test-coverage-codacy-integration -> origin/feature/test-coverage-codacy-integration
+2025-06-27T05:57:29.8401526Z  * [new branch]      fix-coverage-with-mongodb-container      -> origin/fix-coverage-with-mongodb-container
+2025-06-27T05:57:29.8403982Z  * [new branch]      fix-signup-page-test                     -> origin/fix-signup-page-test
+2025-06-27T05:57:29.8407334Z  * [new branch]      fix/codacy-quality-issues                -> origin/fix/codacy-quality-issues
+2025-06-27T05:57:29.8409820Z  * [new branch]      fix/failing-tests                        -> origin/fix/failing-tests
+2025-06-27T05:57:29.8412273Z  * [new branch]      flyio-new-files                          -> origin/flyio-new-files
+2025-06-27T05:57:29.8414712Z  * [new branch]      main                                     -> origin/main
+2025-06-27T05:57:29.8416893Z  * [new branch]      prd-creation                             -> origin/prd-creation
+2025-06-27T05:57:29.8419037Z  * [new branch]      project-plan-and-mvp                     -> origin/project-plan-and-mvp
+2025-06-27T05:57:29.8421513Z  * [new branch]      technical-specification                  -> origin/technical-specification
+2025-06-27T05:57:29.8425766Z  * [new ref]         f6da0f03032bdcf169d47896d5f1e3f231178a8d -> pull/92/merge
+2025-06-27T05:57:29.8468266Z ##[endgroup]
+2025-06-27T05:57:29.8468909Z ##[group]Determining the checkout info
+2025-06-27T05:57:29.8472254Z ##[endgroup]
+2025-06-27T05:57:29.8475348Z [command]/usr/bin/git sparse-checkout disable
+2025-06-27T05:57:29.8514410Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-06-27T05:57:29.8541790Z ##[group]Checking out the ref
+2025-06-27T05:57:29.8545673Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/92/merge
+2025-06-27T05:57:29.8691628Z Note: switching to 'refs/remotes/pull/92/merge'.
+2025-06-27T05:57:29.8692217Z 
+2025-06-27T05:57:29.8692666Z You are in 'detached HEAD' state. You can look around, make experimental
+2025-06-27T05:57:29.8693511Z changes and commit them, and you can discard any commits you make in this
+2025-06-27T05:57:29.8694307Z state without impacting any branches by switching back to a branch.
+2025-06-27T05:57:29.8694806Z 
+2025-06-27T05:57:29.8695126Z If you want to create a new branch to retain commits you create, you may
+2025-06-27T05:57:29.8695832Z do so (now or later) by using -c with the switch command. Example:
+2025-06-27T05:57:29.8696231Z 
+2025-06-27T05:57:29.8696401Z   git switch -c <new-branch-name>
+2025-06-27T05:57:29.8696678Z 
+2025-06-27T05:57:29.8696839Z Or undo this operation with:
+2025-06-27T05:57:29.8697079Z 
+2025-06-27T05:57:29.8697211Z   git switch -
+2025-06-27T05:57:29.8697387Z 
+2025-06-27T05:57:29.8697749Z Turn off this advice by setting config variable advice.detachedHead to false
+2025-06-27T05:57:29.8698134Z 
+2025-06-27T05:57:29.8698502Z HEAD is now at f6da0f0 Merge 9d02eb90e469c4661efca692a711078a737f4e97 into 19a350f66e5c5fc2ef5d523a087ac2f3ae8f576f
+2025-06-27T05:57:29.8702555Z ##[endgroup]
+2025-06-27T05:57:29.8740686Z [command]/usr/bin/git log -1 --format=%H
+2025-06-27T05:57:29.8764401Z f6da0f03032bdcf169d47896d5f1e3f231178a8d
