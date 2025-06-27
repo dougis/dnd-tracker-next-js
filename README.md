@@ -1,6 +1,8 @@
 # D&D Encounter Tracker
 
-**A modern web application for D&D Dungeon Masters to manage combat encounters efficiently**
+## Application Overview
+
+A modern web application for D&D Dungeon Masters to manage combat encounters efficiently
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
@@ -10,15 +12,17 @@
 
 ## 🎯 **Project Status: Ready for Development**
 
-**✅ Planning Phase Complete** - All business requirements, technical architecture, and development planning finished  
-**🚀 Development Ready** - 46 MVP issues created with 12-week roadmap  
-**📋 Total Effort** - 268 hours estimated over 12 weeks
+- ✅ **Planning Phase Complete**: All business requirements, technical architecture,
+  and development planning finished
+- 🚀 **Development Ready**: 46 MVP issues created with 12-week roadmap
+- 📋 **Total Effort**: 268 hours estimated over 12 weeks
 
 ---
 
 ## 🏗️ **Project Overview**
 
-The D&D Encounter Tracker is a Next.js full-stack application that enables Dungeon Masters to efficiently manage D&D 5e combat encounters with features like:
+The D&D Encounter Tracker is a Next.js full-stack application that enables Dungeon Masters
+to efficiently manage D&D 5e combat encounters with features like:
 
 - **Initiative Tracking** with dexterity tiebreakers
 - **HP/AC Management** with damage and healing tracking
@@ -40,20 +44,28 @@ The D&D Encounter Tracker is a Next.js full-stack application that enables Dunge
 
 ### **📊 Business & Requirements**
 
-- **[Product Requirements Document](./docs/Product%20Requirements%20Document.md)** - Complete business requirements, subscription model, and success metrics
-- **[High Level Design](./docs/High%20Level%20Design.md)** - Technical architecture, database design, and API specifications
+- **[Product Requirements Document](./docs/Product%20Requirements%20Document.md)** -
+  Complete business requirements, subscription model, and success metrics
+- **[High Level Design](./docs/High%20Level%20Design.md)** -
+  Technical architecture, database design, and API specifications
 
 ### **🗓️ Implementation Planning**
 
-- **[Project Roadmap](./docs/Project%20Roadmap.md)** - Comprehensive task breakdown with MVP identification
-- **[12-Week MVP Development Phase Plan](./docs/12-Week%20MVP%20Development%20Phase%20Plan.md)** - Detailed weekly development schedule
-- **[GitHub Issues Update Guide](./docs/GitHub%20Issues%20Update%20Guide%20-%20Phase%20Assignments.md)** - Instructions for applying phase assignments
+- **[Project Roadmap](./docs/Project%20Roadmap.md)** -
+  Comprehensive task breakdown with MVP identification
+- **[12-Week MVP Development Phase Plan](./docs/12-Week%20MVP%20Development%20Phase%20Plan.md)** -
+  Detailed weekly development schedule
+- **[GitHub Issues Update Guide](./docs/GitHub%20Issues%20Update%20Guide%20-%20Phase%20Assignments.md)** -
+  Instructions for applying phase assignments
 
 ### **📈 Project Tracking**
 
-- **[Project State Summary](./docs/D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md)** - Current project status and readiness
-- **[GitHub Issues Progress](./docs/D%26D%20Tracker%20MVP%20GitHub%20Issues%20-%20Progress%20State.md)** - Issue creation and management tracking
-- **[Final Planning Summary](./docs/FINAL%20PROJECT%20PLANNING%20SUMMARY.md)** - Complete planning achievement overview
+- **[Project State Summary](./docs/D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md)** -
+  Current project status and readiness
+- **[GitHub Issues Progress](./docs/D%26D%20Tracker%20MVP%20GitHub%20Issues%20-%20Progress%20State.md)** -
+  Issue creation and management tracking
+- **[Final Planning Summary](./docs/FINAL%20PROJECT%20PLANNING%20SUMMARY.md)** -
+  Complete planning achievement overview
 
 ---
 
@@ -71,13 +83,15 @@ The D&D Encounter Tracker is a Next.js full-stack application that enables Dunge
 
 1. **Project Status**: Check [Project State Summary](./docs/D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md)
 2. **Issue Tracking**: Review [GitHub Issues Progress](./docs/D%26D%20Tracker%20MVP%20GitHub%20Issues%20-%20Progress%20State.md)
-3. **Sprint Planning**: Use the [12-Week MVP Plan](./docs/12-Week%20MVP%20Development%20Phase%20Plan.md) for weekly sprints
+3. **Sprint Planning**: Use the [12-Week MVP Plan](./docs/12-Week%20MVP%20Development%20Phase%20Plan.md)
+   for weekly sprints
 
 ### **For Stakeholders**
 
 1. **Business Case**: Review [Product Requirements Document](./docs/Product%20Requirements%20Document.md)
 2. **Success Metrics**: Check business goals and validation criteria
-3. **Timeline**: Review [Project State Summary](./docs/D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md) for delivery timeline
+3. **Timeline**: Review [Project State Summary](./docs/D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md)
+   for delivery timeline
 
 ---
 
@@ -111,22 +125,24 @@ The D&D Encounter Tracker is a Next.js full-stack application that enables Dunge
 
 ### **12-Week Development Plan**
 
-| Week | Theme                                 | Hours | Key Deliverables                     |
-| ---- | ------------------------------------- | ----- | ------------------------------------ |
-| 1    | Project Foundation                    | 17h   | Next.js setup, MongoDB, Testing      |
-| 2    | UI Foundation & Database              | 23h   | Tailwind, shadcn/ui, Mongoose, CI/CD |
-| 3    | Authentication & Core Components      | 24h   | NextAuth.js, Layout, Forms           |
-| 4    | Authentication Complete & Data Models | 24h   | User registration, Models, Landing   |
-| 5    | Character Data Layer                  | 22h   | Character models, Creation, Stats    |
-| 6    | Character Management                  | 24h   | Character list, Editing, Validation  |
-| 7    | Encounter Data Layer & NPCs           | 22h   | Encounter models, NPCs, Modals       |
-| 8    | Encounter Management                  | 24h   | Participants, Lists, Dashboard       |
-| 9    | Combat Foundation                     | 24h   | Combat state, Initiative, Rounds     |
-| 10   | Combat Core Systems                   | 21h   | Turn management, HP tracking         |
-| 11   | Advanced Combat & Settings            | 16h   | Damage calculations, Import/export   |
-| 12   | Final Polish & Completion             | 20h   | Bug fixes, Optimization, Deployment  |
+| Week | Theme                            | Hours | Key Deliverables                     |
+| ---- | -------------------------------- | ----- | ------------------------------------ |
+| 1    | Project Foundation              | 17h   | Next.js setup, MongoDB, Testing      |
+| 2    | UI Foundation & Database        | 23h   | Tailwind, shadcn/ui, Mongoose, CI/CD |
+| 3    | Authentication & Core Components| 24h   | NextAuth.js, Layout, Forms           |
+| 4    | Authentication & Data Models    | 24h   | User registration, Models, Landing   |
+| 5    | Character Data Layer            | 22h   | Character models, Creation, Stats    |
+| 6    | Character Management            | 24h   | Character list, Editing, Validation  |
+| 7    | Encounter Data Layer & NPCs     | 22h   | Encounter models, NPCs, Modals       |
+| 8    | Encounter Management            | 24h   | Participants, Lists, Dashboard       |
+| 9    | Combat Foundation               | 24h   | Combat state, Initiative, Rounds     |
+| 10   | Combat Core Systems             | 21h   | Turn management, HP tracking         |
+| 11   | Advanced Combat & Settings      | 16h   | Damage calculations, Import/export   |
+| 12   | Final Polish & Completion       | 20h   | Bug fixes, Optimization, Deployment  |
 
-**Total: 261 hours | Average: 22.3 hours/week**
+#### Development Metrics
+
+Total: 261 hours | Average: 22.3 hours/week
 
 ---
 
@@ -188,7 +204,7 @@ The D&D Encounter Tracker is a Next.js full-stack application that enables Dunge
 
 ## 📁 **Repository Structure**
 
-```
+```text
 dnd-tracker-next-js/
 ├── docs/                          # All project documentation
 │   ├── Product Requirements Document.md
@@ -214,13 +230,14 @@ dnd-tracker-next-js/
 ### **Planning Documents**
 
 - All documentation is in the [`docs/`](./docs/) folder
-- Start with [Project State Summary](./docs/D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md) for current status
+- Start with [Project State Summary](./docs/D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md)
+  for current status
 
 ---
 
 ## 🤝 **Contributing**
 
-### **For Development Team**
+### **For Development Contributors**
 
 1. Review all documentation in [`docs/`](./docs/) folder
 2. Follow the [12-Week MVP Plan](./docs/12-Week%20MVP%20Development%20Phase%20Plan.md)
@@ -252,14 +269,17 @@ dnd-tracker-next-js/
 
 ## 🏆 **Project Achievements**
 
-✅ **Complete Business Requirements** - Validated subscription model and market opportunity  
-✅ **Technical Architecture** - Modern, scalable Next.js 15 full-stack design  
-✅ **Implementation Plan** - 46 detailed development issues with dependencies  
-✅ **12-Week Roadmap** - Realistic timeline with 20% buffer and quality gates  
-✅ **Risk Mitigation** - Clear dependencies, critical path, and contingency planning
+- ✅ **Complete Business Requirements**: Validated subscription model and market opportunity
+- ✅ **Technical Architecture**: Modern, scalable Next.js 15 full-stack design
+- ✅ **Implementation Plan**: 46 detailed development issues with dependencies
+- ✅ **12-Week Roadmap**: Realistic timeline with 20% buffer and quality gates
+- ✅ **Risk Mitigation**: Clear dependencies, critical path, and contingency planning
 
 **Status: Ready for development team to begin implementation immediately.**
 
 ---
 
-_This project represents a comprehensive approach to building a modern D&D combat tracker that will compete effectively in the TTRPG market while providing superior user experience for Dungeon Masters worldwide._ ⚔️🎲
+_This project represents a comprehensive approach to building a modern D&D combat tracker
+that will compete effectively in the TTRPG market while providing superior user experience
+for Dungeon Masters worldwide._ ⚔️🎲
+
