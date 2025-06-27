@@ -6,7 +6,11 @@
 
 ## 1. Purpose
 
-The D&D Encounter Tracker Web App enables Dungeon Masters to manage combat efficiently with a freemium subscription model. It supports initiative tracking, HP/AC management, class/race tracking, legendary actions, lair actions, and Dexterity-based tiebreakers. The platform offers multiple subscription tiers to monetize advanced features while providing a robust free tier for new users.
+The D&D Encounter Tracker Web App enables Dungeon Masters to manage combat 
+efficiently with a freemium subscription model. It supports initiative tracking, 
+HP/AC management, class/race tracking, legendary actions, lair actions, and 
+Dexterity-based tiebreakers. The platform offers multiple subscription tiers to 
+monetize advanced features while providing a robust free tier for new users.
 
 ## 2. Scope
 
@@ -77,20 +81,20 @@ The D&D Encounter Tracker Web App enables Dungeon Masters to manage combat effic
 
 | Feature               | Free | Seasoned | Expert | Master | Guild |
 | --------------------- | ---- | -------- | ------ | ------ | ----- |
-| **Content Limits**    |
+| **Content Limits**    |      |          |        |        |       |
 | Parties               | 1    | 3        | 10     | 25     | ∞     |
 | Encounters            | 3    | 15       | 50     | 100    | ∞     |
 | Creatures             | 10   | 50       | 200    | 500    | ∞     |
 | Max Participants      | 6    | 10       | 20     | 30     | 50    |
-| **Data & Sync**       |
+| **Data & Sync**       |      |          |        |        |       |
 | Cloud Sync            | ❌   | ✅       | ✅     | ✅     | ✅    |
 | Automated Backups     | ❌   | ✅       | ✅     | ✅     | ✅    |
-| **Advanced Features** |
+| **Advanced Features** |      |          |        |        |       |
 | Advanced Combat Log   | ❌   | ✅       | ✅     | ✅     | ✅    |
 | Custom Themes         | ❌   | ❌       | ✅     | ✅     | ✅    |
 | Export Features       | ❌   | ✅       | ✅     | ✅     | ✅    |
 | Collaborative Mode    | ❌   | ❌       | ✅     | ✅     | ✅    |
-| **Support & Access**  |
+| **Support & Access**  |      |          |        |        |       |
 | Beta Access           | ❌   | ❌       | ✅     | ✅     | ✅    |
 | Priority Support      | ❌   | ❌       | ✅     | ✅     | ✅    |
 
@@ -409,4 +413,6 @@ The D&D Encounter Tracker Web App enables Dungeon Masters to manage combat effic
 - **Conditional Lair Actions**: Complex triggers based on HP thresholds or turn counts
 - **Lair Evolution**: Dynamic lair actions that change throughout combat
 
-This updated PRD reflects the integration of lair actions as a core combat feature that enhances the tactical depth of encounter management while maintaining the freemium business model.
+This updated PRD reflects the integration of lair actions as a core combat feature 
+that enhances the tactical depth of encounter management while maintaining the 
+freemium business model.
