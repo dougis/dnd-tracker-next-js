@@ -13,6 +13,25 @@ let mongoServer: MongoMemoryServer;
 /**
  * Setup MongoDB for tests - either using a real connection or in-memory server
  */
+/**
+ * Safety check function that throws clear errors if MongoDB environment variables are missing
+ */
+export function validateMongoDBEnvironment() {
+  if (!process.env.MONGODB_URI) {
+    throw new Error(
+      '🚨 MONGODB_URI environment variable is not defined! Tests cannot run without database connection.'
+    );
+  }
+  
+  if (!process.env.MONGODB_DB_NAME) {
+    throw new Error(
+      '🚨 MONGODB_DB_NAME environment variable is not defined! Tests cannot run without database name.'
+    );
+  }
+  
+  console.log('✅ MongoDB environment variables validated');
+}
+
 export async function setupTestMongoDB() {
   // Check for the Codacy coverage environment (GitHub CI) with MongoDB service container
   if (process.env.CI === 'true' && process.env.MONGODB_URI) {
@@ -32,6 +51,9 @@ export async function setupTestMongoDB() {
     process.env.MONGODB_DB_NAME = 'testdb';
     console.log(`Started in-memory MongoDB at ${process.env.MONGODB_URI}`);
   }
+  
+  // Validate environment variables
+  validateMongoDBEnvironment();
   
   return {
     uri: process.env.MONGODB_URI,

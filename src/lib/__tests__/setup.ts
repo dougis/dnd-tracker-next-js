@@ -2,9 +2,18 @@
  * Global test setup for database mocking
  */
 
-// Mock environment variables needed for tests
-process.env.MONGODB_URI = 'mongodb://localhost:27017';
-process.env.MONGODB_DB_NAME = 'test-db';
+// Only set environment variables if they don't already exist
+// This ensures we don't override values from the CI environment
+if (!process.env.MONGODB_URI) {
+  process.env.MONGODB_URI = 'mongodb://localhost:27017';
+}
+
+if (!process.env.MONGODB_DB_NAME) {
+  process.env.MONGODB_DB_NAME = 'test-db';
+}
+
+// Log the current MongoDB configuration for debugging
+console.log(`[Test Setup] Using MongoDB: ${process.env.MONGODB_URI}, DB: ${process.env.MONGODB_DB_NAME}`);
 
 // Mock mongoose
 jest.mock('mongoose', () => ({
