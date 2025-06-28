@@ -6,9 +6,7 @@
  */
 
 // Using CommonJS require syntax for Jest compatibility
-const {
-  setupTestMongoDB
-} = require('./src/lib/__tests__/mongodb-setup');
+const { setupTestMongoDB } = require('./src/lib/__tests__/mongodb-setup');
 
 module.exports = async () => {
   console.log('=== JEST GLOBAL SETUP ===');

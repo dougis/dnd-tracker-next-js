@@ -35,8 +35,14 @@ import {
 import {
   checkUserExists,
   checkProfileUpdateConflicts,
-  convertLeansUsersToPublic,
 } from './UserServiceHelpers';
+
+import {
+  buildQuery,
+  executeUserQuery,
+  formatPaginatedResult,
+  type QueryFilters,
+} from './UserServiceQueryHelpers';
 
 /**
  * User Service Layer for D&D Encounter Tracker
@@ -92,13 +98,21 @@ export class UserService {
       return user.toPublicJSON();
     }
     return {
-      id: user._id?.toString() || '',
+      _id: user._id?.toString(),
       email: user.email || '',
       username: user.username || '',
       firstName: user.firstName || '',
       lastName: user.lastName || '',
       role: user.role || 'user',
       subscriptionTier: user.subscriptionTier || 'free',
+      preferences: user.preferences || {
+        theme: 'system',
+        language: 'en',
+        timezone: 'UTC',
+        emailNotifications: true,
+        pushNotifications: true,
+        autoSaveEncounters: true,
+      },
       isEmailVerified: user.isEmailVerified || false,
       createdAt: user.createdAt || new Date(),
       updatedAt: user.updatedAt || new Date(),
@@ -175,7 +189,7 @@ export class UserService {
 
       return {
         success: true,
-        data: newUser.toPublicJSON(),
+        data: newUser.toPublicJSON() as PublicUser,
       };
     } catch (error) {
       // Pass through the error directly if it's one of our custom errors
@@ -243,7 +257,7 @@ export class UserService {
       return {
         success: true,
         data: {
-          user: user.toPublicJSON(),
+          user: user.toPublicJSON() as PublicUser,
           requiresVerification: !user.isEmailVerified,
         },
       };
@@ -404,13 +418,21 @@ export class UserService {
         return {
           success: true,
           data: {
-            id: user._id?.toString() || '',
+            _id: user._id?.toString(),
             email: user.email || '',
             username: user.username || '',
             firstName: user.firstName || '',
             lastName: user.lastName || '',
             role: user.role || 'user',
             subscriptionTier: user.subscriptionTier || 'free',
+            preferences: user.preferences || {
+              theme: 'system',
+              language: 'en',
+              timezone: 'UTC',
+              emailNotifications: true,
+              pushNotifications: true,
+              autoSaveEncounters: true,
+            },
             isEmailVerified: user.isEmailVerified || false,
             createdAt: user.createdAt || new Date(),
             updatedAt: user.updatedAt || new Date(),
@@ -420,7 +442,7 @@ export class UserService {
 
       return {
         success: true,
-        data: user.toPublicJSON(),
+        data: user.toPublicJSON() as PublicUser,
       };
     } catch (error) {
       // Pass through the error directly if it's one of our custom errors
@@ -532,7 +554,7 @@ export class UserService {
       }
 
       // Generate reset token
-      const resetToken = user.generatePasswordResetToken();
+      const resetToken = await user.generatePasswordResetToken();
       await user.save();
 
       return {
@@ -617,7 +639,7 @@ export class UserService {
 
       return {
         success: true,
-        data: user.toPublicJSON(),
+        data: user.toPublicJSON() as PublicUser,
       };
     } catch (error) {
       // Pass through the error directly if it's one of our custom errors
@@ -645,54 +667,17 @@ export class UserService {
   static async getUsers(
     page: number = 1,
     limit: number = 20,
-    filters?: {
-      role?: string;
-      subscriptionTier?: string;
-      isEmailVerified?: boolean;
-    }
+    filters?: QueryFilters
   ): Promise<ServiceResult<PaginatedResult<PublicUser>>> {
     try {
       const skip = (page - 1) * limit;
-      const query = filters ? { ...filters } : {};
-
-      let users = [];
-      let total = 0;
-
-      // For test compatibility, handle mocked and real implementations
-      if (
-        typeof UserModel.find === 'function' &&
-        typeof UserModel.find().sort !== 'function'
-      ) {
-        // We're likely in a test environment with a basic mock
-        users = (await UserModel.find(query)) || [];
-        total = (await UserModel.countDocuments(query)) || 0;
-      } else {
-        // We're in a real environment with a full query chain
-        const findQuery = UserModel.find(query);
-        const sortQuery = findQuery.sort({ createdAt: -1 });
-        const skipQuery = sortQuery.skip(skip);
-        const limitQuery = skipQuery.limit(limit);
-        const leanQuery = limitQuery.lean();
-        [users, total] = await Promise.all([
-          leanQuery,
-          UserModel.countDocuments(query),
-        ]);
-      }
-
-      const publicUsers = convertLeansUsersToPublic(users);
-      const totalPages = Math.ceil(total / limit);
+      const query = buildQuery(filters);
+      const { users, total } = await executeUserQuery(query, skip, limit);
+      const paginatedResult = formatPaginatedResult(users, total, page, limit);
 
       return {
         success: true,
-        data: {
-          data: publicUsers,
-          pagination: {
-            page,
-            limit,
-            total,
-            totalPages,
-          },
-        },
+        data: paginatedResult,
       };
     } catch (error) {
       return handleServiceError(

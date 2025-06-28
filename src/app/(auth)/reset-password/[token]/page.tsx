@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { passwordResetSchema } from '@/lib/validations/user';
 import {
@@ -22,10 +22,15 @@ type FormState = {
 export default function ResetPasswordWithTokenPage({
   params,
 }: {
-  params: { token: string };
+  params: Promise<{ token: string }>;
 }) {
   const _router = useRouter();
-  const { token } = params;
+  const [token, setToken] = useState<string>('');
+
+  // Extract token from params promise
+  useEffect(() => {
+    params.then(({ token }) => setToken(token));
+  }, [params]);
 
   const [formState, setFormState] = useState<FormState>({
     success: false,
@@ -119,7 +124,7 @@ export default function ResetPasswordWithTokenPage({
         </p>
         <div className="pt-2">
           <Link
-            href="/auth/signin"
+            href={'/auth/signin' as any}
             className="text-primary font-medium hover:underline"
           >
             Sign in with your new password
@@ -167,7 +172,10 @@ export default function ResetPasswordWithTokenPage({
         </FormSubmitButton>
 
         <div className="text-center text-sm">
-          <Link href="/auth/signin" className="text-primary hover:underline">
+          <Link
+            href={'/auth/signin' as any}
+            className="text-primary hover:underline"
+          >
             Return to Sign In
           </Link>
         </div>

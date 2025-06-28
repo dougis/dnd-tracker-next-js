@@ -226,7 +226,7 @@ const userSchema = new Schema<IUser, UserModel>(
     },
     lastLoginAt: {
       type: Date,
-      index: { background: true, expires: false },
+      index: { background: true },
     },
     preferences: {
       theme: {

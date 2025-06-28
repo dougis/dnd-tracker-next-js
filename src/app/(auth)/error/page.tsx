@@ -41,7 +41,7 @@ export default function AuthErrorPage() {
 
       <div className="space-y-4">
         <Button asChild>
-          <Link href="/auth/signin">Try Again</Link>
+          <Link href={'/auth/signin' as any}>Try Again</Link>
         </Button>
         <div>
           <Link href="/" className="text-sm text-primary hover:underline">

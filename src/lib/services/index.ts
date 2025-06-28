@@ -10,8 +10,8 @@ export { UserService } from './UserService';
 export type { PaginatedResult, UserStats } from './UserService';
 
 // Export custom error classes and service types for use in API routes
+export type { ServiceResult } from './UserServiceErrors';
 export {
-  ServiceResult,
   UserServiceError,
   UserNotFoundError,
   UserAlreadyExistsError,

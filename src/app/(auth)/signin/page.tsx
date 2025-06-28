@@ -78,7 +78,7 @@ export default function SignInPage() {
         isSubmitting: false,
       });
 
-      router.push(callbackUrl);
+      router.push(callbackUrl as any);
     } catch (error) {
       // Handle Zod validation errors
       if (error instanceof z.ZodError) {
@@ -166,7 +166,7 @@ export default function SignInPage() {
             </Label>
           </div>
           <Link
-            href="/auth/reset-password"
+            href={'/auth/reset-password' as any}
             className="text-sm text-primary hover:underline"
           >
             Forgot password?
@@ -177,7 +177,10 @@ export default function SignInPage() {
 
         <div className="text-center text-sm">
           Don&apos;t have an account?{' '}
-          <Link href="/auth/signup" className="text-primary hover:underline">
+          <Link
+            href={'/auth/signup' as any}
+            className="text-primary hover:underline"
+          >
             Sign up
           </Link>
         </div>

@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: result.error.message,
+          message: result.error?.message || 'Registration failed',
           errors: result.error?.details || [
             { field: '', message: result.error?.message || 'Unknown error' },
           ],
