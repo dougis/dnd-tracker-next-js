@@ -4,43 +4,43 @@ export type { ModalProps, VariantProps } from './Modal';
 
 // Confirmation Dialog
 export {
-    ConfirmationDialog,
-    useConfirmationDialog,
+  ConfirmationDialog,
+  useConfirmationDialog,
 } from './ConfirmationDialog';
 export type {
-    ConfirmationDialogProps,
-    ConfirmationDialogConfig,
+  ConfirmationDialogProps,
+  ConfirmationDialogConfig,
 } from './ConfirmationDialog';
 
 // Info Modal
 export {
-    InfoModal,
-    CharacterInfoModal,
-    EncounterInfoModal,
-    CombatInfoModal,
-    InfoSection,
-    InfoField,
+  InfoModal,
+  CharacterInfoModal,
+  EncounterInfoModal,
+  CombatInfoModal,
+  InfoSection,
+  InfoField,
 } from './InfoModal';
 export type { InfoModalProps, InfoModalType } from './InfoModal';
 
 // Form Modal
 export {
-    FormModal,
-    useFormModal,
-    QuickAddModal,
-    QuickEditModal,
+  FormModal,
+  useFormModal,
+  QuickAddModal,
+  QuickEditModal,
 } from './FormModal';
 export type {
-    FormModalProps,
-    FormModalConfig,
-    QuickFormModalProps,
+  FormModalProps,
+  FormModalConfig,
+  QuickFormModalProps,
 } from './FormModal';
 
 // Modal Manager
 export {
-    ModalManager,
-    useModalManager,
-    useModal,
-    useModalInstance,
+  ModalManager,
+  useModalManager,
+  useModal,
+  useModalInstance,
 } from './ModalManager';
 export type { ModalConfig, ModalManagerProps } from './ModalManager';

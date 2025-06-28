@@ -19,15 +19,15 @@ export type { FormSubmitButtonProps } from './FormSubmitButton';
 
 // Form Utilities
 export {
-    validationRules,
-    validateForm,
-    dndValidators,
-    extractFormData,
-    formatValidationErrors,
+  validationRules,
+  validateForm,
+  dndValidators,
+  extractFormData,
+  formatValidationErrors,
 } from './form-utils';
 export type {
-    ValidationRule,
-    FieldValidator,
-    FormData,
-    ValidationResult,
+  ValidationRule,
+  FieldValidator,
+  FormData,
+  ValidationResult,
 } from './form-utils';

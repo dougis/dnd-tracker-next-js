@@ -9,11 +9,11 @@ export { User };
 
 // Export interfaces
 export type {
-    IUser,
-    UserModel,
-    PublicUser,
-    CreateUserInput,
-    SubscriptionFeature,
+  IUser,
+  UserModel,
+  PublicUser,
+  CreateUserInput,
+  SubscriptionFeature,
 } from './User';
 
 // Export subscription limits
