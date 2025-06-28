@@ -11,7 +11,7 @@ import { ValidationError, safeValidate } from './base';
 export function createFormResolver<T extends FieldValues>(
   schema: z.ZodSchema<T>
 ) {
-  return zodResolver(schema);
+  return zodResolver(schema as any);
 }
 
 // Enhanced form options with validation
@@ -21,7 +21,7 @@ export function createFormOptions<T extends FieldValues>(
 ): UseFormProps<T> {
   return {
     resolver: createFormResolver(schema),
-    defaultValues,
+    defaultValues: defaultValues as any,
     mode: 'onChange',
     reValidateMode: 'onChange',
   };
@@ -134,7 +134,7 @@ export function useFormValidation<T extends FieldValues>(
     fieldName: Path<T>,
     _value: unknown,
     asyncValidator?: (_value: unknown) => Promise<boolean | string>
-  ) => validateFieldAsync(schema, fieldName, value, asyncValidator);
+  ) => validateFieldAsync(schema, fieldName, _value, asyncValidator);
 
   return {
     validateSync,

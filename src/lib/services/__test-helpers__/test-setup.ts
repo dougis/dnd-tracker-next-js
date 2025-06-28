@@ -41,15 +41,15 @@ findMock.mockReturnValue({
 });
 
 // Assign static methods to the constructor
-UserMock.findByEmail = findByEmailMock;
-UserMock.findByUsername = findByUsernameMock;
-UserMock.findById = findByIdMock;
-UserMock.findByResetToken = findByResetTokenMock;
-UserMock.findByVerificationToken = findByVerificationTokenMock;
-UserMock.find = findMock;
-UserMock.countDocuments = countDocumentsMock;
-UserMock.aggregate = aggregateMock;
-UserMock.findByIdAndDelete = findByIdAndDeleteMock;
+(UserMock as any).findByEmail = findByEmailMock;
+(UserMock as any).findByUsername = findByUsernameMock;
+(UserMock as any).findById = findByIdMock;
+(UserMock as any).findByResetToken = findByResetTokenMock;
+(UserMock as any).findByVerificationToken = findByVerificationTokenMock;
+(UserMock as any).find = findMock;
+(UserMock as any).countDocuments = countDocumentsMock;
+(UserMock as any).aggregate = aggregateMock;
+(UserMock as any).findByIdAndDelete = findByIdAndDeleteMock;
 
 // Mock the User model
 jest.mock('../../models/User', () => ({

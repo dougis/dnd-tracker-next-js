@@ -92,7 +92,7 @@ export function ConfirmationDialog({
 
   return (
     <Modal
-      open={open}
+      open={_open}
       onOpenChange={onOpenChange}
       size="sm"
       type={getModalType()}

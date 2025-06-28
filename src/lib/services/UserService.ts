@@ -98,13 +98,21 @@ export class UserService {
       return user.toPublicJSON();
     }
     return {
-      id: user._id?.toString() || '',
+      _id: user._id?.toString(),
       email: user.email || '',
       username: user.username || '',
       firstName: user.firstName || '',
       lastName: user.lastName || '',
       role: user.role || 'user',
       subscriptionTier: user.subscriptionTier || 'free',
+      preferences: user.preferences || {
+        theme: 'system',
+        language: 'en',
+        timezone: 'UTC',
+        emailNotifications: true,
+        pushNotifications: true,
+        autoSaveEncounters: true,
+      },
       isEmailVerified: user.isEmailVerified || false,
       createdAt: user.createdAt || new Date(),
       updatedAt: user.updatedAt || new Date(),
@@ -181,7 +189,7 @@ export class UserService {
 
       return {
         success: true,
-        data: newUser.toPublicJSON(),
+        data: newUser.toPublicJSON() as PublicUser,
       };
     } catch (error) {
       // Pass through the error directly if it's one of our custom errors
@@ -249,7 +257,7 @@ export class UserService {
       return {
         success: true,
         data: {
-          user: user.toPublicJSON(),
+          user: user.toPublicJSON() as PublicUser,
           requiresVerification: !user.isEmailVerified,
         },
       };
@@ -410,13 +418,21 @@ export class UserService {
         return {
           success: true,
           data: {
-            id: user._id?.toString() || '',
+            _id: user._id?.toString(),
             email: user.email || '',
             username: user.username || '',
             firstName: user.firstName || '',
             lastName: user.lastName || '',
             role: user.role || 'user',
             subscriptionTier: user.subscriptionTier || 'free',
+            preferences: user.preferences || {
+              theme: 'system',
+              language: 'en',
+              timezone: 'UTC',
+              emailNotifications: true,
+              pushNotifications: true,
+              autoSaveEncounters: true,
+            },
             isEmailVerified: user.isEmailVerified || false,
             createdAt: user.createdAt || new Date(),
             updatedAt: user.updatedAt || new Date(),
@@ -426,7 +442,7 @@ export class UserService {
 
       return {
         success: true,
-        data: user.toPublicJSON(),
+        data: user.toPublicJSON() as PublicUser,
       };
     } catch (error) {
       // Pass through the error directly if it's one of our custom errors
@@ -538,7 +554,7 @@ export class UserService {
       }
 
       // Generate reset token
-      const resetToken = user.generatePasswordResetToken();
+      const resetToken = await user.generatePasswordResetToken();
       await user.save();
 
       return {
@@ -623,7 +639,7 @@ export class UserService {
 
       return {
         success: true,
-        data: user.toPublicJSON(),
+        data: user.toPublicJSON() as PublicUser,
       };
     } catch (error) {
       // Pass through the error directly if it's one of our custom errors

@@ -25,28 +25,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         try {
           // Get user by email
-          const result = await UserService.getUserByEmail(credentials.email);
+          const result = await UserService.getUserByEmail(
+            credentials.email as string
+          );
           if (!result.success) {
             return null;
           }
-          const user = result.data;
 
           // Authenticate user
           const authResult = await UserService.authenticateUser({
-            email: credentials.email,
-            password: credentials.password,
+            email: credentials.email as string,
+            password: credentials.password as string,
+            rememberMe: false,
           });
 
-          if (!authResult.success) {
+          if (!authResult.success || !authResult.data) {
             return null;
           }
 
           // Return user object for session
+          const authenticatedUser = authResult.data.user;
           return {
-            id: user._id.toString(),
-            email: user.email,
-            name: user.name,
-            subscriptionTier: user.subscriptionTier,
+            id: authenticatedUser._id?.toString() || '',
+            email: authenticatedUser.email,
+            name: `${authenticatedUser.firstName} ${authenticatedUser.lastName}`,
+            subscriptionTier: authenticatedUser.subscriptionTier,
           };
         } catch (error) {
           console.error('Authentication error:', error);
@@ -80,7 +83,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   pages: {
     signIn: '/auth/signin',
-    signUp: '/auth/signup',
     error: '/auth/error',
   },
   debug: process.env.NODE_ENV === 'development',

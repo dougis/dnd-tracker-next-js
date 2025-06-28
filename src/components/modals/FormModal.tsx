@@ -91,10 +91,15 @@ export function FormModal({
 
   // Handle form reset when modal closes
   React.useEffect(() => {
-    if (!_open && resetOnClose && formProps.reset) {
+    if (
+      !_open &&
+      resetOnClose &&
+      'reset' in formProps &&
+      typeof (formProps as any).reset === 'function'
+    ) {
       // Small delay to ensure modal close animation completes
       const timer = setTimeout(() => {
-        formProps.reset?.();
+        (formProps as any).reset?.();
       }, 150);
       return () => clearTimeout(timer);
     }
@@ -125,10 +130,7 @@ export function FormModal({
               {cancelText}
             </Button>
           )}
-          <FormSubmitButton
-            isSubmitting={submitting}
-            className="w-full sm:w-auto"
-          >
+          <FormSubmitButton className="w-full sm:w-auto">
             {submitText}
           </FormSubmitButton>
         </div>

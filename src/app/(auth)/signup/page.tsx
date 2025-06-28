@@ -87,7 +87,8 @@ export default function SignUpPage() {
       });
 
       router.push(
-        '/auth/verify-email?email=' + encodeURIComponent(validatedData.email)
+        ('/auth/verify-email?email=' +
+          encodeURIComponent(validatedData.email)) as any
       );
     } catch (error) {
       // Handle Zod validation errors
@@ -197,11 +198,17 @@ export default function SignUpPage() {
             <Checkbox id="agreeToTerms" name="agreeToTerms" />
             <Label htmlFor="agreeToTerms" className="text-sm">
               I agree to the{' '}
-              <Link href="/terms" className="text-primary hover:underline">
+              <Link
+                href={'/terms' as any}
+                className="text-primary hover:underline"
+              >
                 Terms of Service
               </Link>{' '}
               and{' '}
-              <Link href="/privacy" className="text-primary hover:underline">
+              <Link
+                href={'/privacy' as any}
+                className="text-primary hover:underline"
+              >
                 Privacy Policy
               </Link>
             </Label>
@@ -226,7 +233,10 @@ export default function SignUpPage() {
 
         <div className="text-center text-sm">
           Already have an account?{' '}
-          <Link href="/auth/signin" className="text-primary hover:underline">
+          <Link
+            href={'/auth/signin' as any}
+            className="text-primary hover:underline"
+          >
             Sign in
           </Link>
         </div>
