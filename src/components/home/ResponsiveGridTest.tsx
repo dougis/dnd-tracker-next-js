@@ -8,9 +8,7 @@ export function ResponsiveGridTest() {
         {Array.from({ length: 8 }, (_, i) => (
           <div key={i} className="encounter-panel p-4 text-center">
             <div className="text-sm font-medium">Card {i + 1}</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              Responsive
-            </div>
+            <div className="text-xs text-muted-foreground mt-1">Responsive</div>
           </div>
         ))}
       </div>

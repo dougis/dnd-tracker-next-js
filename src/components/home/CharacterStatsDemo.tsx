@@ -1,9 +1,7 @@
 export function CharacterStatsDemo() {
   return (
     <section className="space-y-6">
-      <h2 className="text-2xl font-serif font-semibold">
-        Character Stats
-      </h2>
+      <h2 className="text-2xl font-serif font-semibold">Character Stats</h2>
 
       <div className="stat-block">
         <h3 className="text-lg font-semibold mb-4">Aragorn, Ranger</h3>

@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -57,7 +52,9 @@ export function CharacterCard({
           <div className="flex items-center gap-3">
             <Avatar>
               {avatarSrc && <AvatarImage src={avatarSrc} />}
-              <AvatarFallback className={`bg-${typeClass} text-${typeClass}-foreground`}>
+              <AvatarFallback
+                className={`bg-${typeClass} text-${typeClass}-foreground`}
+              >
                 {avatarFallback}
               </AvatarFallback>
             </Avatar>
@@ -77,7 +74,9 @@ export function CharacterCard({
       <CardContent className="space-y-2">
         <div className="grid grid-cols-2 gap-4 text-center">
           <div>
-            <p className={`text-2xl font-bold ${getHpStatusClass().split(' ')[0]}`}>
+            <p
+              className={`text-2xl font-bold ${getHpStatusClass().split(' ')[0]}`}
+            >
               {hp}
               {maxHp !== hp && `/${maxHp}`}
             </p>
@@ -89,8 +88,8 @@ export function CharacterCard({
           </div>
         </div>
         <div className="hp-bar bg-muted">
-          <div 
-            className={`hp-bar-fill ${getHpStatusClass().split(' ')[1]} h-full ${getHpBarWidth()} transition-all ${shouldAnimate ? 'animate-pulse-hp' : ''}`} 
+          <div
+            className={`hp-bar-fill ${getHpStatusClass().split(' ')[1]} h-full ${getHpBarWidth()} transition-all ${shouldAnimate ? 'animate-pulse-hp' : ''}`}
           />
         </div>
       </CardContent>

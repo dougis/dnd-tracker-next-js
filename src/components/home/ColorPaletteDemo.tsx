@@ -1,9 +1,7 @@
 export function ColorPaletteDemo() {
   return (
     <section className="mt-12">
-      <h2 className="text-2xl font-serif font-semibold mb-6">
-        Color Palette
-      </h2>
+      <h2 className="text-2xl font-serif font-semibold mb-6">Color Palette</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2">
           <h3 className="text-sm font-medium">Primary Colors</h3>

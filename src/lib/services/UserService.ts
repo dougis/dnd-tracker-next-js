@@ -35,7 +35,6 @@ import {
 import {
   checkUserExists,
   checkProfileUpdateConflicts,
-  convertLeansUsersToPublic,
 } from './UserServiceHelpers';
 
 import {

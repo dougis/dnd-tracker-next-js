@@ -47,12 +47,12 @@ export async function executeFullQuery(
   const skipQuery = sortQuery.skip(skip);
   const limitQuery = skipQuery.limit(limit);
   const leanQuery = limitQuery.lean();
-  
+
   const [users, total] = await Promise.all([
     leanQuery,
     UserModel.countDocuments(query),
   ]);
-  
+
   return { users, total };
 }
 

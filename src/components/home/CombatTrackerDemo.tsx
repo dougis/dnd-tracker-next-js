@@ -1,9 +1,7 @@
 export function CombatTrackerDemo() {
   return (
     <section className="space-y-6">
-      <h2 className="text-2xl font-serif font-semibold">
-        Combat Tracker
-      </h2>
+      <h2 className="text-2xl font-serif font-semibold">Combat Tracker</h2>
 
       {/* Initiative Order */}
       <div className="initiative-order">
@@ -15,9 +13,7 @@ export function CombatTrackerDemo() {
               </div>
               <div>
                 <h3 className="font-semibold">Aragorn</h3>
-                <p className="text-sm text-muted-foreground">
-                  Fighter (PC)
-                </p>
+                <p className="text-sm text-muted-foreground">Fighter (PC)</p>
               </div>
             </div>
             <div className="text-right">
@@ -35,9 +31,7 @@ export function CombatTrackerDemo() {
               <div className="text-initiative">15</div>
               <div>
                 <h3 className="font-semibold">Gandalf</h3>
-                <p className="text-sm text-muted-foreground">
-                  Wizard (NPC)
-                </p>
+                <p className="text-sm text-muted-foreground">Wizard (NPC)</p>
               </div>
             </div>
             <div className="text-right">
@@ -55,15 +49,11 @@ export function CombatTrackerDemo() {
               <div className="text-initiative">12</div>
               <div>
                 <h3 className="font-semibold">Orc Warrior</h3>
-                <p className="text-sm text-muted-foreground">
-                  Monster (CR 1)
-                </p>
+                <p className="text-sm text-muted-foreground">Monster (CR 1)</p>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-xl font-bold text-hp-critical">
-                8/25
-              </div>
+              <div className="text-xl font-bold text-hp-critical">8/25</div>
               <div className="hp-bar w-20 bg-muted hp-critical">
                 <div className="hp-bar-fill w-1/3 h-full"></div>
               </div>
