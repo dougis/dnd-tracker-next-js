@@ -1,6 +1,6 @@
 let capturedConfig = null;
 
-const mockNextAuth = jest.fn((config) => {
+const mockNextAuth = jest.fn(config => {
   capturedConfig = config;
   return {
     handlers: { GET: jest.fn(), POST: jest.fn() },

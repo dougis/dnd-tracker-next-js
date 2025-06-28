@@ -1,8 +1,8 @@
 /**
- * Authentication Configuration Tests
- * 
- * This test file validates the NextAuth configuration for the D&D Tracker application.
- * It tests the credentials provider configuration, session/JWT callbacks, and error handling.
+ *Authentication Configuration Tests
+ *
+ *This test file validates the NextAuth configuration for the D&D Tracker application.
+ *It tests the credentials provider configuration, session/JWT callbacks, and error handling.
  */
 
 import { UserService } from '../services/UserService';
@@ -39,7 +39,6 @@ describe('Authentication Configuration', () => {
 
       const NextAuth = require('next-auth');
       expect(NextAuth).toHaveBeenCalled();
-      
       const config = NextAuth.mock.calls[0][0];
       expect(config).toBeDefined();
       expect(config.providers).toBeDefined();
@@ -56,8 +55,8 @@ describe('Authentication Configuration', () => {
       const config = NextAuth.mock.calls[0][0];
       
       expect(config.session.strategy).toBe('database');
-      expect(config.session.maxAge).toBe(30 * 24 * 60 * 60); // 30 days
-      expect(config.session.updateAge).toBe(24 * 60 * 60); // 24 hours
+      expect(config.session.maxAge).toBe(30 *24 *60 *60); // 30 days
+      expect(config.session.updateAge).toBe(24 *60 *60); // 24 hours
     });
 
     it('should configure custom pages', () => {

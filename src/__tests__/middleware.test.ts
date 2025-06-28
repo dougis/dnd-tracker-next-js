@@ -1,8 +1,8 @@
 /**
- * Middleware Tests
- * 
- * This test file validates the Next.js middleware for route protection.
- * It tests authentication checks, redirects, and protected route access.
+ *Middleware Tests
+ *
+ *This test file validates the Next.js middleware for route protection.
+ *It tests authentication checks, redirects, and protected route access.
  */
 
 import { NextRequest } from 'next/server';
@@ -47,7 +47,6 @@ describe('Middleware Route Protection', () => {
   describe('Protected Route Detection', () => {
     it('should identify dashboard routes as protected', async () => {
       const { middleware } = await import('../middleware');
-      
       const request = {
         nextUrl: { pathname: '/dashboard' },
         url: 'http://localhost:3000/dashboard',
@@ -370,9 +369,9 @@ describe('Middleware Route Protection', () => {
       const validTokens = [
         { email: 'test@example.com', sub: '123' },
         { email: 'user@test.com', sub: '456', name: 'Test User' },
-        { 
-          email: 'admin@example.com', 
-          sub: '789', 
+        {
+          email: 'admin@example.com',
+          sub: '789',
           name: 'Admin', 
           subscriptionTier: 'premium',
           iat: Date.now(),

@@ -1,4 +1,4 @@
-module.exports = jest.fn((config) => ({
+module.exports = jest.fn(config => ({
   id: 'credentials',
   name: 'credentials',
   type: 'credentials',

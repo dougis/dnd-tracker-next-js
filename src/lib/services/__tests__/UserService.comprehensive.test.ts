@@ -1,8 +1,8 @@
 /**
- * UserService Comprehensive Tests
- * 
- * Focused tests to improve UserService coverage from 3.95% to 90%+
- * These tests execute actual UserService methods with proper mocks.
+ *UserService Comprehensive Tests
+ *
+ *Focused tests to improve UserService coverage from 3.95% to 90%+
+ *These tests execute actual UserService methods with proper mocks.
  */
 
 // Import existing test setup
@@ -45,7 +45,7 @@ describe('UserService Comprehensive Tests', () => {
     subscriptionTier: 'free',
     preferences: {
       theme: 'system',
-      language: 'en', 
+      language: 'en',
       timezone: 'UTC',
       emailNotifications: true,
       pushNotifications: true,
@@ -56,9 +56,9 @@ describe('UserService Comprehensive Tests', () => {
     updatedAt: new Date('2024-01-01'),
     password: '$2b$12$hashedpassword',
     emailVerificationToken: 'verification-token',
-    emailVerificationExpires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    emailVerificationExpires: new Date(Date.now() + 24 *60 *60 *1000),
     passwordResetToken: 'reset-token',
-    passwordResetExpires: new Date(Date.now() + 60 * 60 * 1000),
+    passwordResetExpires: new Date(Date.now() + 60 *60 *1000),
     toPublicJSON: jest.fn().mockReturnValue({
       _id: '507f1f77bcf86cd799439011',
       email: 'test@example.com',
@@ -87,7 +87,6 @@ describe('UserService Comprehensive Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
     // Reset bcryptjs mocks
     bcryptjs.hash.mockResolvedValue('$2b$12$hashedpassword');
     bcryptjs.compare.mockResolvedValue(true);
@@ -289,7 +288,7 @@ describe('UserService Comprehensive Tests', () => {
 
       const result = await UserService.changePassword(userId, {
         currentPassword: 'oldpass',
-        newPassword: 'newpass123'
+        newPassword: 'newpass123',
       });
 
       expect(result.success).toBe(true);
@@ -332,7 +331,7 @@ describe('UserService Comprehensive Tests', () => {
       const userWithValidToken = {
         ...mockUser,
         passwordResetToken: 'valid-token',
-        passwordResetExpires: new Date(Date.now() + 60 * 60 * 1000),
+        passwordResetExpires: new Date(Date.now() + 60 *60 *1000),
         save: jest.fn().mockResolvedValue(true),
       };
       User.findOne.mockResolvedValue(userWithValidToken);
@@ -362,7 +361,7 @@ describe('UserService Comprehensive Tests', () => {
       const userWithExpiredToken = {
         ...mockUser,
         passwordResetToken: 'expired-token',
-        passwordResetExpires: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
+        passwordResetExpires: new Date(Date.now() - 60 *60 *1000), // 1 hour ago
       };
       User.findOne.mockResolvedValue(userWithExpiredToken);
 
@@ -381,7 +380,7 @@ describe('UserService Comprehensive Tests', () => {
       const userWithValidToken = {
         ...mockUser,
         emailVerificationToken: 'valid-token',
-        emailVerificationExpires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        emailVerificationExpires: new Date(Date.now() + 24 *60 *60 *1000),
         isEmailVerified: false,
         save: jest.fn().mockResolvedValue(true),
       };
@@ -506,14 +505,14 @@ describe('UserService Comprehensive Tests', () => {
   describe('User Statistics', () => {
     it('should get user statistics', async () => {
       const mockStats = [{
-        _id: null,
-        totalUsers: 100,
-        verifiedUsers: 80,
-        activeUsers: 60,
-        subscriptionBreakdown: [
-          { _id: 'free', count: 70 },
-          { _id: 'premium', count: 30 },
-        ],
+          _id: null,
+          totalUsers: 100,
+          verifiedUsers: 80,
+          activeUsers: 60,
+          subscriptionBreakdown: [
+            { _id: 'free', count: 70 },
+            { _id: 'premium', count: 30 },
+          ],
       }];
       User.aggregate.mockResolvedValue(mockStats);
 

@@ -1,0 +1,81 @@
+diff --git a/src/__mocks__/next-auth.js b/src/__mocks__/next-auth.js
+--- a/src/__mocks__/next-auth.js
++++ b/src/__mocks__/next-auth.js
+@@ -3,1 +3,1 @@
+-const mockNextAuth = jest.fn((config) => {
++const mockNextAuth = jest.fn(config => {
+diff --git a/src/__tests__/middleware.test.ts b/src/__tests__/middleware.test.ts
+--- a/src/__tests__/middleware.test.ts
++++ b/src/__tests__/middleware.test.ts
+@@ -3,1 +3,1 @@
+- * 
++ *
+@@ -50,1 +50,1 @@
+-      
++
+@@ -373,1 +373,1 @@
+-        { 
++        {
+@@ -374,1 +374,1 @@
+-          email: 'admin@example.com', 
++          email: 'admin@example.com',
+@@ -375,1 +375,1 @@
+-          sub: '789', 
++          sub: '789',
+@@ -376,1 +376,1 @@
+-          name: 'Admin', 
++          name: 'Admin',
+diff --git a/src/__mocks__/next-auth/providers/credentials.js b/src/__mocks__/next-auth/providers/credentials.js
+--- a/src/__mocks__/next-auth/providers/credentials.js
++++ b/src/__mocks__/next-auth/providers/credentials.js
+@@ -1,1 +1,1 @@
+-module.exports = jest.fn((config) => ({
++module.exports = jest.fn(config => ({
+diff --git a/src/lib/services/__tests__/UserService.comprehensive.test.ts b/src/lib/services/__tests__/UserService.comprehensive.test.ts
+--- a/src/lib/services/__tests__/UserService.comprehensive.test.ts
++++ b/src/lib/services/__tests__/UserService.comprehensive.test.ts
+@@ -3,1 +3,1 @@
+- * 
++ *
+@@ -48,1 +48,1 @@
+-      language: 'en', 
++      language: 'en',
+@@ -90,1 +90,1 @@
+-    
++
+@@ -292,1 +292,1 @@
+-        newPassword: 'newpass123'
++        newPassword: 'newpass123',
+@@ -509,1 +509,1 @@
+-        _id: null,
++          _id: null,
+@@ -510,1 +510,1 @@
+-        totalUsers: 100,
++          totalUsers: 100,
+@@ -511,1 +511,1 @@
+-        verifiedUsers: 80,
++          verifiedUsers: 80,
+@@ -512,1 +512,1 @@
+-        activeUsers: 60,
++          activeUsers: 60,
+@@ -513,1 +513,1 @@
+-        subscriptionBreakdown: [
++          subscriptionBreakdown: [
+@@ -514,1 +514,1 @@
+-          { _id: 'free', count: 70 },
++            { _id: 'free', count: 70 },
+@@ -515,1 +515,1 @@
+-          { _id: 'premium', count: 30 },
++            { _id: 'premium', count: 30 },
+@@ -516,1 +516,1 @@
+-        ],
++          ],
+diff --git a/src/lib/__tests__/auth.test.ts b/src/lib/__tests__/auth.test.ts
+--- a/src/lib/__tests__/auth.test.ts
++++ b/src/lib/__tests__/auth.test.ts
+@@ -3,1 +3,1 @@
+- * 
++ *
+@@ -42,1 +42,1 @@
+-      
++
