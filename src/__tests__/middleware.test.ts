@@ -129,7 +129,7 @@ describe('Middleware Route Protection', () => {
           url: `http://localhost:3000${pathname}`,
         } as NextRequest;
 
-        const _result = await middleware(request);
+        const result = await middleware(request);
 
         expect(result).toBeDefined();
         expect(getToken).not.toHaveBeenCalled();
