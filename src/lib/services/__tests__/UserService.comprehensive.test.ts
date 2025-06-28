@@ -140,10 +140,7 @@ describe('UserService Comprehensive Tests', () => {
     });
 
     it('should handle existing user error', async () => {
-      checkUserExists.mockResolvedValue({ 
-        success: false, 
-        error: new UserAlreadyExistsError('User exists') 
-      });
+      checkUserExists.mockRejectedValue(new UserAlreadyExistsError('User exists'));
 
       const result = await UserService.createUser(registrationData);
 
