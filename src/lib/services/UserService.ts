@@ -38,6 +38,13 @@ import {
   convertLeansUsersToPublic,
 } from './UserServiceHelpers';
 
+import {
+  buildQuery,
+  executeUserQuery,
+  formatPaginatedResult,
+  type QueryFilters,
+} from './UserServiceQueryHelpers';
+
 /**
  * User Service Layer for D&D Encounter Tracker
  *
@@ -645,54 +652,17 @@ export class UserService {
   static async getUsers(
     page: number = 1,
     limit: number = 20,
-    filters?: {
-      role?: string;
-      subscriptionTier?: string;
-      isEmailVerified?: boolean;
-    }
+    filters?: QueryFilters
   ): Promise<ServiceResult<PaginatedResult<PublicUser>>> {
     try {
       const skip = (page - 1) * limit;
-      const query = filters ? { ...filters } : {};
-
-      let users = [];
-      let total = 0;
-
-      // For test compatibility, handle mocked and real implementations
-      if (
-        typeof UserModel.find === 'function' &&
-        typeof UserModel.find().sort !== 'function'
-      ) {
-        // We're likely in a test environment with a basic mock
-        users = (await UserModel.find(query)) || [];
-        total = (await UserModel.countDocuments(query)) || 0;
-      } else {
-        // We're in a real environment with a full query chain
-        const findQuery = UserModel.find(query);
-        const sortQuery = findQuery.sort({ createdAt: -1 });
-        const skipQuery = sortQuery.skip(skip);
-        const limitQuery = skipQuery.limit(limit);
-        const leanQuery = limitQuery.lean();
-        [users, total] = await Promise.all([
-          leanQuery,
-          UserModel.countDocuments(query),
-        ]);
-      }
-
-      const publicUsers = convertLeansUsersToPublic(users);
-      const totalPages = Math.ceil(total / limit);
+      const query = buildQuery(filters);
+      const { users, total } = await executeUserQuery(query, skip, limit);
+      const paginatedResult = formatPaginatedResult(users, total, page, limit);
 
       return {
         success: true,
-        data: {
-          data: publicUsers,
-          pagination: {
-            page,
-            limit,
-            total,
-            totalPages,
-          },
-        },
+        data: paginatedResult,
       };
     } catch (error) {
       return handleServiceError(
