@@ -125,6 +125,7 @@ export const createPaginationSchema = () =>
 // Error handling utilities
 export class ValidationError extends Error {
   public field?: string;
+
   public code?: string;
 
   constructor(message: string, field?: string, code?: string) {

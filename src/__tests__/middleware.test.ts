@@ -64,7 +64,7 @@ describe('Middleware Route Protection', () => {
 
     it('should identify characters routes as protected', async () => {
       const { middleware } = await import('../middleware');
-      
+
       const request = {
         nextUrl: { pathname: '/characters/create' },
         url: 'http://localhost:3000/characters/create',
@@ -79,7 +79,7 @@ describe('Middleware Route Protection', () => {
 
     it('should identify encounters routes as protected', async () => {
       const { middleware } = await import('../middleware');
-      
+
       const request = {
         nextUrl: { pathname: '/encounters/new' },
         url: 'http://localhost:3000/encounters/new',
@@ -94,7 +94,7 @@ describe('Middleware Route Protection', () => {
 
     it('should identify combat routes as protected', async () => {
       const { middleware } = await import('../middleware');
-      
+
       const request = {
         nextUrl: { pathname: '/combat/123' },
         url: 'http://localhost:3000/combat/123',
@@ -111,7 +111,7 @@ describe('Middleware Route Protection', () => {
   describe('Public Route Handling', () => {
     it('should allow access to public routes without authentication', async () => {
       const { middleware } = await import('../middleware');
-      
+
       const publicRoutes = [
         '/',
         '/about',
@@ -123,7 +123,7 @@ describe('Middleware Route Protection', () => {
 
       for (const pathname of publicRoutes) {
         mockNext.mockReturnValue({ type: 'next' });
-        
+
         const request = {
           nextUrl: { pathname },
           url: `http://localhost:3000${pathname}`,
@@ -133,7 +133,7 @@ describe('Middleware Route Protection', () => {
 
         expect(result).toBeDefined();
         expect(getToken).not.toHaveBeenCalled();
-        
+
         // Reset for next iteration
         jest.clearAllMocks();
         mockNext.mockReset();
@@ -145,7 +145,7 @@ describe('Middleware Route Protection', () => {
   describe('Authentication Checks', () => {
     it('should redirect unauthenticated users from protected routes', async () => {
       const { middleware } = await import('../middleware');
-      
+
       const request = {
         nextUrl: { pathname: '/dashboard' },
         url: 'http://localhost:3000/dashboard',
@@ -170,14 +170,14 @@ describe('Middleware Route Protection', () => {
 
     it('should include callback URL in redirect', async () => {
       const { middleware } = await import('../middleware');
-      
+
       const request = {
         nextUrl: { pathname: '/dashboard/characters' },
         url: 'http://localhost:3000/dashboard/characters',
       } as NextRequest;
 
       (getToken as jest.Mock).mockResolvedValue(null);
-      
+
       // Mock URL constructor and redirect
       const mockUrl = {
         href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A//localhost%3A3000/dashboard/characters',
@@ -185,11 +185,11 @@ describe('Middleware Route Protection', () => {
           set: jest.fn(),
         },
       };
-      
+
       // Mock global URL constructor
       const originalURL = global.URL;
       global.URL = jest.fn().mockImplementation(() => mockUrl) as any;
-      
+
       mockRedirect.mockReturnValue({ type: 'redirect' });
 
       await middleware(request);
@@ -199,14 +199,14 @@ describe('Middleware Route Protection', () => {
         encodeURI('http://localhost:3000/dashboard/characters')
       );
       expect(mockRedirect).toHaveBeenCalledWith(mockUrl);
-      
+
       // Restore original URL
       global.URL = originalURL;
     });
 
     it('should allow authenticated users to access protected routes', async () => {
       const { middleware } = await import('../middleware');
-      
+
       const request = {
         nextUrl: { pathname: '/dashboard' },
         url: 'http://localhost:3000/dashboard',
@@ -236,7 +236,7 @@ describe('Middleware Route Protection', () => {
   describe('Edge Cases', () => {
     it('should handle nested protected routes', async () => {
       const { middleware } = await import('../middleware');
-      
+
       const nestedRoutes = [
         '/dashboard/settings/profile',
         '/characters/123/edit',
@@ -247,7 +247,7 @@ describe('Middleware Route Protection', () => {
       for (const pathname of nestedRoutes) {
         (getToken as jest.Mock).mockResolvedValue(null);
         mockRedirect.mockReturnValue({ type: 'redirect' });
-        
+
         const request = {
           nextUrl: { pathname },
           url: `http://localhost:3000${pathname}`,
@@ -256,7 +256,7 @@ describe('Middleware Route Protection', () => {
         await middleware(request);
 
         expect(getToken).toHaveBeenCalled();
-        
+
         // Reset for next iteration
         jest.clearAllMocks();
         mockRedirect.mockReset();
@@ -266,26 +266,30 @@ describe('Middleware Route Protection', () => {
 
     it('should handle getToken errors gracefully', async () => {
       const { middleware } = await import('../middleware');
-      
+
       const request = {
         nextUrl: { pathname: '/dashboard' },
         url: 'http://localhost:3000/dashboard',
       } as NextRequest;
 
-      (getToken as jest.Mock).mockRejectedValue(new Error('Token validation failed'));
+      (getToken as jest.Mock).mockRejectedValue(
+        new Error('Token validation failed')
+      );
       mockRedirect.mockReturnValue({ type: 'redirect' });
 
       // Should redirect to signin even if getToken throws
-      await expect(middleware(request)).rejects.toThrow('Token validation failed');
+      await expect(middleware(request)).rejects.toThrow(
+        'Token validation failed'
+      );
       // The middleware doesn't catch getToken errors, which is expected behavior
     });
 
     it('should handle missing NEXTAUTH_SECRET', async () => {
       const originalSecret = process.env.NEXTAUTH_SECRET;
       delete process.env.NEXTAUTH_SECRET;
-      
+
       const { middleware } = await import('../middleware');
-      
+
       const request = {
         nextUrl: { pathname: '/dashboard' },
         url: 'http://localhost:3000/dashboard',
@@ -309,7 +313,7 @@ describe('Middleware Route Protection', () => {
   describe('Middleware Configuration', () => {
     it('should export correct matcher configuration', async () => {
       const middlewareModule = await import('../middleware');
-      
+
       expect(middlewareModule.config).toBeDefined();
       expect(middlewareModule.config.matcher).toEqual([
         '/dashboard/:path*',
@@ -323,14 +327,14 @@ describe('Middleware Route Protection', () => {
   describe('URL Construction', () => {
     it('should construct signin URL correctly', async () => {
       const { middleware } = await import('../middleware');
-      
+
       const request = {
         nextUrl: { pathname: '/dashboard' },
         url: 'http://localhost:3000/dashboard',
       } as NextRequest;
 
       (getToken as jest.Mock).mockResolvedValue(null);
-      
+
       // Mock URL to track constructor calls
       const mockUrl = {
         href: 'http://localhost:3000/auth/signin',
@@ -338,20 +342,23 @@ describe('Middleware Route Protection', () => {
           set: jest.fn(),
         },
       };
-      
+
       const originalURL = global.URL;
       global.URL = jest.fn().mockImplementation((path, base) => {
         expect(path).toBe('/auth/signin');
         expect(base).toBe('http://localhost:3000/dashboard');
         return mockUrl;
       }) as any;
-      
+
       mockRedirect.mockReturnValue({ type: 'redirect' });
 
       await middleware(request);
 
-      expect(global.URL).toHaveBeenCalledWith('/auth/signin', 'http://localhost:3000/dashboard');
-      
+      expect(global.URL).toHaveBeenCalledWith(
+        '/auth/signin',
+        'http://localhost:3000/dashboard'
+      );
+
       // Restore original URL
       global.URL = originalURL;
     });
@@ -360,7 +367,7 @@ describe('Middleware Route Protection', () => {
   describe('Token Validation', () => {
     it('should accept valid tokens with all required fields', async () => {
       const { middleware } = await import('../middleware');
-      
+
       const request = {
         nextUrl: { pathname: '/dashboard' },
         url: 'http://localhost:3000/dashboard',
@@ -372,7 +379,7 @@ describe('Middleware Route Protection', () => {
         {
           email: 'admin@example.com',
           sub: '789',
-          name: 'Admin', 
+          name: 'Admin',
           subscriptionTier: 'premium',
           iat: Date.now(),
           exp: Date.now() + 3600,
@@ -382,12 +389,12 @@ describe('Middleware Route Protection', () => {
       for (const token of validTokens) {
         (getToken as jest.Mock).mockResolvedValue(token);
         mockNext.mockReturnValue({ type: 'next' });
-        
+
         const _result = await middleware(request);
 
         expect(mockNext).toHaveBeenCalled();
         expect(mockRedirect).not.toHaveBeenCalled();
-        
+
         // Reset for next iteration
         jest.clearAllMocks();
         mockNext.mockReset();
@@ -397,7 +404,7 @@ describe('Middleware Route Protection', () => {
 
     it('should reject falsy tokens', async () => {
       const { middleware } = await import('../middleware');
-      
+
       const request = {
         nextUrl: { pathname: '/dashboard' },
         url: 'http://localhost:3000/dashboard',
@@ -408,12 +415,12 @@ describe('Middleware Route Protection', () => {
       for (const token of invalidTokens) {
         (getToken as jest.Mock).mockResolvedValue(token);
         mockRedirect.mockReturnValue({ type: 'redirect' });
-        
+
         await middleware(request);
 
         expect(mockRedirect).toHaveBeenCalled();
         expect(mockNext).not.toHaveBeenCalled();
-        
+
         // Reset for next iteration
         jest.clearAllMocks();
         mockRedirect.mockReset();

@@ -14,6 +14,7 @@ import { jest } from '@jest/globals';
 // Mock query object that can be chained
 class MockQuery {
   private results: any[] = [];
+
   private errorToThrow: Error | null = null;
 
   mockResolvedValue(value: any) {
@@ -83,6 +84,7 @@ class MockQuery {
 // Mock schema class
 class MockSchema {
   methods: Record<string, any> = {};
+
   statics: Record<string, any> = {};
 
   constructor(_definition: any, _options?: any) {

@@ -1,6 +1,6 @@
 /**
  * UserService Error Classes Tests
- * 
+ *
  * Tests for UserService error classes without importing the full service
  * to avoid ES module issues with MongoDB/Mongoose in the test environment.
  */
@@ -43,7 +43,9 @@ describe('UserService Error Classes', () => {
   describe('UserAlreadyExistsError', () => {
     it('should create UserAlreadyExistsError correctly', () => {
       const error = new UserAlreadyExistsError('email', 'test@example.com');
-      expect(error.message).toBe('User already exists with email: test@example.com');
+      expect(error.message).toBe(
+        'User already exists with email: test@example.com'
+      );
       expect(error.code).toBe('USER_ALREADY_EXISTS');
       expect(error.statusCode).toBe(409);
     });
@@ -80,7 +82,7 @@ describe('UserService Error Classes', () => {
     it('should handle UserServiceError correctly', () => {
       const customError = new UserNotFoundError('123');
       const result = handleServiceError(customError, 'Default', 'DEFAULT');
-      
+
       expect(result.success).toBe(false);
       expect(result.error?.message).toBe('User not found: 123');
       expect(result.error?.code).toBe('USER_NOT_FOUND');
@@ -90,7 +92,7 @@ describe('UserService Error Classes', () => {
     it('should handle validation errors', () => {
       const validationError = new Error('validation failed');
       const result = handleServiceError(validationError, 'Default', 'DEFAULT');
-      
+
       expect(result.success).toBe(false);
       expect(result.error?.message).toBe('Invalid user data provided');
       expect(result.error?.code).toBe('VALIDATION_ERROR');
@@ -99,8 +101,13 @@ describe('UserService Error Classes', () => {
 
     it('should handle generic errors', () => {
       const genericError = new Error('Something went wrong');
-      const result = handleServiceError(genericError, 'Default message', 'DEFAULT_CODE', 500);
-      
+      const result = handleServiceError(
+        genericError,
+        'Default message',
+        'DEFAULT_CODE',
+        500
+      );
+
       expect(result.success).toBe(false);
       expect(result.error?.message).toBe('Default message');
       expect(result.error?.code).toBe('DEFAULT_CODE');
@@ -108,8 +115,12 @@ describe('UserService Error Classes', () => {
     });
 
     it('should handle unknown errors', () => {
-      const result = handleServiceError('unknown error', 'Default message', 'DEFAULT_CODE');
-      
+      const result = handleServiceError(
+        'unknown error',
+        'Default message',
+        'DEFAULT_CODE'
+      );
+
       expect(result.success).toBe(false);
       expect(result.error?.message).toBe('Default message');
       expect(result.error?.code).toBe('DEFAULT_CODE');

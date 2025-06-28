@@ -17,6 +17,7 @@ export interface ServiceResult<T> {
 // Custom error classes for better error handling
 export class UserServiceError extends Error {
   public code: string;
+
   public statusCode: number;
 
   constructor(message: string, code: string, statusCode: number = 400) {
