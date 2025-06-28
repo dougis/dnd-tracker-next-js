@@ -33,7 +33,7 @@
 | #8    | Setup MongoDB Atlas cluster              | P1       | 3h     | None         |
 | #45   | Setup Jest testing framework             | P1       | 4h     | #2           |
 
-**Week 1 Deliverables:**
+#### Week 1 Deliverables
 
 - ✅ Working Next.js 15 project with TypeScript
 - ✅ Development environment configured
@@ -56,7 +56,7 @@
 | #9    | Install and configure Mongoose     | P1       | 4h     | #8           |
 | #46   | Configure automated deployment     | P1       | 6h     | #45          |
 
-**Week 2 Deliverables:**
+#### Week 2 Deliverables
 
 - ✅ Tailwind CSS configured with custom design system
 - ✅ shadcn/ui components ready for use
@@ -77,7 +77,7 @@
 | #43   | Create form component library      | P1       | 6h     | #7           |
 | #20   | Implement data validation with Zod | P1       | 6h     | #9           |
 
-**Week 3 Deliverables:**
+#### Week 3 Deliverables
 
 - ✅ NextAuth.js authentication configured
 - ✅ Application layout and navigation
@@ -99,7 +99,7 @@
 | #17   | Create User service layer    | P1       | 4h     | #14          |
 | #41   | Build landing page           | P1       | 6h     | #40          |
 
-**Week 4 Deliverables:**
+#### Week 4 Deliverables
 
 - ✅ Complete user authentication system
 - ✅ User data models and services
@@ -120,7 +120,7 @@
 | #12   | Build character creation form  | P1       | 8h     | #18, #43     |
 | #22   | Add character stats management | P1       | 6h     | #12          |
 
-**Week 5 Deliverables:**
+#### Week 5 Deliverables
 
 - ✅ Character data models and validation
 - ✅ Character service layer
@@ -141,7 +141,7 @@
 | #25   | Character validation and errors    | P1       | 4h     | #20          |
 | #26   | Implement character detail view    | P2       | 6h     | #24          |
 
-**Week 6 Deliverables:**
+#### Week 6 Deliverables
 
 - ✅ Character list with search and filtering
 - ✅ Character editing interface
@@ -162,7 +162,7 @@
 | #27   | Create NPC creation workflow  | P2       | 6h     | #12          |
 | #44   | Build modal and dialog system | P1       | 4h     | #43          |
 
-**Week 7 Deliverables:**
+#### Week 7 Deliverables
 
 - ✅ Encounter data models and services
 - ✅ NPC creation workflow
@@ -183,7 +183,7 @@
 | #30   | Create encounter detail view      | P1       | 7h     | #28          |
 | #42   | Create dashboard interface        | P1       | 6h     | #40          |
 
-**Week 8 Deliverables:**
+#### Week 8 Deliverables
 
 - ✅ Encounter participant management
 - ✅ Encounter list and organization
@@ -204,7 +204,7 @@
 | #35   | Implement initiative rolling   | P1       | 6h     | #33          |
 | #39   | Create round tracking system   | P1       | 4h     | #33          |
 
-**Week 9 Deliverables:**
+#### Week 9 Deliverables
 
 - ✅ Combat state machine
 - ✅ Initiative tracking
@@ -224,7 +224,7 @@
 | #34   | Create HP tracking UI | P1       | 8h     | #37          |
 | #36   | Build combat toolbar  | P1       | 5h     | #37          |
 
-**Week 10 Deliverables:**
+#### Week 10 Deliverables
 
 - ✅ Complete turn management
 - ✅ HP tracking with damage/healing
@@ -244,7 +244,7 @@
 | #31   | Implement encounter settings       | P2       | 4h     | #30          |
 | #32   | Create encounter import/export     | P2       | 6h     | #30          |
 
-**Week 11 Deliverables:**
+#### Week 11 Deliverables
 
 - ✅ Advanced damage calculations
 - ✅ Encounter configuration options
@@ -258,7 +258,7 @@
 **Theme:** Bug fixes, optimization, and deployment preparation  
 **Total Effort:** 16-20 hours | **Buffer Week**
 
-**Week 12 Focus:**
+#### Week 12 Focus
 
 - 🐛 Bug fixes and testing
 - ⚡ Performance optimization
@@ -267,7 +267,7 @@
 - 📊 Analytics and monitoring setup
 - 📖 Documentation updates
 
-**Week 12 Deliverables:**
+#### Week 12 Deliverables
 
 - ✅ Production-ready MVP
 - ✅ All critical bugs resolved
