@@ -2,23 +2,11 @@
  * Mocks for Next.js server components and utilities
  */
 
-// Create the Request class first if it doesn't exist
-if (typeof global.Request === 'undefined') {
+// Import the shared Web API globals setup
+const { setupWebAPIGlobals } = require('../../jest-setup-node-globals');
 
-    global.Request = class Request {
-
-        constructor(input, init = {}) {
-
-            this.url = input;
-            this.method = init.method || 'GET';
-            this.headers = new Headers(init.headers || {});
-            this.body = init.body;
-
-        }
-
-    };
-
-}
+// Ensure Web API globals are available
+setupWebAPIGlobals();
 
 // Now we can reference Request safely
 // Mock NextRequest class
