@@ -5,6 +5,9 @@
 // Create the complete mock functions for User model
 const findMock = jest.fn();
 const findByIdMock = jest.fn();
+const findOneMock = jest.fn();
+const createMock = jest.fn();
+const findByIdAndUpdateMock = jest.fn();
 const findByEmailMock = jest.fn();
 const findByUsernameMock = jest.fn();
 const findByResetTokenMock = jest.fn();
@@ -44,6 +47,9 @@ findMock.mockReturnValue({
 (UserMock as any).findByEmail = findByEmailMock;
 (UserMock as any).findByUsername = findByUsernameMock;
 (UserMock as any).findById = findByIdMock;
+(UserMock as any).findOne = findOneMock;
+(UserMock as any).create = createMock;
+(UserMock as any).findByIdAndUpdate = findByIdAndUpdateMock;
 (UserMock as any).findByResetToken = findByResetTokenMock;
 (UserMock as any).findByVerificationToken = findByVerificationTokenMock;
 (UserMock as any).find = findMock;
