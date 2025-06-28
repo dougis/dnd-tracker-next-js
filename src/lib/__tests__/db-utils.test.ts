@@ -3,171 +3,209 @@
  */
 
 import {
-  checkDatabaseHealth,
-  ensureDatabaseConnection,
-  validateDatabaseConfig,
-  connectWithRetry,
+    checkDatabaseHealth,
+    ensureDatabaseConnection,
+    validateDatabaseConfig,
+    connectWithRetry,
 } from '../db-utils';
 
 // Mock the db module
 jest.mock('../db', () => ({
-  connectToDatabase: jest.fn(),
-  getConnectionStatus: jest.fn(),
-  disconnectFromDatabase: jest.fn(),
+    connectToDatabase: jest.fn(),
+    getConnectionStatus: jest.fn(),
+    disconnectFromDatabase: jest.fn(),
 }));
 
 // Mock the MongoDB setup utilities
 jest.mock('./mongodb-setup', () => ({
-  setupTestMongoDB: jest.fn().mockResolvedValue({
-    uri: 'mongodb://localhost:27017',
-    dbName: 'test-db',
-  }),
-  validateMongoDBEnvironment: jest.fn(),
+    setupTestMongoDB: jest.fn().mockResolvedValue({
+        uri: 'mongodb://localhost:27017',
+        dbName: 'test-db',
+    }),
+    validateMongoDBEnvironment: jest.fn(),
 }));
 
 const originalEnv = process.env;
 
 describe('Database Utils', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
 
-    // Use existing environment variables if they exist (for CI), otherwise use defaults
-    process.env = {
-      ...originalEnv,
-      MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017',
-      MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || 'test-db',
-    };
-  });
+    beforeEach(() => {
 
-  afterEach(() => {
-    process.env = originalEnv;
-  });
+        jest.clearAllMocks();
 
-  describe('validateDatabaseConfig', () => {
-    it('should return valid when all required vars are present', () => {
-      const result = validateDatabaseConfig();
+        // Use existing environment variables if they exist (for CI), otherwise use defaults
+        process.env = {
+            ...originalEnv,
+            MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017',
+            MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || 'test-db',
+        };
 
-      expect(result.isValid).toBe(true);
-      expect(result.missingVars).toEqual([]);
     });
 
-    it('should return invalid when MONGODB_URI is missing', () => {
-      delete process.env.MONGODB_URI;
+    afterEach(() => {
 
-      const result = validateDatabaseConfig();
+        process.env = originalEnv;
 
-      expect(result.isValid).toBe(false);
-      expect(result.missingVars).toContain('MONGODB_URI');
     });
 
-    it('should return invalid when MONGODB_DB_NAME is missing', () => {
-      delete process.env.MONGODB_DB_NAME;
+    describe('validateDatabaseConfig', () => {
 
-      const result = validateDatabaseConfig();
+        it('should return valid when all required vars are present', () => {
 
-      expect(result.isValid).toBe(false);
-      expect(result.missingVars).toContain('MONGODB_DB_NAME');
+            const result = validateDatabaseConfig();
+
+            expect(result.isValid).toBe(true);
+            expect(result.missingVars).toEqual([]);
+
+        });
+
+        it('should return invalid when MONGODB_URI is missing', () => {
+
+            delete process.env.MONGODB_URI;
+
+            const result = validateDatabaseConfig();
+
+            expect(result.isValid).toBe(false);
+            expect(result.missingVars).toContain('MONGODB_URI');
+
+        });
+
+        it('should return invalid when MONGODB_DB_NAME is missing', () => {
+
+            delete process.env.MONGODB_DB_NAME;
+
+            const result = validateDatabaseConfig();
+
+            expect(result.isValid).toBe(false);
+            expect(result.missingVars).toContain('MONGODB_DB_NAME');
+
+        });
+
+        it('should return all missing vars when both are missing', () => {
+
+            delete process.env.MONGODB_URI;
+            delete process.env.MONGODB_DB_NAME;
+
+            const result = validateDatabaseConfig();
+
+            expect(result.isValid).toBe(false);
+            expect(result.missingVars).toEqual(['MONGODB_URI', 'MONGODB_DB_NAME']);
+
+        });
+
     });
 
-    it('should return all missing vars when both are missing', () => {
-      delete process.env.MONGODB_URI;
-      delete process.env.MONGODB_DB_NAME;
+    describe('checkDatabaseHealth', () => {
 
-      const result = validateDatabaseConfig();
+        it('should return healthy status when already connected', async () => {
 
-      expect(result.isValid).toBe(false);
-      expect(result.missingVars).toEqual(['MONGODB_URI', 'MONGODB_DB_NAME']);
-    });
-  });
+            const { getConnectionStatus } = require('../db');
+            getConnectionStatus.mockReturnValue(true);
 
-  describe('checkDatabaseHealth', () => {
-    it('should return healthy status when already connected', async () => {
-      const { getConnectionStatus } = require('../db');
-      getConnectionStatus.mockReturnValue(true);
+            const result = await checkDatabaseHealth();
 
-      const result = await checkDatabaseHealth();
+            expect(result.status).toBe('healthy');
+            expect(result.connected).toBe(true);
+            expect(result.timestamp).toBeDefined();
+            expect(result.latency).toBeDefined();
+            expect(typeof result.latency).toBe('number');
 
-      expect(result.status).toBe('healthy');
-      expect(result.connected).toBe(true);
-      expect(result.timestamp).toBeDefined();
-      expect(result.latency).toBeDefined();
-      expect(typeof result.latency).toBe('number');
-    });
+        });
 
-    it('should connect and return healthy when not already connected', async () => {
-      const { getConnectionStatus, connectToDatabase } = require('../db');
-      getConnectionStatus.mockReturnValue(false);
-      connectToDatabase.mockResolvedValue(undefined);
+        it('should connect and return healthy when not already connected', async () => {
 
-      const result = await checkDatabaseHealth();
+            const { getConnectionStatus, connectToDatabase } = require('../db');
+            getConnectionStatus.mockReturnValue(false);
+            connectToDatabase.mockResolvedValue(undefined);
 
-      expect(connectToDatabase).toHaveBeenCalled();
-      expect(result.status).toBe('healthy');
-      expect(result.connected).toBe(true);
-    });
+            const result = await checkDatabaseHealth();
 
-    it('should return unhealthy status on connection error', async () => {
-      const { getConnectionStatus, connectToDatabase } = require('../db');
-      getConnectionStatus.mockReturnValue(false);
-      connectToDatabase.mockRejectedValue(new Error('Connection failed'));
+            expect(connectToDatabase).toHaveBeenCalled();
+            expect(result.status).toBe('healthy');
+            expect(result.connected).toBe(true);
 
-      const result = await checkDatabaseHealth();
+        });
 
-      expect(result.status).toBe('unhealthy');
-      expect(result.connected).toBe(false);
-      expect(result.error).toBe('Connection failed');
-    });
-  });
+        it('should return unhealthy status on connection error', async () => {
 
-  describe('ensureDatabaseConnection', () => {
-    it('should connect when not already connected', async () => {
-      const { getConnectionStatus, connectToDatabase } = require('../db');
-      getConnectionStatus.mockReturnValue(false);
-      connectToDatabase.mockResolvedValue(undefined);
+            const { getConnectionStatus, connectToDatabase } = require('../db');
+            getConnectionStatus.mockReturnValue(false);
+            connectToDatabase.mockRejectedValue(new Error('Connection failed'));
 
-      await ensureDatabaseConnection();
+            const result = await checkDatabaseHealth();
 
-      expect(connectToDatabase).toHaveBeenCalled();
+            expect(result.status).toBe('unhealthy');
+            expect(result.connected).toBe(false);
+            expect(result.error).toBe('Connection failed');
+
+        });
+
     });
 
-    it('should not connect when already connected', async () => {
-      const { getConnectionStatus, connectToDatabase } = require('../db');
-      getConnectionStatus.mockReturnValue(true);
+    describe('ensureDatabaseConnection', () => {
 
-      await ensureDatabaseConnection();
+        it('should connect when not already connected', async () => {
 
-      expect(connectToDatabase).not.toHaveBeenCalled();
-    });
-  });
+            const { getConnectionStatus, connectToDatabase } = require('../db');
+            getConnectionStatus.mockReturnValue(false);
+            connectToDatabase.mockResolvedValue(undefined);
 
-  describe('connectWithRetry', () => {
-    it('should succeed on first attempt', async () => {
-      const { connectToDatabase } = require('../db');
-      connectToDatabase.mockResolvedValue(undefined);
+            await ensureDatabaseConnection();
 
-      await expect(connectWithRetry(3, 100)).resolves.toBeUndefined();
-      expect(connectToDatabase).toHaveBeenCalledTimes(1);
-    });
+            expect(connectToDatabase).toHaveBeenCalled();
 
-    it('should retry on failure and eventually succeed', async () => {
-      const { connectToDatabase } = require('../db');
-      connectToDatabase
-        .mockRejectedValueOnce(new Error('First attempt failed'))
-        .mockRejectedValueOnce(new Error('Second attempt failed'))
-        .mockResolvedValue(undefined);
+        });
 
-      await expect(connectWithRetry(3, 10)).resolves.toBeUndefined();
-      expect(connectToDatabase).toHaveBeenCalledTimes(3);
+        it('should not connect when already connected', async () => {
+
+            const { getConnectionStatus, connectToDatabase } = require('../db');
+            getConnectionStatus.mockReturnValue(true);
+
+            await ensureDatabaseConnection();
+
+            expect(connectToDatabase).not.toHaveBeenCalled();
+
+        });
+
     });
 
-    it('should throw after max retries exceeded', async () => {
-      const { connectToDatabase } = require('../db');
-      connectToDatabase.mockRejectedValue(new Error('Always fails'));
+    describe('connectWithRetry', () => {
 
-      await expect(connectWithRetry(2, 10)).rejects.toThrow(
-        'Failed to connect to database after 2 attempts'
-      );
-      expect(connectToDatabase).toHaveBeenCalledTimes(2);
+        it('should succeed on first attempt', async () => {
+
+            const { connectToDatabase } = require('../db');
+            connectToDatabase.mockResolvedValue(undefined);
+
+            await expect(connectWithRetry(3, 100)).resolves.toBeUndefined();
+            expect(connectToDatabase).toHaveBeenCalledTimes(1);
+
+        });
+
+        it('should retry on failure and eventually succeed', async () => {
+
+            const { connectToDatabase } = require('../db');
+            connectToDatabase
+                .mockRejectedValueOnce(new Error('First attempt failed'))
+                .mockRejectedValueOnce(new Error('Second attempt failed'))
+                .mockResolvedValue(undefined);
+
+            await expect(connectWithRetry(3, 10)).resolves.toBeUndefined();
+            expect(connectToDatabase).toHaveBeenCalledTimes(3);
+
+        });
+
+        it('should throw after max retries exceeded', async () => {
+
+            const { connectToDatabase } = require('../db');
+            connectToDatabase.mockRejectedValue(new Error('Always fails'));
+
+            await expect(connectWithRetry(2, 10)).rejects.toThrow(
+                'Failed to connect to database after 2 attempts'
+            );
+            expect(connectToDatabase).toHaveBeenCalledTimes(2);
+
+        });
+
     });
-  });
+
 });
