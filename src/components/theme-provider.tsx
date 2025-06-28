@@ -16,61 +16,71 @@ interface ThemeProviderState {
 }
 
 const initialState: ThemeProviderState = {
-  theme: 'system',
-  setTheme: () => null,
+    theme: 'system',
+    setTheme: () => null,
 };
 
 const ThemeProviderContext =
   React.createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
-  children,
-  defaultTheme = 'system',
-  storageKey = 'dnd-tracker-theme',
-  ...props
+    children,
+    defaultTheme = 'system',
+    storageKey = 'dnd-tracker-theme',
+    ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = React.useState<Theme>(
-    () => (localStorage?.getItem(storageKey) as Theme) || defaultTheme
-  );
 
-  React.useEffect(() => {
-    const root = window.document.documentElement;
+    const [theme, setTheme] = React.useState<Theme>(
+        () => (localStorage?.getItem(storageKey) as Theme) || defaultTheme
+    );
 
-    root.classList.remove('light', 'dark');
+    React.useEffect(() => {
 
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-        .matches
-        ? 'dark'
-        : 'light';
+        const root = window.document.documentElement;
 
-      root.classList.add(systemTheme);
-      return;
-    }
+        root.classList.remove('light', 'dark');
 
-    root.classList.add(theme);
-  }, [theme]);
+        if (theme === 'system') {
 
-  const value = {
-    theme,
-    setTheme: (newTheme: Theme) => {
-      localStorage?.setItem(storageKey, newTheme);
-      setTheme(newTheme);
-    },
-  };
+            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
+                .matches
+                ? 'dark'
+                : 'light';
 
-  return (
-    <ThemeProviderContext.Provider {...props} value={value}>
-      {children}
-    </ThemeProviderContext.Provider>
-  );
+            root.classList.add(systemTheme);
+            return;
+
+        }
+
+        root.classList.add(theme);
+
+    }, [theme]);
+
+    const value = {
+        theme,
+        setTheme: (newTheme: Theme) => {
+
+            localStorage?.setItem(storageKey, newTheme);
+            setTheme(newTheme);
+
+        },
+    };
+
+    return (
+        <ThemeProviderContext.Provider {...props} value={value}>
+            {children}
+        </ThemeProviderContext.Provider>
+    );
+
 }
 
 export const useTheme = () => {
-  const context = React.useContext(ThemeProviderContext);
 
-  if (context === undefined)
-    throw new Error('useTheme must be used within a ThemeProvider');
+    const context = React.useContext(ThemeProviderContext);
 
-  return context;
+    if (context === undefined)
+        throw new Error('useTheme must be used within a ThemeProvider');
+
+    return context;
+
 };
