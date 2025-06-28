@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a D&D Encounter Tracker - a Next.js 15 full-stack web application for Dungeon Masters to manage combat encounters efficiently. The project is currently in **active development** with 46 GitHub issues created for a 12-week MVP development timeline. **Issue #17 (UserService implementation) has been completed and merged.**
 
-**Key Features:**
+### Key Features
 
 - Initiative tracking with dexterity tiebreakers
 - HP/AC management with damage and healing tracking
@@ -63,7 +63,7 @@ This project follows a **GitHub Flow** branching strategy optimized for continuo
 
 ### Automated Merge Policy
 
-**PRs are automatically merged when all checks pass:**
+### PRs are automatically merged when all checks pass
 
 - ✅ Build succeeds (`npm run build`)
 - ✅ All tests pass (`npm test`)
@@ -177,7 +177,7 @@ Follow **Conventional Commits** for consistent commit history:
 [optional footer(s)]
 ```
 
-**Types:**
+#### Types
 
 - `feat:` - New feature
 - `fix:` - Bug fix
@@ -187,7 +187,7 @@ Follow **Conventional Commits** for consistent commit history:
 - `test:` - Adding or updating tests
 - `chore:` - Maintenance tasks
 
-**Examples:**
+#### Examples
 
 ```bash
 feat(character): add multiclass support to character creation
@@ -208,7 +208,7 @@ test(character): add comprehensive validation tests
 - ✅ Do not allow force pushes
 - ✅ Do not allow deletions
 
-**Required Status Checks:**
+#### Required Status Checks
 
 - ✅ Build successfully completes (`npm run build`)
 - ✅ All tests pass (`npm test`)
@@ -228,7 +228,7 @@ Use the provided PR template (`.github/pull_request_template.md`) which includes
 
 ### Emergency Procedures
 
-**Hotfix Process:**
+#### Hotfix Process
 
 ```bash
 # For critical production issues
@@ -244,7 +244,7 @@ git push -u origin hotfix/critical-{description}
 gh pr create --title "HOTFIX: Critical login issue" --label "hotfix"
 ```
 
-**Rollback Process:**
+#### Rollback Process
 
 ```bash
 # If needed, revert to previous stable commit
@@ -389,7 +389,7 @@ All comprehensive project documentation is in the `docs/` folder:
 **Status:** All foundation issues COMPLETED and MERGED
 **Completion Date:** June 2025
 
-**Foundation Infrastructure (13 Issues Completed):**
+### Foundation Infrastructure (13 Issues Completed)
 
 #### **Week 1 - Core Project Setup:**
 
@@ -419,14 +419,14 @@ All comprehensive project documentation is in the `docs/` folder:
 
 **Status:** COMPLETED and MERGED (December 2024)
 
-**Achievements:**
+### Achievements
 
 - **Modular Architecture:** Split UserService into focused modules
 - **Comprehensive Testing:** 32 tests with 88%+ coverage
 - **Quality Compliance:** Resolved Codacy complexity warnings
 - **Testing Framework:** Established robust testing patterns
 
-**Technical Implementation:**
+### Technical Implementation
 
 - Full CRUD operations for user management
 - Authentication and password management workflows
@@ -436,7 +436,7 @@ All comprehensive project documentation is in the `docs/` folder:
 
 ## Development Progress Summary
 
-**Completed Foundation Stack:**
+### Completed Foundation Stack
 
 - ✅ Next.js 15 with App Router and TypeScript
 - ✅ Tailwind CSS with custom design system
