@@ -140,7 +140,7 @@
 | 9-10  | Combat Core           | 45h   | Combat system implementation    |
 | 11-12 | Polish & Deploy       | 36h   | Advanced features, optimization |
 
-**Total: 261 hours over 12 weeks**
+### Total: 261 hours over 12 weeks
 
 ---
 
@@ -162,7 +162,7 @@
 
 ### **Development Entry Point**
 
-**Start with Issue #2: "Setup Next.js 15 project with TypeScript"**
+#### Start with Issue #2: "Setup Next.js 15 project with TypeScript"
 
 - No dependencies, can begin immediately
 - Foundation for all subsequent development
@@ -172,7 +172,7 @@
 
 ## 📁 **REPOSITORY STRUCTURE**
 
-```
+```text
 dnd-tracker-next-js/
 ├── README.md                     # Main project overview
 ├── docs/
@@ -229,5 +229,3 @@ dnd-tracker-next-js/
 
 **🎉 This project represents a complete planning foundation ready for
 successful MVP development and delivery!**
-
-_Planning completed by Claude (Anthropic) on June 9, 2025_

@@ -47,7 +47,7 @@ Due to GitHub API limitations, branch protection rules need to be configured man
 - ❌ **Allow force pushes** (for emergency situations only)
 - ❌ **Allow deletions**
 
-4. **Apply Rules**
+1. **Apply Rules**
    - Click "Create" to save the branch protection rule
 
 ## Verification

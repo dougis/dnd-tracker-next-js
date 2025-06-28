@@ -16,7 +16,7 @@
 
 ### 1.2 High-Level System Diagram
 
-```
+```text
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Client App    │    │   Next.js App   │    │   External      │
 │                 │    │                 │    │   Services      │
@@ -40,7 +40,7 @@
 
 ### 2.1 Frontend Components Structure
 
-```
+```text
 src/
 ├── app/                          # Next.js App Router
 │   ├── (auth)/                   # Auth route group
@@ -250,7 +250,7 @@ db.parties.createIndex({ userId: 1 });
 
 #### **Authentication Routes**
 
-```
+```text
 POST   /api/auth/signin           # NextAuth.js sign in
 POST   /api/auth/signout          # NextAuth.js sign out
 GET    /api/auth/session          # Get current session
@@ -258,7 +258,7 @@ GET    /api/auth/session          # Get current session
 
 #### **User Management Routes**
 
-```
+```text
 GET    /api/user/profile          # Get user profile
 PUT    /api/user/profile          # Update user profile
 GET    /api/user/subscription     # Get subscription details
@@ -268,56 +268,65 @@ DELETE /api/user/account          # Delete user account
 
 #### **Party Management Routes**
 
-```
-GET    /api/parties               # List user parties
-POST   /api/parties               # Create new party
-GET    /api/parties/[id]          # Get party details
-PUT    /api/parties/[id]          # Update party
-DELETE /api/parties/[id]          # Delete party
-```
+text
+GET /api/parties # List user parties
+POST /api/parties # Create new party
+GET /api/parties/[id] # Get party details
+PUT /api/parties/[id] # Update party
+DELETE /api/parties/[id] # Delete party
+
+```text
 
 #### **Character Management Routes**
 
 ```
-GET    /api/characters            # List user characters
-POST   /api/characters            # Create new character
-GET    /api/characters/[id]       # Get character details
-PUT    /api/characters/[id]       # Update character
-DELETE /api/characters/[id]       # Delete character
-POST   /api/characters/import     # Import from external sources
-```
+
+GET /api/characters # List user characters
+POST /api/characters # Create new character
+GET /api/characters/[id] # Get character details
+PUT /api/characters/[id] # Update character
+DELETE /api/characters/[id] # Delete character
+POST /api/characters/import # Import from external sources
+
+```text
 
 #### **Encounter Management Routes**
 
 ```
-GET    /api/encounters            # List user encounters
-POST   /api/encounters            # Create new encounter
-GET    /api/encounters/[id]       # Get encounter details
-PUT    /api/encounters/[id]       # Update encounter
-DELETE /api/encounters/[id]       # Delete encounter
-POST   /api/encounters/[id]/start # Start combat
-POST   /api/encounters/[id]/end   # End combat
-```
+
+GET /api/encounters # List user encounters
+POST /api/encounters # Create new encounter
+GET /api/encounters/[id] # Get encounter details
+PUT /api/encounters/[id] # Update encounter
+DELETE /api/encounters/[id] # Delete encounter
+POST /api/encounters/[id]/start # Start combat
+POST /api/encounters/[id]/end # End combat
+
+```text
 
 #### **Combat Management Routes**
 
 ```
-POST   /api/combat/[id]/initiative    # Roll/set initiative
-POST   /api/combat/[id]/next-turn     # Advance to next turn
-POST   /api/combat/[id]/damage        # Apply damage/healing
-POST   /api/combat/[id]/status        # Add/remove status effects
-POST   /api/combat/[id]/legendary     # Use legendary action
-POST   /api/combat/[id]/lair          # Trigger lair action
-GET    /api/combat/[id]/log           # Get combat log
-```
+
+POST /api/combat/[id]/initiative # Roll/set initiative
+POST /api/combat/[id]/next-turn # Advance to next turn
+POST /api/combat/[id]/damage # Apply damage/healing
+POST /api/combat/[id]/status # Add/remove status effects
+POST /api/combat/[id]/legendary # Use legendary action
+POST /api/combat/[id]/lair # Trigger lair action
+GET /api/combat/[id]/log # Get combat log
+
+```text
 
 #### **Payment Routes**
 
 ```
-POST   /api/stripe/create-session     # Create checkout session
-POST   /api/stripe/portal-session     # Customer portal session
-POST   /api/webhooks/stripe           # Stripe webhook handler
-```
+
+POST /api/stripe/create-session # Create checkout session
+POST /api/stripe/portal-session # Customer portal session
+POST /api/webhooks/stripe # Stripe webhook handler
+
+````text
 
 ### 4.2 Real-time Updates
 
@@ -334,7 +343,7 @@ interface CombatEvents {
   };
   'lair-action-triggered': { encounterId: string; description: string };
 }
-```
+````
 
 ## 5. Authentication & Authorization
 

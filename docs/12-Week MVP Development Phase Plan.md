@@ -358,7 +358,7 @@
 
 Each issue should be updated with:
 
-```
+```text
 Phase: Week X - [Theme]
 Priority: P1/P2
 Dependencies: [Issue numbers]

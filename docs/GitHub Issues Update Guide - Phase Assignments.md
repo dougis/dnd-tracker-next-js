@@ -7,7 +7,7 @@
 
 For each issue below, **add this section to the issue description:**
 
-```
+```text
 ---
 **📅 PHASE ASSIGNMENT:**
 - **Week:** [Week Number] - [Theme]
