@@ -129,7 +129,7 @@ describe('Middleware Route Protection', () => {
           url: `http://localhost:3000${pathname}`,
         } as NextRequest;
 
-        const result = await middleware(request);
+        const _result = await middleware(request);
 
         expect(result).toBeDefined();
         expect(getToken).not.toHaveBeenCalled();
@@ -154,7 +154,7 @@ describe('Middleware Route Protection', () => {
       (getToken as jest.Mock).mockResolvedValue(null);
       mockRedirect.mockReturnValue({ type: 'redirect' });
 
-      const result = await middleware(request);
+      const _result = await middleware(request);
 
       expect(getToken).toHaveBeenCalledWith({
         req: request,
@@ -222,7 +222,7 @@ describe('Middleware Route Protection', () => {
       (getToken as jest.Mock).mockResolvedValue(mockToken);
       mockNext.mockReturnValue({ type: 'next' });
 
-      const result = await middleware(request);
+      const _result = await middleware(request);
 
       expect(getToken).toHaveBeenCalledWith({
         req: request,
@@ -383,7 +383,7 @@ describe('Middleware Route Protection', () => {
         (getToken as jest.Mock).mockResolvedValue(token);
         mockNext.mockReturnValue({ type: 'next' });
         
-        const result = await middleware(request);
+        const _result = await middleware(request);
 
         expect(mockNext).toHaveBeenCalled();
         expect(mockRedirect).not.toHaveBeenCalled();
