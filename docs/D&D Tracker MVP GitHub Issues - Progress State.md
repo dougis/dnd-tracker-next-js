@@ -186,7 +186,7 @@ completed!
 
 The following issues are ready to begin development immediately:
 
-**Week 1-2: Project Setup & Authentication**
+#### Week 1-2: Project Setup & Authentication
 
 - Issues #2-4: Project setup and configuration
 - Issues #5-7: UI foundation (Tailwind, shadcn/ui, design system)
@@ -194,14 +194,14 @@ The following issues are ready to begin development immediately:
 - Issues #10-11: Authentication (NextAuth.js, user registration)
 - Issues #45-46: Testing and deployment setup
 
-**Week 3-4: Core Data Layer & Components**
+#### Week 3-4: Core Data Layer & Components
 
 - Issues #14, #17, #20: User model and service layer
 - Issues #40-41: Application layout and landing page
 - Issues #43: Form component library
 - Issue #21: Session middleware
 
-**Week 5-6: Character & Encounter Foundation**
+#### Week 5-6: Character & Encounter Foundation
 
 - Issues #15, #18: Character model and service layer
 - Issues #16, #19: Encounter model and service layer

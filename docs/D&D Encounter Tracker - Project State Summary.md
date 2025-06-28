@@ -48,7 +48,7 @@ advanced combat features.
 
 ### 2. Repository Structure ✅
 
-```
+```text
 dougis/dnd-tracker-next-js/
 ├── docs/
 │   ├── Product Requirements Document.md          # v2.3 - Business requirements

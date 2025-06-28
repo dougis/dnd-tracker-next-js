@@ -169,7 +169,7 @@ This project follows a **GitHub Flow** branching strategy optimized for continuo
 
 Follow **Conventional Commits** for consistent commit history:
 
-```
+```text
 <type>[optional scope]: <description>
 
 [optional body]
@@ -256,7 +256,7 @@ git push origin main
 
 ### Project Structure (to be created during development)
 
-```
+```text
 src/
 ├── app/                    # Next.js App Router
 │   ├── (auth)/            # Auth route group (login, register)

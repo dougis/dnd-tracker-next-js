@@ -13,7 +13,7 @@ This document outlines the technical implementation approach for the D&D Encount
 
 ### 2.1 High-Level Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                    Vercel Edge Network                      │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────┐ │
@@ -178,7 +178,7 @@ db.combatlogs.createIndex({ createdAt: 1 }, { expireAfterSeconds: 31536000 }); /
 
 ### 4.1 API Route Structure
 
-```
+```text
 /api/
 ├── auth/
 │   ├── [...nextauth]/route.ts          # NextAuth.js configuration
@@ -249,7 +249,7 @@ db.combatlogs.createIndex({ createdAt: 1 }, { expireAfterSeconds: 31536000 }); /
 
 ### 5.1 App Router Structure
 
-```
+```text
 app/
 ├── (auth)/
 │   ├── login/page.tsx
@@ -505,7 +505,7 @@ interface CombatState {
 
 ### 9.1 Testing Pyramid
 
-```
+```text
 ┌─────────────────────────────────┐
 │         E2E Tests               │  ← Playwright (Critical paths)
 │       (5% of tests)             │
