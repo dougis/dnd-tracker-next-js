@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { AppLayout } from '../AppLayout';
+import { setupLayoutTest, mockWindowInnerWidth } from './test-utils';
 
 // Mock the child components
 jest.mock('../Sidebar', () => ({
@@ -29,31 +30,17 @@ jest.mock('@/components/theme-toggle', () => ({
   ThemeToggle: () => <div data-testid="theme-toggle" />,
 }));
 
-// Mock window.innerWidth for responsive testing
-const mockInnerWidth = (width: number) => {
-  Object.defineProperty(window, 'innerWidth', {
-    writable: true,
-    configurable: true,
-    value: width,
-  });
-};
-
 describe('AppLayout', () => {
-  const originalInnerWidth = window.innerWidth;
+  const { cleanup } = setupLayoutTest();
   const mockChildren = <div data-testid="main-content">Test Content</div>;
 
   beforeEach(() => {
     // Reset window.innerWidth to desktop size
-    mockInnerWidth(1024);
+    mockWindowInnerWidth(1024);
   });
 
   afterEach(() => {
-    // Restore original innerWidth
-    Object.defineProperty(window, 'innerWidth', {
-      writable: true,
-      configurable: true,
-      value: originalInnerWidth,
-    });
+    cleanup();
   });
 
   describe('Component Rendering', () => {
@@ -92,14 +79,14 @@ describe('AppLayout', () => {
 
   describe('Desktop Layout Behavior', () => {
     test('shows sidebar on desktop (width >= 1024px)', () => {
-      mockInnerWidth(1024);
+      mockWindowInnerWidth(1024);
       render(<AppLayout>{mockChildren}</AppLayout>);
 
       expect(screen.getByTestId('sidebar')).toHaveAttribute('data-open', 'true');
     });
 
     test('hides mobile menu button on desktop', () => {
-      mockInnerWidth(1024);
+      mockWindowInnerWidth(1024);
       render(<AppLayout>{mockChildren}</AppLayout>);
 
       const mobileMenuButton = screen.queryByLabelText('Open menu');
@@ -107,7 +94,7 @@ describe('AppLayout', () => {
     });
 
     test('mobile menu is closed by default on desktop', () => {
-      mockInnerWidth(1024);
+      mockWindowInnerWidth(1024);
       render(<AppLayout>{mockChildren}</AppLayout>);
 
       expect(screen.getByTestId('mobile-menu')).toHaveAttribute('data-open', 'false');
@@ -116,7 +103,7 @@ describe('AppLayout', () => {
 
   describe('Mobile Layout Behavior', () => {
     test('hides sidebar on mobile (width < 1024px)', () => {
-      mockInnerWidth(768);
+      mockWindowInnerWidth(768);
 
       act(() => {
         render(<AppLayout>{mockChildren}</AppLayout>);
@@ -128,7 +115,7 @@ describe('AppLayout', () => {
     });
 
     test('shows mobile menu button on mobile', () => {
-      mockInnerWidth(768);
+      mockWindowInnerWidth(768);
 
       act(() => {
         render(<AppLayout>{mockChildren}</AppLayout>);
@@ -141,7 +128,7 @@ describe('AppLayout', () => {
     });
 
     test('mobile menu button opens mobile menu when clicked', () => {
-      mockInnerWidth(768);
+      mockWindowInnerWidth(768);
 
       act(() => {
         render(<AppLayout>{mockChildren}</AppLayout>);
@@ -158,7 +145,7 @@ describe('AppLayout', () => {
     });
 
     test('mobile menu can be closed', () => {
-      mockInnerWidth(768);
+      mockWindowInnerWidth(768);
 
       act(() => {
         render(<AppLayout>{mockChildren}</AppLayout>);
@@ -183,7 +170,7 @@ describe('AppLayout', () => {
 
   describe('Responsive Behavior', () => {
     test('transitions from mobile to desktop layout correctly', () => {
-      mockInnerWidth(768);
+      mockWindowInnerWidth(768);
 
       act(() => {
         render(<AppLayout>{mockChildren}</AppLayout>);
@@ -196,7 +183,7 @@ describe('AppLayout', () => {
 
       // Resize to desktop
       act(() => {
-        mockInnerWidth(1024);
+        mockWindowInnerWidth(1024);
         fireEvent(window, new Event('resize'));
       });
 
@@ -206,7 +193,7 @@ describe('AppLayout', () => {
     });
 
     test('auto-closes mobile menu when resizing to desktop', () => {
-      mockInnerWidth(768);
+      mockWindowInnerWidth(768);
 
       act(() => {
         render(<AppLayout>{mockChildren}</AppLayout>);
@@ -223,7 +210,7 @@ describe('AppLayout', () => {
 
       // Resize to desktop
       act(() => {
-        mockInnerWidth(1024);
+        mockWindowInnerWidth(1024);
         fireEvent(window, new Event('resize'));
       });
 
@@ -275,7 +262,7 @@ describe('AppLayout', () => {
 
   describe('Accessibility Features', () => {
     test('mobile menu button has proper aria-label', () => {
-      mockInnerWidth(768);
+      mockWindowInnerWidth(768);
 
       act(() => {
         render(<AppLayout>{mockChildren}</AppLayout>);
@@ -304,7 +291,7 @@ describe('AppLayout', () => {
 
   describe('Mobile Menu Button Icon', () => {
     test('mobile menu button contains hamburger icon', () => {
-      mockInnerWidth(768);
+      mockWindowInnerWidth(768);
 
       act(() => {
         render(<AppLayout>{mockChildren}</AppLayout>);
@@ -322,7 +309,7 @@ describe('AppLayout', () => {
 
   describe('Layout State Management', () => {
     test('maintains separate state for sidebar and mobile menu visibility', () => {
-      mockInnerWidth(768);
+      mockWindowInnerWidth(768);
 
       act(() => {
         render(<AppLayout>{mockChildren}</AppLayout>);

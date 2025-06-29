@@ -2,6 +2,9 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { usePathname } from 'next/navigation';
 import { Sidebar } from '../Sidebar';
+import { setupLayoutTest, mockUsePathname } from './test-utils';
+import { assertUserProfile, assertActiveNavigation, assertInactiveNavigation, assertSvgIcon } from './shared-assertions';
+import { testNavigationLinks, NAVIGATION_ITEMS } from './navigation-test-helpers';
 
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
@@ -24,15 +27,15 @@ jest.mock('next/link', () => {
   };
 });
 
-const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>;
-
 describe('Sidebar', () => {
+  const { cleanup } = setupLayoutTest();
+
   beforeEach(() => {
     mockUsePathname.mockReturnValue('/');
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    cleanup();
   });
 
   describe('Visibility Behavior', () => {

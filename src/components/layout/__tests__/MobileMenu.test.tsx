@@ -2,6 +2,9 @@ import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { usePathname } from 'next/navigation';
 import { MobileMenu } from '../MobileMenu';
+import { setupLayoutTest, mockUsePathname } from './test-utils';
+import { assertComponentVisibility, assertUserProfile, assertActiveNavigation, assertInactiveNavigation, assertSvgIcon } from './shared-assertions';
+import { testNavigationLinks, testActiveNavigationState, NAVIGATION_ITEMS } from './navigation-test-helpers';
 
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
@@ -26,20 +29,16 @@ jest.mock('next/link', () => {
   };
 });
 
-const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>;
-
 describe('MobileMenu', () => {
   const mockOnClose = jest.fn();
-  const originalBodyStyle = document.body.style.overflow;
+  const { cleanup } = setupLayoutTest();
 
   beforeEach(() => {
     mockUsePathname.mockReturnValue('/');
-    document.body.style.overflow = originalBodyStyle;
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    document.body.style.overflow = originalBodyStyle;
+    cleanup();
   });
 
   describe('Visibility Behavior', () => {
@@ -233,35 +232,22 @@ describe('MobileMenu', () => {
   describe('Navigation Items', () => {
     test('renders all navigation items', () => {
       render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
-
-      expect(screen.getByText('Dashboard')).toBeInTheDocument();
-      expect(screen.getByText('Characters')).toBeInTheDocument();
-      expect(screen.getByText('Parties')).toBeInTheDocument();
-      expect(screen.getByText('Encounters')).toBeInTheDocument();
-      expect(screen.getByText('Combat')).toBeInTheDocument();
-      expect(screen.getByText('Settings')).toBeInTheDocument();
+      
+      NAVIGATION_ITEMS.forEach(item => {
+        expect(screen.getByText(item.text)).toBeInTheDocument();
+      });
     });
 
     test('navigation items have correct href attributes', () => {
       render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
-
-      expect(screen.getByText('Dashboard').closest('a')).toHaveAttribute('href', '/');
-      expect(screen.getByText('Characters').closest('a')).toHaveAttribute('href', '/characters');
-      expect(screen.getByText('Parties').closest('a')).toHaveAttribute('href', '/parties');
-      expect(screen.getByText('Encounters').closest('a')).toHaveAttribute('href', '/encounters');
-      expect(screen.getByText('Combat').closest('a')).toHaveAttribute('href', '/combat');
-      expect(screen.getByText('Settings').closest('a')).toHaveAttribute('href', '/settings');
+      testNavigationLinks();
     });
 
     test('navigation items have icons', () => {
       render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
 
       const dashboardLink = screen.getByText('Dashboard').closest('a');
-      const icon = dashboardLink?.querySelector('svg');
-
-      expect(icon).toBeInTheDocument();
-      expect(icon).toHaveClass('h-5', 'w-5');
-      expect(icon).toHaveAttribute('viewBox', '0 0 24 24');
+      assertSvgIcon(dashboardLink);
     });
 
     test('navigation links call onClose when clicked', () => {
@@ -278,48 +264,35 @@ describe('MobileMenu', () => {
     test('highlights active navigation item based on current pathname', () => {
       mockUsePathname.mockReturnValue('/characters');
       render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
-
-      const charactersLink = screen.getByText('Characters').closest('a');
-      expect(charactersLink).toHaveClass('bg-primary', 'text-primary-foreground');
+      assertActiveNavigation('Characters');
     });
 
     test('inactive navigation items have muted styling', () => {
       mockUsePathname.mockReturnValue('/characters');
       render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
-
-      const dashboardLink = screen.getByText('Dashboard').closest('a');
-      expect(dashboardLink).toHaveClass('text-muted-foreground');
-      expect(dashboardLink).not.toHaveClass('bg-primary');
+      assertInactiveNavigation('Dashboard');
     });
 
     test('active state works for root path', () => {
       mockUsePathname.mockReturnValue('/');
       render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
-
-      const dashboardLink = screen.getByText('Dashboard').closest('a');
-      expect(dashboardLink).toHaveClass('bg-primary', 'text-primary-foreground');
+      assertActiveNavigation('Dashboard');
     });
 
     test('only one navigation item is active at a time', () => {
       mockUsePathname.mockReturnValue('/combat');
       render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
-
-      const combatLink = screen.getByText('Combat').closest('a');
-      const dashboardLink = screen.getByText('Dashboard').closest('a');
-      const charactersLink = screen.getByText('Characters').closest('a');
-
-      expect(combatLink).toHaveClass('bg-primary', 'text-primary-foreground');
-      expect(dashboardLink).not.toHaveClass('bg-primary');
-      expect(charactersLink).not.toHaveClass('bg-primary');
+      
+      assertActiveNavigation('Combat');
+      assertInactiveNavigation('Dashboard');
+      assertInactiveNavigation('Characters');
     });
   });
 
   describe('User Profile Footer', () => {
     test('renders user profile section', () => {
       render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
-
-      expect(screen.getByText('Demo User')).toBeInTheDocument();
-      expect(screen.getByText('demo@example.com')).toBeInTheDocument();
+      assertUserProfile();
     });
 
     test('user profile has correct styling', () => {

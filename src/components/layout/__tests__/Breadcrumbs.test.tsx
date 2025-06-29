@@ -2,6 +2,8 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { usePathname } from 'next/navigation';
 import { Breadcrumbs } from '../Breadcrumbs';
+import { setupLayoutTest, mockUsePathname } from './test-utils';
+import { assertSvgIcon } from './shared-assertions';
 
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
@@ -24,11 +26,11 @@ jest.mock('next/link', () => {
   };
 });
 
-const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>;
-
 describe('Breadcrumbs', () => {
+  const { cleanup } = setupLayoutTest();
+
   afterEach(() => {
-    jest.clearAllMocks();
+    cleanup();
   });
 
   describe('Root Path Behavior', () => {
