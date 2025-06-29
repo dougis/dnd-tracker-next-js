@@ -67,6 +67,54 @@ export class UserServiceProfile {
   }
 
   /**
+   * Find user by ID for profile operations
+   */
+  private static async findUserForProfileUpdate(userId: string): Promise<ServiceResult<any>> {
+    const user = await User.findById(userId);
+    if (!user) {
+      return {
+        success: false,
+        error: {
+          message: `User not found: ${userId}`,
+          code: 'USER_NOT_FOUND',
+          statusCode: 404,
+        },
+      };
+    }
+    return UserServiceResponseHelpers.createSuccessResponse(user);
+  }
+
+  /**
+   * Handle profile update conflict checking
+   */
+  private static async handleProfileUpdateConflicts(
+    user: any,
+    validatedData: UserProfileUpdate
+  ): Promise<ServiceResult<void> | null> {
+    const { emailToCheck, usernameToCheck } = UserServiceValidation.prepareConflictCheckParams(
+      user,
+      validatedData
+    );
+
+    if (!emailToCheck && !usernameToCheck) {
+      return null; // No conflicts to check
+    }
+
+    try {
+      if (user._id) {
+        const userIdString = UserServiceValidation.extractUserIdString(user);
+        await checkProfileUpdateConflicts(userIdString, emailToCheck, usernameToCheck);
+      }
+      return null; // No conflicts found
+    } catch (conflictError) {
+      if (conflictError instanceof UserAlreadyExistsError) {
+        return UserServiceResponseHelpers.createErrorResponse(conflictError);
+      }
+      throw conflictError;
+    }
+  }
+
+  /**
    * Update user profile
    */
   static async updateUserProfile(
@@ -78,37 +126,16 @@ export class UserServiceProfile {
       const validatedData = UserServiceValidation.validateAndParseProfileUpdate(updateData);
 
       // Find user
-      const user = await User.findById(userId);
-      if (!user) {
-        return {
-          success: false,
-          error: {
-            message: `User not found: ${userId}`,
-            code: 'USER_NOT_FOUND',
-            statusCode: 404,
-          },
-        };
+      const userResult = await this.findUserForProfileUpdate(userId);
+      if (!userResult.success) {
+        return userResult;
       }
+      const user = userResult.data;
 
-      // Check for conflicts if email or username is being updated
-      const { emailToCheck, usernameToCheck } = UserServiceValidation.prepareConflictCheckParams(
-        user,
-        validatedData
-      );
-
-      if (emailToCheck || usernameToCheck) {
-        try {
-          // Only check conflicts if the user object has the _id property
-          if (user._id) {
-            const userIdString = UserServiceValidation.extractUserIdString(user);
-            await checkProfileUpdateConflicts(userIdString, emailToCheck, usernameToCheck);
-          }
-        } catch (conflictError) {
-          if (conflictError instanceof UserAlreadyExistsError) {
-            return UserServiceResponseHelpers.createErrorResponse(conflictError);
-          }
-          throw conflictError;
-        }
+      // Check for conflicts
+      const conflictResult = await this.handleProfileUpdateConflicts(user, validatedData);
+      if (conflictResult) {
+        return conflictResult;
       }
 
       // Update user fields and save
