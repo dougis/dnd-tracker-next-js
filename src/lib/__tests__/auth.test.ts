@@ -36,6 +36,28 @@ afterAll(() => {
 
 });
 
+// Helper functions to reduce code duplication
+const transformUserForSession = (mockUser: any) => ({
+    id: mockUser._id?.toString() || '',
+    email: mockUser.email,
+    name: `${mockUser.firstName} ${mockUser.lastName}`,
+    subscriptionTier: mockUser.subscriptionTier,
+});
+
+const updateSessionWithUser = (session: any, user: any) => {
+
+    const updatedSession = { ...session };
+    if (updatedSession?.user && user) {
+
+        (updatedSession.user as any).id = user.id;
+        (updatedSession.user as any).subscriptionTier =
+            (user as any).subscriptionTier || 'free';
+
+    }
+    return updatedSession;
+
+};
+
 describe('Authentication System', () => {
 
     beforeEach(() => {
@@ -209,13 +231,7 @@ describe('Authentication System', () => {
                 subscriptionTier: 'premium',
             };
 
-            // Test the user object transformation logic that would happen in authorize
-            const transformedUser = {
-                id: mockUser._id?.toString() || '',
-                email: mockUser.email,
-                name: `${mockUser.firstName} ${mockUser.lastName}`,
-                subscriptionTier: mockUser.subscriptionTier,
-            };
+            const transformedUser = transformUserForSession(mockUser);
 
             expect(transformedUser).toEqual({
                 id: 'user123',
@@ -235,12 +251,7 @@ describe('Authentication System', () => {
                 subscriptionTier: 'free',
             };
 
-            const transformedUser = {
-                id: (mockUser as any)._id?.toString() || '',
-                email: mockUser.email,
-                name: `${mockUser.firstName} ${mockUser.lastName}`,
-                subscriptionTier: mockUser.subscriptionTier,
-            };
+            const transformedUser = transformUserForSession(mockUser);
 
             expect(transformedUser.id).toBe('');
             expect(transformedUser.name).toBe('John Doe');
@@ -265,15 +276,7 @@ describe('Authentication System', () => {
                 subscriptionTier: 'premium',
             };
 
-            // Test session callback logic
-            const updatedSession = { ...mockSession };
-            if (updatedSession?.user && mockUser) {
-
-                (updatedSession.user as any).id = mockUser.id;
-                (updatedSession.user as any).subscriptionTier =
-                    (mockUser as any).subscriptionTier || 'free';
-
-            }
+            const updatedSession = updateSessionWithUser(mockSession, mockUser);
 
             expect((updatedSession.user as any).id).toBe('user123');
             expect((updatedSession.user as any).subscriptionTier).toBe('premium');
@@ -291,14 +294,7 @@ describe('Authentication System', () => {
 
             const mockUser = { id: 'user123' };
 
-            const updatedSession = { ...mockSession };
-            if (updatedSession?.user && mockUser) {
-
-                (updatedSession.user as any).id = mockUser.id;
-                (updatedSession.user as any).subscriptionTier =
-                    (mockUser as any).subscriptionTier || 'free';
-
-            }
+            const updatedSession = updateSessionWithUser(mockSession, mockUser);
 
             expect((updatedSession.user as any).subscriptionTier).toBe('free');
 
