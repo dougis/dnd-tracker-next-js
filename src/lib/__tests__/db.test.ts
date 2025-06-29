@@ -7,199 +7,169 @@
 
 // Mock mongoose
 jest.mock('mongoose', () => ({
-    connect: jest.fn(),
-    connection: {
-        close: jest.fn(),
-        on: jest.fn(),
-        readyState: 1,
-    },
-    connections: [{ readyState: 1 }],
+  connect: jest.fn(),
+  connection: {
+    close: jest.fn(),
+    on: jest.fn(),
+    readyState: 1,
+  },
+  connections: [{ readyState: 1 }],
 }));
 
 // Import MongoDB setup utilities to ensure proper test environment
 jest.mock('./mongodb-setup', () => ({
-    setupTestMongoDB: jest.fn().mockResolvedValue({
-        uri: 'mongodb://localhost:27017',
-        dbName: 'test-db',
-    }),
-    validateMongoDBEnvironment: jest.fn(),
+  setupTestMongoDB: jest.fn().mockResolvedValue({
+    uri: 'mongodb://localhost:27017',
+    dbName: 'test-db',
+  }),
+  validateMongoDBEnvironment: jest.fn(),
 }));
 
 // Mock environment variables
 const originalEnv = process.env;
 
 describe('Database Connection', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.resetModules(); // Reset module cache to ensure fresh state
 
-    beforeEach(() => {
+    // Setup for both CI and local environments
+    process.env = {
+      ...originalEnv,
+      MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017',
+      MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || 'test-db',
+    };
+  });
 
-        jest.clearAllMocks();
-        jest.resetModules(); // Reset module cache to ensure fresh state
+  afterEach(() => {
+    process.env = originalEnv;
+  });
 
-        // Setup for both CI and local environments
-        process.env = {
-            ...originalEnv,
-            MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017',
-            MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || 'test-db',
-        };
+  describe('connectToDatabase', () => {
+    it('should connect to MongoDB successfully', async () => {
+      const mongoose = require('mongoose');
 
+      // Setup mongoose mock properly
+      mongoose.connections = [{ readyState: 1 }];
+      mongoose.connect.mockResolvedValue({
+        connections: [{ readyState: 1 }],
+      });
+
+      const { connectToDatabase } = require('../db');
+      await connectToDatabase();
+
+      // Use environment variables instead of hardcoded values
+      expect(mongoose.connect).toHaveBeenCalledWith(
+        process.env.MONGODB_URI,
+        expect.objectContaining({
+          dbName: process.env.MONGODB_DB_NAME,
+          bufferCommands: false,
+          maxPoolSize: 10,
+          serverSelectionTimeoutMS: 5000,
+          socketTimeoutMS: 45000,
+          family: 4,
+        })
+      );
     });
 
-    afterEach(() => {
+    it('should throw error when MONGODB_URI is not defined', async () => {
+      delete process.env.MONGODB_URI;
+      const { connectToDatabase } = require('../db');
 
-        process.env = originalEnv;
-
+      await expect(connectToDatabase()).rejects.toThrow(
+        'MONGODB_URI environment variable is not defined'
+      );
     });
 
-    describe('connectToDatabase', () => {
+    it('should throw error when MONGODB_DB_NAME is not defined', async () => {
+      delete process.env.MONGODB_DB_NAME;
+      const { connectToDatabase } = require('../db');
 
-        it('should connect to MongoDB successfully', async () => {
-
-            const mongoose = require('mongoose');
-
-            // Setup mongoose mock properly
-            mongoose.connections = [{ readyState: 1 }];
-            mongoose.connect.mockResolvedValue({
-                connections: [{ readyState: 1 }],
-            });
-
-            const { connectToDatabase } = require('../db');
-            await connectToDatabase();
-
-            // Use environment variables instead of hardcoded values
-            expect(mongoose.connect).toHaveBeenCalledWith(
-                process.env.MONGODB_URI,
-                expect.objectContaining({
-                    dbName: process.env.MONGODB_DB_NAME,
-                    bufferCommands: false,
-                    maxPoolSize: 10,
-                    serverSelectionTimeoutMS: 5000,
-                    socketTimeoutMS: 45000,
-                    family: 4,
-                })
-            );
-
-        });
-
-        it('should throw error when MONGODB_URI is not defined', async () => {
-
-            delete process.env.MONGODB_URI;
-            const { connectToDatabase } = require('../db');
-
-            await expect(connectToDatabase()).rejects.toThrow(
-                'MONGODB_URI environment variable is not defined'
-            );
-
-        });
-
-        it('should throw error when MONGODB_DB_NAME is not defined', async () => {
-
-            delete process.env.MONGODB_DB_NAME;
-            const { connectToDatabase } = require('../db');
-
-            await expect(connectToDatabase()).rejects.toThrow(
-                'MONGODB_DB_NAME environment variable is not defined'
-            );
-
-        });
-
-        it('should handle connection errors', async () => {
-
-            const mongoose = require('mongoose');
-            const connectionError = new Error('Connection failed');
-            mongoose.connect.mockRejectedValue(connectionError);
-            const { connectToDatabase } = require('../db');
-
-            await expect(connectToDatabase()).rejects.toThrow('Connection failed');
-
-        });
-
-        it('should not reconnect if already connected', async () => {
-
-            const mongoose = require('mongoose');
-
-            // Setup mongoose mock properly
-            mongoose.connections = [{ readyState: 1 }];
-            mongoose.connect.mockResolvedValue({
-                connections: [{ readyState: 1 }],
-            });
-
-            const { connectToDatabase } = require('../db');
-            await connectToDatabase();
-
-            // Reset mock calls
-            mongoose.connect.mockClear();
-
-            // Second call should not trigger connect
-            await connectToDatabase();
-
-            expect(mongoose.connect).not.toHaveBeenCalled();
-
-        });
-
+      await expect(connectToDatabase()).rejects.toThrow(
+        'MONGODB_DB_NAME environment variable is not defined'
+      );
     });
 
-    describe('disconnectFromDatabase', () => {
+    it('should handle connection errors', async () => {
+      const mongoose = require('mongoose');
+      const connectionError = new Error('Connection failed');
+      mongoose.connect.mockRejectedValue(connectionError);
+      const { connectToDatabase } = require('../db');
 
-        it('should disconnect from MongoDB', async () => {
-
-            const mongoose = require('mongoose');
-
-            // Setup mongoose mock properly
-            mongoose.connections = [{ readyState: 1 }];
-            mongoose.connect.mockResolvedValue({
-                connections: [{ readyState: 1 }],
-            });
-
-            const { connectToDatabase, disconnectFromDatabase } = require('../db');
-
-            // Simulate connected state
-            await connectToDatabase();
-
-            await disconnectFromDatabase();
-
-            expect(mongoose.connection.close).toHaveBeenCalled();
-
-        });
-
-        it('should handle disconnection when not connected', async () => {
-
-            const mongoose = require('mongoose');
-
-            const { disconnectFromDatabase } = require('../db');
-            await disconnectFromDatabase();
-
-            expect(mongoose.connection.close).not.toHaveBeenCalled();
-
-        });
-
+      await expect(connectToDatabase()).rejects.toThrow('Connection failed');
     });
 
-    describe('getConnectionStatus', () => {
+    it('should not reconnect if already connected', async () => {
+      const mongoose = require('mongoose');
 
-        it('should return false when not connected', () => {
+      // Setup mongoose mock properly
+      mongoose.connections = [{ readyState: 1 }];
+      mongoose.connect.mockResolvedValue({
+        connections: [{ readyState: 1 }],
+      });
 
-            const { getConnectionStatus } = require('../db');
-            expect(getConnectionStatus()).toBe(false);
+      const { connectToDatabase } = require('../db');
+      await connectToDatabase();
 
-        });
+      // Reset mock calls
+      mongoose.connect.mockClear();
 
-        it('should return true when connected', async () => {
+      // Second call should not trigger connect
+      await connectToDatabase();
 
-            const mongoose = require('mongoose');
+      expect(mongoose.connect).not.toHaveBeenCalled();
+    });
+  });
 
-            // Setup mongoose mock properly
-            mongoose.connections = [{ readyState: 1 }];
-            mongoose.connect.mockResolvedValue({
-                connections: [{ readyState: 1 }],
-            });
+  describe('disconnectFromDatabase', () => {
+    it('should disconnect from MongoDB', async () => {
+      const mongoose = require('mongoose');
 
-            const { connectToDatabase, getConnectionStatus } = require('../db');
-            await connectToDatabase();
+      // Setup mongoose mock properly
+      mongoose.connections = [{ readyState: 1 }];
+      mongoose.connect.mockResolvedValue({
+        connections: [{ readyState: 1 }],
+      });
 
-            expect(getConnectionStatus()).toBe(true);
+      const { connectToDatabase, disconnectFromDatabase } = require('../db');
 
-        });
+      // Simulate connected state
+      await connectToDatabase();
 
+      await disconnectFromDatabase();
+
+      expect(mongoose.connection.close).toHaveBeenCalled();
     });
 
+    it('should handle disconnection when not connected', async () => {
+      const mongoose = require('mongoose');
+
+      const { disconnectFromDatabase } = require('../db');
+      await disconnectFromDatabase();
+
+      expect(mongoose.connection.close).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getConnectionStatus', () => {
+    it('should return false when not connected', () => {
+      const { getConnectionStatus } = require('../db');
+      expect(getConnectionStatus()).toBe(false);
+    });
+
+    it('should return true when connected', async () => {
+      const mongoose = require('mongoose');
+
+      // Setup mongoose mock properly
+      mongoose.connections = [{ readyState: 1 }];
+      mongoose.connect.mockResolvedValue({
+        connections: [{ readyState: 1 }],
+      });
+
+      const { connectToDatabase, getConnectionStatus } = require('../db');
+      await connectToDatabase();
+
+      expect(getConnectionStatus()).toBe(true);
+    });
+  });
 });

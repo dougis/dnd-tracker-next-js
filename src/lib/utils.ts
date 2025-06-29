@@ -5,9 +5,7 @@ import { twMerge } from 'tailwind-merge';
  * Combines multiple class names using clsx and tailwind-merge
  */
 export function cn(...inputs: ClassValue[]) {
-
-    return twMerge(clsx(inputs));
-
+  return twMerge(clsx(inputs));
 }
 
 /**
@@ -16,14 +14,10 @@ export function cn(...inputs: ClassValue[]) {
  * @returns Ability modifier (-5 to +10)
  */
 export function calculateAbilityModifier(score: number): number {
-
-    if (score < 1 || score > 30) {
-
-        throw new Error('Ability score must be between 1 and 30');
-
-    }
-    return Math.floor((score - 10) / 2);
-
+  if (score < 1 || score > 30) {
+    throw new Error('Ability score must be between 1 and 30');
+  }
+  return Math.floor((score - 10) / 2);
 }
 
 /**
@@ -33,13 +27,11 @@ export function calculateAbilityModifier(score: number): number {
  * @returns Total initiative modifier
  */
 export function calculateInitiativeModifier(
-    dexterityScore: number,
-    bonus: number = 0
+  dexterityScore: number,
+  bonus: number = 0
 ): number {
-
-    const dexMod = calculateAbilityModifier(dexterityScore);
-    return dexMod + bonus;
-
+  const dexMod = calculateAbilityModifier(dexterityScore);
+  return dexMod + bonus;
 }
 
 /**
@@ -48,11 +40,9 @@ export function calculateInitiativeModifier(
  * @returns Result of the roll (1-20 + modifier)
  */
 export function rollD20(modifier: number = 0): number {
-
-    // Generate random number between 1-20
-    const roll = Math.floor(Math.random() * 20) + 1;
-    return roll + modifier;
-
+  // Generate random number between 1-20
+  const roll = Math.floor(Math.random() * 20) + 1;
+  return roll + modifier;
 }
 
 /**
@@ -61,11 +51,9 @@ export function rollD20(modifier: number = 0): number {
  * @returns True if email is valid, false otherwise
  */
 export function isValidEmail(email: string): boolean {
+  if (!email) return false;
 
-    if (!email) return false;
-
-    // Basic email validation regex
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-
+  // Basic email validation regex
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }

@@ -8,10 +8,10 @@ export async function middleware(request: NextRequest) {
 
     // Define protected routes
     const isProtectedRoute =
-    pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/characters') ||
-    pathname.startsWith('/encounters') ||
-    pathname.startsWith('/combat');
+        pathname.startsWith('/dashboard') ||
+        pathname.startsWith('/characters') ||
+        pathname.startsWith('/encounters') ||
+        pathname.startsWith('/combat');
 
     // If it's not a protected route, continue
     if (!isProtectedRoute) {
