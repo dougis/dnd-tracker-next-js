@@ -1,5 +1,5 @@
 {
-  "extends": ["next/core-web-vitals"],
+  "extends": ["next/core-web-vitals", "prettier"],
   "rules": {
     "prefer-const": "error",
     "no-var": "error",
@@ -9,14 +9,12 @@
     ],
     "eol-last": "warn",
     "no-multiple-empty-lines": "error",
-    "padded-blocks": "error",
     "padding-line-between-statements": "warn",
     "lines-between-class-members": "error",
     "lines-around-comment": "warn",
     "newline-before-return": "off",
     "newline-after-var": "off",
     "newline-per-chained-call": "off",
-    "indent": "error",
     "no-trailing-spaces": "error"
   },
   "parserOptions": {

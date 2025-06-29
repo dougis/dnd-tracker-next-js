@@ -15,19 +15,17 @@ const FormSubmitButton = React.forwardRef<
   HTMLButtonElement,
   FormSubmitButtonProps
 >(({ children, loadingText, showSpinner = true, disabled, ...props }, ref) => {
+  const { isSubmitting } = useFormContext();
+  const isDisabled = disabled || isSubmitting;
 
-    const { isSubmitting } = useFormContext();
-    const isDisabled = disabled || isSubmitting;
-
-    return (
-        <Button ref={ref} type="submit" disabled={isDisabled} {...props}>
-            {isSubmitting && showSpinner && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
-            {isSubmitting ? loadingText || children : children}
-        </Button>
-    );
-
+  return (
+    <Button ref={ref} type="submit" disabled={isDisabled} {...props}>
+      {isSubmitting && showSpinner && (
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      )}
+      {isSubmitting ? loadingText || children : children}
+    </Button>
+  );
 });
 
 FormSubmitButton.displayName = 'FormSubmitButton';

@@ -9,28 +9,26 @@ import { auth } from '@/lib/auth';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-    title: 'D&D Encounter Tracker',
-    description: 'A comprehensive tool for managing D&D combat encounters',
+  title: 'D&D Encounter Tracker',
+  description: 'A comprehensive tool for managing D&D combat encounters',
 };
 
 export default async function RootLayout({
-    children,
+  children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
 
-    const session = await auth();
-
-    return (
-        <html lang="en">
-            <body className={inter.className}>
-                <SessionProvider session={session}>
-                    <ThemeProvider defaultTheme="system" storageKey="dnd-tracker-theme">
-                        <AppLayout>{children}</AppLayout>
-                    </ThemeProvider>
-                </SessionProvider>
-            </body>
-        </html>
-    );
-
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <SessionProvider session={session}>
+          <ThemeProvider defaultTheme="system" storageKey="dnd-tracker-theme">
+            <AppLayout>{children}</AppLayout>
+          </ThemeProvider>
+        </SessionProvider>
+      </body>
+    </html>
+  );
 }
