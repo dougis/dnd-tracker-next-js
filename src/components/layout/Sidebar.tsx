@@ -129,7 +129,7 @@ export function Sidebar({ isOpen }: SidebarProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 left-0 z-50 w-64 transform bg-card border-r border-border transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
+    <div className="fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transition-transform duration-300 ease-in-out lg:relative lg:z-auto">
       <div className="flex h-full flex-col">
         {/* Logo/Brand */}
         <div className="flex h-16 items-center border-b border-border px-6">

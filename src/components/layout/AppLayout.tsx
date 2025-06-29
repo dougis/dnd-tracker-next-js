@@ -28,7 +28,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background lg:flex">
       {/* Sidebar for desktop */}
       <Sidebar isOpen={!isMobile} />
 
@@ -36,9 +36,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <MobileMenu isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main content area */}
-      <div
-        className={`transition-all duration-300 ${!isMobile ? 'lg:ml-64' : ''}`}
-      >
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Top navigation bar */}
         <header className="sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur-sm">
           <div className="flex h-16 items-center justify-between px-4">
