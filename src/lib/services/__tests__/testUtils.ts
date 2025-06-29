@@ -179,6 +179,115 @@ export const setupConflictTest = (mockUser: any, type: 'email' | 'username', val
   return existingUser;
 };
 
+// Helper functions to eliminate code duplication
+
+/**
+ * Test helper for filtering null/undefined values in user arrays
+ * @param filterType - 'null' or 'undefined'
+ * @param convertFunction - The function to test
+ */
+export const testFilterInvalidUsers = (
+  filterType: 'null' | 'undefined',
+  convertFunction: (_users: any[]) => any[]
+) => {
+  const [user1, user2] = createMockUsers(2);
+  const invalidValue = filterType === 'null' ? null : undefined;
+  const users = [user1, invalidValue, user2];
+
+  const result = convertFunction(users);
+
+  expect(result).toHaveLength(2);
+  expect(result[0].id).toBe('user1');
+  expect(result[1].id).toBe('user2');
+};
+
+/**
+ * Test helper for empty array scenarios in pagination
+ * @param formatFunction - The function to test
+ * @param mockConverter - Mock function for user conversion
+ */
+export const testEmptyArrayPagination = (
+  formatFunction: (_users: any[], _total: number, _page: number, _limit: number) => any,
+  mockConverter?: jest.Mock
+) => {
+  const users: any[] = [];
+  const publicUsers: PublicUser[] = [];
+  const total = 0;
+  const page = 1;
+  const limit = 10;
+
+  if (mockConverter) {
+    mockConverter.mockReturnValue(publicUsers);
+  }
+
+  const result = formatFunction(users, total, page, limit);
+
+  if (result.data !== undefined) {
+    expect(result.data).toEqual([]);
+  }
+  if (result.pagination) {
+    expectPaginationValues(result.pagination, page, limit, total, 0);
+  }
+  return result;
+};
+
+/**
+ * Test helper for zero total with non-zero limit scenarios
+ * @param formatFunction - The function to test
+ * @param mockConverter - Mock function for user conversion
+ */
+export const testZeroTotalWithLimit = (
+  formatFunction: (_users: any[], _total: number, _page: number, _limit: number) => any,
+  mockConverter?: jest.Mock
+) => {
+  const users: any[] = [];
+  const publicUsers: PublicUser[] = [];
+  const total = 0;
+  const page = 1;
+  const limit = 10;
+
+  if (mockConverter) {
+    mockConverter.mockReturnValue(publicUsers);
+  }
+
+  const result = formatFunction(users, total, page, limit);
+
+  if (result.pagination) {
+    expectPaginationValues(result.pagination, page, limit, total, 0);
+  }
+  return result;
+};
+
+/**
+ * Common test setup for query execution tests
+ * @param query - Query object
+ * @param skip - Skip value
+ * @param limit - Limit value
+ * @param mockUsers - Mock users array
+ * @param total - Total count
+ */
+export const setupQueryExecutionTest = (
+  query: any,
+  skip: number,
+  limit: number,
+  mockUsers: any[] = createMockUsers(1),
+  total: number = mockUsers.length
+) => {
+  const testSetup = setupQueryTest(mockUsers, total);
+  return {
+    query,
+    skip,
+    limit,
+    testSetup,
+    expectations: {
+      expectSuccess: (result: any, mockUser: any, mockSort: any, mockSkip: any, mockLimit: any, mockLean: any) => {
+        expectQueryChainCalls(mockUser, mockSort, mockSkip, mockLimit, mockLean, query, skip, limit);
+        expectPaginatedResult(result, testSetup.mockUsers, testSetup.total);
+      }
+    }
+  };
+};
+
 // Common test data constants
 export const TEST_USER_ID = '507f1f77bcf86cd799439011';
 export const TEST_EMAIL = 'test@example.com';

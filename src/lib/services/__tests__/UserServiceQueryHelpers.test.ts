@@ -6,7 +6,6 @@ import {
   formatPaginatedResult,
   QueryFilters,
 } from '../UserServiceQueryHelpers';
-import type { PublicUser } from '@/lib/validations/user';
 import {
   createMockUsers,
   createPublicUser,
@@ -14,7 +13,10 @@ import {
   expectQueryChainCalls,
   setupQueryTest,
   expectPaginatedResult,
-  expectPaginationValues
+  expectPaginationValues,
+  testEmptyArrayPagination,
+  testZeroTotalWithLimit,
+  setupQueryExecutionTest
 } from './testUtils';
 import { setupUserMocks } from './mockSetup';
 
@@ -163,58 +165,39 @@ describe('UserServiceQueryHelpers', () => {
 
   describe('executeFullQuery', () => {
     it('should execute full query chain with pagination', async () => {
-      const query = { role: 'user' };
-      const skip = 10;
-      const limit = 5;
-      const testSetup = setupQueryTest(createMockUsers(1), 25);
+      const testData = setupQueryExecutionTest({ role: 'user' }, 10, 5, createMockUsers(1), 25);
+      testData.testSetup.setupMocks(mockUser, mockLean);
 
-      testSetup.setupMocks(mockUser, mockLean);
+      const result = await executeFullQuery(testData.query, testData.skip, testData.limit);
 
-      const result = await executeFullQuery(query, skip, limit);
-
-      expectQueryChainCalls(mockUser, mockSort, mockSkip, mockLimit, mockLean, query, skip, limit);
-      expectPaginatedResult(result, testSetup.mockUsers, testSetup.total);
+      testData.expectations.expectSuccess(result, mockUser, mockSort, mockSkip, mockLimit, mockLean);
     });
 
     it('should handle zero skip and limit', async () => {
-      const query = { role: 'admin' };
-      const skip = 0;
-      const limit = 0;
-      const testSetup = setupQueryTest([]);
+      const testData = setupQueryExecutionTest({ role: 'admin' }, 0, 0, [], 0);
+      testData.testSetup.setupMocks(mockUser, mockLean);
 
-      testSetup.setupMocks(mockUser, mockLean);
+      const result = await executeFullQuery(testData.query, testData.skip, testData.limit);
 
-      const result = await executeFullQuery(query, skip, limit);
-
-      expectQueryChainCalls(mockUser, mockSort, mockSkip, mockLimit, mockLean, query, skip, limit);
-      expectPaginatedResult(result, [], 0);
+      testData.expectations.expectSuccess(result, mockUser, mockSort, mockSkip, mockLimit, mockLean);
     });
 
     it('should handle empty query', async () => {
-      const query = {};
-      const skip = 0;
-      const limit = 10;
-      const testSetup = setupQueryTest(createMockUsers(2));
+      const testData = setupQueryExecutionTest({}, 0, 10, createMockUsers(2));
+      testData.testSetup.setupMocks(mockUser, mockLean);
 
-      testSetup.setupMocks(mockUser, mockLean);
+      const result = await executeFullQuery(testData.query, testData.skip, testData.limit);
 
-      const result = await executeFullQuery(query, skip, limit);
-
-      expectQueryChainCalls(mockUser, mockSort, mockSkip, mockLimit, mockLean, query, skip, limit);
-      expectPaginatedResult(result, testSetup.mockUsers, testSetup.total);
+      testData.expectations.expectSuccess(result, mockUser, mockSort, mockSkip, mockLimit, mockLean);
     });
 
     it('should handle Promise.all execution', async () => {
-      const query = { role: 'user' };
-      const skip = 5;
-      const limit = 3;
-      const testSetup = setupQueryTest(createMockUsers(1), 10);
+      const testData = setupQueryExecutionTest({ role: 'user' }, 5, 3, createMockUsers(1), 10);
+      testData.testSetup.setupMocks(mockUser, mockLean);
 
-      testSetup.setupMocks(mockUser, mockLean);
+      const result = await executeFullQuery(testData.query, testData.skip, testData.limit);
 
-      const result = await executeFullQuery(query, skip, limit);
-
-      expectPaginatedResult(result, testSetup.mockUsers, testSetup.total);
+      expectPaginatedResult(result, testData.testSetup.mockUsers, testData.testSetup.total);
     });
 
     it('should handle database errors in query execution', async () => {
@@ -318,18 +301,7 @@ describe('UserServiceQueryHelpers', () => {
     });
 
     it('should handle empty users array', () => {
-      const users: any[] = [];
-      const publicUsers: PublicUser[] = [];
-      const total = 0;
-      const page = 1;
-      const limit = 10;
-
-      mockedConvertLeansUsersToPublic.mockReturnValue(publicUsers);
-
-      const result = formatPaginatedResult(users, total, page, limit);
-
-      expect(result.data).toEqual([]);
-      expectPaginationValues(result.pagination, page, limit, total, 0);
+      testEmptyArrayPagination(formatPaginatedResult, mockedConvertLeansUsersToPublic);
     });
 
     it('should calculate totalPages correctly for exact division', () => {
@@ -375,17 +347,7 @@ describe('UserServiceQueryHelpers', () => {
     });
 
     it('should handle zero total with non-zero limit', () => {
-      const users: any[] = [];
-      const publicUsers: PublicUser[] = [];
-      const total = 0;
-      const page = 1;
-      const limit = 10;
-
-      mockedConvertLeansUsersToPublic.mockReturnValue(publicUsers);
-
-      const result = formatPaginatedResult(users, total, page, limit);
-
-      expectPaginationValues(result.pagination, page, limit, total, 0);
+      testZeroTotalWithLimit(formatPaginatedResult, mockedConvertLeansUsersToPublic);
     });
 
     it('should handle large numbers', () => {

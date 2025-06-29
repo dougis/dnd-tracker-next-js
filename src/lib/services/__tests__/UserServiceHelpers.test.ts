@@ -16,6 +16,7 @@ import {
   createExistingUserWithUsername,
   createUserWithObjectId,
   setupConflictTest,
+  testFilterInvalidUsers,
   TEST_USER_ID,
   TEST_EMAIL,
   TEST_USERNAME
@@ -286,25 +287,11 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should filter out null users', () => {
-      const [user1, user2] = createMockUsers(2);
-      const users = [user1, null, user2];
-
-      const result = convertLeansUsersToPublic(users);
-
-      expect(result).toHaveLength(2);
-      expect(result[0].id).toBe('user1');
-      expect(result[1].id).toBe('user2');
+      testFilterInvalidUsers('null', convertLeansUsersToPublic);
     });
 
     it('should filter out undefined users', () => {
-      const [user1, user2] = createMockUsers(2);
-      const users = [user1, undefined, user2];
-
-      const result = convertLeansUsersToPublic(users);
-
-      expect(result).toHaveLength(2);
-      expect(result[0].id).toBe('user1');
-      expect(result[1].id).toBe('user2');
+      testFilterInvalidUsers('undefined', convertLeansUsersToPublic);
     });
 
     it('should handle users without _id field', () => {
