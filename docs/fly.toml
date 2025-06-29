@@ -1,0 +1,28 @@
+# fly.toml file for dnd-tracker-next-js
+app = "dnd-tracker-next-js"
+
+[build]
+  # Uncomment if you want to use a custom Dockerfile
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+
+[experimental]
+  auto_rollback = true
+
+[deploy]
+  release_command = "npx prisma migrate deploy"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+# Optional: Add [mounts] if you need persistent storage
+# [[mounts]]
+#   source = "data"
+#   destination = "/data"
