@@ -15,7 +15,7 @@ describe('UserServiceLookup - Comprehensive Tests', () => {
   const mockUserId = '507f1f77bcf86cd799439011';
   const mockEmail = 'test@example.com';
   const mockToken = 'test-token-123';
-  
+
   const mockUserInstance = {
     _id: mockUserId,
     email: mockEmail,
@@ -33,9 +33,9 @@ describe('UserServiceLookup - Comprehensive Tests', () => {
     // Mock UserServiceResponseHelpers
     const mockResponseHelpers = {
       createSuccessResponse: jest.fn().mockImplementation((data) => ({ success: true, data })),
-      createErrorResponse: jest.fn().mockImplementation((error) => ({ 
-        success: false, 
-        error: { message: error.message, code: error.code, statusCode: error.statusCode } 
+      createErrorResponse: jest.fn().mockImplementation((error) => ({
+        success: false,
+        error: { message: error.message, code: error.code, statusCode: error.statusCode }
       })),
     };
     require('../UserServiceResponseHelpers').UserServiceResponseHelpers = mockResponseHelpers;
@@ -474,7 +474,7 @@ describe('UserServiceLookup - Comprehensive Tests', () => {
     it('should handle multiple concurrent user lookups', async () => {
       MockedUser.findById.mockResolvedValue(mockUserInstance as any);
 
-      const promises = Array.from({ length: 10 }, (_, i) => 
+      const promises = Array.from({ length: 10 }, (_, i) =>
         UserServiceLookup.findUserByIdOrThrow(`${mockUserId}-${i}`)
       );
 

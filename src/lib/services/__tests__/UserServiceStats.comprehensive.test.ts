@@ -73,9 +73,9 @@ describe('UserServiceStats - Comprehensive Tests', () => {
     const mockResponseHelpers = {
       createSuccessResponse: jest.fn().mockImplementation((data) => ({ success: true, data })),
       createErrorResponse: jest.fn().mockImplementation((error) => ({ success: false, error })),
-      handleCustomError: jest.fn().mockReturnValue({ 
-        success: false, 
-        error: { message: 'Error', code: 'ERROR', statusCode: 500 } 
+      handleCustomError: jest.fn().mockReturnValue({
+        success: false,
+        error: { message: 'Error', code: 'ERROR', statusCode: 500 }
       }),
     };
     require('../UserServiceResponseHelpers').UserServiceResponseHelpers = mockResponseHelpers;
@@ -294,7 +294,7 @@ describe('UserServiceStats - Comprehensive Tests', () => {
 
     it('should calculate active users date correctly', async () => {
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-      
+
       await UserServiceStats.getUserStats();
 
       expect(MockedUser.countDocuments).toHaveBeenCalledWith({
@@ -313,7 +313,7 @@ describe('UserServiceStats - Comprehensive Tests', () => {
   describe('Private method behavior', () => {
     it('should build query correctly with filters', () => {
       const filters = { role: 'admin', subscriptionTier: 'expert' };
-      
+
       // Access private method through reflection for testing
       const UserServiceStatsClass = UserServiceStats as any;
       const query = UserServiceStatsClass.buildQuery(filters);

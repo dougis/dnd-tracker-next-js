@@ -3,8 +3,6 @@ import User from '../../models/User';
 import { checkUserExists } from '../UserServiceHelpers';
 import {
   UserAlreadyExistsError,
-  InvalidCredentialsError,
-  UserServiceError,
   TokenInvalidError,
 } from '../UserServiceErrors';
 
@@ -23,7 +21,7 @@ describe('UserServiceAuth - Comprehensive Tests', () => {
   const mockEmail = 'test@example.com';
   const mockUsername = 'testuser';
   const mockPassword = 'Password123!';
-  
+
   const mockUserInstance = {
     _id: mockUserId,
     email: mockEmail,
@@ -53,7 +51,7 @@ describe('UserServiceAuth - Comprehensive Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Mock UserServiceValidation
     const mockValidation = {
       validateAndParseRegistration: jest.fn().mockReturnValue({

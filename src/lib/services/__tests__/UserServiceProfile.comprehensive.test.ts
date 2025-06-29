@@ -21,7 +21,7 @@ describe('UserServiceProfile - Comprehensive Tests', () => {
   const mockUserId = '507f1f77bcf86cd799439011';
   const mockEmail = 'test@example.com';
   const mockUsername = 'testuser';
-  
+
   const mockUserInstance = {
     _id: mockUserId,
     email: mockEmail,
@@ -57,7 +57,7 @@ describe('UserServiceProfile - Comprehensive Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Mock UserServiceValidation
     const mockValidation = {
       validateAndParseProfileUpdate: jest.fn().mockReturnValue({
@@ -122,7 +122,7 @@ describe('UserServiceProfile - Comprehensive Tests', () => {
     it('should handle validation errors', async () => {
       const mockLookup = require('../UserServiceLookup').UserServiceLookup;
       mockLookup.findUserOrError.mockRejectedValue(new Error('validation failed'));
-      
+
       const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
       mockResponseHelpers.handleValidationError.mockReturnValue({
         success: false,

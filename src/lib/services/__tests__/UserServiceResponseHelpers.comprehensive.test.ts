@@ -1,9 +1,6 @@
 import { UserServiceResponseHelpers } from '../UserServiceResponseHelpers';
 import {
   UserServiceError,
-  UserAlreadyExistsError,
-  UserNotFoundError,
-  InvalidCredentialsError,
   handleServiceError,
 } from '../UserServiceErrors';
 
@@ -454,7 +451,7 @@ describe('UserServiceResponseHelpers - Comprehensive Tests', () => {
       userServiceError.message = 'User already exists with email: test@example.com';
       userServiceError.code = 'USER_ALREADY_EXISTS';
       userServiceError.statusCode = 409;
-      
+
       const result = UserServiceResponseHelpers.handleCustomError(
         userServiceError,
         'Default message',
