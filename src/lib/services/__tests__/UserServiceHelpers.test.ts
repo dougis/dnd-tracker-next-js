@@ -151,25 +151,21 @@ describe('UserServiceHelpers', () => {
     it('should throw UserAlreadyExistsError when email belongs to different user', async () => {
       setupConflictTest(mockUser, 'email', TEST_EMAIL, 'different-user-id');
 
-      await expect(
-        checkProfileUpdateConflicts(userId, TEST_EMAIL)
-      ).rejects.toThrow(UserAlreadyExistsError);
-
-      await expect(
-        checkProfileUpdateConflicts(userId, TEST_EMAIL)
-      ).rejects.toThrow(`User already exists with email: ${TEST_EMAIL}`);
+      await expectErrorThrown(
+        () => checkProfileUpdateConflicts(userId, TEST_EMAIL),
+        UserAlreadyExistsError,
+        `User already exists with email: ${TEST_EMAIL}`
+      );
     });
 
     it('should throw UserAlreadyExistsError when username belongs to different user', async () => {
       setupConflictTest(mockUser, 'username', TEST_USERNAME, 'different-user-id');
 
-      await expect(
-        checkProfileUpdateConflicts(userId, undefined, TEST_USERNAME)
-      ).rejects.toThrow(UserAlreadyExistsError);
-
-      await expect(
-        checkProfileUpdateConflicts(userId, undefined, TEST_USERNAME)
-      ).rejects.toThrow(`User already exists with username: ${TEST_USERNAME}`);
+      await expectErrorThrown(
+        () => checkProfileUpdateConflicts(userId, undefined, TEST_USERNAME),
+        UserAlreadyExistsError,
+        `User already exists with username: ${TEST_USERNAME}`
+      );
     });
 
     it('should handle both email and username updates', async () => {

@@ -293,3 +293,354 @@ export const TEST_USER_ID = '507f1f77bcf86cd799439011';
 export const TEST_EMAIL = 'test@example.com';
 export const TEST_USERNAME = 'testuser';
 export const TEST_DATE = new Date('2024-01-01');
+
+// UserServiceError factory functions to eliminate duplication
+export const createMockUserServiceError = (type: 'USER_ALREADY_EXISTS' | 'USER_NOT_FOUND' | 'INVALID_CREDENTIALS' | 'CUSTOM', customData?: { message?: string; code?: string; statusCode?: number }) => {
+  const errorMap = {
+    USER_ALREADY_EXISTS: {
+      message: 'User already exists with email: test@example.com',
+      code: 'USER_ALREADY_EXISTS',
+      statusCode: 409,
+    },
+    USER_NOT_FOUND: {
+      message: 'User not found: 123',
+      code: 'USER_NOT_FOUND',
+      statusCode: 404,
+    },
+    INVALID_CREDENTIALS: {
+      message: 'Invalid email or password',
+      code: 'INVALID_CREDENTIALS',
+      statusCode: 401,
+    },
+    CUSTOM: {
+      message: 'Custom error message',
+      code: 'CUSTOM_ERROR',
+      statusCode: 422,
+    },
+  };
+
+  return { ...errorMap[type], ...customData };
+};
+
+// Response expectation helpers to eliminate duplication
+export const expectSuccessResponse = (result: any, expectedData?: any) => {
+  if (expectedData !== undefined) {
+    expect(result).toEqual({
+      success: true,
+      data: expectedData,
+    });
+  } else {
+    expect(result).toEqual({
+      success: true,
+    });
+  }
+};
+
+export const expectErrorResponse = (result: any, error: any) => {
+  expect(result).toEqual({
+    success: false,
+    error: {
+      message: error.message,
+      code: error.code,
+      statusCode: error.statusCode,
+    },
+  });
+};
+
+export const expectErrorResponseFields = (result: any, expectedCode: string, expectedStatus: number) => {
+  expect(result.success).toBe(false);
+  expect(result.error?.code).toBe(expectedCode);
+  expect(result.error?.statusCode).toBe(expectedStatus);
+};
+
+// Mock response factory
+export const createMockErrorResponse = (message: string, code: string, statusCode: number) => ({
+  success: false,
+  error: { message, code, statusCode }
+});
+
+// Test data for UserServiceResponseHelpers
+export const createTestToken = (type: 'normal' | 'empty' | 'long' = 'normal') => {
+  const tokenMap = {
+    normal: 'secure-token-123',
+    empty: '',
+    long: 'a'.repeat(1000),
+  };
+  return tokenMap[type];
+};
+
+export const createTestData = (type: 'simple' | 'array' | 'typed' = 'simple') => {
+  const dataMap = {
+    simple: { id: '123', name: 'Test' },
+    array: [1, 2, 3],
+    typed: { count: 42, items: ['a', 'b', 'c'] },
+  };
+  return dataMap[type];
+};
+
+// Mock setup helpers for UserServiceError testing
+export const createUserServiceErrorInstance = (type: 'USER_ALREADY_EXISTS' | 'USER_NOT_FOUND' | 'INVALID_CREDENTIALS' | 'CUSTOM') => {
+  const errorData = createMockUserServiceError(type);
+  // Import UserServiceError at runtime to avoid circular deps
+  const { UserServiceError } = require('../UserServiceErrors');
+  // Create a real UserServiceError instance by creating an object that will be treated as one
+  const userServiceError = Object.create(UserServiceError.prototype);
+  userServiceError.message = errorData.message;
+  userServiceError.code = errorData.code;
+  userServiceError.statusCode = errorData.statusCode;
+  return userServiceError;
+};
+
+export const setupMockHandleServiceError = (mockFn: jest.Mock, response: any) => {
+  mockFn.mockReturnValue(response);
+  return response;
+};
+
+export const expectMockHandleServiceErrorCall = (mockFn: jest.Mock, error: any, message: string, code: string, statusCode: number = 500) => {
+  expect(mockFn).toHaveBeenCalledWith(error, message, code, statusCode);
+};
+
+// User serialization test utilities
+export const createMockUserForSerialization = (type: 'withMethod' | 'withoutMethod' | 'withStringId' | 'minimal' | 'withNulls' | 'withObjectId' | 'withPartialPrefs' | 'circular' | 'large', overrides: any = {}) => {
+  const mockUserId = '507f1f77bcf86cd799439011';
+  const mockDate = new Date('2024-01-01T00:00:00.000Z');
+
+  const baseUserData = {
+    _id: mockUserId,
+    email: 'test@example.com',
+    username: 'testuser',
+    firstName: 'Test',
+    lastName: 'User',
+    role: 'user',
+    subscriptionTier: 'free',
+    preferences: {
+      theme: 'dark',
+      language: 'en',
+      timezone: 'UTC',
+      emailNotifications: true,
+      pushNotifications: false,
+      autoSaveEncounters: true,
+    },
+    isEmailVerified: true,
+    createdAt: mockDate,
+    updatedAt: mockDate,
+    ...overrides,
+  };
+
+  switch (type) {
+    case 'withMethod':
+      return {
+        toPublicJSON: jest.fn().mockReturnValue(baseUserData),
+      };
+
+    case 'withoutMethod':
+      return {
+        ...baseUserData,
+        _id: { toString: () => mockUserId },
+        role: 'admin',
+        subscriptionTier: 'expert',
+        preferences: {
+          theme: 'light',
+          language: 'es',
+          timezone: 'PST',
+          emailNotifications: false,
+          pushNotifications: true,
+          autoSaveEncounters: false,
+        },
+        isEmailVerified: false,
+      };
+
+    case 'withStringId':
+      return {
+        id: 'string-id-123',
+        email: 'test@example.com',
+      };
+
+    case 'minimal':
+      return {};
+
+    case 'withNulls':
+      return {
+        _id: null,
+        email: null,
+        username: null,
+        firstName: null,
+        lastName: null,
+        role: null,
+        subscriptionTier: null,
+        preferences: null,
+        isEmailVerified: null,
+        createdAt: null,
+        updatedAt: null,
+      };
+
+    case 'withObjectId':
+      return {
+        _id: {
+          toString: jest.fn().mockReturnValue(mockUserId),
+        },
+        email: 'test@example.com',
+      };
+
+    case 'withPartialPrefs':
+      return {
+        preferences: {
+          theme: 'dark',
+          language: 'fr',
+        },
+      };
+
+    case 'circular':
+      const circularUser: any = {
+        _id: 'circular-id',
+        email: 'circular@example.com',
+      };
+      circularUser.self = circularUser;
+      return circularUser;
+
+    case 'large':
+      return {
+        _id: 'large-id',
+        email: 'large@example.com',
+        largeField: 'x'.repeat(10000),
+      };
+
+    default:
+      return baseUserData;
+  }
+};
+
+export const expectDefaultUserValues = (result: any) => {
+  expect(result).toEqual({
+    _id: undefined,
+    email: '',
+    username: '',
+    firstName: '',
+    lastName: '',
+    role: 'user',
+    subscriptionTier: 'free',
+    preferences: {
+      theme: 'system',
+      language: 'en',
+      timezone: 'UTC',
+      emailNotifications: true,
+      pushNotifications: true,
+      autoSaveEncounters: true,
+    },
+    isEmailVerified: false,
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+  });
+};
+
+// UserServiceQueryHelpers utility functions to eliminate duplication
+export const setupFormatPaginatedResultTest = (
+  total: number,
+  page: number,
+  limit: number,
+  expectedTotalPages: number,
+  mockConverter: jest.Mock,
+  userCount: number = 1
+) => {
+  const users = createMockUsers(userCount);
+  const publicUsers = users.map((_, i) => createPublicUser({ id: `user${i + 1}` }));
+
+  mockConverter.mockReturnValue(publicUsers);
+
+  return {
+    users,
+    publicUsers,
+    total,
+    page,
+    limit,
+    expectedTotalPages,
+    executeTest: (formatFunction: any) => {
+      const result = formatFunction(users, total, page, limit);
+      expectPaginationValues(result.pagination, page, limit, total, expectedTotalPages);
+      return result;
+    }
+  };
+};
+
+export const setupDatabaseErrorTest = (
+  mockObject: any,
+  mockMethod: string,
+  errorMessage: string = 'Database connection failed'
+) => {
+  mockObject[mockMethod].mockRejectedValue(new Error(errorMessage));
+
+  return {
+    testError: async (testFunction: () => Promise<any>) => {
+      await testDatabaseError(testFunction, errorMessage);
+    }
+  };
+};
+
+export const executeQueryExecutionTest = async (
+  _query: any,
+  _skip: number,
+  _limit: number,
+  queryFunction: (_query: any, _skip: number, _limit: number) => Promise<any>,
+  mockUser: any,
+  mockSort: any,
+  mockSkip: any,
+  mockLimit: any,
+  mockLean: any,
+  mockUsers: any[] = createMockUsers(1),
+  total: number = mockUsers.length
+) => {
+  const testData = setupQueryExecutionTest(_query, _skip, _limit, mockUsers, total);
+  testData.testSetup.setupMocks(mockUser, mockLean);
+
+  const result = await queryFunction(_query, _skip, _limit);
+
+  testData.expectations.expectSuccess(result, mockUser, mockSort, mockSkip, mockLimit, mockLean);
+  return result;
+};
+
+export const setupExecuteUserQueryTest = (
+  environment: 'test' | 'production',
+  query: any,
+  skip: number,
+  limit: number,
+  mockUsers: any[],
+  total: number,
+  mockUser: any,
+  mockSort?: any,
+  mockSkip?: any,
+  mockLimit?: any,
+  mockLean?: any
+) => {
+  if (environment === 'test') {
+    // Mock test environment - find returns function but no sort method
+    mockUser.find.mockReturnValue((() => {}) as any);
+    mockUser.find.mockResolvedValue(mockUsers as any);
+    mockUser.countDocuments.mockResolvedValue(total);
+  } else {
+    // Mock production environment - find returns object with sort method
+    mockUser.find.mockReturnValue({
+      sort: mockSort,
+    } as any);
+
+    const testSetup = setupQueryTest(mockUsers, total);
+    testSetup.setupMocks(mockUser, mockLean);
+  }
+
+  return {
+    executeTest: async (executeFunction: any) => {
+      const result = await executeFunction(query, skip, limit);
+
+      if (environment === 'test') {
+        expect(result).toEqual({
+          users: mockUsers,
+          total,
+        });
+      } else {
+        expectQueryChainCalls(mockUser, mockSort, mockSkip, mockLimit, mockLean, query, skip, limit);
+        expectPaginatedResult(result, mockUsers, total);
+      }
+
+      return result;
+    }
+  };
+};

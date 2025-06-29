@@ -1,182 +1,107 @@
 import { UserServiceResponseHelpers } from '../UserServiceResponseHelpers';
 import { UserServiceError } from '../UserServiceErrors';
+import {
+  createMockUserServiceError,
+  expectSuccessResponse,
+  expectErrorResponse,
+  expectErrorResponseFields,
+  createTestData,
+  createTestToken
+} from './testUtils';
 
 describe('UserServiceResponseHelpers - Core Tests', () => {
   describe('createSuccessResponse', () => {
     it('should create success response with data', () => {
-      const testData = { id: '123', name: 'Test' };
+      const testData = createTestData('simple');
       const result = UserServiceResponseHelpers.createSuccessResponse(testData);
-
-      expect(result).toEqual({
-        success: true,
-        data: testData,
-      });
+      expectSuccessResponse(result, testData);
     });
 
     it('should create success response without data', () => {
       const result = UserServiceResponseHelpers.createSuccessResponse();
-
-      expect(result).toEqual({
-        success: true,
-      });
+      expectSuccessResponse(result);
     });
 
     it('should handle undefined data explicitly', () => {
       const result = UserServiceResponseHelpers.createSuccessResponse(undefined);
-
-      expect(result).toEqual({
-        success: true,
-      });
+      expectSuccessResponse(result);
     });
 
     it('should handle null data', () => {
       const result = UserServiceResponseHelpers.createSuccessResponse(null);
-
-      expect(result).toEqual({
-        success: true,
-        data: null,
-      });
+      expectSuccessResponse(result, null);
     });
 
     it('should handle empty object data', () => {
       const result = UserServiceResponseHelpers.createSuccessResponse({});
-
-      expect(result).toEqual({
-        success: true,
-        data: {},
-      });
+      expectSuccessResponse(result, {});
     });
 
     it('should handle array data', () => {
-      const testArray = [1, 2, 3];
+      const testArray = createTestData('array');
       const result = UserServiceResponseHelpers.createSuccessResponse(testArray);
-
-      expect(result).toEqual({
-        success: true,
-        data: testArray,
-      });
+      expectSuccessResponse(result, testArray);
     });
 
     it('should handle string data', () => {
       const result = UserServiceResponseHelpers.createSuccessResponse('test string');
-
-      expect(result).toEqual({
-        success: true,
-        data: 'test string',
-      });
+      expectSuccessResponse(result, 'test string');
     });
 
     it('should handle number data', () => {
       const result = UserServiceResponseHelpers.createSuccessResponse(42);
-
-      expect(result).toEqual({
-        success: true,
-        data: 42,
-      });
+      expectSuccessResponse(result, 42);
     });
 
     it('should handle boolean data', () => {
       const result = UserServiceResponseHelpers.createSuccessResponse(false);
-
-      expect(result).toEqual({
-        success: true,
-        data: false,
-      });
+      expectSuccessResponse(result, false);
     });
   });
 
   describe('createErrorResponse', () => {
     it('should create error response from UserServiceError', () => {
-      const error = {
-        message: 'User already exists with email: test@example.com',
-        code: 'USER_ALREADY_EXISTS',
-        statusCode: 409,
-      } as UserServiceError;
+      const error = createMockUserServiceError('USER_ALREADY_EXISTS') as UserServiceError;
       const result = UserServiceResponseHelpers.createErrorResponse(error);
-
-      expect(result).toEqual({
-        success: false,
-        error: {
-          message: error.message,
-          code: error.code,
-          statusCode: error.statusCode,
-        },
-      });
+      expectErrorResponse(result, error);
     });
 
     it('should handle UserNotFoundError', () => {
-      const error = {
-        message: 'User not found: 123',
-        code: 'USER_NOT_FOUND',
-        statusCode: 404,
-      } as UserServiceError;
+      const error = createMockUserServiceError('USER_NOT_FOUND') as UserServiceError;
       const result = UserServiceResponseHelpers.createErrorResponse(error);
-
-      expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('USER_NOT_FOUND');
-      expect(result.error?.statusCode).toBe(404);
+      expectErrorResponseFields(result, 'USER_NOT_FOUND', 404);
     });
 
     it('should handle InvalidCredentialsError', () => {
-      const error = {
-        message: 'Invalid email or password',
-        code: 'INVALID_CREDENTIALS',
-        statusCode: 401,
-      } as UserServiceError;
+      const error = createMockUserServiceError('INVALID_CREDENTIALS') as UserServiceError;
       const result = UserServiceResponseHelpers.createErrorResponse(error);
-
-      expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('INVALID_CREDENTIALS');
-      expect(result.error?.statusCode).toBe(401);
+      expectErrorResponseFields(result, 'INVALID_CREDENTIALS', 401);
     });
 
     it('should preserve all error properties', () => {
-      const customError = {
-        message: 'Custom error message',
-        code: 'CUSTOM_ERROR',
-        statusCode: 422,
-      } as UserServiceError;
+      const customError = createMockUserServiceError('CUSTOM') as UserServiceError;
       const result = UserServiceResponseHelpers.createErrorResponse(customError);
-
-      expect(result).toEqual({
-        success: false,
-        error: {
-          message: 'Custom error message',
-          code: 'CUSTOM_ERROR',
-          statusCode: 422,
-        },
-      });
+      expectErrorResponse(result, customError);
     });
   });
 
   describe('createSecurityResponse', () => {
     it('should create security response with token', () => {
-      const token = 'secure-token-123';
+      const token = createTestToken('normal');
       const result = UserServiceResponseHelpers.createSecurityResponse(token);
-
-      expect(result).toEqual({
-        success: true,
-        data: { token },
-      });
+      expectSuccessResponse(result, { token });
     });
 
     it('should handle empty token', () => {
-      const result = UserServiceResponseHelpers.createSecurityResponse('');
-
-      expect(result).toEqual({
-        success: true,
-        data: { token: '' },
-      });
+      const token = createTestToken('empty');
+      const result = UserServiceResponseHelpers.createSecurityResponse(token);
+      expectSuccessResponse(result, { token });
     });
 
     it('should handle very long token', () => {
-      const longToken = 'a'.repeat(1000);
-      const result = UserServiceResponseHelpers.createSecurityResponse(longToken);
-
-      expect(result).toEqual({
-        success: true,
-        data: { token: longToken },
-      });
+      const token = createTestToken('long');
+      const result = UserServiceResponseHelpers.createSecurityResponse(token);
+      expectSuccessResponse(result, { token });
     });
   });
 });
