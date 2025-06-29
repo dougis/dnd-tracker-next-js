@@ -1,10 +1,9 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { usePathname } from 'next/navigation';
 import { MobileMenu } from '../MobileMenu';
 import { setupLayoutTest, mockUsePathname } from './test-utils';
-import { assertComponentVisibility, assertUserProfile, assertActiveNavigation, assertInactiveNavigation, assertSvgIcon } from './shared-assertions';
-import { testNavigationLinks, testActiveNavigationState, NAVIGATION_ITEMS } from './navigation-test-helpers';
+import { assertUserProfile, assertActiveNavigation, assertInactiveNavigation, assertSvgIcon } from './shared-assertions';
+import { testNavigationLinks, NAVIGATION_ITEMS } from './navigation-test-helpers';
 
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
@@ -232,7 +231,7 @@ describe('MobileMenu', () => {
   describe('Navigation Items', () => {
     test('renders all navigation items', () => {
       render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
-      
+
       NAVIGATION_ITEMS.forEach(item => {
         expect(screen.getByText(item.text)).toBeInTheDocument();
       });
@@ -282,7 +281,7 @@ describe('MobileMenu', () => {
     test('only one navigation item is active at a time', () => {
       mockUsePathname.mockReturnValue('/combat');
       render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
-      
+
       assertActiveNavigation('Combat');
       assertInactiveNavigation('Dashboard');
       assertInactiveNavigation('Characters');

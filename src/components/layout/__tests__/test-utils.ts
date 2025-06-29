@@ -27,10 +27,10 @@ export const setupLayoutTest = () => {
         configurable: true,
         value: originalInnerWidth,
       });
-      
+
       // Reset body style
       document.body.style.overflow = originalBodyStyle;
-      
+
       // Clear all mocks
       jest.clearAllMocks();
     }

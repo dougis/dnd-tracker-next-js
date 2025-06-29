@@ -32,11 +32,11 @@ export const createMockLink = () => {
  */
 export const setupNextNavigationMock = () => {
   const mockUsePathname = jest.fn();
-  
+
   jest.mock('next/navigation', () => ({
     usePathname: mockUsePathname,
   }));
-  
+
   return { mockUsePathname };
 };
 

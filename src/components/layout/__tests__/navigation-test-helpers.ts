@@ -34,11 +34,11 @@ export const testNavigationLinks = () => {
 export const testActiveNavigationState = (Component: React.ComponentType<any>, path: string, props = {}) => {
   mockUsePathname.mockReturnValue(path);
   render(React.createElement(Component, props));
-  
+
   const activeItem = NAVIGATION_ITEMS.find(item => item.href === path);
   if (activeItem) {
     assertActiveNavigation(activeItem.text);
-    
+
     // Assert other items are inactive
     NAVIGATION_ITEMS.filter(item => item.href !== path).forEach(item => {
       assertInactiveNavigation(item.text);

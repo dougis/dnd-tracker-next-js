@@ -1,9 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { usePathname } from 'next/navigation';
 import { Breadcrumbs } from '../Breadcrumbs';
 import { setupLayoutTest, mockUsePathname } from './test-utils';
-import { assertSvgIcon } from './shared-assertions';
 
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
