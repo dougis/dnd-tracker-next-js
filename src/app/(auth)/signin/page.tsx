@@ -7,10 +7,10 @@ import { signIn } from 'next-auth/react';
 import { z } from 'zod';
 import { userLoginSchema } from '@/lib/validations/user';
 import {
-  FormWrapper,
-  FormInput,
-  FormSubmitButton,
-  FormValidationError,
+    FormWrapper,
+    FormInput,
+    FormSubmitButton,
+    FormValidationError,
 } from '@/components/forms';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -24,167 +24,181 @@ type FormState = {
 };
 
 export default function SignInPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
-  const error = searchParams.get('error');
 
-  const [formState, setFormState] = useState<FormState>({
-    success: false,
-    errors: [],
-    isSubmitting: false,
-  });
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+    const error = searchParams.get('error');
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    setFormState(prev => ({ ...prev, isSubmitting: true, errors: [] }));
-
-    try {
-      const formData = new FormData(event.currentTarget);
-      const data = Object.fromEntries(formData.entries());
-
-      // Convert checkbox values to boolean
-      const rememberMe = formData.get('rememberMe') === 'on';
-
-      const validationData = {
-        ...data,
-        rememberMe,
-      };
-
-      // Validate the form data with Zod
-      const validatedData = userLoginSchema.parse(validationData);
-
-      // Sign in with NextAuth
-      const response = await signIn('credentials', {
-        redirect: false,
-        email: validatedData.email,
-        password: validatedData.password,
-        callbackUrl,
-      });
-
-      if (response?.error) {
-        throw new Error(
-          response.error === 'CredentialsSignin'
-            ? 'Invalid email or password'
-            : response.error
-        );
-      }
-
-      // Success - redirect to callback URL
-      setFormState({
-        success: true,
+    const [formState, setFormState] = useState<FormState>({
+        success: false,
         errors: [],
         isSubmitting: false,
-      });
+    });
 
-      router.push(callbackUrl as any);
-    } catch (error) {
-      // Handle Zod validation errors
-      if (error instanceof z.ZodError) {
-        setFormState({
-          success: false,
-          errors: error.errors.map(err => ({
-            field: err.path.join('.'),
-            message: err.message,
-          })),
-          isSubmitting: false,
-        });
-        return;
-      }
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 
-      // Handle other errors
-      setFormState({
-        success: false,
-        errors: [
-          {
-            field: '',
-            message:
+        event.preventDefault();
+
+        setFormState(prev => ({ ...prev, isSubmitting: true, errors: [] }));
+
+        try {
+
+            const formData = new FormData(event.currentTarget);
+            const data = Object.fromEntries(formData.entries());
+
+            // Convert checkbox values to boolean
+            const rememberMe = formData.get('rememberMe') === 'on';
+
+            const validationData = {
+                ...data,
+                rememberMe,
+            };
+
+            // Validate the form data with Zod
+            const validatedData = userLoginSchema.parse(validationData);
+
+            // Sign in with NextAuth
+            const response = await signIn('credentials', {
+                redirect: false,
+                email: validatedData.email,
+                password: validatedData.password,
+                callbackUrl,
+            });
+
+            if (response?.error) {
+
+                throw new Error(
+                    response.error === 'CredentialsSignin'
+                        ? 'Invalid email or password'
+                        : response.error
+                );
+
+            }
+
+            // Success - redirect to callback URL
+            setFormState({
+                success: true,
+                errors: [],
+                isSubmitting: false,
+            });
+
+            router.push(callbackUrl as any);
+
+        } catch (error) {
+
+            // Handle Zod validation errors
+            if (error instanceof z.ZodError) {
+
+                setFormState({
+                    success: false,
+                    errors: error.errors.map(err => ({
+                        field: err.path.join('.'),
+                        message: err.message,
+                    })),
+                    isSubmitting: false,
+                });
+                return;
+
+            }
+
+            // Handle other errors
+            setFormState({
+                success: false,
+                errors: [
+                    {
+                        field: '',
+                        message:
               error instanceof Error
-                ? error.message
-                : 'An unexpected error occurred',
-          },
-        ],
-        isSubmitting: false,
-      });
-    }
-  };
+                  ? error.message
+                  : 'An unexpected error occurred',
+                    },
+                ],
+                isSubmitting: false,
+            });
 
-  const getFieldError = (field: string) => {
-    return formState.errors.find(err => err.field === field)?.message;
-  };
+        }
 
-  // Determine if we have a general error (not tied to a specific field)
-  const generalError =
+    };
+
+    const getFieldError = (field: string) => {
+
+        return formState.errors.find(err => err.field === field)?.message;
+
+    };
+
+    // Determine if we have a general error (not tied to a specific field)
+    const generalError =
     formState.errors.find(err => !err.field)?.message ||
     (error === 'CredentialsSignin' ? 'Invalid email or password' : error);
 
-  return (
-    <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold">Sign in to your account</h1>
-        <p className="text-slate-500 dark:text-slate-400">
+    return (
+        <div className="space-y-6">
+            <div className="text-center space-y-2">
+                <h1 className="text-2xl font-bold">Sign in to your account</h1>
+                <p className="text-slate-500 dark:text-slate-400">
           Enter your credentials to access your D&D Encounter Tracker
-        </p>
-      </div>
+                </p>
+            </div>
 
-      {generalError && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{generalError}</AlertDescription>
-        </Alert>
-      )}
+            {generalError && (
+                <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{generalError}</AlertDescription>
+                </Alert>
+            )}
 
-      <FormWrapper
-        onSubmit={handleSubmit}
-        errors={formState.errors}
-        isSubmitting={formState.isSubmitting}
-      >
-        <FormInput
-          label="Email"
-          name="email"
-          type="email"
-          placeholder="you@example.com"
-          required
-          error={getFieldError('email')}
-        />
+            <FormWrapper
+                onSubmit={handleSubmit}
+                errors={formState.errors}
+                isSubmitting={formState.isSubmitting}
+            >
+                <FormInput
+                    label="Email"
+                    name="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    required
+                    error={getFieldError('email')}
+                />
 
-        <FormInput
-          label="Password"
-          name="password"
-          type="password"
-          placeholder="Enter your password"
-          required
-          error={getFieldError('password')}
-        />
+                <FormInput
+                    label="Password"
+                    name="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    required
+                    error={getFieldError('password')}
+                />
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Checkbox id="rememberMe" name="rememberMe" />
-            <Label htmlFor="rememberMe" className="text-sm">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                        <Checkbox id="rememberMe" name="rememberMe" />
+                        <Label htmlFor="rememberMe" className="text-sm">
               Remember me
-            </Label>
-          </div>
-          <Link
-            href={'/auth/reset-password' as any}
-            className="text-sm text-primary hover:underline"
-          >
+                        </Label>
+                    </div>
+                    <Link
+                        href={'/auth/reset-password' as any}
+                        className="text-sm text-primary hover:underline"
+                    >
             Forgot password?
-          </Link>
-        </div>
+                    </Link>
+                </div>
 
-        <FormSubmitButton loadingText="Signing in...">Sign In</FormSubmitButton>
+                <FormSubmitButton loadingText="Signing in...">Sign In</FormSubmitButton>
 
-        <div className="text-center text-sm">
+                <div className="text-center text-sm">
           Don&apos;t have an account?{' '}
-          <Link
-            href={'/auth/signup' as any}
-            className="text-primary hover:underline"
-          >
+                    <Link
+                        href={'/auth/signup' as any}
+                        className="text-primary hover:underline"
+                    >
             Sign up
-          </Link>
+                    </Link>
+                </div>
+            </FormWrapper>
         </div>
-      </FormWrapper>
-    </div>
-  );
+    );
+
 }
