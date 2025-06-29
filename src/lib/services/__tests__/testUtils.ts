@@ -19,7 +19,7 @@ export const createMockUser = (overrides: Partial<any> = {}) => ({
   ...overrides,
 });
 
-export const createMockUsers = (count: number = 2) => 
+export const createMockUsers = (count: number = 2) =>
   Array.from({ length: count }, (_, i) => createMockUser({
     _id: `user${i + 1}`,
     email: `user${i + 1}@example.com`,
@@ -61,11 +61,11 @@ export const testDatabaseError = async (
 export const expectSensitiveFieldsRemoved = (user: any) => {
   const sensitiveFields = [
     'passwordHash',
-    'emailVerificationToken', 
+    'emailVerificationToken',
     'passwordResetToken',
     'passwordResetExpires'
   ];
-  
+
   sensitiveFields.forEach(field => {
     expect(user).not.toHaveProperty(field);
   });

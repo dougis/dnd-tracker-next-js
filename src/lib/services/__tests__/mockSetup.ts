@@ -6,16 +6,16 @@ import User from '../../models/User';
 
 export const setupUserMocks = () => {
   const mockUser = User as jest.Mocked<typeof User>;
-  
+
   const mockSort = jest.fn();
   const mockSkip = jest.fn();
   const mockLimit = jest.fn();
   const mockLean = jest.fn();
-  
+
   // Reset all mocks and setup default chain
   const resetMocks = () => {
     jest.clearAllMocks();
-    
+
     // Setup default mock chain for query helpers
     mockUser.find.mockReturnValue({
       sort: mockSort,
@@ -31,7 +31,7 @@ export const setupUserMocks = () => {
     } as any);
     mockLean.mockResolvedValue([]);
   };
-  
+
   return {
     mockUser,
     mockSort,
@@ -44,11 +44,11 @@ export const setupUserMocks = () => {
 
 export const setupBasicUserMocks = () => {
   const mockUser = User as jest.Mocked<typeof User>;
-  
+
   const resetMocks = () => {
     jest.clearAllMocks();
   };
-  
+
   return {
     mockUser,
     resetMocks,

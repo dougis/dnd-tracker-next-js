@@ -4,9 +4,9 @@ import {
   convertLeansUsersToPublic,
 } from '../UserServiceHelpers';
 import { UserAlreadyExistsError } from '../UserServiceErrors';
-import { 
-  createMockUser, 
-  createMockUsers, 
+import {
+  createMockUser,
+  createMockUsers,
   testDatabaseError,
   expectSensitiveFieldsRemoved,
   TEST_USER_ID,
@@ -92,7 +92,7 @@ describe('UserServiceHelpers', () => {
 
     it('should handle database errors gracefully', async () => {
       mockUser.findByEmail.mockRejectedValue(new Error('Database connection failed'));
-      
+
       await testDatabaseError(
         () => checkUserExists(TEST_EMAIL, TEST_USERNAME),
         'Database connection failed'
@@ -328,9 +328,9 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should handle users without _id field', () => {
-      const user = createMockUser({ 
+      const user = createMockUser({
         _id: undefined,
-        passwordHash: 'hashedpassword' 
+        passwordHash: 'hashedpassword'
       });
       delete user._id; // Remove _id completely
 
