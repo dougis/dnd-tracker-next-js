@@ -3,8 +3,8 @@ import { ReactElement } from 'react';
 
 // Define a custom render method for tests
 const customRender = (
-    ui: ReactElement,
-    options?: Omit<RenderOptions, 'wrapper'>
+  ui: ReactElement,
+  options?: Omit<RenderOptions, 'wrapper'>
 ) => render(ui, { ...options });
 
 // Re-export everything from testing-library

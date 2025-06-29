@@ -10,7 +10,7 @@ import { getToken } from 'next-auth/jwt';
 
 // Mock NextAuth JWT module
 jest.mock('next-auth/jwt', () => ({
-    getToken: jest.fn(),
+  getToken: jest.fn(),
 }));
 
 // Mock NextResponse
@@ -18,476 +18,414 @@ const mockRedirect = jest.fn();
 const mockNext = jest.fn();
 
 jest.mock('next/server', () => ({
-    NextRequest: jest.fn(),
-    NextResponse: {
-        redirect: mockRedirect,
-        next: mockNext,
-    },
+  NextRequest: jest.fn(),
+  NextResponse: {
+    redirect: mockRedirect,
+    next: mockNext,
+  },
 }));
 
 // Setup environment variables
 const originalEnv = process.env;
 beforeAll(() => {
-
-    process.env.NEXTAUTH_SECRET = 'test-secret';
-
+  process.env.NEXTAUTH_SECRET = 'test-secret';
 });
 
 afterAll(() => {
-
-    process.env = originalEnv;
-
+  process.env = originalEnv;
 });
 
 beforeEach(() => {
-
-    jest.clearAllMocks();
-    // Reset mocks
-    mockRedirect.mockReset();
-    mockNext.mockReset();
-    (getToken as jest.Mock).mockReset();
-
+  jest.clearAllMocks();
+  // Reset mocks
+  mockRedirect.mockReset();
+  mockNext.mockReset();
+  (getToken as jest.Mock).mockReset();
 });
 
 describe('Middleware Route Protection', () => {
+  describe('Protected Route Detection', () => {
+    it('should identify dashboard routes as protected', async () => {
+      const { middleware } = await import('../middleware');
+      const request = {
+        nextUrl: { pathname: '/dashboard' },
+        url: 'http://localhost:3000/dashboard',
+      } as NextRequest;
 
-    describe('Protected Route Detection', () => {
+      (getToken as jest.Mock).mockResolvedValue(null);
 
-        it('should identify dashboard routes as protected', async () => {
+      await middleware(request);
 
-            const { middleware } = await import('../middleware');
-            const request = {
-                nextUrl: { pathname: '/dashboard' },
-                url: 'http://localhost:3000/dashboard',
-            } as NextRequest;
-
-            (getToken as jest.Mock).mockResolvedValue(null);
-
-            await middleware(request);
-
-            expect(getToken).toHaveBeenCalledWith({
-                req: request,
-                secret: process.env.NEXTAUTH_SECRET,
-            });
-
-        });
-
-        it('should identify characters routes as protected', async () => {
-
-            const { middleware } = await import('../middleware');
-
-            const request = {
-                nextUrl: { pathname: '/characters/create' },
-                url: 'http://localhost:3000/characters/create',
-            } as NextRequest;
-
-            (getToken as jest.Mock).mockResolvedValue(null);
-
-            await middleware(request);
-
-            expect(getToken).toHaveBeenCalled();
-
-        });
-
-        it('should identify encounters routes as protected', async () => {
-
-            const { middleware } = await import('../middleware');
-
-            const request = {
-                nextUrl: { pathname: '/encounters/new' },
-                url: 'http://localhost:3000/encounters/new',
-            } as NextRequest;
-
-            (getToken as jest.Mock).mockResolvedValue(null);
-
-            await middleware(request);
-
-            expect(getToken).toHaveBeenCalled();
-
-        });
-
-        it('should identify combat routes as protected', async () => {
-
-            const { middleware } = await import('../middleware');
-
-            const request = {
-                nextUrl: { pathname: '/combat/123' },
-                url: 'http://localhost:3000/combat/123',
-            } as NextRequest;
-
-            (getToken as jest.Mock).mockResolvedValue(null);
-
-            await middleware(request);
-
-            expect(getToken).toHaveBeenCalled();
-
-        });
-
+      expect(getToken).toHaveBeenCalledWith({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET,
+      });
     });
 
-    describe('Public Route Handling', () => {
+    it('should identify characters routes as protected', async () => {
+      const { middleware } = await import('../middleware');
 
-        it('should allow access to public routes without authentication', async () => {
+      const request = {
+        nextUrl: { pathname: '/characters/create' },
+        url: 'http://localhost:3000/characters/create',
+      } as NextRequest;
 
-            const { middleware } = await import('../middleware');
+      (getToken as jest.Mock).mockResolvedValue(null);
 
-            const publicRoutes = [
-                '/',
-                '/about',
-                '/auth/signin',
-                '/auth/signup',
-                '/auth/error',
-                '/api/health',
-            ];
+      await middleware(request);
 
-            for (const pathname of publicRoutes) {
-
-                mockNext.mockReturnValue({ type: 'next' });
-
-                const request = {
-                    nextUrl: { pathname },
-                    url: `http://localhost:3000${pathname}`,
-                } as NextRequest;
-
-                const result = await middleware(request);
-
-                expect(result).toBeDefined();
-                expect(getToken).not.toHaveBeenCalled();
-
-                // Reset for next iteration
-                jest.clearAllMocks();
-                mockNext.mockReset();
-                (getToken as jest.Mock).mockReset();
-
-            }
-
-        });
-
+      expect(getToken).toHaveBeenCalled();
     });
 
-    describe('Authentication Checks', () => {
+    it('should identify encounters routes as protected', async () => {
+      const { middleware } = await import('../middleware');
 
-        it('should redirect unauthenticated users from protected routes', async () => {
+      const request = {
+        nextUrl: { pathname: '/encounters/new' },
+        url: 'http://localhost:3000/encounters/new',
+      } as NextRequest;
 
-            const { middleware } = await import('../middleware');
+      (getToken as jest.Mock).mockResolvedValue(null);
 
-            const request = {
-                nextUrl: { pathname: '/dashboard' },
-                url: 'http://localhost:3000/dashboard',
-            } as NextRequest;
+      await middleware(request);
 
-            (getToken as jest.Mock).mockResolvedValue(null);
-            mockRedirect.mockReturnValue({ type: 'redirect' });
-
-            const _result = await middleware(request);
-
-            expect(getToken).toHaveBeenCalledWith({
-                req: request,
-                secret: process.env.NEXTAUTH_SECRET,
-            });
-            expect(mockRedirect).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    href: expect.stringContaining('/auth/signin'),
-                    searchParams: expect.any(Object),
-                })
-            );
-
-        });
-
-        it('should include callback URL in redirect', async () => {
-
-            const { middleware } = await import('../middleware');
-
-            const request = {
-                nextUrl: { pathname: '/dashboard/characters' },
-                url: 'http://localhost:3000/dashboard/characters',
-            } as NextRequest;
-
-            (getToken as jest.Mock).mockResolvedValue(null);
-
-            // Mock URL constructor and redirect
-            const mockUrl = {
-                href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A//localhost%3A3000/dashboard/characters',
-                searchParams: {
-                    set: jest.fn(),
-                },
-            };
-
-            // Mock global URL constructor
-            const originalURL = global.URL;
-            global.URL = jest.fn().mockImplementation(() => mockUrl) as any;
-
-            mockRedirect.mockReturnValue({ type: 'redirect' });
-
-            await middleware(request);
-
-            expect(mockUrl.searchParams.set).toHaveBeenCalledWith(
-                'callbackUrl',
-                encodeURI('http://localhost:3000/dashboard/characters')
-            );
-            expect(mockRedirect).toHaveBeenCalledWith(mockUrl);
-
-            // Restore original URL
-            global.URL = originalURL;
-
-        });
-
-        it('should allow authenticated users to access protected routes', async () => {
-
-            const { middleware } = await import('../middleware');
-
-            const request = {
-                nextUrl: { pathname: '/dashboard' },
-                url: 'http://localhost:3000/dashboard',
-            } as NextRequest;
-
-            const mockToken = {
-                email: 'test@example.com',
-                sub: '123',
-                iat: Date.now(),
-                exp: Date.now() + 3600,
-            };
-
-            (getToken as jest.Mock).mockResolvedValue(mockToken);
-            mockNext.mockReturnValue({ type: 'next' });
-
-            const _result = await middleware(request);
-
-            expect(getToken).toHaveBeenCalledWith({
-                req: request,
-                secret: process.env.NEXTAUTH_SECRET,
-            });
-            expect(mockNext).toHaveBeenCalled();
-            expect(mockRedirect).not.toHaveBeenCalled();
-
-        });
-
+      expect(getToken).toHaveBeenCalled();
     });
 
-    describe('Edge Cases', () => {
+    it('should identify combat routes as protected', async () => {
+      const { middleware } = await import('../middleware');
 
-        it('should handle nested protected routes', async () => {
+      const request = {
+        nextUrl: { pathname: '/combat/123' },
+        url: 'http://localhost:3000/combat/123',
+      } as NextRequest;
 
-            const { middleware } = await import('../middleware');
+      (getToken as jest.Mock).mockResolvedValue(null);
 
-            const nestedRoutes = [
-                '/dashboard/settings/profile',
-                '/characters/123/edit',
-                '/encounters/456/participants',
-                '/combat/789/round/1',
-            ];
+      await middleware(request);
 
-            for (const pathname of nestedRoutes) {
+      expect(getToken).toHaveBeenCalled();
+    });
+  });
 
-                (getToken as jest.Mock).mockResolvedValue(null);
-                mockRedirect.mockReturnValue({ type: 'redirect' });
+  describe('Public Route Handling', () => {
+    it('should allow access to public routes without authentication', async () => {
+      const { middleware } = await import('../middleware');
 
-                const request = {
-                    nextUrl: { pathname },
-                    url: `http://localhost:3000${pathname}`,
-                } as NextRequest;
+      const publicRoutes = [
+        '/',
+        '/about',
+        '/auth/signin',
+        '/auth/signup',
+        '/auth/error',
+        '/api/health',
+      ];
 
-                await middleware(request);
+      for (const pathname of publicRoutes) {
+        mockNext.mockReturnValue({ type: 'next' });
 
-                expect(getToken).toHaveBeenCalled();
+        const request = {
+          nextUrl: { pathname },
+          url: `http://localhost:3000${pathname}`,
+        } as NextRequest;
 
-                // Reset for next iteration
-                jest.clearAllMocks();
-                mockRedirect.mockReset();
-                (getToken as jest.Mock).mockReset();
+        const result = await middleware(request);
 
-            }
+        expect(result).toBeDefined();
+        expect(getToken).not.toHaveBeenCalled();
 
-        });
+        // Reset for next iteration
+        jest.clearAllMocks();
+        mockNext.mockReset();
+        (getToken as jest.Mock).mockReset();
+      }
+    });
+  });
 
-        it('should handle getToken errors gracefully', async () => {
+  describe('Authentication Checks', () => {
+    it('should redirect unauthenticated users from protected routes', async () => {
+      const { middleware } = await import('../middleware');
 
-            const { middleware } = await import('../middleware');
+      const request = {
+        nextUrl: { pathname: '/dashboard' },
+        url: 'http://localhost:3000/dashboard',
+      } as NextRequest;
 
-            const request = {
-                nextUrl: { pathname: '/dashboard' },
-                url: 'http://localhost:3000/dashboard',
-            } as NextRequest;
+      (getToken as jest.Mock).mockResolvedValue(null);
+      mockRedirect.mockReturnValue({ type: 'redirect' });
 
-            (getToken as jest.Mock).mockRejectedValue(
-                new Error('Token validation failed')
-            );
-            mockRedirect.mockReturnValue({ type: 'redirect' });
+      const _result = await middleware(request);
 
-            // Should redirect to signin even if getToken throws
-            await expect(middleware(request)).rejects.toThrow(
-                'Token validation failed'
-            );
-            // The middleware doesn't catch getToken errors, which is expected behavior
-
-        });
-
-        it('should handle missing NEXTAUTH_SECRET', async () => {
-
-            const originalSecret = process.env.NEXTAUTH_SECRET;
-            delete process.env.NEXTAUTH_SECRET;
-
-            const { middleware } = await import('../middleware');
-
-            const request = {
-                nextUrl: { pathname: '/dashboard' },
-                url: 'http://localhost:3000/dashboard',
-            } as NextRequest;
-
-            (getToken as jest.Mock).mockResolvedValue(null);
-            mockRedirect.mockReturnValue({ type: 'redirect' });
-
-            await middleware(request);
-
-            expect(getToken).toHaveBeenCalledWith({
-                req: request,
-                secret: undefined,
-            });
-
-            // Restore secret
-            process.env.NEXTAUTH_SECRET = originalSecret;
-
-        });
-
+      expect(getToken).toHaveBeenCalledWith({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET,
+      });
+      expect(mockRedirect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          href: expect.stringContaining('/auth/signin'),
+          searchParams: expect.any(Object),
+        })
+      );
     });
 
-    describe('Middleware Configuration', () => {
+    it('should include callback URL in redirect', async () => {
+      const { middleware } = await import('../middleware');
 
-        it('should export correct matcher configuration', async () => {
+      const request = {
+        nextUrl: { pathname: '/dashboard/characters' },
+        url: 'http://localhost:3000/dashboard/characters',
+      } as NextRequest;
 
-            const middlewareModule = await import('../middleware');
+      (getToken as jest.Mock).mockResolvedValue(null);
 
-            expect(middlewareModule.config).toBeDefined();
-            expect(middlewareModule.config.matcher).toEqual([
-                '/dashboard/:path*',
-                '/characters/:path*',
-                '/encounters/:path*',
-                '/combat/:path*',
-            ]);
+      // Mock URL constructor and redirect
+      const mockUrl = {
+        href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A//localhost%3A3000/dashboard/characters',
+        searchParams: {
+          set: jest.fn(),
+        },
+      };
 
-        });
+      // Mock global URL constructor
+      const originalURL = global.URL;
+      global.URL = jest.fn().mockImplementation(() => mockUrl) as any;
 
+      mockRedirect.mockReturnValue({ type: 'redirect' });
+
+      await middleware(request);
+
+      expect(mockUrl.searchParams.set).toHaveBeenCalledWith(
+        'callbackUrl',
+        encodeURI('http://localhost:3000/dashboard/characters')
+      );
+      expect(mockRedirect).toHaveBeenCalledWith(mockUrl);
+
+      // Restore original URL
+      global.URL = originalURL;
     });
 
-    describe('URL Construction', () => {
+    it('should allow authenticated users to access protected routes', async () => {
+      const { middleware } = await import('../middleware');
 
-        it('should construct signin URL correctly', async () => {
+      const request = {
+        nextUrl: { pathname: '/dashboard' },
+        url: 'http://localhost:3000/dashboard',
+      } as NextRequest;
 
-            const { middleware } = await import('../middleware');
+      const mockToken = {
+        email: 'test@example.com',
+        sub: '123',
+        iat: Date.now(),
+        exp: Date.now() + 3600,
+      };
 
-            const request = {
-                nextUrl: { pathname: '/dashboard' },
-                url: 'http://localhost:3000/dashboard',
-            } as NextRequest;
+      (getToken as jest.Mock).mockResolvedValue(mockToken);
+      mockNext.mockReturnValue({ type: 'next' });
 
-            (getToken as jest.Mock).mockResolvedValue(null);
+      const _result = await middleware(request);
 
-            // Mock URL to track constructor calls
-            const mockUrl = {
-                href: 'http://localhost:3000/auth/signin',
-                searchParams: {
-                    set: jest.fn(),
-                },
-            };
+      expect(getToken).toHaveBeenCalledWith({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET,
+      });
+      expect(mockNext).toHaveBeenCalled();
+      expect(mockRedirect).not.toHaveBeenCalled();
+    });
+  });
 
-            const originalURL = global.URL;
-            global.URL = jest.fn().mockImplementation((path, base) => {
+  describe('Edge Cases', () => {
+    it('should handle nested protected routes', async () => {
+      const { middleware } = await import('../middleware');
 
-                expect(path).toBe('/auth/signin');
-                expect(base).toBe('http://localhost:3000/dashboard');
-                return mockUrl;
+      const nestedRoutes = [
+        '/dashboard/settings/profile',
+        '/characters/123/edit',
+        '/encounters/456/participants',
+        '/combat/789/round/1',
+      ];
 
-            }) as any;
+      for (const pathname of nestedRoutes) {
+        (getToken as jest.Mock).mockResolvedValue(null);
+        mockRedirect.mockReturnValue({ type: 'redirect' });
 
-            mockRedirect.mockReturnValue({ type: 'redirect' });
+        const request = {
+          nextUrl: { pathname },
+          url: `http://localhost:3000${pathname}`,
+        } as NextRequest;
 
-            await middleware(request);
+        await middleware(request);
 
-            expect(global.URL).toHaveBeenCalledWith(
-                '/auth/signin',
-                'http://localhost:3000/dashboard'
-            );
+        expect(getToken).toHaveBeenCalled();
 
-            // Restore original URL
-            global.URL = originalURL;
-
-        });
-
+        // Reset for next iteration
+        jest.clearAllMocks();
+        mockRedirect.mockReset();
+        (getToken as jest.Mock).mockReset();
+      }
     });
 
-    describe('Token Validation', () => {
+    it('should handle getToken errors gracefully', async () => {
+      const { middleware } = await import('../middleware');
 
-        it('should accept valid tokens with all required fields', async () => {
+      const request = {
+        nextUrl: { pathname: '/dashboard' },
+        url: 'http://localhost:3000/dashboard',
+      } as NextRequest;
 
-            const { middleware } = await import('../middleware');
+      (getToken as jest.Mock).mockRejectedValue(
+        new Error('Token validation failed')
+      );
+      mockRedirect.mockReturnValue({ type: 'redirect' });
 
-            const request = {
-                nextUrl: { pathname: '/dashboard' },
-                url: 'http://localhost:3000/dashboard',
-            } as NextRequest;
-
-            const validTokens = [
-                { email: 'test@example.com', sub: '123' },
-                { email: 'user@test.com', sub: '456', name: 'Test User' },
-                {
-                    email: 'admin@example.com',
-                    sub: '789',
-                    name: 'Admin',
-                    subscriptionTier: 'premium',
-                    iat: Date.now(),
-                    exp: Date.now() + 3600,
-                },
-            ];
-
-            for (const token of validTokens) {
-
-                (getToken as jest.Mock).mockResolvedValue(token);
-                mockNext.mockReturnValue({ type: 'next' });
-
-                const _result = await middleware(request);
-
-                expect(mockNext).toHaveBeenCalled();
-                expect(mockRedirect).not.toHaveBeenCalled();
-
-                // Reset for next iteration
-                jest.clearAllMocks();
-                mockNext.mockReset();
-                (getToken as jest.Mock).mockReset();
-
-            }
-
-        });
-
-        it('should reject falsy tokens', async () => {
-
-            const { middleware } = await import('../middleware');
-
-            const request = {
-                nextUrl: { pathname: '/dashboard' },
-                url: 'http://localhost:3000/dashboard',
-            } as NextRequest;
-
-            const invalidTokens = [null, undefined, false, 0, ''];
-
-            for (const token of invalidTokens) {
-
-                (getToken as jest.Mock).mockResolvedValue(token);
-                mockRedirect.mockReturnValue({ type: 'redirect' });
-
-                await middleware(request);
-
-                expect(mockRedirect).toHaveBeenCalled();
-                expect(mockNext).not.toHaveBeenCalled();
-
-                // Reset for next iteration
-                jest.clearAllMocks();
-                mockRedirect.mockReset();
-                (getToken as jest.Mock).mockReset();
-
-            }
-
-        });
-
+      // Should redirect to signin even if getToken throws
+      await expect(middleware(request)).rejects.toThrow(
+        'Token validation failed'
+      );
+      // The middleware doesn't catch getToken errors, which is expected behavior
     });
 
+    it('should handle missing NEXTAUTH_SECRET', async () => {
+      const originalSecret = process.env.NEXTAUTH_SECRET;
+      delete process.env.NEXTAUTH_SECRET;
+
+      const { middleware } = await import('../middleware');
+
+      const request = {
+        nextUrl: { pathname: '/dashboard' },
+        url: 'http://localhost:3000/dashboard',
+      } as NextRequest;
+
+      (getToken as jest.Mock).mockResolvedValue(null);
+      mockRedirect.mockReturnValue({ type: 'redirect' });
+
+      await middleware(request);
+
+      expect(getToken).toHaveBeenCalledWith({
+        req: request,
+        secret: undefined,
+      });
+
+      // Restore secret
+      process.env.NEXTAUTH_SECRET = originalSecret;
+    });
+  });
+
+  describe('Middleware Configuration', () => {
+    it('should export correct matcher configuration', async () => {
+      const middlewareModule = await import('../middleware');
+
+      expect(middlewareModule.config).toBeDefined();
+      expect(middlewareModule.config.matcher).toEqual([
+        '/dashboard/:path*',
+        '/characters/:path*',
+        '/encounters/:path*',
+        '/combat/:path*',
+      ]);
+    });
+  });
+
+  describe('URL Construction', () => {
+    it('should construct signin URL correctly', async () => {
+      const { middleware } = await import('../middleware');
+
+      const request = {
+        nextUrl: { pathname: '/dashboard' },
+        url: 'http://localhost:3000/dashboard',
+      } as NextRequest;
+
+      (getToken as jest.Mock).mockResolvedValue(null);
+
+      // Mock URL to track constructor calls
+      const mockUrl = {
+        href: 'http://localhost:3000/auth/signin',
+        searchParams: {
+          set: jest.fn(),
+        },
+      };
+
+      const originalURL = global.URL;
+      global.URL = jest.fn().mockImplementation((path, base) => {
+        expect(path).toBe('/auth/signin');
+        expect(base).toBe('http://localhost:3000/dashboard');
+        return mockUrl;
+      }) as any;
+
+      mockRedirect.mockReturnValue({ type: 'redirect' });
+
+      await middleware(request);
+
+      expect(global.URL).toHaveBeenCalledWith(
+        '/auth/signin',
+        'http://localhost:3000/dashboard'
+      );
+
+      // Restore original URL
+      global.URL = originalURL;
+    });
+  });
+
+  describe('Token Validation', () => {
+    it('should accept valid tokens with all required fields', async () => {
+      const { middleware } = await import('../middleware');
+
+      const request = {
+        nextUrl: { pathname: '/dashboard' },
+        url: 'http://localhost:3000/dashboard',
+      } as NextRequest;
+
+      const validTokens = [
+        { email: 'test@example.com', sub: '123' },
+        { email: 'user@test.com', sub: '456', name: 'Test User' },
+        {
+          email: 'admin@example.com',
+          sub: '789',
+          name: 'Admin',
+          subscriptionTier: 'premium',
+          iat: Date.now(),
+          exp: Date.now() + 3600,
+        },
+      ];
+
+      for (const token of validTokens) {
+        (getToken as jest.Mock).mockResolvedValue(token);
+        mockNext.mockReturnValue({ type: 'next' });
+
+        const _result = await middleware(request);
+
+        expect(mockNext).toHaveBeenCalled();
+        expect(mockRedirect).not.toHaveBeenCalled();
+
+        // Reset for next iteration
+        jest.clearAllMocks();
+        mockNext.mockReset();
+        (getToken as jest.Mock).mockReset();
+      }
+    });
+
+    it('should reject falsy tokens', async () => {
+      const { middleware } = await import('../middleware');
+
+      const request = {
+        nextUrl: { pathname: '/dashboard' },
+        url: 'http://localhost:3000/dashboard',
+      } as NextRequest;
+
+      const invalidTokens = [null, undefined, false, 0, ''];
+
+      for (const token of invalidTokens) {
+        (getToken as jest.Mock).mockResolvedValue(token);
+        mockRedirect.mockReturnValue({ type: 'redirect' });
+
+        await middleware(request);
+
+        expect(mockRedirect).toHaveBeenCalled();
+        expect(mockNext).not.toHaveBeenCalled();
+
+        // Reset for next iteration
+        jest.clearAllMocks();
+        mockRedirect.mockReset();
+        (getToken as jest.Mock).mockReset();
+      }
+    });
+  });
 });
