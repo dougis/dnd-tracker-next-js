@@ -117,7 +117,7 @@ jest.mock('mongoose', () => ({
     on: jest.fn(),
     once: jest.fn(),
   },
-  Schema: jest.fn().mockImplementation(function(definition) {
+  Schema: jest.fn().mockImplementation(function(_definition) {
     return {
       pre: jest.fn(),
       post: jest.fn(),
