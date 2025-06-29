@@ -20,11 +20,7 @@ jest.mock('next/link', () => {
     href: string;
     className?: string;
   }) {
-    return (
-      <a href={href} className={className} {...props}>
-        {children}
-      </a>
-    );
+    return React.createElement('a', { href, className, ...props }, children);
   };
 });
 
@@ -185,20 +181,20 @@ describe('Breadcrumbs', () => {
         { path: '/help', expectedLabel: 'Help' },
       ];
 
-      testCases.forEach(({ path, expectedLabel, expectedLabels }) => {
+      for (const { path, expectedLabel, expectedLabels } of testCases) {
         mockUsePathname.mockReturnValue(path);
         const { unmount } = render(<Breadcrumbs />);
 
         if (expectedLabels) {
-          expectedLabels.forEach(label => {
+          for (const label of expectedLabels) {
             expect(screen.getByText(label)).toBeInTheDocument();
-          });
+          }
         } else {
           expect(screen.getByText(expectedLabel)).toBeInTheDocument();
         }
 
         unmount();
-      });
+      }
     });
   });
 

@@ -22,11 +22,7 @@ jest.mock('next/link', () => {
     className?: string;
     onClick?: () => void;
   }) {
-    return (
-      <a href={href} className={className} onClick={onClick} {...props}>
-        {children}
-      </a>
-    );
+    return React.createElement('a', { href, className, onClick, ...props }, children);
   };
 });
 
@@ -378,9 +374,9 @@ describe('MobileMenu', () => {
       );
 
       expect(navigationLinks.length).toBeGreaterThan(0);
-      navigationLinks.forEach(link => {
+      for (const link of navigationLinks) {
         expect(link).toHaveClass('px-3', 'py-2', 'rounded-md');
-      });
+      }
     });
   });
 

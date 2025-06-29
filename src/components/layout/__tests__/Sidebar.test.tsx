@@ -20,11 +20,7 @@ jest.mock('next/link', () => {
     href: string;
     className?: string;
   }) {
-    return (
-      <a href={href} className={className} {...props}>
-        {children}
-      </a>
-    );
+    return React.createElement('a', { href, className, ...props }, children);
   };
 });
 
@@ -270,9 +266,9 @@ describe('Sidebar', () => {
       );
 
       expect(navigationLinks.length).toBeGreaterThan(0);
-      navigationLinks.forEach(link => {
+      for (const link of navigationLinks) {
         expect(link).toHaveClass('px-3', 'py-2', 'rounded-md');
-      });
+      }
     });
 
     test('navigation icons have consistent sizing', () => {
@@ -281,9 +277,9 @@ describe('Sidebar', () => {
       const navigationSection = screen.getByRole('navigation');
       const icons = navigationSection.querySelectorAll('svg');
 
-      icons.forEach(icon => {
+      for (const icon of icons) {
         expect(icon).toHaveClass('h-5', 'w-5');
-      });
+      }
     });
   });
 
