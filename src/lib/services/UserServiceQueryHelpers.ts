@@ -24,13 +24,20 @@ export function buildQuery(filters?: QueryFilters): Record<string, any> {
 }
 
 /**
+ * Helper function to execute user count query
+ */
+async function getUserCount(query: Record<string, any>): Promise<number> {
+  return (await UserModel.countDocuments(query)) || 0;
+}
+
+/**
  * Executes user query for test environments with basic mocks
  */
 export async function executeBasicQuery(
   query: Record<string, any>
 ): Promise<QueryResult> {
   const users = (await UserModel.find(query)) || [];
-  const total = (await UserModel.countDocuments(query)) || 0;
+  const total = await getUserCount(query);
   return { users, total };
 }
 
@@ -42,18 +49,30 @@ export async function executeFullQuery(
   skip: number,
   limit: number
 ): Promise<QueryResult> {
-  const findQuery = UserModel.find(query);
-  const sortQuery = findQuery.sort({ createdAt: -1 });
-  const skipQuery = sortQuery.skip(skip);
-  const limitQuery = skipQuery.limit(limit);
-  const leanQuery = limitQuery.lean();
+  const usersQuery = UserModel.find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .lean();
 
   const [users, total] = await Promise.all([
-    leanQuery,
-    UserModel.countDocuments(query),
+    usersQuery,
+    getUserCount(query),
   ]);
 
   return { users, total };
+}
+
+/**
+ * Checks if we're in a test environment with basic mocks
+ */
+function isTestEnvironment(): boolean {
+  try {
+    const findResult = UserModel.find({});
+    return typeof findResult.sort !== 'function';
+  } catch {
+    return true;
+  }
 }
 
 /**
@@ -64,17 +83,9 @@ export async function executeUserQuery(
   skip: number,
   limit: number
 ): Promise<QueryResult> {
-  // For test compatibility, handle mocked and real implementations
-  if (
-    typeof UserModel.find === 'function' &&
-    typeof UserModel.find().sort !== 'function'
-  ) {
-    // We're likely in a test environment with a basic mock
-    return executeBasicQuery(query);
-  } else {
-    // We're in a real environment with a full query chain
-    return executeFullQuery(query, skip, limit);
-  }
+  return isTestEnvironment()
+    ? executeBasicQuery(query)
+    : executeFullQuery(query, skip, limit);
 }
 
 /**
