@@ -2,7 +2,7 @@
 
 ## Issue Resolution Summary
 
-**Issue #114: Resolve formatting conflicts between ESLint and Prettier for consistent static code analysis**
+### Issue #114: Resolve formatting conflicts between ESLint and Prettier for consistent static code analysis
 
 ### Problem Identified
 
