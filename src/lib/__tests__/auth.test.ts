@@ -51,7 +51,7 @@ const updateSessionWithUser = (session: any, user: any) => {
 
         (updatedSession.user as any).id = user.id;
         (updatedSession.user as any).subscriptionTier =
-            (user as any).subscriptionTier || 'free';
+      (user as any).subscriptionTier || 'free';
 
     }
     return updatedSession;
@@ -152,7 +152,9 @@ describe('Authentication System', () => {
             });
 
             // Test successful user lookup
-            const userResult = await mockUserService.getUserByEmail(mockCredentials.email);
+            const userResult = await mockUserService.getUserByEmail(
+                mockCredentials.email
+            );
             expect(userResult.success).toBe(true);
             expect(userResult.data).toEqual(mockUser);
 
@@ -180,7 +182,9 @@ describe('Authentication System', () => {
                 error: 'Invalid credentials',
             });
 
-            const userResult = await mockUserService.getUserByEmail(mockCredentials.email);
+            const userResult = await mockUserService.getUserByEmail(
+                mockCredentials.email
+            );
             expect(userResult.success).toBe(true);
 
             const authResult = await mockUserService.authenticateUser({
@@ -200,7 +204,9 @@ describe('Authentication System', () => {
                 error: 'User not found',
             });
 
-            const result = await mockUserService.getUserByEmail('nonexistent@example.com');
+            const result = await mockUserService.getUserByEmail(
+                'nonexistent@example.com'
+            );
             expect(result.success).toBe(false);
 
         });
@@ -332,7 +338,7 @@ describe('Authentication System', () => {
             if (mockUser) {
 
                 (updatedToken as any).subscriptionTier =
-                    (mockUser as any).subscriptionTier || 'free';
+          (mockUser as any).subscriptionTier || 'free';
 
             }
 
@@ -356,7 +362,7 @@ describe('Authentication System', () => {
             if (mockUser) {
 
                 (updatedToken as any).subscriptionTier =
-                    (mockUser as any).subscriptionTier || 'free';
+          (mockUser as any).subscriptionTier || 'free';
 
             }
 
@@ -401,7 +407,9 @@ describe('Authentication System', () => {
             });
 
             const result = await mockUserService.getUserByEmail(maliciousEmail);
-            expect(mockUserService.getUserByEmail).toHaveBeenCalledWith(maliciousEmail);
+            expect(mockUserService.getUserByEmail).toHaveBeenCalledWith(
+                maliciousEmail
+            );
             expect(result.success).toBe(false);
 
         });

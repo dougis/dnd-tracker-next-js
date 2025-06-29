@@ -450,3 +450,8 @@ All comprehensive project documentation is in the `docs/` folder:
 - ✅ User service layer with comprehensive testing
 
 **Next Phase:** Continue with Phase 2 authentication and data layer issues
+
+### Workflow Memories
+
+- Always check the status of any opened PR and merge if all checks pass
+- Always run `npm run lint:fix` before committing code~
