@@ -4,6 +4,16 @@ import {
   convertLeansUsersToPublic,
 } from '../UserServiceHelpers';
 import { UserAlreadyExistsError } from '../UserServiceErrors';
+import { 
+  createMockUser, 
+  createMockUsers, 
+  testDatabaseError,
+  expectSensitiveFieldsRemoved,
+  TEST_USER_ID,
+  TEST_EMAIL,
+  TEST_USERNAME
+} from './testUtils';
+import { setupBasicUserMocks } from './mockSetup';
 
 // Mock the User model
 jest.mock('../../models/User', () => ({
@@ -11,14 +21,10 @@ jest.mock('../../models/User', () => ({
   findByUsername: jest.fn(),
 }));
 
-// Import the mocked User
-import User from '../../models/User';
-const mockUser = User as jest.Mocked<typeof User>;
+const { mockUser, resetMocks } = setupBasicUserMocks();
 
 describe('UserServiceHelpers', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  beforeEach(resetMocks);
 
   describe('checkUserExists', () => {
     it('should not throw when no existing users found', async () => {
@@ -34,44 +40,44 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should throw UserAlreadyExistsError when email exists', async () => {
-      const existingUser = { _id: 'user1', email: 'test@example.com' };
+      const existingUser = createMockUser({ email: TEST_EMAIL });
       mockUser.findByEmail.mockResolvedValue(existingUser);
       mockUser.findByUsername.mockResolvedValue(null);
 
       await expect(
-        checkUserExists('test@example.com', 'newuser')
+        checkUserExists(TEST_EMAIL, 'newuser')
       ).rejects.toThrow(UserAlreadyExistsError);
 
       await expect(
-        checkUserExists('test@example.com', 'newuser')
-      ).rejects.toThrow('User already exists with email: test@example.com');
+        checkUserExists(TEST_EMAIL, 'newuser')
+      ).rejects.toThrow(`User already exists with email: ${TEST_EMAIL}`);
     });
 
     it('should throw UserAlreadyExistsError when username exists', async () => {
-      const existingUser = { _id: 'user1', username: 'testuser' };
+      const existingUser = createMockUser({ username: TEST_USERNAME });
       mockUser.findByEmail.mockResolvedValue(null);
       mockUser.findByUsername.mockResolvedValue(existingUser);
 
       await expect(
-        checkUserExists('new@example.com', 'testuser')
+        checkUserExists('new@example.com', TEST_USERNAME)
       ).rejects.toThrow(UserAlreadyExistsError);
 
       await expect(
-        checkUserExists('new@example.com', 'testuser')
-      ).rejects.toThrow('User already exists with username: testuser');
+        checkUserExists('new@example.com', TEST_USERNAME)
+      ).rejects.toThrow(`User already exists with username: ${TEST_USERNAME}`);
     });
 
     it('should throw UserAlreadyExistsError when both email and username exist', async () => {
-      const existingEmailUser = { _id: 'user1', email: 'test@example.com' };
-      const existingUsernameUser = { _id: 'user2', username: 'testuser' };
+      const existingEmailUser = createMockUser({ _id: 'user1', email: TEST_EMAIL });
+      const existingUsernameUser = createMockUser({ _id: 'user2', username: TEST_USERNAME });
 
       mockUser.findByEmail.mockResolvedValue(existingEmailUser);
       mockUser.findByUsername.mockResolvedValue(existingUsernameUser);
 
       // Should throw for email first (order of checks)
       await expect(
-        checkUserExists('test@example.com', 'testuser')
-      ).rejects.toThrow('User already exists with email: test@example.com');
+        checkUserExists(TEST_EMAIL, TEST_USERNAME)
+      ).rejects.toThrow(`User already exists with email: ${TEST_EMAIL}`);
     });
 
     it('should handle empty string inputs', async () => {
@@ -85,17 +91,17 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should handle database errors gracefully', async () => {
-      const dbError = new Error('Database connection failed');
-      mockUser.findByEmail.mockRejectedValue(dbError);
-
-      await expect(
-        checkUserExists('test@example.com', 'testuser')
-      ).rejects.toThrow('Database connection failed');
+      mockUser.findByEmail.mockRejectedValue(new Error('Database connection failed'));
+      
+      await testDatabaseError(
+        () => checkUserExists(TEST_EMAIL, TEST_USERNAME),
+        'Database connection failed'
+      );
     });
   });
 
   describe('checkProfileUpdateConflicts', () => {
-    const userId = '507f1f77bcf86cd799439011';
+    const userId = TEST_USER_ID;
 
     it('should not throw when no email or username provided', async () => {
       await expect(
@@ -127,59 +133,59 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should not throw when email belongs to same user', async () => {
-      const existingUser = {
+      const existingUser = createMockUser({
         _id: { toString: () => userId },
-        email: 'test@example.com'
-      };
+        email: TEST_EMAIL
+      });
       mockUser.findByEmail.mockResolvedValue(existingUser);
 
       await expect(
-        checkProfileUpdateConflicts(userId, 'test@example.com')
+        checkProfileUpdateConflicts(userId, TEST_EMAIL)
       ).resolves.not.toThrow();
     });
 
     it('should not throw when username belongs to same user', async () => {
-      const existingUser = {
+      const existingUser = createMockUser({
         _id: { toString: () => userId },
-        username: 'testuser'
-      };
+        username: TEST_USERNAME
+      });
       mockUser.findByUsername.mockResolvedValue(existingUser);
 
       await expect(
-        checkProfileUpdateConflicts(userId, undefined, 'testuser')
+        checkProfileUpdateConflicts(userId, undefined, TEST_USERNAME)
       ).resolves.not.toThrow();
     });
 
     it('should throw UserAlreadyExistsError when email belongs to different user', async () => {
-      const existingUser = {
+      const existingUser = createMockUser({
         _id: { toString: () => 'different-user-id' },
-        email: 'test@example.com'
-      };
+        email: TEST_EMAIL
+      });
       mockUser.findByEmail.mockResolvedValue(existingUser);
 
       await expect(
-        checkProfileUpdateConflicts(userId, 'test@example.com')
+        checkProfileUpdateConflicts(userId, TEST_EMAIL)
       ).rejects.toThrow(UserAlreadyExistsError);
 
       await expect(
-        checkProfileUpdateConflicts(userId, 'test@example.com')
-      ).rejects.toThrow('User already exists with email: test@example.com');
+        checkProfileUpdateConflicts(userId, TEST_EMAIL)
+      ).rejects.toThrow(`User already exists with email: ${TEST_EMAIL}`);
     });
 
     it('should throw UserAlreadyExistsError when username belongs to different user', async () => {
-      const existingUser = {
+      const existingUser = createMockUser({
         _id: { toString: () => 'different-user-id' },
-        username: 'testuser'
-      };
+        username: TEST_USERNAME
+      });
       mockUser.findByUsername.mockResolvedValue(existingUser);
 
       await expect(
-        checkProfileUpdateConflicts(userId, undefined, 'testuser')
+        checkProfileUpdateConflicts(userId, undefined, TEST_USERNAME)
       ).rejects.toThrow(UserAlreadyExistsError);
 
       await expect(
-        checkProfileUpdateConflicts(userId, undefined, 'testuser')
-      ).rejects.toThrow('User already exists with username: testuser');
+        checkProfileUpdateConflicts(userId, undefined, TEST_USERNAME)
+      ).rejects.toThrow(`User already exists with username: ${TEST_USERNAME}`);
     });
 
     it('should handle both email and username updates', async () => {
@@ -206,12 +212,12 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should handle database errors', async () => {
-      const dbError = new Error('Database connection failed');
-      mockUser.findByEmail.mockRejectedValue(dbError);
+      mockUser.findByEmail.mockRejectedValue(new Error('Database connection failed'));
 
-      await expect(
-        checkProfileUpdateConflicts(userId, 'test@example.com')
-      ).rejects.toThrow('Database connection failed');
+      await testDatabaseError(
+        () => checkProfileUpdateConflicts(userId, TEST_EMAIL),
+        'Database connection failed'
+      );
     });
   });
 
@@ -237,30 +243,20 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should convert single user to public format', () => {
-      const user = {
-        _id: '507f1f77bcf86cd799439011',
-        email: 'test@example.com',
-        username: 'testuser',
-        firstName: 'Test',
-        lastName: 'User',
-        role: 'user',
-        subscriptionTier: 'free',
-        isEmailVerified: true,
-        createdAt: new Date('2024-01-01'),
-        updatedAt: new Date('2024-01-01'),
+      const user = createMockUser({
         passwordHash: 'hashedpassword',
         emailVerificationToken: 'token123',
         passwordResetToken: 'resettoken',
         passwordResetExpires: new Date(),
-      };
+      });
 
       const result = convertLeansUsersToPublic([user]);
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
-        id: '507f1f77bcf86cd799439011',
-        email: 'test@example.com',
-        username: 'testuser',
+        id: TEST_USER_ID,
+        email: TEST_EMAIL,
+        username: TEST_USERNAME,
         firstName: 'Test',
         lastName: 'User',
         role: 'user',
@@ -270,78 +266,48 @@ describe('UserServiceHelpers', () => {
         updatedAt: new Date('2024-01-01'),
       });
 
-      // Ensure sensitive fields are removed
-      expect(result[0]).not.toHaveProperty('passwordHash');
-      expect(result[0]).not.toHaveProperty('emailVerificationToken');
-      expect(result[0]).not.toHaveProperty('passwordResetToken');
-      expect(result[0]).not.toHaveProperty('passwordResetExpires');
+      // Use helper for sensitive fields check
+      expectSensitiveFieldsRemoved(result[0]);
     });
 
     it('should handle _id with toString method', () => {
-      const user = {
-        _id: { toString: () => '507f1f77bcf86cd799439011' },
-        email: 'test@example.com',
-        username: 'testuser',
-      };
+      const user = createMockUser({
+        _id: { toString: () => TEST_USER_ID },
+      });
 
       const result = convertLeansUsersToPublic([user]);
 
-      expect(result[0].id).toBe('507f1f77bcf86cd799439011');
+      expect(result[0].id).toBe(TEST_USER_ID);
       expect(result[0]).not.toHaveProperty('_id');
     });
 
     it('should handle _id as string', () => {
-      const user = {
-        _id: '507f1f77bcf86cd799439011',
-        email: 'test@example.com',
-        username: 'testuser',
-      };
+      const user = createMockUser({ _id: TEST_USER_ID });
 
       const result = convertLeansUsersToPublic([user]);
 
-      expect(result[0].id).toBe('507f1f77bcf86cd799439011');
+      expect(result[0].id).toBe(TEST_USER_ID);
       expect(result[0]).not.toHaveProperty('_id');
     });
 
     it('should handle multiple users', () => {
-      const users = [
-        {
-          _id: 'user1',
-          email: 'user1@example.com',
-          username: 'user1',
-          passwordHash: 'hash1',
-        },
-        {
-          _id: 'user2',
-          email: 'user2@example.com',
-          username: 'user2',
-          passwordHash: 'hash2',
-        },
-      ];
+      const users = createMockUsers(2).map((user, i) => ({
+        ...user,
+        passwordHash: `hash${i + 1}`,
+      }));
 
       const result = convertLeansUsersToPublic(users);
 
       expect(result).toHaveLength(2);
       expect(result[0].id).toBe('user1');
       expect(result[1].id).toBe('user2');
-      expect(result[0]).not.toHaveProperty('passwordHash');
-      expect(result[1]).not.toHaveProperty('passwordHash');
+      expectSensitiveFieldsRemoved(result[0]);
+      expectSensitiveFieldsRemoved(result[1]);
     });
 
     it('should filter out null users', () => {
-      const users = [
-        {
-          _id: 'user1',
-          email: 'user1@example.com',
-          username: 'user1',
-        },
-        null,
-        {
-          _id: 'user2',
-          email: 'user2@example.com',
-          username: 'user2',
-        },
-      ];
+      const [user1, user2] = createMockUsers(2);
+      const users = [user1, null, user2];
 
       const result = convertLeansUsersToPublic(users);
 
@@ -351,19 +317,8 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should filter out undefined users', () => {
-      const users = [
-        {
-          _id: 'user1',
-          email: 'user1@example.com',
-          username: 'user1',
-        },
-        undefined,
-        {
-          _id: 'user2',
-          email: 'user2@example.com',
-          username: 'user2',
-        },
-      ];
+      const [user1, user2] = createMockUsers(2);
+      const users = [user1, undefined, user2];
 
       const result = convertLeansUsersToPublic(users);
 
@@ -373,18 +328,18 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should handle users without _id field', () => {
-      const user = {
-        email: 'test@example.com',
-        username: 'testuser',
-        passwordHash: 'hashedpassword',
-      };
+      const user = createMockUser({ 
+        _id: undefined,
+        passwordHash: 'hashedpassword' 
+      });
+      delete user._id; // Remove _id completely
 
       const result = convertLeansUsersToPublic([user]);
 
       expect(result[0]).not.toHaveProperty('id');
       expect(result[0]).not.toHaveProperty('_id');
-      expect(result[0]).not.toHaveProperty('passwordHash');
-      expect(result[0].email).toBe('test@example.com');
+      expectSensitiveFieldsRemoved(result[0]);
+      expect(result[0].email).toBe(TEST_EMAIL);
     });
 
     it('should handle empty user objects', () => {
@@ -395,21 +350,11 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should handle mixed valid and invalid users', () => {
-      const users = [
-        null,
-        {
-          _id: 'user1',
-          email: 'user1@example.com',
-          passwordHash: 'hash1',
-        },
-        undefined,
-        {},
-        {
-          _id: 'user2',
-          email: 'user2@example.com',
-          passwordHash: 'hash2',
-        },
-      ];
+      const [user1, user2] = createMockUsers(2).map((user, i) => ({
+        ...user,
+        passwordHash: `hash${i + 1}`,
+      }));
+      const users = [null, user1, undefined, {}, user2];
 
       const result = convertLeansUsersToPublic(users);
 

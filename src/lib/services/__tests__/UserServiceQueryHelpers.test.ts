@@ -7,6 +7,8 @@ import {
   QueryFilters,
 } from '../UserServiceQueryHelpers';
 import type { PublicUser } from '@/lib/validations/user';
+import { createMockUsers, createPublicUser, testDatabaseError } from './testUtils';
+import { setupUserMocks } from './mockSetup';
 
 // Mock the User model
 jest.mock('../../models/User', () => ({
@@ -19,38 +21,13 @@ jest.mock('../UserServiceHelpers', () => ({
   convertLeansUsersToPublic: jest.fn(),
 }));
 
-// Import mocked dependencies
-import User from '../../models/User';
 import { convertLeansUsersToPublic } from '../UserServiceHelpers';
-
-const mockUser = User as jest.Mocked<typeof User>;
 const mockedConvertLeansUsersToPublic = jest.mocked(convertLeansUsersToPublic);
 
-// Mock the query chain methods
-const mockSort = jest.fn();
-const mockSkip = jest.fn();
-const mockLimit = jest.fn();
-const mockLean = jest.fn();
+const { mockUser, mockSort, mockSkip, mockLimit, mockLean, resetMocks } = setupUserMocks();
 
 describe('UserServiceQueryHelpers', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-
-    // Setup default mock chain
-    mockUser.find.mockReturnValue({
-      sort: mockSort,
-    } as any);
-    mockSort.mockReturnValue({
-      skip: mockSkip,
-    } as any);
-    mockSkip.mockReturnValue({
-      limit: mockLimit,
-    } as any);
-    mockLimit.mockReturnValue({
-      lean: mockLean,
-    } as any);
-    mockLean.mockResolvedValue([]);
-  });
+  beforeEach(resetMocks);
 
   describe('buildQuery', () => {
     it('should return empty object when no filters provided', () => {
@@ -107,10 +84,7 @@ describe('UserServiceQueryHelpers', () => {
   describe('executeBasicQuery', () => {
     it('should execute query and return results with total count', async () => {
       const query = { role: 'user' };
-      const mockUsers = [
-        { _id: 'user1', email: 'user1@example.com' },
-        { _id: 'user2', email: 'user2@example.com' },
-      ];
+      const mockUsers = createMockUsers(2);
 
       mockUser.find.mockResolvedValue(mockUsers as any);
       mockUser.countDocuments.mockResolvedValue(2);
@@ -141,7 +115,7 @@ describe('UserServiceQueryHelpers', () => {
 
     it('should handle null total count', async () => {
       const query = { role: 'user' };
-      const mockUsers = [{ _id: 'user1' }];
+      const mockUsers = [createMockUsers(1)[0]];
 
       mockUser.find.mockResolvedValue(mockUsers as any);
       mockUser.countDocuments.mockResolvedValue(null as any);
@@ -156,7 +130,7 @@ describe('UserServiceQueryHelpers', () => {
 
     it('should handle empty query object', async () => {
       const query = {};
-      const mockUsers = [{ _id: 'user1' }];
+      const mockUsers = [createMockUsers(1)[0]];
 
       mockUser.find.mockResolvedValue(mockUsers as any);
       mockUser.countDocuments.mockResolvedValue(1);
@@ -170,11 +144,10 @@ describe('UserServiceQueryHelpers', () => {
 
     it('should handle database errors', async () => {
       const query = { role: 'user' };
-      const dbError = new Error('Database connection failed');
+      mockUser.find.mockRejectedValue(new Error('Database connection failed'));
 
-      mockUser.find.mockRejectedValue(dbError);
-
-      await expect(executeBasicQuery(query)).rejects.toThrow(
+      await testDatabaseError(
+        () => executeBasicQuery(query),
         'Database connection failed'
       );
     });
@@ -185,7 +158,7 @@ describe('UserServiceQueryHelpers', () => {
       const query = { role: 'user' };
       const skip = 10;
       const limit = 5;
-      const mockUsers = [{ _id: 'user1' }];
+      const mockUsers = [createMockUsers(1)[0]];
       const mockTotal = 25;
 
       mockLean.mockResolvedValue(mockUsers);
@@ -226,7 +199,7 @@ describe('UserServiceQueryHelpers', () => {
       const query = {};
       const skip = 0;
       const limit = 10;
-      const mockUsers = [{ _id: 'user1' }, { _id: 'user2' }];
+      const mockUsers = createMockUsers(2);
 
       mockLean.mockResolvedValue(mockUsers);
       mockUser.countDocuments.mockResolvedValue(2);
@@ -242,36 +215,35 @@ describe('UserServiceQueryHelpers', () => {
       const query = { role: 'user' };
       const skip = 5;
       const limit = 3;
+      const mockUsers = [createMockUsers(1)[0]];
 
       // Mock both promises resolve
-      mockLean.mockResolvedValue([{ _id: 'user1' }]);
+      mockLean.mockResolvedValue(mockUsers);
       mockUser.countDocuments.mockResolvedValue(10);
 
       const result = await executeFullQuery(query, skip, limit);
 
-      expect(result.users).toEqual([{ _id: 'user1' }]);
+      expect(result.users).toEqual(mockUsers);
       expect(result.total).toBe(10);
     });
 
     it('should handle database errors in query execution', async () => {
       const query = { role: 'user' };
-      const dbError = new Error('Query execution failed');
+      mockLean.mockRejectedValue(new Error('Query execution failed'));
 
-      mockLean.mockRejectedValue(dbError);
-
-      await expect(executeFullQuery(query, 0, 10)).rejects.toThrow(
+      await testDatabaseError(
+        () => executeFullQuery(query, 0, 10),
         'Query execution failed'
       );
     });
 
     it('should handle database errors in count operation', async () => {
       const query = { role: 'user' };
-      const dbError = new Error('Count operation failed');
-
       mockLean.mockResolvedValue([]);
-      mockUser.countDocuments.mockRejectedValue(dbError);
+      mockUser.countDocuments.mockRejectedValue(new Error('Count operation failed'));
 
-      await expect(executeFullQuery(query, 0, 10)).rejects.toThrow(
+      await testDatabaseError(
+        () => executeFullQuery(query, 0, 10),
         'Count operation failed'
       );
     });
@@ -282,16 +254,17 @@ describe('UserServiceQueryHelpers', () => {
       const query = { role: 'user' };
       const skip = 0;
       const limit = 10;
+      const mockUsers = [createMockUsers(1)[0]];
 
       // Mock test environment - find returns function but no sort method
       mockUser.find.mockReturnValue((() => {}) as any);
-      mockUser.find.mockResolvedValue([{ _id: 'user1' }] as any);
+      mockUser.find.mockResolvedValue(mockUsers as any);
       mockUser.countDocuments.mockResolvedValue(1);
 
       const result = await executeUserQuery(query, skip, limit);
 
       expect(result).toEqual({
-        users: [{ _id: 'user1' }],
+        users: mockUsers,
         total: 1,
       });
     });
@@ -300,7 +273,7 @@ describe('UserServiceQueryHelpers', () => {
       const query = { role: 'admin' };
       const skip = 5;
       const limit = 15;
-      const mockUsers = [{ _id: 'admin1' }];
+      const mockUsers = [createMockUsers(1)[0]];
 
       // Mock production environment - find returns object with sort method
       mockUser.find.mockReturnValue({
@@ -343,13 +316,10 @@ describe('UserServiceQueryHelpers', () => {
     });
 
     it('should format paginated result with converted users', () => {
-      const users = [
-        { _id: 'user1', email: 'user1@example.com' },
-        { _id: 'user2', email: 'user2@example.com' },
-      ];
-      const publicUsers: PublicUser[] = [
-        { id: 'user1', email: 'user1@example.com' } as PublicUser,
-        { id: 'user2', email: 'user2@example.com' } as PublicUser,
+      const users = createMockUsers(2);
+      const publicUsers = [
+        createPublicUser({ id: 'user1', email: 'user1@example.com' }),
+        createPublicUser({ id: 'user2', email: 'user2@example.com' }),
       ];
       const total = 25;
       const page = 2;
@@ -394,8 +364,8 @@ describe('UserServiceQueryHelpers', () => {
     });
 
     it('should calculate totalPages correctly for exact division', () => {
-      const users = [{ _id: 'user1' }];
-      const publicUsers = [{ id: 'user1' }] as PublicUser[];
+      const users = [createMockUsers(1)[0]];
+      const publicUsers = [createPublicUser({ id: 'user1' })];
       const total = 20;
       const page = 2;
       const limit = 10;
@@ -408,8 +378,8 @@ describe('UserServiceQueryHelpers', () => {
     });
 
     it('should calculate totalPages correctly for partial pages', () => {
-      const users = [{ _id: 'user1' }];
-      const publicUsers = [{ id: 'user1' }] as PublicUser[];
+      const users = [createMockUsers(1)[0]];
+      const publicUsers = [createPublicUser({ id: 'user1' })];
       const total = 23;
       const page = 3;
       const limit = 10;
@@ -422,8 +392,8 @@ describe('UserServiceQueryHelpers', () => {
     });
 
     it('should handle single user per page', () => {
-      const users = [{ _id: 'user1' }];
-      const publicUsers = [{ id: 'user1' }] as PublicUser[];
+      const users = [createMockUsers(1)[0]];
+      const publicUsers = [createPublicUser({ id: 'user1' })];
       const total = 5;
       const page = 3;
       const limit = 1;
@@ -450,8 +420,8 @@ describe('UserServiceQueryHelpers', () => {
     });
 
     it('should handle large numbers', () => {
-      const users = [{ _id: 'user1' }];
-      const publicUsers = [{ id: 'user1' }] as PublicUser[];
+      const users = [createMockUsers(1)[0]];
+      const publicUsers = [createPublicUser({ id: 'user1' })];
       const total = 999;
       const page = 50;
       const limit = 20;
@@ -464,8 +434,8 @@ describe('UserServiceQueryHelpers', () => {
     });
 
     it('should preserve exact pagination values', () => {
-      const users = [{ _id: 'user1' }];
-      const publicUsers = [{ id: 'user1' }] as PublicUser[];
+      const users = [createMockUsers(1)[0]];
+      const publicUsers = [createPublicUser({ id: 'user1' })];
       const total = 100;
       const page = 7;
       const limit = 15;
