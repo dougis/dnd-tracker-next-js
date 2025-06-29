@@ -71,6 +71,53 @@ export const expectSensitiveFieldsRemoved = (user: any) => {
   });
 };
 
+export const expectUserIdConversion = (user: any, expectedId: string) => {
+  expect(user.id).toBe(expectedId);
+  expect(user).not.toHaveProperty('_id');
+};
+
+export const expectMockCalls = (
+  mockUser: any,
+  email?: string,
+  username?: string
+) => {
+  if (email) {
+    expect(mockUser.findByEmail).toHaveBeenCalledWith(email);
+  }
+  if (username) {
+    expect(mockUser.findByUsername).toHaveBeenCalledWith(username);
+  }
+};
+
+export const expectErrorThrown = async (
+  testFunction: () => Promise<any>,
+  errorClass: any,
+  expectedMessage?: string
+) => {
+  await expect(testFunction()).rejects.toThrow(errorClass);
+  if (expectedMessage) {
+    await expect(testFunction()).rejects.toThrow(expectedMessage);
+  }
+};
+
+export const expectQueryChainCalls = (
+  mockUser: any,
+  mockSort: any,
+  mockSkip: any,
+  mockLimit: any,
+  mockLean: any,
+  query: any,
+  skip?: number,
+  limit?: number
+) => {
+  expect(mockUser.find).toHaveBeenCalledWith(query);
+  expect(mockSort).toHaveBeenCalledWith({ createdAt: -1 });
+  if (skip !== undefined) expect(mockSkip).toHaveBeenCalledWith(skip);
+  if (limit !== undefined) expect(mockLimit).toHaveBeenCalledWith(limit);
+  expect(mockLean).toHaveBeenCalled();
+  expect(mockUser.countDocuments).toHaveBeenCalledWith(query);
+};
+
 // Common test data constants
 export const TEST_USER_ID = '507f1f77bcf86cd799439011';
 export const TEST_EMAIL = 'test@example.com';

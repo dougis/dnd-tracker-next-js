@@ -9,6 +9,9 @@ import {
   createMockUsers,
   testDatabaseError,
   expectSensitiveFieldsRemoved,
+  expectUserIdConversion,
+  expectMockCalls,
+  expectErrorThrown,
   TEST_USER_ID,
   TEST_EMAIL,
   TEST_USERNAME
@@ -35,8 +38,7 @@ describe('UserServiceHelpers', () => {
         checkUserExists('new@example.com', 'newuser')
       ).resolves.not.toThrow();
 
-      expect(mockUser.findByEmail).toHaveBeenCalledWith('new@example.com');
-      expect(mockUser.findByUsername).toHaveBeenCalledWith('newuser');
+      expectMockCalls(mockUser, 'new@example.com', 'newuser');
     });
 
     it('should throw UserAlreadyExistsError when email exists', async () => {
@@ -44,13 +46,11 @@ describe('UserServiceHelpers', () => {
       mockUser.findByEmail.mockResolvedValue(existingUser);
       mockUser.findByUsername.mockResolvedValue(null);
 
-      await expect(
-        checkUserExists(TEST_EMAIL, 'newuser')
-      ).rejects.toThrow(UserAlreadyExistsError);
-
-      await expect(
-        checkUserExists(TEST_EMAIL, 'newuser')
-      ).rejects.toThrow(`User already exists with email: ${TEST_EMAIL}`);
+      await expectErrorThrown(
+        () => checkUserExists(TEST_EMAIL, 'newuser'),
+        UserAlreadyExistsError,
+        `User already exists with email: ${TEST_EMAIL}`
+      );
     });
 
     it('should throw UserAlreadyExistsError when username exists', async () => {
@@ -58,13 +58,11 @@ describe('UserServiceHelpers', () => {
       mockUser.findByEmail.mockResolvedValue(null);
       mockUser.findByUsername.mockResolvedValue(existingUser);
 
-      await expect(
-        checkUserExists('new@example.com', TEST_USERNAME)
-      ).rejects.toThrow(UserAlreadyExistsError);
-
-      await expect(
-        checkUserExists('new@example.com', TEST_USERNAME)
-      ).rejects.toThrow(`User already exists with username: ${TEST_USERNAME}`);
+      await expectErrorThrown(
+        () => checkUserExists('new@example.com', TEST_USERNAME),
+        UserAlreadyExistsError,
+        `User already exists with username: ${TEST_USERNAME}`
+      );
     });
 
     it('should throw UserAlreadyExistsError when both email and username exist', async () => {
@@ -86,8 +84,7 @@ describe('UserServiceHelpers', () => {
 
       await expect(checkUserExists('', '')).resolves.not.toThrow();
 
-      expect(mockUser.findByEmail).toHaveBeenCalledWith('');
-      expect(mockUser.findByUsername).toHaveBeenCalledWith('');
+      expectMockCalls(mockUser, '', '');
     });
 
     it('should handle database errors gracefully', async () => {
@@ -196,8 +193,7 @@ describe('UserServiceHelpers', () => {
         checkProfileUpdateConflicts(userId, 'new@example.com', 'newuser')
       ).resolves.not.toThrow();
 
-      expect(mockUser.findByEmail).toHaveBeenCalledWith('new@example.com');
-      expect(mockUser.findByUsername).toHaveBeenCalledWith('newuser');
+      expectMockCalls(mockUser, 'new@example.com', 'newuser');
     });
 
     it('should handle empty string values', async () => {
@@ -277,8 +273,7 @@ describe('UserServiceHelpers', () => {
 
       const result = convertLeansUsersToPublic([user]);
 
-      expect(result[0].id).toBe(TEST_USER_ID);
-      expect(result[0]).not.toHaveProperty('_id');
+      expectUserIdConversion(result[0], TEST_USER_ID);
     });
 
     it('should handle _id as string', () => {
@@ -286,8 +281,7 @@ describe('UserServiceHelpers', () => {
 
       const result = convertLeansUsersToPublic([user]);
 
-      expect(result[0].id).toBe(TEST_USER_ID);
-      expect(result[0]).not.toHaveProperty('_id');
+      expectUserIdConversion(result[0], TEST_USER_ID);
     });
 
     it('should handle multiple users', () => {

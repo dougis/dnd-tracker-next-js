@@ -37,3 +37,7 @@ yarn-error.log*
 next-env.d.ts
 
 .idea/
+
+
+#Ignore vscode AI rules
+.github/copilot-instructions.md

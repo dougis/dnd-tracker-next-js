@@ -7,7 +7,7 @@ import {
   QueryFilters,
 } from '../UserServiceQueryHelpers';
 import type { PublicUser } from '@/lib/validations/user';
-import { createMockUsers, createPublicUser, testDatabaseError } from './testUtils';
+import { createMockUsers, createPublicUser, testDatabaseError, expectQueryChainCalls } from './testUtils';
 import { setupUserMocks } from './mockSetup';
 
 // Mock the User model
@@ -166,12 +166,7 @@ describe('UserServiceQueryHelpers', () => {
 
       const result = await executeFullQuery(query, skip, limit);
 
-      expect(mockUser.find).toHaveBeenCalledWith(query);
-      expect(mockSort).toHaveBeenCalledWith({ createdAt: -1 });
-      expect(mockSkip).toHaveBeenCalledWith(skip);
-      expect(mockLimit).toHaveBeenCalledWith(limit);
-      expect(mockLean).toHaveBeenCalled();
-      expect(mockUser.countDocuments).toHaveBeenCalledWith(query);
+      expectQueryChainCalls(mockUser, mockSort, mockSkip, mockLimit, mockLean, query, skip, limit);
 
       expect(result).toEqual({
         users: mockUsers,
@@ -190,8 +185,7 @@ describe('UserServiceQueryHelpers', () => {
 
       const result = await executeFullQuery(query, skip, limit);
 
-      expect(mockSkip).toHaveBeenCalledWith(0);
-      expect(mockLimit).toHaveBeenCalledWith(0);
+      expectQueryChainCalls(mockUser, mockSort, mockSkip, mockLimit, mockLean, query, skip, limit);
       expect(result.users).toEqual([]);
     });
 
@@ -206,7 +200,7 @@ describe('UserServiceQueryHelpers', () => {
 
       const result = await executeFullQuery(query, skip, limit);
 
-      expect(mockUser.find).toHaveBeenCalledWith({});
+      expectQueryChainCalls(mockUser, mockSort, mockSkip, mockLimit, mockLean, query, skip, limit);
       expect(result.users).toEqual(mockUsers);
       expect(result.total).toBe(2);
     });
@@ -285,10 +279,7 @@ describe('UserServiceQueryHelpers', () => {
 
       const result = await executeUserQuery(query, skip, limit);
 
-      expect(mockUser.find).toHaveBeenCalledWith(query);
-      expect(mockSort).toHaveBeenCalledWith({ createdAt: -1 });
-      expect(mockSkip).toHaveBeenCalledWith(skip);
-      expect(mockLimit).toHaveBeenCalledWith(limit);
+      expectQueryChainCalls(mockUser, mockSort, mockSkip, mockLimit, mockLean, query, skip, limit);
       expect(result).toEqual({
         users: mockUsers,
         total: 1,
