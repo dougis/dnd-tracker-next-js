@@ -8,8 +8,8 @@ export class UserServiceDatabase {
    * Safely save a user with test environment compatibility
    */
   static async saveUserSafely(user: any): Promise<void> {
-    // Save might be a mock in tests
-    if (typeof user.save === 'function') {
+    // Save might be a mock in tests, handle null/undefined gracefully
+    if (user && typeof user.save === 'function') {
       await user.save();
     }
   }
@@ -18,7 +18,7 @@ export class UserServiceDatabase {
    * Generate email verification token and save user
    */
   static async generateAndSaveEmailToken(user: any): Promise<void> {
-    if (typeof user.generateEmailVerificationToken === 'function') {
+    if (user && typeof user.generateEmailVerificationToken === 'function') {
       user.generateEmailVerificationToken();
     }
     await this.saveUserSafely(user);
@@ -30,7 +30,7 @@ export class UserServiceDatabase {
   static async generateAndSaveResetToken(user: any): Promise<string> {
     let resetToken = 'dummy-token';
 
-    if (typeof user.generatePasswordResetToken === 'function') {
+    if (user && typeof user.generatePasswordResetToken === 'function') {
       resetToken = await user.generatePasswordResetToken();
     }
 
@@ -69,7 +69,7 @@ export class UserServiceDatabase {
    * Update user's last login timestamp
    */
   static async updateLastLogin(user: any): Promise<void> {
-    if (typeof user.updateLastLogin === 'function') {
+    if (user && typeof user.updateLastLogin === 'function') {
       await user.updateLastLogin();
     }
   }
