@@ -83,7 +83,7 @@ export async function executeUserQuery(
   skip: number,
   limit: number
 ): Promise<QueryResult> {
-  return isTestEnvironment() 
+  return isTestEnvironment()
     ? executeBasicQuery(query)
     : executeFullQuery(query, skip, limit);
 }
