@@ -12,6 +12,10 @@ import {
   expectUserIdConversion,
   expectMockCalls,
   expectErrorThrown,
+  createExistingUserWithEmail,
+  createExistingUserWithUsername,
+  createUserWithObjectId,
+  setupConflictTest,
   TEST_USER_ID,
   TEST_EMAIL,
   TEST_USERNAME
@@ -42,9 +46,7 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should throw UserAlreadyExistsError when email exists', async () => {
-      const existingUser = createMockUser({ email: TEST_EMAIL });
-      mockUser.findByEmail.mockResolvedValue(existingUser);
-      mockUser.findByUsername.mockResolvedValue(null);
+      setupConflictTest(mockUser, 'email', TEST_EMAIL);
 
       await expectErrorThrown(
         () => checkUserExists(TEST_EMAIL, 'newuser'),
@@ -54,9 +56,7 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should throw UserAlreadyExistsError when username exists', async () => {
-      const existingUser = createMockUser({ username: TEST_USERNAME });
-      mockUser.findByEmail.mockResolvedValue(null);
-      mockUser.findByUsername.mockResolvedValue(existingUser);
+      setupConflictTest(mockUser, 'username', TEST_USERNAME);
 
       await expectErrorThrown(
         () => checkUserExists('new@example.com', TEST_USERNAME),
@@ -66,8 +66,8 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should throw UserAlreadyExistsError when both email and username exist', async () => {
-      const existingEmailUser = createMockUser({ _id: 'user1', email: TEST_EMAIL });
-      const existingUsernameUser = createMockUser({ _id: 'user2', username: TEST_USERNAME });
+      const existingEmailUser = createExistingUserWithEmail(TEST_EMAIL, 'user1');
+      const existingUsernameUser = createExistingUserWithUsername(TEST_USERNAME, 'user2');
 
       mockUser.findByEmail.mockResolvedValue(existingEmailUser);
       mockUser.findByUsername.mockResolvedValue(existingUsernameUser);
@@ -130,10 +130,7 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should not throw when email belongs to same user', async () => {
-      const existingUser = createMockUser({
-        _id: { toString: () => userId },
-        email: TEST_EMAIL
-      });
+      const existingUser = createUserWithObjectId(userId, { email: TEST_EMAIL });
       mockUser.findByEmail.mockResolvedValue(existingUser);
 
       await expect(
@@ -142,10 +139,7 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should not throw when username belongs to same user', async () => {
-      const existingUser = createMockUser({
-        _id: { toString: () => userId },
-        username: TEST_USERNAME
-      });
+      const existingUser = createUserWithObjectId(userId, { username: TEST_USERNAME });
       mockUser.findByUsername.mockResolvedValue(existingUser);
 
       await expect(
@@ -154,11 +148,7 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should throw UserAlreadyExistsError when email belongs to different user', async () => {
-      const existingUser = createMockUser({
-        _id: { toString: () => 'different-user-id' },
-        email: TEST_EMAIL
-      });
-      mockUser.findByEmail.mockResolvedValue(existingUser);
+      setupConflictTest(mockUser, 'email', TEST_EMAIL, 'different-user-id');
 
       await expect(
         checkProfileUpdateConflicts(userId, TEST_EMAIL)
@@ -170,11 +160,7 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should throw UserAlreadyExistsError when username belongs to different user', async () => {
-      const existingUser = createMockUser({
-        _id: { toString: () => 'different-user-id' },
-        username: TEST_USERNAME
-      });
-      mockUser.findByUsername.mockResolvedValue(existingUser);
+      setupConflictTest(mockUser, 'username', TEST_USERNAME, 'different-user-id');
 
       await expect(
         checkProfileUpdateConflicts(userId, undefined, TEST_USERNAME)

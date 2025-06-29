@@ -118,6 +118,67 @@ export const expectQueryChainCalls = (
   expect(mockUser.countDocuments).toHaveBeenCalledWith(query);
 };
 
+// Common test scenario functions
+export const setupQueryTest = (mockUsers: any[], total: number = mockUsers.length) => ({
+  mockUsers,
+  total,
+  setupMocks: (mockUser: any, mockLean: any) => {
+    mockLean.mockResolvedValue(mockUsers);
+    mockUser.countDocuments.mockResolvedValue(total);
+  }
+});
+
+export const expectPaginatedResult = (result: any, expectedUsers: any[], expectedTotal: number) => {
+  expect(result).toEqual({
+    users: expectedUsers,
+    total: expectedTotal,
+  });
+};
+
+export const expectPaginationValues = (pagination: any, page: number, limit: number, total: number, totalPages: number) => {
+  expect(pagination).toEqual({
+    page,
+    limit,
+    total,
+    totalPages,
+  });
+};
+
+// User conflict testing utilities
+export const createExistingUserWithEmail = (email: string, userId?: string) =>
+  createMockUser({
+    _id: userId || 'existing-user-id',
+    email
+  });
+
+export const createExistingUserWithUsername = (username: string, userId?: string) =>
+  createMockUser({
+    _id: userId || 'existing-user-id',
+    username
+  });
+
+export const createUserWithObjectId = (userId: string, overrides: any = {}) =>
+  createMockUser({
+    _id: { toString: () => userId },
+    ...overrides
+  });
+
+export const setupConflictTest = (mockUser: any, type: 'email' | 'username', value: string, conflictUserId?: string) => {
+  const existingUser = type === 'email'
+    ? createUserWithObjectId(conflictUserId || 'different-user-id', { email: value })
+    : createUserWithObjectId(conflictUserId || 'different-user-id', { username: value });
+
+  if (type === 'email') {
+    mockUser.findByEmail.mockResolvedValue(existingUser);
+    mockUser.findByUsername.mockResolvedValue(null);
+  } else {
+    mockUser.findByEmail.mockResolvedValue(null);
+    mockUser.findByUsername.mockResolvedValue(existingUser);
+  }
+
+  return existingUser;
+};
+
 // Common test data constants
 export const TEST_USER_ID = '507f1f77bcf86cd799439011';
 export const TEST_EMAIL = 'test@example.com';

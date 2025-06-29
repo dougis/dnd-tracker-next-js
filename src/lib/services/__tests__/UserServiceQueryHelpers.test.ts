@@ -7,7 +7,15 @@ import {
   QueryFilters,
 } from '../UserServiceQueryHelpers';
 import type { PublicUser } from '@/lib/validations/user';
-import { createMockUsers, createPublicUser, testDatabaseError, expectQueryChainCalls } from './testUtils';
+import {
+  createMockUsers,
+  createPublicUser,
+  testDatabaseError,
+  expectQueryChainCalls,
+  setupQueryTest,
+  expectPaginatedResult,
+  expectPaginationValues
+} from './testUtils';
 import { setupUserMocks } from './mockSetup';
 
 // Mock the User model
@@ -158,67 +166,55 @@ describe('UserServiceQueryHelpers', () => {
       const query = { role: 'user' };
       const skip = 10;
       const limit = 5;
-      const mockUsers = [createMockUsers(1)[0]];
-      const mockTotal = 25;
+      const testSetup = setupQueryTest(createMockUsers(1), 25);
 
-      mockLean.mockResolvedValue(mockUsers);
-      mockUser.countDocuments.mockResolvedValue(mockTotal);
+      testSetup.setupMocks(mockUser, mockLean);
 
       const result = await executeFullQuery(query, skip, limit);
 
       expectQueryChainCalls(mockUser, mockSort, mockSkip, mockLimit, mockLean, query, skip, limit);
-
-      expect(result).toEqual({
-        users: mockUsers,
-        total: mockTotal,
-      });
+      expectPaginatedResult(result, testSetup.mockUsers, testSetup.total);
     });
 
     it('should handle zero skip and limit', async () => {
       const query = { role: 'admin' };
       const skip = 0;
       const limit = 0;
-      const mockUsers: any[] = [];
+      const testSetup = setupQueryTest([]);
 
-      mockLean.mockResolvedValue(mockUsers);
-      mockUser.countDocuments.mockResolvedValue(0);
+      testSetup.setupMocks(mockUser, mockLean);
 
       const result = await executeFullQuery(query, skip, limit);
 
       expectQueryChainCalls(mockUser, mockSort, mockSkip, mockLimit, mockLean, query, skip, limit);
-      expect(result.users).toEqual([]);
+      expectPaginatedResult(result, [], 0);
     });
 
     it('should handle empty query', async () => {
       const query = {};
       const skip = 0;
       const limit = 10;
-      const mockUsers = createMockUsers(2);
+      const testSetup = setupQueryTest(createMockUsers(2));
 
-      mockLean.mockResolvedValue(mockUsers);
-      mockUser.countDocuments.mockResolvedValue(2);
+      testSetup.setupMocks(mockUser, mockLean);
 
       const result = await executeFullQuery(query, skip, limit);
 
       expectQueryChainCalls(mockUser, mockSort, mockSkip, mockLimit, mockLean, query, skip, limit);
-      expect(result.users).toEqual(mockUsers);
-      expect(result.total).toBe(2);
+      expectPaginatedResult(result, testSetup.mockUsers, testSetup.total);
     });
 
     it('should handle Promise.all execution', async () => {
       const query = { role: 'user' };
       const skip = 5;
       const limit = 3;
-      const mockUsers = [createMockUsers(1)[0]];
+      const testSetup = setupQueryTest(createMockUsers(1), 10);
 
-      // Mock both promises resolve
-      mockLean.mockResolvedValue(mockUsers);
-      mockUser.countDocuments.mockResolvedValue(10);
+      testSetup.setupMocks(mockUser, mockLean);
 
       const result = await executeFullQuery(query, skip, limit);
 
-      expect(result.users).toEqual(mockUsers);
-      expect(result.total).toBe(10);
+      expectPaginatedResult(result, testSetup.mockUsers, testSetup.total);
     });
 
     it('should handle database errors in query execution', async () => {
@@ -267,23 +263,19 @@ describe('UserServiceQueryHelpers', () => {
       const query = { role: 'admin' };
       const skip = 5;
       const limit = 15;
-      const mockUsers = [createMockUsers(1)[0]];
+      const testSetup = setupQueryTest(createMockUsers(1), 1);
 
       // Mock production environment - find returns object with sort method
       mockUser.find.mockReturnValue({
         sort: mockSort,
       } as any);
 
-      mockLean.mockResolvedValue(mockUsers);
-      mockUser.countDocuments.mockResolvedValue(1);
+      testSetup.setupMocks(mockUser, mockLean);
 
       const result = await executeUserQuery(query, skip, limit);
 
       expectQueryChainCalls(mockUser, mockSort, mockSkip, mockLimit, mockLean, query, skip, limit);
-      expect(result).toEqual({
-        users: mockUsers,
-        total: 1,
-      });
+      expectPaginatedResult(result, testSetup.mockUsers, testSetup.total);
     });
 
     it('should handle empty query in both environments', async () => {
@@ -321,15 +313,8 @@ describe('UserServiceQueryHelpers', () => {
       const result = formatPaginatedResult(users, total, page, limit);
 
       expect(mockedConvertLeansUsersToPublic).toHaveBeenCalledWith(users);
-      expect(result).toEqual({
-        data: publicUsers,
-        pagination: {
-          page: 2,
-          limit: 10,
-          total: 25,
-          totalPages: 3, // Math.ceil(25/10) = 3
-        },
-      });
+      expect(result.data).toEqual(publicUsers);
+      expectPaginationValues(result.pagination, page, limit, total, 3);
     });
 
     it('should handle empty users array', () => {
@@ -343,19 +328,12 @@ describe('UserServiceQueryHelpers', () => {
 
       const result = formatPaginatedResult(users, total, page, limit);
 
-      expect(result).toEqual({
-        data: [],
-        pagination: {
-          page: 1,
-          limit: 10,
-          total: 0,
-          totalPages: 0,
-        },
-      });
+      expect(result.data).toEqual([]);
+      expectPaginationValues(result.pagination, page, limit, total, 0);
     });
 
     it('should calculate totalPages correctly for exact division', () => {
-      const users = [createMockUsers(1)[0]];
+      const users = createMockUsers(1);
       const publicUsers = [createPublicUser({ id: 'user1' })];
       const total = 20;
       const page = 2;
@@ -365,11 +343,11 @@ describe('UserServiceQueryHelpers', () => {
 
       const result = formatPaginatedResult(users, total, page, limit);
 
-      expect(result.pagination.totalPages).toBe(2); // 20/10 = 2
+      expectPaginationValues(result.pagination, page, limit, total, 2);
     });
 
     it('should calculate totalPages correctly for partial pages', () => {
-      const users = [createMockUsers(1)[0]];
+      const users = createMockUsers(1);
       const publicUsers = [createPublicUser({ id: 'user1' })];
       const total = 23;
       const page = 3;
@@ -379,11 +357,11 @@ describe('UserServiceQueryHelpers', () => {
 
       const result = formatPaginatedResult(users, total, page, limit);
 
-      expect(result.pagination.totalPages).toBe(3); // Math.ceil(23/10) = 3
+      expectPaginationValues(result.pagination, page, limit, total, 3);
     });
 
     it('should handle single user per page', () => {
-      const users = [createMockUsers(1)[0]];
+      const users = createMockUsers(1);
       const publicUsers = [createPublicUser({ id: 'user1' })];
       const total = 5;
       const page = 3;
@@ -393,7 +371,7 @@ describe('UserServiceQueryHelpers', () => {
 
       const result = formatPaginatedResult(users, total, page, limit);
 
-      expect(result.pagination.totalPages).toBe(5); // 5/1 = 5
+      expectPaginationValues(result.pagination, page, limit, total, 5);
     });
 
     it('should handle zero total with non-zero limit', () => {
@@ -407,11 +385,11 @@ describe('UserServiceQueryHelpers', () => {
 
       const result = formatPaginatedResult(users, total, page, limit);
 
-      expect(result.pagination.totalPages).toBe(0);
+      expectPaginationValues(result.pagination, page, limit, total, 0);
     });
 
     it('should handle large numbers', () => {
-      const users = [createMockUsers(1)[0]];
+      const users = createMockUsers(1);
       const publicUsers = [createPublicUser({ id: 'user1' })];
       const total = 999;
       const page = 50;
@@ -421,11 +399,11 @@ describe('UserServiceQueryHelpers', () => {
 
       const result = formatPaginatedResult(users, total, page, limit);
 
-      expect(result.pagination.totalPages).toBe(50); // Math.ceil(999/20) = 50
+      expectPaginationValues(result.pagination, page, limit, total, 50);
     });
 
     it('should preserve exact pagination values', () => {
-      const users = [createMockUsers(1)[0]];
+      const users = createMockUsers(1);
       const publicUsers = [createPublicUser({ id: 'user1' })];
       const total = 100;
       const page = 7;
@@ -435,12 +413,7 @@ describe('UserServiceQueryHelpers', () => {
 
       const result = formatPaginatedResult(users, total, page, limit);
 
-      expect(result.pagination).toEqual({
-        page: 7,
-        limit: 15,
-        total: 100,
-        totalPages: 7, // Math.ceil(100/15) = 7
-      });
+      expectPaginationValues(result.pagination, page, limit, total, 7);
     });
   });
 });
