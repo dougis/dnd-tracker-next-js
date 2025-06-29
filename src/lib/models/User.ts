@@ -458,14 +458,14 @@ async function validateUserData(
 
 // Helper function to get preference value with default
 function getPreferenceWithDefault<T>(value: T | undefined, defaultValue: T): T {
-  return value !== undefined ? value : defaultValue;
+  return value ?? defaultValue;
 }
 
 // Helper function to prepare user preferences
 function prepareUserPreferences(userData: CreateUserInput) {
   const preferences = userData.preferences || {};
   return {
-    theme: preferences.theme || 'system',
+    theme: preferences.theme ?? 'system',
     emailNotifications: getPreferenceWithDefault(
       preferences.emailNotifications,
       true
@@ -474,8 +474,8 @@ function prepareUserPreferences(userData: CreateUserInput) {
       preferences.browserNotifications,
       false
     ),
-    timezone: preferences.timezone || 'UTC',
-    language: preferences.language || 'en',
+    timezone: preferences.timezone ?? 'UTC',
+    language: preferences.language ?? 'en',
     diceRollAnimations: getPreferenceWithDefault(
       preferences.diceRollAnimations,
       true
@@ -501,8 +501,8 @@ userSchema.statics.createUser = async function (
     firstName: userData.firstName,
     lastName: userData.lastName,
     passwordHash: userData.password, // Will be hashed in pre-save hook
-    role: userData.role || 'user',
-    subscriptionTier: userData.subscriptionTier || 'free',
+    role: userData.role ?? 'user',
+    subscriptionTier: userData.subscriptionTier ?? 'free',
     preferences: prepareUserPreferences(userData),
   });
 
