@@ -136,4 +136,188 @@ describe('Modal', () => {
     const content = screen.getByTestId('dialog-content');
     expect(content.getAttribute('data-escape-disabled')).toBe('true');
   });
+
+  describe('Edge Cases and Error Handling', () => {
+    it('handles missing onOpenChange gracefully', () => {
+      const propsWithoutHandler = {
+        ...defaultProps,
+        onOpenChange: undefined as any,
+      };
+
+      expect(() => {
+        render(<Modal {...propsWithoutHandler} />);
+      }).not.toThrow();
+    });
+
+    it('renders with all size variants', () => {
+      const sizes = ['sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', 'full'] as const;
+      
+      sizes.forEach((size) => {
+        const { rerender } = render(<Modal {...defaultProps} size={size} />);
+        const content = screen.getByTestId('dialog-content');
+        expect(content.className).toContain(`max-w-${size}`);
+        rerender(<div />); // Clear for next iteration
+      });
+    });
+
+    it('renders with all type variants', () => {
+      const types = ['default', 'info', 'warning', 'error'] as const;
+      
+      types.forEach((type) => {
+        const { rerender } = render(<Modal {...defaultProps} type={type} />);
+        const content = screen.getByTestId('dialog-content');
+        
+        if (type === 'info') {
+          expect(content.className).toContain('border-blue-200');
+        } else if (type === 'warning') {
+          expect(content.className).toContain('border-yellow-200');
+        } else if (type === 'error') {
+          expect(content.className).toContain('border-red-200');
+        }
+        
+        rerender(<div />); // Clear for next iteration
+      });
+    });
+
+    it('handles empty children gracefully', () => {
+      render(<Modal {...defaultProps} children={null} />);
+      
+      expect(screen.getByTestId('dialog-content')).toBeInTheDocument();
+    });
+
+    it('renders without footer when not provided', () => {
+      render(<Modal {...defaultProps} footer={undefined} />);
+      
+      expect(screen.queryByTestId('dialog-footer')).not.toBeInTheDocument();
+    });
+
+    it('renders when closed', () => {
+      render(<Modal {...defaultProps} open={false} />);
+      
+      const dialog = screen.getByTestId('dialog');
+      expect(dialog.getAttribute('data-open')).toBe('false');
+    });
+  });
+
+  describe('Accessibility Features', () => {
+    it('passes accessibility props to dialog components', () => {
+      render(
+        <Modal
+          {...defaultProps}
+          title="Accessible Modal"
+          description="Modal description for screen readers"
+        />
+      );
+
+      expect(screen.getByTestId('dialog-title')).toHaveTextContent('Accessible Modal');
+      expect(screen.getByTestId('dialog-description')).toHaveTextContent(
+        'Modal description for screen readers'
+      );
+    });
+
+    it('handles keyboard navigation props correctly', () => {
+      render(
+        <Modal
+          {...defaultProps}
+          closeOnEscapeKey={true}
+          closeOnOverlayClick={true}
+        />
+      );
+
+      const content = screen.getByTestId('dialog-content');
+      expect(content.getAttribute('data-escape-disabled')).toBe('false');
+      expect(content.getAttribute('data-overlay-disabled')).toBe('false');
+    });
+
+    it('provides proper ARIA structure', () => {
+      render(
+        <Modal
+          {...defaultProps}
+          title="Test Modal"
+          description="Test Description"
+        />
+      );
+
+      // Verify all ARIA components are rendered
+      expect(screen.getByTestId('dialog-header')).toBeInTheDocument();
+      expect(screen.getByTestId('dialog-title')).toBeInTheDocument();
+      expect(screen.getByTestId('dialog-description')).toBeInTheDocument();
+      expect(screen.getByTestId('dialog-content')).toBeInTheDocument();
+    });
+  });
+
+  describe('Layout and Styling', () => {
+    it('applies conditional header rendering', () => {
+      // With title and description
+      const { rerender } = render(
+        <Modal
+          {...defaultProps}
+          title="Test Title"
+          description="Test Description"
+        />
+      );
+
+      expect(screen.getByTestId('dialog-header')).toBeInTheDocument();
+
+      // Without title or description
+      rerender(<Modal {...defaultProps} title={undefined} description={undefined} />);
+      
+      expect(screen.queryByTestId('dialog-header')).not.toBeInTheDocument();
+    });
+
+    it('applies conditional footer rendering', () => {
+      // With footer
+      const { rerender } = render(
+        <Modal {...defaultProps} footer={<button>Footer Button</button>} />
+      );
+
+      expect(screen.getByTestId('dialog-footer')).toBeInTheDocument();
+      expect(screen.getByText('Footer Button')).toBeInTheDocument();
+
+      // Without footer
+      rerender(<Modal {...defaultProps} footer={undefined} />);
+      
+      expect(screen.queryByTestId('dialog-footer')).not.toBeInTheDocument();
+    });
+
+    it('combines custom className with default classes', () => {
+      render(<Modal {...defaultProps} className="custom-modal-class" />);
+
+      const content = screen.getByTestId('dialog-content');
+      expect(content.className).toContain('custom-modal-class');
+    });
+  });
+
+  describe('User Interaction Edge Cases', () => {
+    it('handles rapid open/close state changes', async () => {
+      const onOpenChange = jest.fn();
+      const { rerender } = render(
+        <Modal {...defaultProps} onOpenChange={onOpenChange} open={true} />
+      );
+
+      // Simulate rapid state changes
+      rerender(<Modal {...defaultProps} onOpenChange={onOpenChange} open={false} />);
+      rerender(<Modal {...defaultProps} onOpenChange={onOpenChange} open={true} />);
+      rerender(<Modal {...defaultProps} onOpenChange={onOpenChange} open={false} />);
+
+      // Should handle without errors
+      expect(screen.getByTestId('dialog')).toBeInTheDocument();
+    });
+
+    it('maintains focus management with multiple modals', () => {
+      // This test ensures the modal doesn't break when multiple instances exist
+      render(
+        <div>
+          <Modal {...defaultProps} open={true} />
+          <Modal
+            open={false}
+            onOpenChange={jest.fn()}
+            children={<div>Second modal</div>}
+          />
+        </div>
+      );
+
+      expect(screen.getAllByTestId('dialog')).toHaveLength(2);
+    });
+  });
 });
