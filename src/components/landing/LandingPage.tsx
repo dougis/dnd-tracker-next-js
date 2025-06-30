@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function LandingPage() {
   return (
@@ -13,7 +14,7 @@ export function LandingPage() {
             Master Your D&D Encounters
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            The ultimate D&D Encounter Tracker for Dungeon Masters. 
+            The ultimate D&D Encounter Tracker for Dungeon Masters.
             Streamline combat, manage characters, and create epic adventures with ease.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -42,7 +43,7 @@ export function LandingPage() {
           <Card>
             <CardHeader>
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <img src="/features/initiative-tracker.png" alt="Initiative Tracking" className="w-8 h-8" />
+                <Image src="/features/initiative-tracker.png" alt="Initiative Tracking" width={32} height={32} />
               </div>
               <CardTitle>
                 <h3>Initiative Tracking</h3>
@@ -56,7 +57,7 @@ export function LandingPage() {
           <Card>
             <CardHeader>
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <img src="/features/hp-management.png" alt="HP Management" className="w-8 h-8" />
+                <Image src="/features/hp-management.png" alt="HP Management" width={32} height={32} />
               </div>
               <CardTitle>HP & AC Management</CardTitle>
               <CardDescription>
@@ -68,7 +69,7 @@ export function LandingPage() {
           <Card>
             <CardHeader>
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <img src="/features/character-management.png" alt="Character Management" className="w-8 h-8" />
+                <Image src="/features/character-management.png" alt="Character Management" width={32} height={32} />
               </div>
               <CardTitle>Character Management</CardTitle>
               <CardDescription>
@@ -80,7 +81,7 @@ export function LandingPage() {
           <Card>
             <CardHeader>
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <img src="/features/encounter-builder.png" alt="Encounter Builder" className="w-8 h-8" />
+                <Image src="/features/encounter-builder.png" alt="Encounter Builder" width={32} height={32} />
               </div>
               <CardTitle>Encounter Builder</CardTitle>
               <CardDescription>
@@ -92,11 +93,11 @@ export function LandingPage() {
           <Card>
             <CardHeader>
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <img src="/features/lair-actions.png" alt="Lair Actions" className="w-8 h-8" />
+                <Image src="/features/lair-actions.png" alt="Lair Actions" width={32} height={32} />
               </div>
               <CardTitle>Lair Actions</CardTitle>
               <CardDescription>
-                Unique lair action support that competitors don't offer. Enhance your boss encounters.
+                Unique lair action support that competitors don&apos;t offer. Enhance your boss encounters.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -104,7 +105,7 @@ export function LandingPage() {
           <Card>
             <CardHeader>
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <img src="/features/mobile-ready.png" alt="Mobile Ready" className="w-8 h-8" />
+                <Image src="/features/mobile-ready.png" alt="Mobile Ready" width={32} height={32} />
               </div>
               <CardTitle>Mobile & Desktop</CardTitle>
               <CardDescription>
@@ -208,8 +209,8 @@ export function LandingPage() {
                 <div className="text-yellow-400">★★★★★</div>
               </div>
               <p className="text-muted-foreground mb-4">
-                "This encounter tracker has completely transformed my D&D sessions. 
-                The initiative system is flawless and the lair actions feature is a game-changer!"
+                &quot;This encounter tracker has completely transformed my D&D sessions.
+                The initiative system is flawless and the lair actions feature is a game-changer!&quot;
               </p>
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-primary/10 rounded-full mr-3"></div>
@@ -227,8 +228,8 @@ export function LandingPage() {
                 <div className="text-yellow-400">★★★★★</div>
               </div>
               <p className="text-muted-foreground mb-4">
-                "Finally, an encounter tracker that understands D&D 5e rules! 
-                The multiclass character support saved me hours of manual calculation."
+                &quot;Finally, an encounter tracker that understands D&D 5e rules!
+                The multiclass character support saved me hours of manual calculation.&quot;
               </p>
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-primary/10 rounded-full mr-3"></div>
@@ -246,8 +247,8 @@ export function LandingPage() {
                 <div className="text-yellow-400">★★★★★</div>
               </div>
               <p className="text-muted-foreground mb-4">
-                "The mobile interface is perfect for in-person sessions. 
-                I can manage everything from my tablet without missing a beat."
+                &quot;The mobile interface is perfect for in-person sessions.
+                I can manage everything from my tablet without missing a beat.&quot;
               </p>
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-primary/10 rounded-full mr-3"></div>
