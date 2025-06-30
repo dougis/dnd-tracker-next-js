@@ -97,7 +97,11 @@ describe('Authentication System', () => {
       // we'll test the logic by checking UserService calls
       mockUserService.getUserByEmail.mockResolvedValue({
         success: false,
-        error: 'User not found',
+        error: {
+          message: 'User not found',
+          code: 'USER_NOT_FOUND',
+          statusCode: 404
+        },
       });
 
       // Test the getUserByEmail call with invalid input
@@ -107,11 +111,25 @@ describe('Authentication System', () => {
 
     it('should authenticate valid user credentials', async () => {
       const mockUser = {
-        _id: 'user123',
+        id: 'user123',
         email: 'test@example.com',
+        username: 'johndoe',
         firstName: 'John',
         lastName: 'Doe',
-        subscriptionTier: 'premium',
+        role: 'user' as const,
+        subscriptionTier: 'expert' as const,
+        isEmailVerified: true,
+        preferences: {
+          theme: 'system' as const,
+          emailNotifications: true,
+          browserNotifications: false,
+          timezone: 'UTC',
+          language: 'en',
+          diceRollAnimations: true,
+          autoSaveEncounters: true,
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       mockUserService.getUserByEmail.mockResolvedValue({
@@ -121,7 +139,7 @@ describe('Authentication System', () => {
 
       mockUserService.authenticateUser.mockResolvedValue({
         success: true,
-        data: { user: mockUser },
+        data: { user: mockUser, requiresVerification: false },
       });
 
       // Test successful user lookup
@@ -143,14 +161,41 @@ describe('Authentication System', () => {
     });
 
     it('should handle authentication failure', async () => {
+      const mockUser = {
+        _id: 'user123',
+        email: 'test@example.com',
+        username: 'johndoe',
+        firstName: 'John',
+        lastName: 'Doe',
+        role: 'user' as const,
+        subscriptionTier: 'expert' as const,
+        isEmailVerified: true,
+        preferences: {
+          theme: 'system' as const,
+          emailNotifications: true,
+          browserNotifications: false,
+          timezone: 'UTC',
+          language: 'en',
+          diceRollAnimations: true,
+          autoSaveEncounters: true,
+        },
+        lastLoginAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
       mockUserService.getUserByEmail.mockResolvedValue({
         success: true,
-        data: { id: 'user123' },
+        data: mockUser,
       });
 
       mockUserService.authenticateUser.mockResolvedValue({
         success: false,
-        error: 'Invalid credentials',
+        error: {
+          message: 'Invalid credentials',
+          code: 'INVALID_CREDENTIALS',
+          statusCode: 401
+        },
       });
 
       const userResult = await mockUserService.getUserByEmail(
@@ -170,7 +215,11 @@ describe('Authentication System', () => {
     it('should handle user not found', async () => {
       mockUserService.getUserByEmail.mockResolvedValue({
         success: false,
-        error: 'User not found',
+        error: {
+          message: 'User not found',
+          code: 'USER_NOT_FOUND',
+          statusCode: 404
+        },
       });
 
       const result = await mockUserService.getUserByEmail(
@@ -197,7 +246,7 @@ describe('Authentication System', () => {
         email: 'test@example.com',
         firstName: 'John',
         lastName: 'Doe',
-        subscriptionTier: 'premium',
+        subscriptionTier: 'expert',
       };
 
       const transformedUser = transformUserForSession(mockUser);
@@ -206,7 +255,7 @@ describe('Authentication System', () => {
         id: 'user123',
         email: 'test@example.com',
         name: 'John Doe',
-        subscriptionTier: 'premium',
+        subscriptionTier: 'expert',
       });
     });
 
@@ -236,13 +285,13 @@ describe('Authentication System', () => {
 
       const mockUser = {
         id: 'user123',
-        subscriptionTier: 'premium',
+        subscriptionTier: 'expert',
       };
 
       const updatedSession = updateSessionWithUser(mockSession, mockUser);
 
       expect((updatedSession.user as any).id).toBe('user123');
-      expect((updatedSession.user as any).subscriptionTier).toBe('premium');
+      expect((updatedSession.user as any).subscriptionTier).toBe('expert');
     });
 
     it('should default to free subscription tier', () => {
@@ -279,7 +328,7 @@ describe('Authentication System', () => {
       };
 
       const mockUser = {
-        subscriptionTier: 'premium',
+        subscriptionTier: 'expert',
       };
 
       // Test JWT callback logic
@@ -289,7 +338,7 @@ describe('Authentication System', () => {
           (mockUser as any).subscriptionTier || 'free';
       }
 
-      expect((updatedToken as any).subscriptionTier).toBe('premium');
+      expect((updatedToken as any).subscriptionTier).toBe('expert');
     });
 
     it('should preserve existing token data', () => {
@@ -300,7 +349,7 @@ describe('Authentication System', () => {
       };
 
       const mockUser = {
-        subscriptionTier: 'premium',
+        subscriptionTier: 'expert',
       };
 
       const updatedToken = { ...mockToken };
@@ -312,7 +361,7 @@ describe('Authentication System', () => {
       expect(updatedToken.sub).toBe('user123');
       expect(updatedToken.email).toBe('test@example.com');
       expect((updatedToken as any).existingData).toBe('preserved');
-      expect((updatedToken as any).subscriptionTier).toBe('premium');
+      expect((updatedToken as any).subscriptionTier).toBe('expert');
     });
   });
 
@@ -326,7 +375,11 @@ describe('Authentication System', () => {
     it('should handle empty credentials safely', async () => {
       mockUserService.getUserByEmail.mockResolvedValue({
         success: false,
-        error: 'Invalid email',
+        error: {
+          message: 'Invalid email',
+          code: 'INVALID_EMAIL',
+          statusCode: 400
+        },
       });
 
       const result = await mockUserService.getUserByEmail('');
@@ -338,7 +391,11 @@ describe('Authentication System', () => {
 
       mockUserService.getUserByEmail.mockResolvedValue({
         success: false,
-        error: 'User not found',
+        error: {
+          message: 'User not found',
+          code: 'USER_NOT_FOUND',
+          statusCode: 404
+        },
       });
 
       const result = await mockUserService.getUserByEmail(maliciousEmail);
@@ -352,7 +409,7 @@ describe('Authentication System', () => {
       const mockUser = {
         id: 'user123',
         email: 'test@example.com',
-        subscriptionTier: 'premium',
+        subscriptionTier: 'expert',
         password: 'sensitive-hash',
         secretKey: 'sensitive-data',
       };

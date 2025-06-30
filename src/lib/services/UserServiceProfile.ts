@@ -135,7 +135,7 @@ export class UserServiceProfile {
       // Check for conflicts
       const conflictResult = await this.handleProfileUpdateConflicts(user, validatedData);
       if (conflictResult) {
-        return conflictResult;
+        return conflictResult as ServiceResult<PublicUser>;
       }
 
       // Update user fields and save
