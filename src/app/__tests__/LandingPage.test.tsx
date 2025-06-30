@@ -90,7 +90,8 @@ describe('Landing Page', () => {
       render(<Home />);
 
       // Should have links to sign up
-      expect(screen.getByText(/sign up|register|get started/i)).toBeInTheDocument();
+      const signupLinks = screen.getAllByText(/sign up|register|get started/i);
+      expect(signupLinks.length).toBeGreaterThan(0);
     });
   });
 });
