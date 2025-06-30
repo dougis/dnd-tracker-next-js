@@ -30,17 +30,26 @@ jest.mock('../Modal', () => ({
 }));
 
 jest.mock('@/components/forms/FormWrapper', () => ({
-  FormWrapper: ({ children, onSubmit, isSubmitting, className, ...props }: any) => (
-    <form
-      data-testid="form-wrapper"
-      data-submitting={isSubmitting ? 'true' : 'false'}
-      data-classname={className}
-      onSubmit={(e) => { e.preventDefault(); onSubmit?.({ test: 'data' }); }}
-      {...props}
-    >
-      {children}
-    </form>
-  ),
+  FormWrapper: ({ children, onSubmit, isSubmitting, className, reset, ...props }: any) => {
+    const handleSubmit = (e: any) => {
+      e.preventDefault();
+      if (onSubmit) {
+        onSubmit({ test: 'data' });
+      }
+    };
+    
+    return (
+      <form
+        data-testid="form-wrapper"
+        data-submitting={isSubmitting ? 'true' : 'false'}
+        data-classname={className}
+        onSubmit={handleSubmit}
+        {...props}
+      >
+        {children}
+      </form>
+    );
+  },
 }));
 
 jest.mock('@/components/forms/FormSubmitButton', () => ({
@@ -126,13 +135,17 @@ describe('FormModal', () => {
 
   describe('Form Submission', () => {
     it('handles successful submission and closes modal', async () => {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
       const onSubmit = jest.fn().mockResolvedValue(undefined);
       const onOpenChange = jest.fn();
       renderFormModal({ onSubmit, onOpenChange });
 
-      const form = screen.getByTestId('form-wrapper');
+      const submitButton = screen.getByTestId('form-submit-button');
+      
       await act(async () => {
-        form.onsubmit?.({ preventDefault: jest.fn() } as any);
+        await user.click(submitButton);
+        // Wait for the async submission to complete
+        jest.advanceTimersByTime(0);
       });
 
       expect(onSubmit).toHaveBeenCalledWith({ test: 'data' });
@@ -140,6 +153,7 @@ describe('FormModal', () => {
     });
 
     it('prevents close when preventCloseOnSubmit is true', async () => {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
       const onSubmit = jest.fn().mockResolvedValue(undefined);
       const onOpenChange = jest.fn();
       renderFormModal({
@@ -148,23 +162,20 @@ describe('FormModal', () => {
         config: { title: 'Test', preventCloseOnSubmit: true },
       });
 
-      const form = screen.getByTestId('form-wrapper');
-      await act(async () => {
-        form.onsubmit?.({ preventDefault: jest.fn() } as any);
-      });
+      const submitButton = screen.getByTestId('form-submit-button');
+      await user.click(submitButton);
 
       expect(onOpenChange).not.toHaveBeenCalledWith(false);
     });
 
     it('handles submission errors gracefully', async () => {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
       const onSubmit = jest.fn().mockRejectedValue(new Error('Submission failed'));
       const onOpenChange = jest.fn();
       renderFormModal({ onSubmit, onOpenChange });
 
-      const form = screen.getByTestId('form-wrapper');
-      await act(async () => {
-        form.onsubmit?.({ preventDefault: jest.fn() } as any);
-      });
+      const submitButton = screen.getByTestId('form-submit-button');
+      await user.click(submitButton);
 
       expect(onOpenChange).not.toHaveBeenCalledWith(false);
     });

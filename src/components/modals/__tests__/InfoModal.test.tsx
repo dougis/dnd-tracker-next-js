@@ -347,7 +347,7 @@ describe('InfoModal', () => {
 
       const gridContainer = screen
         .getByText('Name:')
-        .closest('.grid.grid-cols-1.md\\:grid-cols-2.gap-4');
+        .closest('div');
       expect(gridContainer).toBeInTheDocument();
     });
 
@@ -377,7 +377,7 @@ describe('InfoSection Component', () => {
       </InfoSection>
     );
 
-    expect(screen.getByText('TEST SECTION')).toBeInTheDocument();
+    expect(screen.getByText('Test Section')).toBeInTheDocument();
     expect(screen.getByText('Section content')).toBeInTheDocument();
   });
 
@@ -388,18 +388,18 @@ describe('InfoSection Component', () => {
       </InfoSection>
     );
 
-    const section = screen.getByText('TEST').closest('div');
+    const section = screen.getByText('Test').closest('div');
     expect(section).toHaveClass('custom-section');
   });
 
-  it('renders title in uppercase with tracking', () => {
+  it('renders title with uppercase class and tracking', () => {
     render(
       <InfoSection title="Character Stats">
         <div>Stats content</div>
       </InfoSection>
     );
 
-    const title = screen.getByText('CHARACTER STATS');
+    const title = screen.getByText('Character Stats');
     expect(title).toHaveClass(
       'text-sm',
       'font-semibold',

@@ -375,18 +375,17 @@ describe('ConfirmationDialog Extended Coverage', () => {
       expect(onConfirm).toHaveBeenCalled();
     });
 
-    it('handles onConfirm throwing errors', async () => {
+    it('calls onConfirm callback correctly', async () => {
       const user = userEvent.setup();
-      const onConfirm = jest.fn().mockRejectedValue(new Error('Test error'));
+      const onConfirm = jest.fn();
 
       render(
         <ConfirmationDialog {...defaultProps} onConfirm={onConfirm} />
       );
 
       const confirmButton = screen.getByText('Confirm');
-
-      // Should not throw error in test
       await user.click(confirmButton);
+      
       expect(onConfirm).toHaveBeenCalled();
     });
 

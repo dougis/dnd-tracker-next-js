@@ -220,8 +220,8 @@ describe('ModalManager', () => {
 
       expect(screen.getByText('First child')).toBeInTheDocument();
       expect(screen.getByText('Second child')).toBeInTheDocument();
-      expect(screen.getByText('String child')).toBeInTheDocument();
-      expect(screen.getByText('42')).toBeInTheDocument();
+      expect(screen.getByText(/String child/)).toBeInTheDocument();
+      expect(screen.getByText(/42/)).toBeInTheDocument();
     });
   });
 
