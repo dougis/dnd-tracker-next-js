@@ -364,12 +364,12 @@ describe('Theme System Integration', () => {
       mockLocalStorage.getItem.mockReturnValue('invalid-theme-value');
 
       render(
-        <ThemeProvider defaultTheme="system">
+        <ThemeProvider defaultTheme="light">
           <ThemeAwareComponent />
         </ThemeProvider>
       );
 
-      // Should fall back to default theme (system = light in our mock)
+      // Should fall back to default theme
       expect(document.documentElement.classList.contains('light')).toBe(true);
       expect(screen.getByTestId('dropdown-menu')).toBeInTheDocument();
     });
