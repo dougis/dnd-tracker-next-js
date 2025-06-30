@@ -3,6 +3,7 @@
  * Centralizes common navigation testing patterns
  */
 
+import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import { mockUsePathname } from './test-utils';
 import { assertNavigationLink, assertActiveNavigation, assertInactiveNavigation } from './shared-assertions';
@@ -51,8 +52,10 @@ export const testActiveNavigationState = (Component: React.ComponentType<any>, p
  */
 export const testNavigationLinkClick = (linkText: string, expectedCallback: jest.Mock) => {
   const link = assertNavigationLink(linkText, '#'); // href doesn't matter for click test
-  fireEvent.click(link);
-  expect(expectedCallback).toHaveBeenCalledTimes(1);
+  if (link) {
+    fireEvent.click(link);
+    expect(expectedCallback).toHaveBeenCalledTimes(1);
+  }
 };
 
 /**

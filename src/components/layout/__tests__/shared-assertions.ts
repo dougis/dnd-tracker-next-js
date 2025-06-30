@@ -12,7 +12,7 @@ export const assertHasClasses = (
   element: Element | null,
   classes: string[]
 ) => {
-  expect(element).toHaveClass(...classes);
+  expect(element).toHaveClass(classes.join(' '));
 };
 
 /**
@@ -36,7 +36,7 @@ export const assertSvgIcon = (
 ) => {
   const icon = element?.querySelector('svg');
   expect(icon).toBeInTheDocument();
-  expect(icon).toHaveClass(...expectedClasses);
+  expect(icon).toHaveClass(expectedClasses.join(' '));
   expect(icon).toHaveAttribute('viewBox', '0 0 24 24');
   return icon;
 };
@@ -57,8 +57,12 @@ export const assertComponentVisibility = (
   identifier: string,
   isOpen: boolean
 ) => {
-  const expectMethod = isOpen ? 'toBeInTheDocument' : 'not.toBeInTheDocument';
-  expect(screen.queryByText(identifier))[expectMethod]();
+  const element = screen.queryByText(identifier);
+  if (isOpen) {
+    expect(element).toBeInTheDocument();
+  } else {
+    expect(element).not.toBeInTheDocument();
+  }
 };
 
 /**
@@ -78,7 +82,7 @@ export const assertActiveNavigation = (
   activeClasses = ['bg-primary', 'text-primary-foreground']
 ) => {
   const activeLink = screen.getByText(activeItemText).closest('a');
-  expect(activeLink).toHaveClass(...activeClasses);
+  expect(activeLink).toHaveClass(activeClasses.join(' '));
   return activeLink;
 };
 
@@ -90,7 +94,7 @@ export const assertInactiveNavigation = (
   inactiveClasses = ['text-muted-foreground']
 ) => {
   const inactiveLink = screen.getByText(itemText).closest('a');
-  expect(inactiveLink).toHaveClass(...inactiveClasses);
+  expect(inactiveLink).toHaveClass(inactiveClasses.join(' '));
   expect(inactiveLink).not.toHaveClass('bg-primary');
   return inactiveLink;
 };

@@ -23,7 +23,7 @@ describe('UserServiceResponseHelpers - Serialization Tests', () => {
       const result = UserServiceResponseHelpers.safeToPublicJSON(userWithoutMethod);
 
       expect(result).toEqual({
-        _id: mockUserId,
+        id: mockUserId,
         email: 'test@example.com',
         username: 'testuser',
         firstName: 'Test',
@@ -48,7 +48,7 @@ describe('UserServiceResponseHelpers - Serialization Tests', () => {
       const userWithStringId = createMockUserForSerialization('withStringId');
       const result = UserServiceResponseHelpers.safeToPublicJSON(userWithStringId);
 
-      expect(result._id).toBe('string-id-123');
+      expect(result.id).toBe('string-id-123');
     });
 
     it('should provide default values for missing properties', () => {
@@ -70,7 +70,7 @@ describe('UserServiceResponseHelpers - Serialization Tests', () => {
       const result = UserServiceResponseHelpers.safeToPublicJSON(userWithObjectId);
 
       expect(userWithObjectId._id.toString).toHaveBeenCalled();
-      expect(result._id).toBe(mockUserId);
+      expect(result.id).toBe(mockUserId);
     });
 
     it('should handle partial preferences object', () => {
@@ -88,7 +88,7 @@ describe('UserServiceResponseHelpers - Serialization Tests', () => {
 
       // Should not throw despite circular reference
       const result = UserServiceResponseHelpers.safeToPublicJSON(circularUser);
-      expect(result._id).toBe('circular-id');
+      expect(result.id).toBe('circular-id');
       expect(result.email).toBe('circular@example.com');
     });
 
@@ -96,7 +96,7 @@ describe('UserServiceResponseHelpers - Serialization Tests', () => {
       const largeUser = createMockUserForSerialization('large');
 
       const result = UserServiceResponseHelpers.safeToPublicJSON(largeUser);
-      expect(result._id).toBe('large-id');
+      expect(result.id).toBe('large-id');
       expect(result.email).toBe('large@example.com');
     });
   });

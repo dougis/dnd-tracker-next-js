@@ -30,7 +30,7 @@ jest.mock('../Modal', () => ({
 }));
 
 jest.mock('@/components/forms/FormWrapper', () => ({
-  FormWrapper: ({ children, onSubmit, isSubmitting, className, reset: _reset, ...props }: any) => {
+  FormWrapper: ({ children, onSubmit, isSubmitting, className, ...props }: any) => {
     const handleSubmit = (e: any) => {
       e.preventDefault();
       if (onSubmit) {
@@ -215,11 +215,12 @@ describe('FormModal', () => {
   describe('Form Reset', () => {
     it('resets form when modal closes and resetOnClose is true', async () => {
       const reset = jest.fn();
+      const propsWithReset = { ...createDefaultProps({ open: true }), reset };
       const { rerender } = render(
-        <FormModal {...createDefaultProps({ reset, open: true })} />
+        <FormModal {...propsWithReset} />
       );
 
-      rerender(<FormModal {...createDefaultProps({ reset, open: false })} />);
+      rerender(<FormModal {...{ ...createDefaultProps({ open: false }), reset }} />);
 
       act(() => { jest.advanceTimersByTime(200); });
 
@@ -228,11 +229,12 @@ describe('FormModal', () => {
 
     it('does not reset when resetOnClose is false', async () => {
       const reset = jest.fn();
+      const propsWithReset = { ...createDefaultProps({ open: true, config: { title: 'Test', resetOnClose: false } }), reset };
       const { rerender } = render(
-        <FormModal {...createDefaultProps({ reset, open: true, config: { title: 'Test', resetOnClose: false } })} />
+        <FormModal {...propsWithReset} />
       );
 
-      rerender(<FormModal {...createDefaultProps({ reset, open: false, config: { title: 'Test', resetOnClose: false } })} />);
+      rerender(<FormModal {...{ ...createDefaultProps({ open: false, config: { title: 'Test', resetOnClose: false } }), reset }} />);
 
       act(() => { jest.advanceTimersByTime(200); });
 
@@ -293,7 +295,7 @@ describe('Quick Modal Variants', () => {
 
   describe('QuickAddModal', () => {
     it('renders with default add configuration', () => {
-      render(<QuickAddModal {...quickModalProps} config={{ description: 'Add description' }} />);
+      render(<QuickAddModal {...quickModalProps} config={{ title: '', description: 'Add description' }} />);
 
       expect(screen.getByTestId('modal')).toHaveAttribute('data-title', 'Add New Item');
       expect(screen.getByText('Add')).toBeInTheDocument();
@@ -314,7 +316,7 @@ describe('Quick Modal Variants', () => {
 
   describe('QuickEditModal', () => {
     it('renders with default edit configuration', () => {
-      render(<QuickEditModal {...quickModalProps} config={{ description: 'Edit description' }} />);
+      render(<QuickEditModal {...quickModalProps} config={{ title: '', description: 'Edit description' }} />);
 
       expect(screen.getByTestId('modal')).toHaveAttribute('data-title', 'Edit Item');
       expect(screen.getByText('Save Changes')).toBeInTheDocument();

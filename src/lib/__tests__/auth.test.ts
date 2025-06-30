@@ -60,8 +60,7 @@ const createMockUserWithStrings = (overrides: Partial<any> = {}) => {
   const baseUser = createMockUser(overrides);
   return {
     ...baseUser,
-    _id: baseUser.id,
-    id: undefined,
+    id: baseUser.id,
     lastLoginAt: new Date().toISOString(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -69,7 +68,7 @@ const createMockUserWithStrings = (overrides: Partial<any> = {}) => {
 };
 
 const transformUserForSession = (mockUser: any) => ({
-  id: mockUser._id?.toString() || '',
+  id: mockUser.id?.toString() || '',
   email: mockUser.email,
   name: `${mockUser.firstName} ${mockUser.lastName}`,
   subscriptionTier: mockUser.subscriptionTier,
@@ -236,7 +235,7 @@ describe('Authentication System', () => {
   describe('User Data Transformation', () => {
     it('should format user data correctly for session', () => {
       const mockUser = {
-        _id: 'user123',
+        id: 'user123',
         email: 'test@example.com',
         firstName: 'John',
         lastName: 'Doe',

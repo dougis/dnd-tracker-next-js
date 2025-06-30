@@ -9,8 +9,8 @@ import {
 } from './auth-test-utils';
 
 // Mock dependencies before importing
-const mockGetUserByEmail = jest.fn();
-const mockAuthenticateUser = jest.fn();
+const mockGetUserByEmail = jest.fn() as jest.MockedFunction<any>;
+const mockAuthenticateUser = jest.fn() as jest.MockedFunction<any>;
 
 jest.mock('../services/UserService', () => ({
   UserService: {
@@ -27,7 +27,7 @@ jest.mock('mongodb', () => ({
   MongoClient: jest.fn().mockImplementation(() => ({})),
 }));
 
-let originalEnv: string;
+let originalEnv: NodeJS.ProcessEnv;
 
 beforeAll(() => {
   originalEnv = setupAuthTestEnv();
