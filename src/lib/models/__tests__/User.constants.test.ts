@@ -49,7 +49,7 @@ describe('User Model Constants', () => {
 
     it('should have all required features for each tier', () => {
       const requiredFeatures = ['parties', 'encounters', 'characters'];
-      
+
       Object.values(SUBSCRIPTION_LIMITS).forEach(tierLimits => {
         const features = Object.keys(tierLimits);
         expect(features.sort()).toEqual(requiredFeatures.sort());
@@ -64,7 +64,7 @@ describe('User Model Constants', () => {
         for (let i = 1; i < tiers.length; i++) {
           const prevTier = tiers[i - 1] as keyof typeof SUBSCRIPTION_LIMITS;
           const currentTier = tiers[i] as keyof typeof SUBSCRIPTION_LIMITS;
-          
+
           expect(SUBSCRIPTION_LIMITS[currentTier][feature as keyof typeof SUBSCRIPTION_LIMITS.free])
             .toBeGreaterThan(SUBSCRIPTION_LIMITS[prevTier][feature as keyof typeof SUBSCRIPTION_LIMITS.free]);
         }

@@ -1,5 +1,4 @@
-import User, { 
-  type IUser,
+import {
   type CreateUserInput,
   type PublicUser,
   type SubscriptionFeature,
@@ -84,10 +83,10 @@ describe('User Model Types and Interfaces', () => {
     it('should have all subscription tier limits defined', () => {
       expect(SUBSCRIPTION_LIMITS).toBeDefined();
       expect(typeof SUBSCRIPTION_LIMITS).toBe('object');
-      
+
       const expectedTiers = ['free', 'seasoned', 'expert', 'master', 'guild'];
       const actualTiers = Object.keys(SUBSCRIPTION_LIMITS);
-      
+
       expect(actualTiers.sort()).toEqual(expectedTiers.sort());
     });
 
@@ -107,7 +106,7 @@ describe('User Model Types and Interfaces', () => {
 
     it('should have infinite limits for guild tier', () => {
       const features: SubscriptionFeature[] = ['parties', 'encounters', 'characters'];
-      
+
       features.forEach(feature => {
         const limit = SUBSCRIPTION_LIMITS.guild[feature];
         expect(limit).toBe(Infinity);
