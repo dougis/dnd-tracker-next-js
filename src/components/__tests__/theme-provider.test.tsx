@@ -1,29 +1,18 @@
-import { render, screen, act } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { ThemeProvider, useTheme } from '@/components/theme-provider';
-
-// Mock localStorage
-const mockLocalStorage = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
-};
-
-Object.defineProperty(window, 'localStorage', {
-  value: mockLocalStorage,
-});
-
-// Mock matchMedia
-const mockMatchMedia = jest.fn();
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: mockMatchMedia,
-});
+import {
+  setupThemeTestEnvironment,
+  resetThemeTestEnvironment,
+  getDefaultMatchMediaMock,
+  createConsoleSpy,
+  verifyThemeClasses,
+  countThemeClasses,
+} from './utils/theme-test-utils';
 
 // Test component to consume theme context
 function TestComponent() {
   const { theme, setTheme } = useTheme();
-  
+
   return (
     <div>
       <span data-testid="current-theme">{theme}</span>
@@ -41,26 +30,10 @@ function TestComponent() {
 }
 
 describe('ThemeProvider', () => {
+  const { mockLocalStorage, mockMatchMedia } = setupThemeTestEnvironment();
+
   beforeEach(() => {
-    jest.clearAllMocks();
-    
-    // Reset DOM classes
-    document.documentElement.className = '';
-    
-    // Default localStorage mock behavior
-    mockLocalStorage.getItem.mockReturnValue(null);
-    
-    // Default matchMedia mock behavior
-    mockMatchMedia.mockImplementation((query) => ({
-      matches: query === '(prefers-color-scheme: dark)' ? false : true,
-      media: query,
-      onchange: null,
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
-    }));
+    resetThemeTestEnvironment(mockLocalStorage, mockMatchMedia);
   });
 
   describe('Theme Context Management', () => {
@@ -98,19 +71,17 @@ describe('ThemeProvider', () => {
     });
 
     it('throws error when useTheme is used outside ThemeProvider', () => {
-      // Suppress console.error for this test
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      
-      // Use a function wrapper to properly test the thrown error
+      const consoleSpy = createConsoleSpy();
+
       const TestThrowComponent = () => {
         const { theme } = useTheme();
         return <div>{theme}</div>;
       };
-      
+
       expect(() => {
         render(<TestThrowComponent />);
       }).toThrow('useTheme must be used within a ThemeProvider');
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -157,9 +128,8 @@ describe('ThemeProvider', () => {
     });
 
     it('handles localStorage errors gracefully', () => {
-      // Mock console.error to suppress error logs during test
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      
+      const consoleSpy = createConsoleSpy();
+
       mockLocalStorage.getItem.mockImplementation(() => {
         throw new Error('localStorage not available');
       });
@@ -173,23 +143,13 @@ describe('ThemeProvider', () => {
       }).not.toThrow();
 
       expect(screen.getByTestId('current-theme')).toHaveTextContent('light');
-      
       consoleSpy.mockRestore();
     });
   });
 
   describe('System Theme Integration', () => {
     it('applies light theme when system preference is light', () => {
-      mockMatchMedia.mockImplementation((query) => ({
-        matches: query === '(prefers-color-scheme: dark)' ? false : true,
-        media: query,
-        onchange: null,
-        addListener: jest.fn(),
-        removeListener: jest.fn(),
-        addEventListener: jest.fn(),
-        removeEventListener: jest.fn(),
-        dispatchEvent: jest.fn(),
-      }));
+      mockMatchMedia.mockImplementation(getDefaultMatchMediaMock(false));
 
       render(
         <ThemeProvider defaultTheme="system">
@@ -197,21 +157,11 @@ describe('ThemeProvider', () => {
         </ThemeProvider>
       );
 
-      expect(document.documentElement.classList.contains('light')).toBe(true);
-      expect(document.documentElement.classList.contains('dark')).toBe(false);
+      verifyThemeClasses('light');
     });
 
     it('applies dark theme when system preference is dark', () => {
-      mockMatchMedia.mockImplementation((query) => ({
-        matches: query === '(prefers-color-scheme: dark)' ? true : false,
-        media: query,
-        onchange: null,
-        addListener: jest.fn(),
-        removeListener: jest.fn(),
-        addEventListener: jest.fn(),
-        removeEventListener: jest.fn(),
-        dispatchEvent: jest.fn(),
-      }));
+      mockMatchMedia.mockImplementation(getDefaultMatchMediaMock(true));
 
       render(
         <ThemeProvider defaultTheme="system">
@@ -219,23 +169,13 @@ describe('ThemeProvider', () => {
         </ThemeProvider>
       );
 
-      expect(document.documentElement.classList.contains('dark')).toBe(true);
-      expect(document.documentElement.classList.contains('light')).toBe(false);
+      verifyThemeClasses('dark');
     });
 
     it('updates DOM classes when switching to system theme', async () => {
       const user = (await import('@testing-library/user-event')).default.setup();
 
-      mockMatchMedia.mockImplementation((query) => ({
-        matches: query === '(prefers-color-scheme: dark)' ? true : false,
-        media: query,
-        onchange: null,
-        addListener: jest.fn(),
-        removeListener: jest.fn(),
-        addEventListener: jest.fn(),
-        removeEventListener: jest.fn(),
-        dispatchEvent: jest.fn(),
-      }));
+      mockMatchMedia.mockImplementation(getDefaultMatchMediaMock(true));
 
       render(
         <ThemeProvider defaultTheme="light">
@@ -244,14 +184,13 @@ describe('ThemeProvider', () => {
       );
 
       // Initially should have light theme
-      expect(document.documentElement.classList.contains('light')).toBe(true);
+      verifyThemeClasses('light');
 
       // Switch to system theme
       await user.click(screen.getByTestId('set-system'));
 
       // Should now have dark theme based on system preference
-      expect(document.documentElement.classList.contains('dark')).toBe(true);
-      expect(document.documentElement.classList.contains('light')).toBe(false);
+      verifyThemeClasses('dark');
     });
   });
 
@@ -266,14 +205,14 @@ describe('ThemeProvider', () => {
       );
 
       // Initially should have light theme
-      expect(document.documentElement.classList.contains('light')).toBe(true);
+      verifyThemeClasses('light');
 
       // Switch to dark theme
       await user.click(screen.getByTestId('set-dark'));
 
       // Should only have dark theme, not both
-      expect(document.documentElement.classList.contains('dark')).toBe(true);
-      expect(document.documentElement.classList.contains('light')).toBe(false);
+      verifyThemeClasses('dark');
+      expect(countThemeClasses()).toBe(1);
     });
 
     it('applies light theme class when theme is light', async () => {
@@ -286,9 +225,7 @@ describe('ThemeProvider', () => {
       );
 
       await user.click(screen.getByTestId('set-light'));
-
-      expect(document.documentElement.classList.contains('light')).toBe(true);
-      expect(document.documentElement.classList.contains('dark')).toBe(false);
+      verifyThemeClasses('light');
     });
 
     it('applies dark theme class when theme is dark', async () => {
@@ -301,9 +238,7 @@ describe('ThemeProvider', () => {
       );
 
       await user.click(screen.getByTestId('set-dark'));
-
-      expect(document.documentElement.classList.contains('dark')).toBe(true);
-      expect(document.documentElement.classList.contains('light')).toBe(false);
+      verifyThemeClasses('dark');
     });
   });
 
@@ -361,10 +296,8 @@ describe('ThemeProvider', () => {
   describe('Error Handling', () => {
     it('handles localStorage setItem errors gracefully', async () => {
       const user = (await import('@testing-library/user-event')).default.setup();
-      
-      // Mock console.error to suppress error logs during test
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      
+      const consoleSpy = createConsoleSpy();
+
       mockLocalStorage.setItem.mockImplementation(() => {
         throw new Error('localStorage quota exceeded');
       });
@@ -380,7 +313,7 @@ describe('ThemeProvider', () => {
 
       // Theme state should still update even if saving fails
       expect(screen.getByTestId('current-theme')).toHaveTextContent('dark');
-      
+
       consoleSpy.mockRestore();
     });
 

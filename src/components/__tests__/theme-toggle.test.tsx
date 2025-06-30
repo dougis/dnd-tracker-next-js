@@ -19,7 +19,7 @@ jest.mock('@/components/ui/button', () => ({
 
 jest.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenu: ({ children }: any) => <div data-testid="dropdown-menu">{children}</div>,
-  DropdownMenuTrigger: ({ children, asChild }: any) => 
+  DropdownMenuTrigger: ({ children, asChild }: any) =>
     asChild ? children : <div data-testid="dropdown-trigger">{children}</div>,
   DropdownMenuContent: ({ children, align }: any) => (
     <div data-testid="dropdown-content" data-align={align}>
@@ -69,13 +69,13 @@ Object.defineProperty(window, 'matchMedia', {
 describe('ThemeToggle', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Reset DOM classes
     document.documentElement.className = '';
-    
+
     // Default localStorage mock behavior
     mockLocalStorage.getItem.mockReturnValue(null);
-    
+
     // Default matchMedia mock behavior
     mockMatchMedia.mockImplementation((query) => ({
       matches: query === '(prefers-color-scheme: dark)' ? false : true,
@@ -123,7 +123,7 @@ describe('ThemeToggle', () => {
 
       expect(sunIcon).toBeInTheDocument();
       expect(moonIcon).toBeInTheDocument();
-      
+
       // Check for theme-transition classes
       expect(sunIcon).toHaveClass('transition-all');
       expect(moonIcon).toHaveClass('transition-all');
@@ -170,7 +170,7 @@ describe('ThemeToggle', () => {
 
     it('switches to system theme when system option is clicked', async () => {
       const user = userEvent.setup();
-      
+
       // Mock system preference as light
       mockMatchMedia.mockImplementation((query) => ({
         matches: query === '(prefers-color-scheme: dark)' ? false : true,
@@ -211,14 +211,14 @@ describe('ThemeToggle', () => {
 
       // Focus the button and activate with keyboard
       const toggleButton = screen.getByRole('button');
-      
+
       await user.tab(); // Tab to the button
       expect(toggleButton).toHaveFocus();
-      
+
       // The dropdown should be accessible via keyboard
       const lightOption = screen.getByText('Light');
       await user.click(lightOption); // Testing click interaction
-      
+
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith('dnd-tracker-theme', 'light');
     });
 
@@ -226,7 +226,7 @@ describe('ThemeToggle', () => {
       renderThemeToggle();
 
       const darkOption = screen.getByText('Dark');
-      
+
       // Simulate touch interaction
       fireEvent.touchStart(darkOption);
       fireEvent.touchEnd(darkOption);
@@ -239,10 +239,10 @@ describe('ThemeToggle', () => {
   describe('Integration with ThemeProvider', () => {
     it('integrates correctly with ThemeProvider context', async () => {
       const user = userEvent.setup();
-      
+
       // Start with light theme
       mockLocalStorage.getItem.mockReturnValue('light');
-      
+
       renderThemeToggle();
 
       // Should show light theme initially
@@ -328,7 +328,7 @@ describe('ThemeToggle', () => {
       renderThemeToggle();
 
       const toggleButton = screen.getByRole('button');
-      
+
       // Should be focusable
       await user.tab();
       expect(toggleButton).toHaveFocus();
@@ -339,7 +339,7 @@ describe('ThemeToggle', () => {
 
       const menuItems = screen.getAllByRole('menuitem');
       expect(menuItems).toHaveLength(3);
-      
+
       expect(menuItems[0]).toHaveTextContent('Light');
       expect(menuItems[1]).toHaveTextContent('Dark');
       expect(menuItems[2]).toHaveTextContent('System');
@@ -350,14 +350,14 @@ describe('ThemeToggle', () => {
       renderThemeToggle();
 
       const toggleButton = screen.getByRole('button');
-      
+
       // Focus and interact
       await user.tab();
       expect(toggleButton).toHaveFocus();
-      
+
       // After clicking a menu item, focus should be manageable
       await user.click(screen.getByText('Dark'));
-      
+
       // The component should still be interactive
       expect(toggleButton).toBeInTheDocument();
     });
@@ -367,32 +367,32 @@ describe('ThemeToggle', () => {
     it('handles missing theme context gracefully', () => {
       // Render without ThemeProvider to test error handling
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      
+
       expect(() => {
         render(<ThemeToggle />);
       }).toThrow('useTheme must be used within a ThemeProvider');
-      
+
       consoleSpy.mockRestore();
     });
 
     it('handles localStorage errors gracefully', async () => {
       const user = userEvent.setup();
-      
+
       // Mock localStorage.setItem to throw error
       mockLocalStorage.setItem.mockImplementation(() => {
         throw new Error('localStorage quota exceeded');
       });
 
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      
+
       renderThemeToggle();
 
       // Should not crash when localStorage fails
       await user.click(screen.getByText('Dark'));
-      
+
       // Component should still be functional
       expect(screen.getByTestId('dropdown-menu')).toBeInTheDocument();
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -421,3 +421,4 @@ describe('ThemeToggle', () => {
     });
   });
 });
+

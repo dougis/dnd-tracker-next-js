@@ -19,7 +19,7 @@ jest.mock('@/components/ui/button', () => ({
 
 jest.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenu: ({ children }: any) => <div data-testid="dropdown-menu">{children}</div>,
-  DropdownMenuTrigger: ({ children, asChild }: any) => 
+  DropdownMenuTrigger: ({ children, asChild }: any) =>
     asChild ? children : <div data-testid="dropdown-trigger">{children}</div>,
   DropdownMenuContent: ({ children, align }: any) => (
     <div data-testid="dropdown-content" data-align={align}>
@@ -81,13 +81,13 @@ function ThemeAwareComponent() {
 describe('Theme System Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Reset DOM classes
     document.documentElement.className = '';
-    
+
     // Default localStorage mock behavior
     mockLocalStorage.getItem.mockReturnValue(null);
-    
+
     // Default matchMedia mock behavior
     mockMatchMedia.mockImplementation((query) => ({
       matches: query === '(prefers-color-scheme: dark)' ? false : true,
@@ -118,7 +118,7 @@ describe('Theme System Integration', () => {
 
     it('propagates theme changes across the entire component tree', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ThemeProvider defaultTheme="light">
           <ThemeAwareComponent />
@@ -138,7 +138,7 @@ describe('Theme System Integration', () => {
 
     it('maintains theme state across component re-renders', async () => {
       const user = userEvent.setup();
-      
+
       const { rerender } = render(
         <ThemeProvider>
           <ThemeAwareComponent />
@@ -177,7 +177,7 @@ describe('Theme System Integration', () => {
 
     it('persists theme changes through ThemeToggle', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ThemeProvider>
           <ThemeAwareComponent />
@@ -193,7 +193,7 @@ describe('Theme System Integration', () => {
 
     it('handles custom storage keys across the system', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ThemeProvider storageKey="custom-app-theme">
           <ThemeAwareComponent />
@@ -209,7 +209,7 @@ describe('Theme System Integration', () => {
   describe('System Theme Integration', () => {
     it('responds to system theme changes across all components', async () => {
       const user = userEvent.setup();
-      
+
       // Mock system preference as dark
       mockMatchMedia.mockImplementation((query) => ({
         matches: query === '(prefers-color-scheme: dark)' ? true : false,
@@ -241,7 +241,7 @@ describe('Theme System Integration', () => {
 
     it('handles system theme transitions smoothly', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ThemeProvider>
           <ThemeAwareComponent />
@@ -263,7 +263,7 @@ describe('Theme System Integration', () => {
   describe('Performance and Memory', () => {
     it('properly cleans up DOM classes during theme changes', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ThemeProvider>
           <ThemeAwareComponent />
@@ -278,7 +278,7 @@ describe('Theme System Integration', () => {
       // Should only have current theme class
       expect(document.documentElement.classList.contains('light')).toBe(true);
       expect(document.documentElement.classList.contains('dark')).toBe(false);
-      
+
       // Check total number of theme-related classes
       const classList = Array.from(document.documentElement.classList);
       const themeClasses = classList.filter(cls => ['light', 'dark'].includes(cls));
@@ -287,7 +287,7 @@ describe('Theme System Integration', () => {
 
     it('handles multiple ThemeToggle components sharing the same context', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ThemeProvider>
           <div>
@@ -313,7 +313,7 @@ describe('Theme System Integration', () => {
   describe('CSS Custom Properties Integration', () => {
     it('ensures theme classes work with CSS variable updates', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ThemeProvider>
           <ThemeAwareComponent />
@@ -337,7 +337,7 @@ describe('Theme System Integration', () => {
   describe('Error Recovery Integration', () => {
     it('recovers gracefully from localStorage errors during integration', async () => {
       const user = userEvent.setup();
-      
+
       // Mock localStorage to fail
       mockLocalStorage.setItem.mockImplementation(() => {
         throw new Error('Storage quota exceeded');
@@ -353,10 +353,10 @@ describe('Theme System Integration', () => {
 
       // Should still work even with storage errors
       await user.click(screen.getByText('Dark'));
-      
+
       // Theme should apply to DOM even if saving fails
       expect(document.documentElement.classList.contains('dark')).toBe(true);
-      
+
       // Component should remain functional
       expect(screen.getByTestId('dropdown-menu')).toBeInTheDocument();
 
@@ -365,7 +365,7 @@ describe('Theme System Integration', () => {
 
     it('handles corrupted localStorage data gracefully', () => {
       mockLocalStorage.getItem.mockReturnValue('invalid-theme-value');
-      
+
       render(
         <ThemeProvider defaultTheme="light">
           <ThemeAwareComponent />
@@ -394,7 +394,7 @@ describe('Theme System Integration', () => {
 
     it('supports keyboard navigation across integrated components', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ThemeProvider>
           <ThemeAwareComponent />
@@ -407,3 +407,4 @@ describe('Theme System Integration', () => {
     });
   });
 });
+
