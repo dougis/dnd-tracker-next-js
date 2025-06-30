@@ -10,146 +10,84 @@ A modern web application for D&D Dungeon Masters to manage combat encounters eff
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4+-blue?logo=tailwindcss)](https://tailwindcss.com/)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/bdc83f4c2f544b96ac52d06a62ae2d7f)](https://app.codacy.com/gh/dougis/dnd-tracker-next-js/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 
-## 🎯 **Project Status: Ready for Development**
+## 🎯 **Project Status: Active Development**
 
-- ✅ **Planning Phase Complete**: All business requirements, technical architecture,
-  and development planning finished
-- 🚀 **Development Ready**: 46 MVP issues created with 12-week roadmap
-- 📋 **Total Effort**: 268 hours estimated over 12 weeks
-
----
-
-## 🏗️ **Project Overview**
-
-The D&D Encounter Tracker is a Next.js full-stack application that enables Dungeon Masters
-to efficiently manage D&D 5e combat encounters with features like:
-
-- **Initiative Tracking** with dexterity tiebreakers
-- **HP/AC Management** with damage and healing tracking
-- **Character Management** supporting multiclass PCs and NPCs
-- **Encounter Building** with participant organization
-- **Lair Actions** with initiative count 20 triggers
-- **Freemium Subscription Model** with 5 pricing tiers
-
-### **Competitive Advantage**
-
-- Modern, responsive UI optimized for mobile and desktop
-- Lair actions support (unique feature vs. competitors)
-- Real-time collaboration capabilities
-- Superior user experience compared to existing tools
+- ✅ **Planning Phase Complete**: All business requirements, technical architecture, and development planning finished
+- 🚀 **Development In Progress**: Foundation established, authentication system implemented
+- 📋 **Progress**: 1/46 MVP issues completed, test coverage expansion underway
+- 🧪 **Current Focus**: Expanding test coverage and implementing core character management
 
 ---
 
-## 📋 **Project Documentation**
+## 🏗️ **Purpose & Problem Statement**
 
-### **📊 Business & Requirements**
+### **The Problem**
+Dungeon Masters need efficient tools to manage complex D&D 5e combat encounters, but existing solutions are either:
+- **Too complex**: Virtual tabletops with steep learning curves
+- **Too simple**: Basic initiative trackers missing critical features
+- **Outdated**: Poor mobile support and dated user interfaces
+- **Missing features**: No support for lair actions (unique to this tracker)
 
-- **[Product Requirements Document](./docs/Product%20Requirements%20Document.md)** -
-  Complete business requirements, subscription model, and success metrics
-- **[High Level Design](./docs/High%20Level%20Design.md)** -
-  Technical architecture, database design, and API specifications
-
-### **🗓️ Implementation Planning**
-
-- **[Project Roadmap](./docs/Project%20Roadmap.md)** -
-  Comprehensive task breakdown with MVP identification
-- **[12-Week MVP Development Phase Plan](./docs/12-Week%20MVP%20Development%20Phase%20Plan.md)** -
-  Detailed weekly development schedule
-- **[GitHub Issues Update Guide](./docs/GitHub%20Issues%20Update%20Guide%20-%20Phase%20Assignments.md)** -
-  Instructions for applying phase assignments
-
-### **📈 Project Tracking**
-
-- **[Project State Summary](./docs/D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md)** -
-  Current project status and readiness
-- **[GitHub Issues Progress](./docs/D%26D%20Tracker%20MVP%20GitHub%20Issues%20-%20Progress%20State.md)** -
-  Issue creation and management tracking
-- **[Final Planning Summary](./docs/FINAL%20PROJECT%20PLANNING%20SUMMARY.md)** -
-  Complete planning achievement overview
-
----
-
-## 🚀 **Getting Started**
-
-### **For Development Team**
-
-1. **Review Business Requirements**: Start with the [Product Requirements Document](./docs/Product%20Requirements%20Document.md)
-2. **Understand Architecture**: Read the [High Level Design](./docs/High%20Level%20Design.md)
-3. **Check Development Plan**: Review the [12-Week MVP Plan](./docs/12-Week%20MVP%20Development%20Phase%20Plan.md)
-4. **Setup Project Board**: Follow instructions in the [GitHub Issues Update Guide](./docs/GitHub%20Issues%20Update%20Guide%20-%20Phase%20Assignments.md)
-5. **Start Development**: Begin with Week 1 foundation tasks
-
-### **For Project Managers**
-
-1. **Project Status**: Check [Project State Summary](./docs/D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md)
-2. **Issue Tracking**: Review [GitHub Issues Progress](./docs/D%26D%20Tracker%20MVP%20GitHub%20Issues%20-%20Progress%20State.md)
-3. **Sprint Planning**: Use the [12-Week MVP Plan](./docs/12-Week%20MVP%20Development%20Phase%20Plan.md)
-   for weekly sprints
-
-### **For Stakeholders**
-
-1. **Business Case**: Review [Product Requirements Document](./docs/Product%20Requirements%20Document.md)
-2. **Success Metrics**: Check business goals and validation criteria
-3. **Timeline**: Review [Project State Summary](./docs/D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md)
-   for delivery timeline
+### **Our Solution**
+A modern, purpose-built encounter tracker that:
+- Focuses specifically on combat management (not trying to be everything)
+- Provides intuitive UI/UX optimized for both desktop and mobile DMs
+- Includes unique features like lair action support at initiative count 20
+- Offers a sustainable freemium model accessible to all DM experience levels
 
 ---
 
 ## 🛠️ **Technology Stack**
 
 ### **Frontend**
-
-- **Next.js 15** - React framework with App Router
-- **TypeScript** - Type safety and development experience
-- **Tailwind CSS** - Utility-first CSS framework
-- **shadcn/ui** - High-quality component library
+- **[Next.js 15](https://nextjs.org/)** - React framework with App Router
+- **[TypeScript](https://www.typescriptlang.org/)** - Type safety and developer experience
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
+- **[shadcn/ui](https://ui.shadcn.com/)** - High-quality component library
+- **[React Hook Form](https://react-hook-form.com/)** - Performant form handling
+- **[Zod](https://zod.dev/)** - Schema validation
 
 ### **Backend**
+- **[Next.js API Routes](https://nextjs.org/docs/api-routes/introduction)** - Serverless API endpoints
+- **[MongoDB 7.0+](https://www.mongodb.com/)** - Document database with Atlas hosting
+- **[Mongoose](https://mongoosejs.com/)** - MongoDB object modeling
+- **[NextAuth.js v5](https://authjs.dev/)** - Authentication and session management
+- **[bcryptjs](https://github.com/dcodeIO/bcrypt.js)** - Password hashing
 
-- **Next.js API Routes** - Serverless API endpoints
-- **MongoDB 7.0+** - Document database with Atlas hosting
-- **NextAuth.js v5** - Authentication and session management
-- **Mongoose** - ODM for MongoDB
-
-### **DevOps & Tools**
-
-- **Vercel** - Hosting and deployment platform
-- **GitHub Actions** - CI/CD pipeline
-- **Jest** - Testing framework
-- **Sentry** - Error monitoring
-- **Codacy** - Code quality and test coverage analysis
-
----
-
-## 📊 **MVP Development Schedule**
-
-### **12-Week Development Plan**
-
-| Week | Theme                            | Hours | Key Deliverables                     |
-| ---- | -------------------------------- | ----- | ------------------------------------ |
-| 1    | Project Foundation               | 17h   | Next.js setup, MongoDB, Testing      |
-| 2    | UI Foundation & Database         | 23h   | Tailwind, shadcn/ui, Mongoose, CI/CD |
-| 3    | Authentication & Core Components | 24h   | NextAuth.js, Layout, Forms           |
-| 4    | Authentication & Data Models     | 24h   | User registration, Models, Landing   |
-| 5    | Character Data Layer             | 22h   | Character models, Creation, Stats    |
-| 6    | Character Management             | 24h   | Character list, Editing, Validation  |
-| 7    | Encounter Data Layer & NPCs      | 22h   | Encounter models, NPCs, Modals       |
-| 8    | Encounter Management             | 24h   | Participants, Lists, Dashboard       |
-| 9    | Combat Foundation                | 24h   | Combat state, Initiative, Rounds     |
-| 10   | Combat Core Systems              | 21h   | Turn management, HP tracking         |
-| 11   | Advanced Combat & Settings       | 16h   | Damage calculations, Import/export   |
-| 12   | Final Polish & Completion        | 20h   | Bug fixes, Optimization, Deployment  |
-
-#### Development Metrics
-
-Total: 261 hours | Average: 22.3 hours/week
+### **DevOps & Quality**
+- **[Vercel](https://vercel.com/)** - Hosting and deployment
+- **[GitHub Actions](https://github.com/features/actions)** - CI/CD pipeline
+- **[Jest](https://jestjs.io/)** - Unit and integration testing
+- **[React Testing Library](https://testing-library.com/react)** - Component testing
+- **[Codacy](https://www.codacy.com/)** - Code quality and coverage analysis
+- **[Sentry](https://sentry.io/)** - Error monitoring (planned)
 
 ---
 
-## 🎯 **MVP Features**
+## 📋 **Project Documentation**
+
+All detailed documentation is maintained in the [`docs/`](./docs/) folder. Key documents include:
+
+### **📊 Core Documentation**
+- **[Product Requirements Document](./docs/Product%20Requirements%20Document.md)** - Business requirements, subscription model, success metrics
+- **[High Level Design](./docs/High%20Level%20Design.md)** - Technical architecture, database design, API specifications
+- **[Project Roadmap](./docs/Project%20Roadmap.md)** - Complete task breakdown with MVP identification
+
+### **🗓️ Development Planning**
+- **[12-Week MVP Development Phase Plan](./docs/12-Week%20MVP%20Development%20Phase%20Plan.md)** - Weekly sprint schedule
+- **[Project State Summary](./docs/D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md)** - Current development status
+- **[GitHub Issues Progress](./docs/D%26D%20Tracker%20MVP%20GitHub%20Issues%20-%20Progress%20State.md)** - Issue tracking
+
+### **🚀 Quick References**
+- **[Documentation Index](./docs/README.md)** - Complete guide to all documentation
+- **[Quick Reference Guide](./docs/QUICK%20REFERENCE%20FOR%20OTHER%20CHATS.md)** - Fast project overview
+- **[Development Guide](./CLAUDE.md)** - Development instructions and commands
+
+---
+
+## 🎯 **MVP Features & Scope**
 
 ### **Core Functionality**
-
 - ✅ User authentication and registration
 - ✅ Character creation and management (PCs and NPCs)
 - ✅ Encounter building with participant management
@@ -158,29 +96,10 @@ Total: 261 hours | Average: 22.3 hours/week
 - ✅ HP tracking with damage/healing
 - ✅ Combat state persistence
 
-### **User Experience**
-
-- ✅ Mobile-first responsive design
-- ✅ Intuitive drag-and-drop interfaces
-- ✅ Real-time form validation
-- ✅ Error handling and user feedback
-- ✅ Loading states and performance optimization
-
----
-
-## 🎲 **Target Audience**
-
-### **Primary Users**
-
-- **Dungeon Masters** running D&D 5e campaigns
-- **New DMs** seeking user-friendly combat management tools
-- **Experienced DMs** wanting modern alternatives to existing tools
-
-### **Market Opportunity**
-
-- **D&D Community**: Growing market with millions of active players
-- **Existing Tools**: Competing with Roll20, D&D Beyond, Foundry VTT
-- **Differentiation**: Modern UX, lair actions, mobile optimization
+### **Unique Features**
+- 🎲 **Lair Actions** - Support for initiative count 20 triggers (competitive advantage)
+- ⚔️ **Multiclass Support** - Proper handling of multiclass characters
+- 📱 **Mobile-First Design** - Optimized for DMs using tablets/phones at the table
 
 ---
 
@@ -188,17 +107,65 @@ Total: 261 hours | Average: 22.3 hours/week
 
 ### **Freemium Subscription Tiers**
 
-- **Free Adventurer** - $0/month (1 party, 3 encounters, 10 creatures)
-- **Seasoned Adventurer** - $4.99/month (3 parties, 15 encounters, 50 creatures)
-- **Expert Dungeon Master** - $9.99/month (10 parties, 50 encounters, 200 creatures)
-- **Master of Dungeons** - $19.99/month (25 parties, 100 encounters, 500 creatures)
-- **Guild Master** - $39.99/month (Unlimited + organization features)
+| Tier | Price | Parties | Encounters | Creatures | Features |
+|------|-------|---------|------------|-----------|----------|
+| **Free Adventurer** | $0/month | 1 | 3 | 10 | Core features |
+| **Seasoned Adventurer** | $4.99/month | 3 | 15 | 50 | Import/Export |
+| **Expert Dungeon Master** | $9.99/month | 10 | 50 | 200 | Advanced features |
+| **Master of Dungeons** | $19.99/month | 25 | 100 | 500 | Priority support |
+| **Guild Master** | $39.99/month | Unlimited | Unlimited | Unlimited | Organization tools |
 
 ### **Revenue Targets**
-
 - **12 Months**: $25,000+ MRR with 5,000+ users
 - **Conversion Rate**: 15%+ free-to-paid conversion
 - **LTV/CAC**: >4:1 ratio for sustainable growth
+
+---
+
+## 🚀 **Getting Started**
+
+### **Prerequisites**
+- Node.js 20.x or higher
+- MongoDB 7.0+ (local or Atlas account)
+- Git
+
+### **Development Setup**
+
+```bash
+# Clone the repository
+git clone https://github.com/dougis/dnd-tracker-next-js.git
+cd dnd-tracker-next-js
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.development
+# Edit .env.development with your MongoDB URI and NextAuth secret
+
+# Run development server
+npm run dev
+
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+### **Available Scripts**
+
+```bash
+npm run dev              # Start development server
+npm run build            # Build for production
+npm run start            # Start production server
+npm run lint             # Run ESLint
+npm run lint:fix         # Fix ESLint issues
+npm run format           # Format code with Prettier
+npm run typecheck        # Check TypeScript types
+npm test                 # Run tests
+npm run test:coverage    # Run tests with coverage report
+```
 
 ---
 
@@ -206,79 +173,88 @@ Total: 261 hours | Average: 22.3 hours/week
 
 ```text
 dnd-tracker-next-js/
-├── docs/                          # All project documentation
+├── docs/                    # Project documentation
 │   ├── Product Requirements Document.md
 │   ├── High Level Design.md
-│   ├── 12-Week MVP Development Phase Plan.md
+│   ├── Project Roadmap.md
 │   └── [Additional planning docs]
-├── src/                           # Application source code (to be created)
-├── public/                        # Static assets (to be created)
-├── tests/                         # Test files (to be created)
-└── README.md                      # This file
+├── src/
+│   ├── app/                 # Next.js app directory
+│   │   ├── (auth)/          # Authentication routes
+│   │   ├── api/             # API routes
+│   │   └── components/      # Page-specific components
+│   ├── components/          # Shared components
+│   ├── lib/                 # Utilities and services
+│   │   ├── auth/            # Authentication config
+│   │   ├── db/              # Database utilities
+│   │   ├── models/          # Mongoose models
+│   │   └── services/        # Business logic services
+│   ├── types/               # TypeScript type definitions
+│   └── __tests__/           # Test files
+├── public/                  # Static assets
+├── .github/                 # GitHub Actions workflows
+└── [Configuration files]
 ```
 
 ---
 
-## 🔗 **Important Links**
+## 📊 **Development Progress**
 
-### **GitHub**
+### **Completed ✅**
+- Project setup and configuration
+- CI/CD pipeline with GitHub Actions
+- Database connection and models
+- Authentication system (NextAuth.js)
+- User model and UserService implementation
+- Basic UI components with shadcn/ui
 
-- **Repository**: <https://github.com/dougis/dnd-tracker-next-js>
-- **Issues**: <https://github.com/dougis/dnd-tracker-next-js/issues> (46 MVP issues)
-- **Project Board**: _To be created during Week 1_
+### **In Progress 🚧**
+- Expanding test coverage (Issues #134-141)
+- Character model implementation
+- Character creation forms
 
-### **Planning Documents**
+### **Upcoming 📅**
+- Character management UI
+- Encounter data models
+- Combat tracking system
+- Subscription tier enforcement
 
-- All documentation is in the [`docs/`](./docs/) folder
-- Start with [Project State Summary](./docs/D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md)
-  for current status
+See [GitHub Issues](https://github.com/dougis/dnd-tracker-next-js/issues) for detailed task tracking.
 
 ---
 
 ## 🤝 **Contributing**
 
-### **For Development Contributors**
+### **For Developers**
+1. Review documentation in [`docs/`](./docs/) folder
+2. Check [GitHub Issues](https://github.com/dougis/dnd-tracker-next-js/issues) for available tasks
+3. Follow the established code patterns and testing requirements
+4. Submit PRs with comprehensive test coverage
 
-1. Review all documentation in [`docs/`](./docs/) folder
-2. Follow the [12-Week MVP Plan](./docs/12-Week%20MVP%20Development%20Phase%20Plan.md)
-3. Use GitHub issues for task management
-4. Follow established coding standards and PR process
-
-### **For Project Management**
-
-1. Setup GitHub Project Board using [update guide](./docs/GitHub%20Issues%20Update%20Guide%20-%20Phase%20Assignments.md)
-2. Track progress against weekly milestones
-3. Monitor dependencies and critical path
+### **Code Standards**
+- TypeScript for all new code
+- 80%+ test coverage for new features
+- Follow existing patterns in `src/lib/services/`
+- Use conventional commits for clear history
 
 ---
 
 ## 📧 **Contact & Support**
 
-### **Project Information**
-
-- **Planning Completed**: June 9, 2025
-- **Development Start**: Ready for immediate start
-- **Estimated MVP Delivery**: 12 weeks from development start
-
-### **Key Personnel**
-
-- **Project Owner**: dougis (GitHub)
-- **Planning & Architecture**: Completed by Claude (Anthropic)
+- **Repository**: [github.com/dougis/dnd-tracker-next-js](https://github.com/dougis/dnd-tracker-next-js)
+- **Issues**: [GitHub Issues](https://github.com/dougis/dnd-tracker-next-js/issues)
+- **Project Owner**: [@dougis](https://github.com/dougis)
 
 ---
 
 ## 🏆 **Project Achievements**
 
-- ✅ **Complete Business Requirements**: Validated subscription model and market opportunity
-- ✅ **Technical Architecture**: Modern, scalable Next.js 15 full-stack design
-- ✅ **Implementation Plan**: 46 detailed development issues with dependencies
-- ✅ **12-Week Roadmap**: Realistic timeline with 20% buffer and quality gates
-- ✅ **Risk Mitigation**: Clear dependencies, critical path, and contingency planning
-
-**Status: Ready for development team to begin implementation immediately.**
+- ✅ **Complete Planning Phase**: Business requirements, technical design, and roadmap
+- ✅ **Development Environment**: Next.js 15, TypeScript, testing infrastructure
+- ✅ **Authentication System**: Secure user registration and login
+- ✅ **CI/CD Pipeline**: Automated testing and code quality checks
+- 🚧 **Active Development**: Regular commits and issue progress
 
 ---
 
-_This project represents a comprehensive approach to building a modern D&D combat tracker
-that will compete effectively in the TTRPG market while providing superior user experience
-for Dungeon Masters worldwide._ ⚔️🎲
+_Building the modern D&D encounter tracker that Dungeon Masters deserve._ ⚔️🎲
