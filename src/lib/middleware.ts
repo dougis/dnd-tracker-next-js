@@ -86,6 +86,7 @@ export async function requireAuthentication(
 /**
  * Higher-order function to create authenticated API handlers
  */
+// eslint-disable-next-line no-unused-vars
 export function createAuthenticatedHandler(
   handler: (request: NextRequest, token: JWT) => Promise<NextResponse>
 ) {

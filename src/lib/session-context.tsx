@@ -20,6 +20,7 @@ export interface SessionContextType {
   subscriptionTier: string;
 
   // Utility functions
+  // eslint-disable-next-line no-unused-vars
   hasMinimumTier: (requiredTier: string) => boolean;
   refresh: () => Promise<Session | null>;
 }
