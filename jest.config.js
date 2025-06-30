@@ -19,6 +19,8 @@ const customJestConfig = {
     '!src/**/*.d.ts',
     '!src/**/index.ts',
     '!src/**/*.stories.{js,jsx,ts,tsx}',
+    '!src/**/*.test.{js,jsx,ts,tsx}',
+    '!src/**/*.spec.{js,jsx,ts,tsx}',
     '!src/__tests__/**',
     '!src/app/**/*.tsx',
     '!src/app/**/*.ts',

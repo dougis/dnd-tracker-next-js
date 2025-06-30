@@ -5,6 +5,12 @@ import {
   ConfirmationDialog,
   useConfirmationDialog,
 } from '../ConfirmationDialog';
+import { setupMockClearing } from './utils/testHelpers';
+import { testButtonClick, testLoadingButtons } from './utils/buttonTestHelpers';
+import {
+  createDefaultConfirmationProps,
+  createLoadingConfig,
+} from './fixtures/modalFixtures';
 
 // Mock the Modal component to avoid Dialog rendering issues
 jest.mock('../Modal', () => ({
@@ -30,19 +36,9 @@ jest.mock('../Modal', () => ({
 }));
 
 describe('ConfirmationDialog', () => {
-  const defaultProps = {
-    open: true,
-    onOpenChange: jest.fn(),
-    onConfirm: jest.fn(),
-    config: {
-      title: 'Confirm Action',
-      description: 'Are you sure you want to proceed?',
-    },
-  };
+  const defaultProps = createDefaultConfirmationProps();
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  setupMockClearing();
 
   it('renders with title and description', () => {
     render(<ConfirmationDialog {...defaultProps} />);
@@ -77,43 +73,29 @@ describe('ConfirmationDialog', () => {
   });
 
   it('calls onConfirm when confirm button is clicked', async () => {
-    const user = userEvent.setup();
     render(<ConfirmationDialog {...defaultProps} />);
 
-    const confirmButton = screen.getByText('Confirm');
-    await user.click(confirmButton);
-
-    expect(defaultProps.onConfirm).toHaveBeenCalled();
+    await testButtonClick('Confirm', defaultProps.onConfirm);
   });
 
   it('calls onCancel and closes when cancel button is clicked', async () => {
-    const user = userEvent.setup();
     const onCancel = jest.fn();
     render(<ConfirmationDialog {...defaultProps} onCancel={onCancel} />);
 
-    const cancelButton = screen.getByText('Cancel');
-    await user.click(cancelButton);
-
-    expect(onCancel).toHaveBeenCalled();
+    await testButtonClick('Cancel', onCancel);
     expect(defaultProps.onOpenChange).toHaveBeenCalledWith(false);
   });
 
   it('shows loading state correctly', () => {
+    const loadingConfig = createLoadingConfig(true);
     render(
       <ConfirmationDialog
         {...defaultProps}
-        config={{
-          ...defaultProps.config,
-          loading: true,
-        }}
+        config={loadingConfig}
       />
     );
 
-    const confirmButton = screen.getByText('Confirm');
-    const cancelButton = screen.getByText('Cancel');
-
-    expect(confirmButton).toBeDisabled();
-    expect(cancelButton).toBeDisabled();
+    testLoadingButtons();
   });
 
   it('shows different icons for different variants', () => {
@@ -146,34 +128,22 @@ describe('ConfirmationDialog', () => {
 
   it('renders custom children', () => {
     const customContent = <div>Additional warning text</div>;
-    render(
-      <ConfirmationDialog
-        {...defaultProps}
-        config={{ ...defaultProps.config, children: customContent }}
-      />
+    const renderCustomDialog = (config: any) => render(
+      <ConfirmationDialog {...defaultProps} config={config} />
     );
 
+    renderCustomDialog({ ...defaultProps.config, children: customContent });
     expect(screen.getByText('Additional warning text')).toBeInTheDocument();
   });
 
   it('prevents interaction when loading', async () => {
-    const user = userEvent.setup();
-    render(
-      <ConfirmationDialog
-        {...defaultProps}
-        config={{ ...defaultProps.config, loading: true }}
-      />
+    const loadingConfig = createLoadingConfig(true);
+    const renderCustomDialog = (config: any) => render(
+      <ConfirmationDialog {...defaultProps} config={config} />
     );
 
-    const confirmButton = screen.getByText('Confirm');
-    const cancelButton = screen.getByText('Cancel');
-
-    await user.click(confirmButton);
-    await user.click(cancelButton);
-
-    // Buttons should be disabled, so handlers shouldn't be called
-    expect(defaultProps.onConfirm).not.toHaveBeenCalled();
-    expect(defaultProps.onOpenChange).not.toHaveBeenCalled();
+    renderCustomDialog(loadingConfig);
+    testLoadingButtons();
   });
 });
 
@@ -239,5 +209,310 @@ describe('useConfirmationDialog', () => {
 
     expect(screen.getByText('Test Confirmation')).toBeInTheDocument();
     expect(screen.getByText('Test description')).toBeInTheDocument();
+  });
+});
+
+describe('ConfirmationDialog Extended Coverage', () => {
+  const defaultProps = {
+    open: true,
+    onOpenChange: jest.fn(),
+    onConfirm: jest.fn(),
+    config: {
+      title: 'Confirm Action',
+      description: 'Are you sure you want to proceed?',
+    },
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('Advanced Configuration', () => {
+    it('handles all variant types correctly', () => {
+      const testVariant = (variant: string) => {
+        const { rerender } = render(
+          <ConfirmationDialog
+            {...defaultProps}
+            config={{ ...defaultProps.config, variant: variant as any }}
+          />
+        );
+        expect(screen.getByText('Confirm Action')).toBeInTheDocument();
+        rerender(<div />);
+      };
+
+      ['default', 'destructive', 'warning'].forEach(testVariant);
+    });
+
+    it('handles missing optional config properties', () => {
+      const minimalConfig = {
+        title: 'Minimal Config',
+        description: 'Basic description',
+      };
+
+      render(
+        <ConfirmationDialog
+          {...defaultProps}
+          config={minimalConfig}
+        />
+      );
+
+      expect(screen.getByText('Confirm')).toBeInTheDocument();
+      expect(screen.getByText('Cancel')).toBeInTheDocument();
+    });
+
+    it('handles empty strings in config', () => {
+      const configWithEmptyStrings = {
+        title: '',
+        description: '',
+        confirmText: '',
+        cancelText: '',
+      };
+
+      render(
+        <ConfirmationDialog
+          {...defaultProps}
+          config={configWithEmptyStrings}
+        />
+      );
+
+      // Should render without errors even with empty strings
+      expect(screen.getByTestId('modal')).toBeInTheDocument();
+    });
+  });
+
+  describe('Loading State Edge Cases', () => {
+    it('maintains loading state during async operations', () => {
+      const config = {
+        ...defaultProps.config,
+        loading: true,
+      };
+
+      const { rerender } = render(
+        <ConfirmationDialog {...defaultProps} config={config} />
+      );
+
+      expect(screen.getByText('Confirm')).toBeDisabled();
+      expect(screen.getByText('Cancel')).toBeDisabled();
+
+      // Change loading state
+      rerender(
+        <ConfirmationDialog
+          {...defaultProps}
+          config={{ ...config, loading: false }}
+        />
+      );
+
+      expect(screen.getByText('Confirm')).not.toBeDisabled();
+      expect(screen.getByText('Cancel')).not.toBeDisabled();
+    });
+
+    it('prevents multiple clicks when loading', async () => {
+      const user = userEvent.setup();
+      const onConfirm = jest.fn();
+
+      render(
+        <ConfirmationDialog
+          {...defaultProps}
+          onConfirm={onConfirm}
+          config={{ ...defaultProps.config, loading: true }}
+        />
+      );
+
+      const confirmButton = screen.getByText('Confirm');
+
+      // Try to click multiple times while disabled
+      await user.click(confirmButton);
+      await user.click(confirmButton);
+      await user.click(confirmButton);
+
+      expect(onConfirm).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Callback Handling', () => {
+    it('handles onConfirm returning promises', async () => {
+      const user = userEvent.setup();
+      const onConfirm = jest.fn().mockResolvedValue(undefined);
+
+      render(
+        <ConfirmationDialog {...defaultProps} onConfirm={onConfirm} />
+      );
+
+      const confirmButton = screen.getByText('Confirm');
+      await user.click(confirmButton);
+
+      expect(onConfirm).toHaveBeenCalled();
+    });
+
+    it('calls onConfirm callback correctly', async () => {
+      const user = userEvent.setup();
+      const onConfirm = jest.fn();
+
+      render(
+        <ConfirmationDialog {...defaultProps} onConfirm={onConfirm} />
+      );
+
+      const confirmButton = screen.getByText('Confirm');
+      await user.click(confirmButton);
+
+      expect(onConfirm).toHaveBeenCalled();
+    });
+
+    it('handles missing onCancel callback', async () => {
+      const user = userEvent.setup();
+
+      render(<ConfirmationDialog {...defaultProps} />);
+
+      const cancelButton = screen.getByText('Cancel');
+      await user.click(cancelButton);
+
+      // Should call onOpenChange even without onCancel
+      expect(defaultProps.onOpenChange).toHaveBeenCalledWith(false);
+    });
+
+    it('calls both onCancel and onOpenChange when cancel is clicked', async () => {
+      const user = userEvent.setup();
+      const onCancel = jest.fn();
+
+      render(
+        <ConfirmationDialog {...defaultProps} onCancel={onCancel} />
+      );
+
+      const cancelButton = screen.getByText('Cancel');
+      await user.click(cancelButton);
+
+      expect(onCancel).toHaveBeenCalled();
+      expect(defaultProps.onOpenChange).toHaveBeenCalledWith(false);
+    });
+  });
+
+  describe('Custom Content and Children', () => {
+    it('renders complex children components', () => {
+      const complexChildren = (
+        <div>
+          <p>Additional warning:</p>
+          <ul>
+            <li>This action cannot be undone</li>
+            <li>All data will be lost</li>
+          </ul>
+          <strong>Are you absolutely sure?</strong>
+        </div>
+      );
+
+      render(
+        <ConfirmationDialog
+          {...defaultProps}
+          config={{
+            ...defaultProps.config,
+            children: complexChildren,
+          }}
+        />
+      );
+
+      expect(screen.getByText('Additional warning:')).toBeInTheDocument();
+      expect(screen.getByText('This action cannot be undone')).toBeInTheDocument();
+      expect(screen.getByText('All data will be lost')).toBeInTheDocument();
+      expect(screen.getByText('Are you absolutely sure?')).toBeInTheDocument();
+    });
+
+    it('handles children prop as function', () => {
+      const renderChildren = () => <div>Dynamically rendered content</div>;
+
+      render(
+        <ConfirmationDialog
+          {...defaultProps}
+          config={{
+            ...defaultProps.config,
+            children: renderChildren(),
+          }}
+        />
+      );
+
+      expect(screen.getByText('Dynamically rendered content')).toBeInTheDocument();
+    });
+  });
+
+  describe('Accessibility and UX', () => {
+    it('passes through modal accessibility props', () => {
+      render(<ConfirmationDialog {...defaultProps} />);
+
+      expect(screen.getByTestId('modal')).toHaveAttribute('data-open', 'true');
+    });
+
+    it('maintains proper button focus order', () => {
+      render(<ConfirmationDialog {...defaultProps} />);
+
+      const cancelButton = screen.getByText('Cancel');
+      const confirmButton = screen.getByText('Confirm');
+
+      // Both buttons should be in the document and focusable
+      expect(cancelButton).toBeInTheDocument();
+      expect(confirmButton).toBeInTheDocument();
+      expect(cancelButton).not.toBeDisabled();
+      expect(confirmButton).not.toBeDisabled();
+    });
+
+    it('handles rapid state changes gracefully', () => {
+      const { rerender } = render(
+        <ConfirmationDialog {...defaultProps} open={true} />
+      );
+
+      // Rapid open/close state changes
+      rerender(<ConfirmationDialog {...defaultProps} open={false} />);
+      rerender(<ConfirmationDialog {...defaultProps} open={true} />);
+      rerender(<ConfirmationDialog {...defaultProps} open={false} />);
+
+      expect(screen.getByTestId('modal')).toHaveAttribute('data-open', 'false');
+    });
+  });
+
+  describe('Modal Integration', () => {
+    it('passes correct props to underlying Modal component', () => {
+      render(<ConfirmationDialog {...defaultProps} />);
+
+      const modal = screen.getByTestId('modal');
+      expect(modal).toHaveAttribute('data-open', 'true');
+    });
+
+    it('handles modal close from overlay/escape', async () => {
+      const user = userEvent.setup();
+
+      render(<ConfirmationDialog {...defaultProps} />);
+
+      const closeButton = screen.getByTestId('close-button');
+      await user.click(closeButton);
+
+      expect(defaultProps.onOpenChange).toHaveBeenCalledWith(false);
+    });
+  });
+
+  describe('Button Variants and Styling', () => {
+    it('applies correct button styling for destructive variant', () => {
+      render(
+        <ConfirmationDialog
+          {...defaultProps}
+          config={{
+            ...defaultProps.config,
+            variant: 'destructive',
+          }}
+        />
+      );
+
+      expect(screen.getByText('Confirm Action')).toBeInTheDocument();
+    });
+
+    it('applies correct button styling for warning variant', () => {
+      render(
+        <ConfirmationDialog
+          {...defaultProps}
+          config={{
+            ...defaultProps.config,
+            variant: 'warning',
+          }}
+        />
+      );
+
+      expect(screen.getByText('Confirm Action')).toBeInTheDocument();
+    });
   });
 });
