@@ -21,7 +21,7 @@ export interface SessionContextType {
 
   // Utility functions
   // eslint-disable-next-line no-unused-vars
-  hasMinimumTier: (requiredTier: string) => boolean;
+  hasMinimumTier: (_requiredTier: string) => boolean;
   refresh: () => Promise<Session | null>;
 }
 
@@ -43,42 +43,53 @@ interface SessionContextProviderProps {
 const SUBSCRIPTION_TIERS = ['free', 'basic', 'premium', 'pro', 'enterprise'];
 
 /**
+ * Extract user information from session
+ */
+function extractUserInfo(session: Session | null) {
+  return {
+    userId: session?.user ? (session.user as any).id || null : null,
+    userEmail: session?.user?.email || null,
+    userName: session?.user?.name || null,
+    subscriptionTier: session?.user ? (session.user as any).subscriptionTier || 'free' : 'free',
+  };
+}
+
+/**
+ * Create tier checking function
+ */
+function createTierChecker(session: Session | null, userTier: string) {
+  return (requiredTier: string): boolean => {
+    if (!session) return false;
+    const userTierIndex = SUBSCRIPTION_TIERS.indexOf(userTier);
+    const requiredTierIndex = SUBSCRIPTION_TIERS.indexOf(requiredTier);
+    return userTierIndex >= requiredTierIndex;
+  };
+}
+
+/**
+ * Create session refresh function
+ */
+function createRefreshFunction(update: any) {
+  return async (): Promise<Session | null> => {
+    const result = await update();
+    return result || null;
+  };
+}
+
+/**
  * Session context provider component
  */
 export function SessionContextProvider({ children }: SessionContextProviderProps) {
   const { data: session, status, update } = useSession();
-
-  // Extract user information
-  const userId = session?.user ? (session.user as any).id || null : null;
-  const userEmail = session?.user?.email || null;
-  const userName = session?.user?.name || null;
-  const subscriptionTier = session?.user ?
-    (session.user as any).subscriptionTier || 'free' : 'free';
-
-  // Check if user has minimum subscription tier
-  const hasMinimumTier = (requiredTier: string): boolean => {
-    if (!session) return false;
-
-    const userTierIndex = SUBSCRIPTION_TIERS.indexOf(subscriptionTier);
-    const requiredTierIndex = SUBSCRIPTION_TIERS.indexOf(requiredTier);
-
-    return userTierIndex >= requiredTierIndex;
-  };
-
-  // Refresh session data
-  const refresh = async (): Promise<Session | null> => {
-    const result = await update();
-    return result || null;
-  };
+  const userInfo = extractUserInfo(session);
+  const hasMinimumTier = createTierChecker(session, userInfo.subscriptionTier);
+  const refresh = createRefreshFunction(update);
 
   const contextValue: SessionContextType = {
     session,
     isLoading: status === 'loading',
     isAuthenticated: status === 'authenticated',
-    userId,
-    userEmail,
-    userName,
-    subscriptionTier,
+    ...userInfo,
     hasMinimumTier,
     refresh,
   };

@@ -54,33 +54,39 @@ export function extractBearerToken(headers: Headers): string | null {
 }
 
 /**
+ * Extract and validate JWT token from request
+ */
+async function getValidatedToken(request: NextRequest): Promise<JWT | null> {
+  try {
+    return await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+  } catch (error) {
+    console.error('Token validation error:', error);
+    return null;
+  }
+}
+
+/**
+ * Create unauthorized response
+ */
+function createUnauthorizedResponse(): NextResponse {
+  return NextResponse.json(
+    { error: 'Authentication required' },
+    { status: 401 }
+  );
+}
+
+/**
  * Verify authentication for API routes
  * Returns null if authenticated, or error response if not
  */
 export async function requireAuthentication(
   request: NextRequest
 ): Promise<NextResponse | null> {
-  try {
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-
-    if (!token) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    return null; // Authentication successful
-  } catch (error) {
-    console.error('Authentication verification error:', error);
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
+  const token = await getValidatedToken(request);
+  return token ? null : createUnauthorizedResponse();
 }
 
 /**
@@ -93,20 +99,13 @@ type AuthenticatedHandler = (_request: NextRequest, _token: JWT) => Promise<Next
  */
 export function createAuthenticatedHandler(handler: AuthenticatedHandler) {
   return async function authenticatedHandler(request: NextRequest): Promise<NextResponse> {
+    const token = await getValidatedToken(request);
+
+    if (!token) {
+      return createUnauthorizedResponse();
+    }
+
     try {
-      const token = await getToken({
-        req: request,
-        secret: process.env.NEXTAUTH_SECRET,
-      });
-
-      if (!token) {
-        return NextResponse.json(
-          { error: 'Authentication required' },
-          { status: 401 }
-        );
-      }
-
-      // Call the original handler with the token
       return await handler(request, token);
     } catch (error) {
       console.error('Authenticated handler error:', error);

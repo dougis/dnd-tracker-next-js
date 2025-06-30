@@ -26,6 +26,20 @@ const TestComponent = () => {
   );
 };
 
+// Helper function to render component with context
+const renderWithContext = () => {
+  return render(
+    <SessionContextProvider>
+      <TestComponent />
+    </SessionContextProvider>
+  );
+};
+
+// Helper function to assert common expectations
+const expectTextContent = (testId: string, expectedText: string) => {
+  expect(screen.getByTestId(testId)).toHaveTextContent(expectedText);
+};
+
 describe('SessionContextProvider', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -38,16 +52,12 @@ describe('SessionContextProvider', () => {
       update: jest.fn(),
     });
 
-    render(
-      <SessionContextProvider>
-        <TestComponent />
-      </SessionContextProvider>
-    );
+    renderWithContext();
 
-    expect(screen.getByTestId('loading')).toHaveTextContent('loading');
-    expect(screen.getByTestId('authenticated')).toHaveTextContent('not-authenticated');
-    expect(screen.getByTestId('user-id')).toHaveTextContent('no-user');
-    expect(screen.getByTestId('subscription-tier')).toHaveTextContent('free');
+    expectTextContent('loading', 'loading');
+    expectTextContent('authenticated', 'not-authenticated');
+    expectTextContent('user-id', 'no-user');
+    expectTextContent('subscription-tier', 'free');
   });
 
   it('should provide authenticated state when user is logged in', () => {
@@ -66,18 +76,14 @@ describe('SessionContextProvider', () => {
       update: jest.fn(),
     });
 
-    render(
-      <SessionContextProvider>
-        <TestComponent />
-      </SessionContextProvider>
-    );
+    renderWithContext();
 
-    expect(screen.getByTestId('loading')).toHaveTextContent('not-loading');
-    expect(screen.getByTestId('authenticated')).toHaveTextContent('authenticated');
-    expect(screen.getByTestId('user-id')).toHaveTextContent('123');
-    expect(screen.getByTestId('user-email')).toHaveTextContent('test@example.com');
-    expect(screen.getByTestId('subscription-tier')).toHaveTextContent('premium');
-    expect(screen.getByTestId('has-premium')).toHaveTextContent('has-premium');
+    expectTextContent('loading', 'not-loading');
+    expectTextContent('authenticated', 'authenticated');
+    expectTextContent('user-id', '123');
+    expectTextContent('user-email', 'test@example.com');
+    expectTextContent('subscription-tier', 'premium');
+    expectTextContent('has-premium', 'has-premium');
   });
 
   it('should provide unauthenticated state when no session', () => {
@@ -87,17 +93,13 @@ describe('SessionContextProvider', () => {
       update: jest.fn(),
     });
 
-    render(
-      <SessionContextProvider>
-        <TestComponent />
-      </SessionContextProvider>
-    );
+    renderWithContext();
 
-    expect(screen.getByTestId('loading')).toHaveTextContent('not-loading');
-    expect(screen.getByTestId('authenticated')).toHaveTextContent('not-authenticated');
-    expect(screen.getByTestId('user-id')).toHaveTextContent('no-user');
-    expect(screen.getByTestId('subscription-tier')).toHaveTextContent('free');
-    expect(screen.getByTestId('has-premium')).toHaveTextContent('no-premium');
+    expectTextContent('loading', 'not-loading');
+    expectTextContent('authenticated', 'not-authenticated');
+    expectTextContent('user-id', 'no-user');
+    expectTextContent('subscription-tier', 'free');
+    expectTextContent('has-premium', 'no-premium');
   });
 
   it('should default to free tier when no subscription tier provided', () => {
@@ -116,14 +118,10 @@ describe('SessionContextProvider', () => {
       update: jest.fn(),
     });
 
-    render(
-      <SessionContextProvider>
-        <TestComponent />
-      </SessionContextProvider>
-    );
+    renderWithContext();
 
-    expect(screen.getByTestId('subscription-tier')).toHaveTextContent('free');
-    expect(screen.getByTestId('has-premium')).toHaveTextContent('no-premium');
+    expectTextContent('subscription-tier', 'free');
+    expectTextContent('has-premium', 'no-premium');
   });
 
   it('should throw error when useSessionContext is used outside provider', () => {
@@ -176,10 +174,10 @@ describe('SessionContextProvider', () => {
     );
 
     // Premium user should have access to free, basic, and premium, but not pro or enterprise
-    expect(screen.getByTestId('has-free')).toHaveTextContent('yes');
-    expect(screen.getByTestId('has-basic')).toHaveTextContent('yes');
-    expect(screen.getByTestId('has-premium')).toHaveTextContent('yes');
-    expect(screen.getByTestId('has-pro')).toHaveTextContent('no');
-    expect(screen.getByTestId('has-enterprise')).toHaveTextContent('no');
+    expectTextContent('has-free', 'yes');
+    expectTextContent('has-basic', 'yes');
+    expectTextContent('has-premium', 'yes');
+    expectTextContent('has-pro', 'no');
+    expectTextContent('has-enterprise', 'no');
   });
 });

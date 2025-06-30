@@ -49,6 +49,29 @@ export function useAuthState(): AuthState {
 }
 
 /**
+ * Build redirect URL with optional callback
+ */
+function buildRedirectUrl(baseUrl: string, includeCallback?: boolean): string {
+  if (!includeCallback) return baseUrl;
+
+  const currentUrl = encodeURIComponent(
+    window.location.pathname + window.location.search
+  );
+  return `${baseUrl}?callbackUrl=${currentUrl}`;
+}
+
+/**
+ * Perform navigation based on config
+ */
+function performRedirect(router: any, url: string, replace?: boolean): void {
+  if (replace) {
+    router.replace(url);
+  } else {
+    router.push(url);
+  }
+}
+
+/**
  * Hook to guard routes with authentication requirements
  */
 export function useSessionGuard(config: RedirectConfig): void {
@@ -59,20 +82,8 @@ export function useSessionGuard(config: RedirectConfig): void {
     if (status === 'loading') return;
 
     if (status === 'unauthenticated') {
-      let redirectUrl = config.redirectTo;
-
-      if (config.includeCallbackUrl) {
-        const currentUrl = encodeURIComponent(
-          window.location.pathname + window.location.search
-        );
-        redirectUrl += `?callbackUrl=${currentUrl}`;
-      }
-
-      if (config.replace) {
-        router.replace(redirectUrl);
-      } else {
-        router.push(redirectUrl);
-      }
+      const redirectUrl = buildRedirectUrl(config.redirectTo, config.includeCallbackUrl);
+      performRedirect(router, redirectUrl, config.replace);
     }
   }, [status, router, config]);
 }

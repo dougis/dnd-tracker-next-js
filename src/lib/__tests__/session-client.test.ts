@@ -23,6 +23,21 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
+// Helper functions to create mock sessions
+const createMockSession = (overrides = {}) => ({
+  expires: '2024-12-31',
+  ...overrides,
+});
+
+const createMockUser = (overrides = {}) => ({
+  id: '123',
+  email: 'test@example.com',
+  ...overrides,
+});
+
+const createSessionWithUser = (userOverrides = {}) => 
+  createMockSession({ user: createMockUser(userOverrides) });
+
 describe('Client-side Session Management', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -30,10 +45,7 @@ describe('Client-side Session Management', () => {
 
   describe('useAuthState', () => {
     it('should return authenticated state for valid session', () => {
-      const mockSession = {
-        user: { id: '123', email: 'test@example.com' },
-        expires: '2024-12-31',
-      };
+      const mockSession = createSessionWithUser();
       mockUseSession.mockReturnValue({
         data: mockSession,
         status: 'authenticated',
@@ -96,7 +108,7 @@ describe('Client-side Session Management', () => {
 
     it('should not redirect when user is authenticated', () => {
       mockUseSession.mockReturnValue({
-        data: { user: { id: '123' }, expires: '2024-12-31' },
+        data: createSessionWithUser(),
         status: 'authenticated',
         update: jest.fn(),
       });
@@ -169,10 +181,7 @@ describe('Client-side Session Management', () => {
 
   describe('useRequireAuth', () => {
     it('should return session when authenticated', () => {
-      const mockSession = {
-        user: { id: '123', email: 'test@example.com' },
-        expires: '2024-12-31',
-      };
+      const mockSession = createSessionWithUser();
       mockUseSession.mockReturnValue({
         data: mockSession,
         status: 'authenticated',
@@ -297,37 +306,25 @@ describe('Client-side Session Management', () => {
       });
 
       it('should return true for exact tier match', () => {
-        const session = {
-          user: { subscriptionTier: 'premium' },
-          expires: '2024-12-31',
-        };
+        const session = createSessionWithUser({ subscriptionTier: 'premium' });
         const result = ClientSessionUtils.hasSubscriptionTier(session, 'premium');
         expect(result).toBe(true);
       });
 
       it('should return true for higher tier', () => {
-        const session = {
-          user: { subscriptionTier: 'pro' },
-          expires: '2024-12-31',
-        };
+        const session = createSessionWithUser({ subscriptionTier: 'pro' });
         const result = ClientSessionUtils.hasSubscriptionTier(session, 'basic');
         expect(result).toBe(true);
       });
 
       it('should return false for lower tier', () => {
-        const session = {
-          user: { subscriptionTier: 'basic' },
-          expires: '2024-12-31',
-        };
+        const session = createSessionWithUser({ subscriptionTier: 'basic' });
         const result = ClientSessionUtils.hasSubscriptionTier(session, 'pro');
         expect(result).toBe(false);
       });
 
       it('should default to free tier when no subscriptionTier', () => {
-        const session = {
-          user: {},
-          expires: '2024-12-31',
-        };
+        const session = createSessionWithUser({});
         const result = ClientSessionUtils.hasSubscriptionTier(session, 'free');
         expect(result).toBe(true);
       });
@@ -340,19 +337,13 @@ describe('Client-side Session Management', () => {
       });
 
       it('should return null for session without user id', () => {
-        const session = {
-          user: {},
-          expires: '2024-12-31',
-        };
+        const session = createMockSession({ user: {} });
         const result = ClientSessionUtils.getUserId(session);
         expect(result).toBeNull();
       });
 
       it('should return user ID from session', () => {
-        const session = {
-          user: { id: 'user-123' },
-          expires: '2024-12-31',
-        };
+        const session = createSessionWithUser({ id: 'user-123' });
         const result = ClientSessionUtils.getUserId(session);
         expect(result).toBe('user-123');
       });
@@ -365,19 +356,13 @@ describe('Client-side Session Management', () => {
       });
 
       it('should return null for session without user email', () => {
-        const session = {
-          user: {},
-          expires: '2024-12-31',
-        };
+        const session = createMockSession({ user: {} });
         const result = ClientSessionUtils.getUserEmail(session);
         expect(result).toBeNull();
       });
 
       it('should return email from session', () => {
-        const session = {
-          user: { email: 'test@example.com' },
-          expires: '2024-12-31',
-        };
+        const session = createSessionWithUser({ email: 'test@example.com' });
         const result = ClientSessionUtils.getUserEmail(session);
         expect(result).toBe('test@example.com');
       });
@@ -390,19 +375,13 @@ describe('Client-side Session Management', () => {
       });
 
       it('should return free when no subscriptionTier', () => {
-        const session = {
-          user: {},
-          expires: '2024-12-31',
-        };
+        const session = createMockSession({ user: {} });
         const result = ClientSessionUtils.getSubscriptionTier(session);
         expect(result).toBe('free');
       });
 
       it('should return subscription tier from session', () => {
-        const session = {
-          user: { subscriptionTier: 'premium' },
-          expires: '2024-12-31',
-        };
+        const session = createSessionWithUser({ subscriptionTier: 'premium' });
         const result = ClientSessionUtils.getSubscriptionTier(session);
         expect(result).toBe('premium');
       });
@@ -413,7 +392,7 @@ describe('Client-side Session Management', () => {
     it('should handle the logout flow gracefully', async () => {
       // Test that the function exists and can be called without throwing
       expect(typeof performLogout).toBe('function');
-      
+
       // Since dynamic imports are complex to mock in Jest, we'll test the function
       // exists and can be called. The actual functionality is integration tested
       // in the browser environment where dynamic imports work naturally.
