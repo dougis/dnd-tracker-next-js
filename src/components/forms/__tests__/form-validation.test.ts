@@ -1,6 +1,4 @@
 import {
-  validateForm,
-  extractFormData,
   formatValidationErrors,
   validationRules,
   dndValidators,
@@ -9,7 +7,12 @@ import {
   type FormData,
   type ValidationResult,
 } from '../form-utils';
-import { createFieldValidator, mockFormData, restoreFormData } from './test-utils';
+import {
+  createFieldValidator,
+  testFormDataExtraction,
+  testValidationWorkflow,
+  createDndCharacterData
+} from './test-utils';
 
 describe('Form Validation and Utilities', () => {
   describe('Type Definitions', () => {
@@ -61,10 +64,7 @@ describe('Form Validation and Utilities', () => {
         createFieldValidator('age', [validationRules.number(), validationRules.min(18)]),
       ];
 
-      const result = validateForm(data, validators);
-
-      expect(result.isValid).toBe(true);
-      expect(result.errors).toEqual([]);
+      testValidationWorkflow(data, validators, true, 0);
     });
 
     it('should return errors for invalid data', () => {
@@ -80,10 +80,7 @@ describe('Form Validation and Utilities', () => {
         createFieldValidator('age', [validationRules.number('Age must be a number')]),
       ];
 
-      const result = validateForm(data, validators);
-
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toHaveLength(3);
+      const result = testValidationWorkflow(data, validators, false, 3);
       expect(result.errors).toEqual([
         { field: 'name', message: 'Name is required' },
         { field: 'email', message: 'Invalid email format' },
@@ -103,10 +100,7 @@ describe('Form Validation and Utilities', () => {
         ]),
       ];
 
-      const result = validateForm(data, validators);
-
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toHaveLength(1);
+      const result = testValidationWorkflow(data, validators, false, 1);
       expect(result.errors[0].message).toBe('Password too short');
     });
 
@@ -121,10 +115,7 @@ describe('Form Validation and Utilities', () => {
         createFieldValidator('email', [validationRules.email()]),
       ];
 
-      const result = validateForm(data, validators);
-
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toHaveLength(1);
+      const result = testValidationWorkflow(data, validators, false, 1);
       expect(result.errors[0]).toEqual({
         field: 'name',
         message: 'Name is required',
@@ -136,58 +127,27 @@ describe('Form Validation and Utilities', () => {
         anything: 'value',
       };
 
-      const result = validateForm(data, []);
-
-      expect(result.isValid).toBe(true);
-      expect(result.errors).toEqual([]);
+      testValidationWorkflow(data, [], true, 0);
     });
   });
 
   describe('extractFormData', () => {
     it('should extract data from HTML form element', () => {
-      const formElement = document.createElement('form');
-
-      const originalFormData = mockFormData([
-        ['name', 'John Doe'],
-        ['email', 'john@example.com'],
-      ]);
-
-      const result = extractFormData(formElement);
-
-      expect(result).toEqual({
-        name: 'John Doe',
-        email: 'john@example.com',
-      });
-
-      restoreFormData(originalFormData);
+      testFormDataExtraction(
+        [['name', 'John Doe'], ['email', 'john@example.com']],
+        { name: 'John Doe', email: 'john@example.com' }
+      );
     });
 
     it('should handle empty form', () => {
-      const formElement = document.createElement('form');
-
-      const originalFormData = mockFormData([]);
-
-      const result = extractFormData(formElement);
-
-      expect(result).toEqual({});
-
-      restoreFormData(originalFormData);
+      testFormDataExtraction([], {});
     });
 
     it('should handle multiple values for same field', () => {
-      const formElement = document.createElement('form');
-
-      const originalFormData = mockFormData([
-        ['hobbies', 'reading'],
-      ]);
-
-      const result = extractFormData(formElement);
-
-      expect(result).toEqual({
-        hobbies: 'reading',
-      });
-
-      restoreFormData(originalFormData);
+      testFormDataExtraction(
+        [['hobbies', 'reading']],
+        { hobbies: 'reading' }
+      );
     });
   });
 
@@ -208,7 +168,6 @@ describe('Form Validation and Utilities', () => {
 
     it('should handle empty errors array', () => {
       const result = formatValidationErrors([]);
-
       expect(result).toEqual([]);
     });
 
@@ -218,7 +177,6 @@ describe('Form Validation and Utilities', () => {
       ];
 
       const result = formatValidationErrors(inputErrors);
-
       expect(result).toEqual([
         { field: 'password', message: 'Password too weak' },
       ]);
@@ -238,19 +196,8 @@ describe('Form Validation and Utilities', () => {
 
   describe('Integration Tests', () => {
     it('should work with complete form validation workflow', () => {
-      // Create form data
-      const formData: FormData = {
-        characterName: 'Gandalf the Grey',
-        level: 20,
-        hitPoints: 150,
-        armorClass: 17,
-        strength: 13,
-        dexterity: 16,
-        constitution: 16,
-        intelligence: 25,
-        wisdom: 15,
-        charisma: 16,
-      };
+      // Create form data using helper
+      const formData = createDndCharacterData();
 
       // Create validators using D&D validators
       const validators: FieldValidator[] = [
@@ -267,20 +214,17 @@ describe('Form Validation and Utilities', () => {
       ];
 
       // Validate form
-      const result = validateForm(formData, validators);
-
-      expect(result.isValid).toBe(true);
-      expect(result.errors).toEqual([]);
+      testValidationWorkflow(formData, validators, true, 0);
     });
 
     it('should handle complex validation scenarios', () => {
-      const formData: FormData = {
+      const formData = createDndCharacterData({
         characterName: 'A', // Too short
         level: 25, // Too high
         hitPoints: -10, // Negative
         armorClass: 0, // Too low
         strength: 35, // Too high
-      };
+      });
 
       const validators: FieldValidator[] = [
         createFieldValidator('characterName', dndValidators.characterName),
@@ -290,13 +234,10 @@ describe('Form Validation and Utilities', () => {
         createFieldValidator('strength', dndValidators.abilityScore),
       ];
 
-      const result = validateForm(formData, validators);
-
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toHaveLength(5);
+      const result = testValidationWorkflow(formData, validators, false, 5);
 
       // Check that we get one error per field (stops at first error)
-      const fieldNames = result.errors.map(error => error.field);
+      const fieldNames = result.errors.map((error: any) => error.field);
       expect(fieldNames).toEqual(['characterName', 'level', 'hitPoints', 'armorClass', 'strength']);
     });
   });
