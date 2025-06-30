@@ -24,6 +24,7 @@ A modern web application for D&D Dungeon Masters to manage combat encounters eff
 ### **The Problem**
 
 Dungeon Masters need efficient tools to manage complex D&D 5e combat encounters, but existing solutions are either:
+
 - **Too complex**: Virtual tabletops with steep learning curves
 - **Too simple**: Basic initiative trackers missing critical features
 - **Outdated**: Poor mobile support and dated user interfaces
