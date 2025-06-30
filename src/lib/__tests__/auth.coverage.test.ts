@@ -45,13 +45,13 @@ describe('NextAuth Coverage Tests', () => {
     it('should trigger the authorize function code path - missing credentials', async () => {
       // This test aims to trigger execution of lines 22-24
       const authModule = await import('../auth');
-      
+
       // Verify auth module exports exist (triggers import)
       expect(authModule.handlers).toBeDefined();
       expect(authModule.auth).toBeDefined();
       expect(authModule.signIn).toBeDefined();
       expect(authModule.signOut).toBeDefined();
-      
+
       // The auth.ts file is imported and executed, which should improve coverage
       // Lines 7-89 should be executed during module initialization
     });
@@ -64,7 +64,7 @@ describe('NextAuth Coverage Tests', () => {
       });
 
       await import('../auth');
-      
+
       // The mere import should trigger the configuration setup
       expect(mockGetUserByEmail).toBeDefined();
     });
@@ -90,7 +90,7 @@ describe('NextAuth Coverage Tests', () => {
       });
 
       await import('../auth');
-      
+
       // The configuration should be set up, which exercises lines 47-53
       expect(mockAuthenticateUser).toBeDefined();
     });
@@ -102,7 +102,7 @@ describe('NextAuth Coverage Tests', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       await import('../auth');
-      
+
       // Error handling should be configured
       expect(consoleSpy).toBeDefined();
       consoleSpy.mockRestore();
@@ -111,7 +111,7 @@ describe('NextAuth Coverage Tests', () => {
     it('should test session callback execution', async () => {
       // This should trigger the session callback definition (lines 67-75)
       await import('../auth');
-      
+
       // Session callback should be configured
       expect(true).toBe(true); // Coverage by importing
     });
@@ -119,32 +119,32 @@ describe('NextAuth Coverage Tests', () => {
     it('should test JWT callback execution', async () => {
       // This should trigger the JWT callback definition (lines 76-82)
       await import('../auth');
-      
-      // JWT callback should be configured  
+
+      // JWT callback should be configured
       expect(true).toBe(true); // Coverage by importing
     });
 
     it('should test debug configuration', async () => {
       // Test debug configuration (line 88)
       const originalNodeEnv = process.env.NODE_ENV;
-      
+
       // Test development mode
       process.env.NODE_ENV = 'development';
-      
+
       // Re-import to test different debug configuration
       jest.resetModules();
       await import('../auth');
-      
+
       expect(process.env.NODE_ENV).toBe('development');
-      
+
       // Reset
       process.env.NODE_ENV = originalNodeEnv;
     });
 
     it('should exercise MongoClient and MongoDBAdapter initialization', async () => {
-      // This should trigger lines 7-12 
+      // This should trigger lines 7-12
       await import('../auth');
-      
+
       // MongoDB setup should be executed
       expect(true).toBe(true); // Coverage by importing
     });
@@ -152,7 +152,7 @@ describe('NextAuth Coverage Tests', () => {
     it('should exercise providers configuration', async () => {
       // This should trigger lines 14-60 (providers array and CredentialsProvider)
       await import('../auth');
-      
+
       // Providers should be configured
       expect(true).toBe(true); // Coverage by importing
     });
@@ -160,7 +160,7 @@ describe('NextAuth Coverage Tests', () => {
     it('should exercise session configuration', async () => {
       // This should trigger lines 61-65 (session configuration)
       await import('../auth');
-      
+
       // Session config should be set
       expect(true).toBe(true); // Coverage by importing
     });
@@ -168,7 +168,7 @@ describe('NextAuth Coverage Tests', () => {
     it('should exercise callbacks configuration', async () => {
       // This should trigger lines 66-83 (callbacks)
       await import('../auth');
-      
+
       // Callbacks should be configured
       expect(true).toBe(true); // Coverage by importing
     });
@@ -176,7 +176,7 @@ describe('NextAuth Coverage Tests', () => {
     it('should exercise pages configuration', async () => {
       // This should trigger lines 84-87 (pages configuration)
       await import('../auth');
-      
+
       // Pages config should be set
       expect(true).toBe(true); // Coverage by importing
     });
@@ -186,31 +186,31 @@ describe('NextAuth Coverage Tests', () => {
     it('should handle missing MONGODB_URI', () => {
       const originalUri = process.env.MONGODB_URI;
       delete process.env.MONGODB_URI;
-      
+
       // This should trigger the undefined check in line 7
       expect(() => {
         // Reset modules to force re-import
         jest.resetModules();
       }).not.toThrow();
-      
+
       process.env.MONGODB_URI = originalUri;
     });
 
     it('should handle different NODE_ENV values', async () => {
       const originalNodeEnv = process.env.NODE_ENV;
-      
+
       // Test production mode
       process.env.NODE_ENV = 'production';
       jest.resetModules();
       await import('../auth');
-      
+
       // Test test mode
       process.env.NODE_ENV = 'test';
       jest.resetModules();
       await import('../auth');
-      
+
       process.env.NODE_ENV = originalNodeEnv;
-      
+
       expect(true).toBe(true); // Coverage by different env imports
     });
   });

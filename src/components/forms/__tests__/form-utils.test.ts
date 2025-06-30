@@ -18,7 +18,7 @@ describe('Form Utils', () => {
         test: (value) => value !== null,
         message: 'Test message',
       };
-      
+
       expect(rule.test).toBeInstanceOf(Function);
       expect(typeof rule.message).toBe('string');
 
@@ -26,21 +26,21 @@ describe('Form Utils', () => {
         field: 'testField',
         rules: [rule],
       };
-      
+
       expect(typeof validator.field).toBe('string');
       expect(Array.isArray(validator.rules)).toBe(true);
 
       const formData: FormData = {
         testField: 'test value',
       };
-      
+
       expect(typeof formData).toBe('object');
 
       const result: ValidationResult = {
         isValid: true,
         errors: [],
       };
-      
+
       expect(typeof result.isValid).toBe('boolean');
       expect(Array.isArray(result.errors)).toBe(true);
     });
@@ -49,7 +49,7 @@ describe('Form Utils', () => {
   describe('validationRules.required', () => {
     it('should validate required string fields', () => {
       const rule = validationRules.required();
-      
+
       expect(rule.test('valid string')).toBe(true);
       expect(rule.test(' valid with spaces ')).toBe(true);
       expect(rule.test('')).toBe(false);
@@ -59,7 +59,7 @@ describe('Form Utils', () => {
 
     it('should validate required array fields', () => {
       const rule = validationRules.required();
-      
+
       expect(rule.test([1, 2, 3])).toBe(true);
       expect(rule.test(['item'])).toBe(true);
       expect(rule.test([])).toBe(false);
@@ -67,7 +67,7 @@ describe('Form Utils', () => {
 
     it('should validate required other field types', () => {
       const rule = validationRules.required();
-      
+
       expect(rule.test(123)).toBe(true);
       expect(rule.test(0)).toBe(true);
       expect(rule.test(false)).toBe(true);
@@ -79,7 +79,7 @@ describe('Form Utils', () => {
     it('should accept custom message', () => {
       const customMessage = 'Custom required message';
       const rule = validationRules.required(customMessage);
-      
+
       expect(rule.message).toBe(customMessage);
       expect(rule.test('')).toBe(false);
     });
@@ -88,7 +88,7 @@ describe('Form Utils', () => {
   describe('validationRules.minLength', () => {
     it('should validate minimum length', () => {
       const rule = validationRules.minLength(5);
-      
+
       expect(rule.test('hello')).toBe(true);
       expect(rule.test('hello world')).toBe(true);
       expect(rule.test('hi')).toBe(false);
@@ -99,14 +99,14 @@ describe('Form Utils', () => {
     it('should accept custom message', () => {
       const customMessage = 'Password too short';
       const rule = validationRules.minLength(8, customMessage);
-      
+
       expect(rule.message).toBe(customMessage);
       expect(rule.test('short')).toBe(false);
     });
 
     it('should handle null and undefined values', () => {
       const rule = validationRules.minLength(5);
-      
+
       expect(rule.test(null as any)).toBe(true);
       expect(rule.test(undefined as any)).toBe(true);
     });
@@ -115,7 +115,7 @@ describe('Form Utils', () => {
   describe('validationRules.maxLength', () => {
     it('should validate maximum length', () => {
       const rule = validationRules.maxLength(5);
-      
+
       expect(rule.test('hello')).toBe(true);
       expect(rule.test('hi')).toBe(true);
       expect(rule.test('')).toBe(true);
@@ -126,14 +126,14 @@ describe('Form Utils', () => {
     it('should accept custom message', () => {
       const customMessage = 'Username too long';
       const rule = validationRules.maxLength(20, customMessage);
-      
+
       expect(rule.message).toBe(customMessage);
       expect(rule.test('very long username that exceeds limit')).toBe(false);
     });
 
     it('should handle null and undefined values', () => {
       const rule = validationRules.maxLength(5);
-      
+
       expect(rule.test(null as any)).toBe(true);
       expect(rule.test(undefined as any)).toBe(true);
     });
@@ -142,7 +142,7 @@ describe('Form Utils', () => {
   describe('validationRules.email', () => {
     it('should validate email format', () => {
       const rule = validationRules.email();
-      
+
       expect(rule.test('test@example.com')).toBe(true);
       expect(rule.test('user.name@domain.co.uk')).toBe(true);
       expect(rule.test('user+tag@example.org')).toBe(true);
@@ -157,7 +157,7 @@ describe('Form Utils', () => {
     it('should accept custom message', () => {
       const customMessage = 'Please enter a valid email';
       const rule = validationRules.email(customMessage);
-      
+
       expect(rule.message).toBe(customMessage);
       expect(rule.test('invalid')).toBe(false);
     });
@@ -166,7 +166,7 @@ describe('Form Utils', () => {
   describe('validationRules.number', () => {
     it('should validate number values', () => {
       const rule = validationRules.number();
-      
+
       expect(rule.test(123)).toBe(true);
       expect(rule.test('123')).toBe(true);
       expect(rule.test('123.45')).toBe(true);
@@ -182,14 +182,14 @@ describe('Form Utils', () => {
     it('should accept custom message', () => {
       const customMessage = 'Enter a valid number';
       const rule = validationRules.number(customMessage);
-      
+
       expect(rule.message).toBe(customMessage);
       expect(rule.test('invalid')).toBe(false);
     });
 
     it('should handle null and undefined values', () => {
       const rule = validationRules.number();
-      
+
       expect(rule.test(null as any)).toBe(true);
       expect(rule.test(undefined as any)).toBe(true);
     });
@@ -198,7 +198,7 @@ describe('Form Utils', () => {
   describe('validationRules.min', () => {
     it('should validate minimum value', () => {
       const rule = validationRules.min(10);
-      
+
       expect(rule.test(10)).toBe(true);
       expect(rule.test('10')).toBe(true);
       expect(rule.test(15)).toBe(true);
@@ -214,14 +214,14 @@ describe('Form Utils', () => {
     it('should accept custom message', () => {
       const customMessage = 'Value too small';
       const rule = validationRules.min(5, customMessage);
-      
+
       expect(rule.message).toBe(customMessage);
       expect(rule.test(3)).toBe(false);
     });
 
     it('should handle null and undefined values', () => {
       const rule = validationRules.min(10);
-      
+
       expect(rule.test(null as any)).toBe(true);
       expect(rule.test(undefined as any)).toBe(true);
     });
@@ -230,7 +230,7 @@ describe('Form Utils', () => {
   describe('validationRules.max', () => {
     it('should validate maximum value', () => {
       const rule = validationRules.max(100);
-      
+
       expect(rule.test(100)).toBe(true);
       expect(rule.test('100')).toBe(true);
       expect(rule.test(50)).toBe(true);
@@ -246,14 +246,14 @@ describe('Form Utils', () => {
     it('should accept custom message', () => {
       const customMessage = 'Value too large';
       const rule = validationRules.max(50, customMessage);
-      
+
       expect(rule.message).toBe(customMessage);
       expect(rule.test(75)).toBe(false);
     });
 
     it('should handle null and undefined values', () => {
       const rule = validationRules.max(100);
-      
+
       expect(rule.test(null as any)).toBe(true);
       expect(rule.test(undefined as any)).toBe(true);
     });
@@ -263,7 +263,7 @@ describe('Form Utils', () => {
     it('should validate regex patterns', () => {
       const phoneRegex = /^\d{3}-\d{3}-\d{4}$/;
       const rule = validationRules.pattern(phoneRegex);
-      
+
       expect(rule.test('123-456-7890')).toBe(true);
       expect(rule.test('')).toBe(true); // Empty is allowed for optional fields
       expect(rule.test('1234567890')).toBe(false);
@@ -275,7 +275,7 @@ describe('Form Utils', () => {
       const customMessage = 'Invalid phone format';
       const phoneRegex = /^\d{3}-\d{3}-\d{4}$/;
       const rule = validationRules.pattern(phoneRegex, customMessage);
-      
+
       expect(rule.message).toBe(customMessage);
       expect(rule.test('invalid')).toBe(false);
     });
@@ -283,7 +283,7 @@ describe('Form Utils', () => {
     it('should work with complex patterns', () => {
       const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
       const rule = validationRules.pattern(strongPasswordRegex, 'Password must be strong');
-      
+
       expect(rule.test('StrongP@ss1')).toBe(true);
       expect(rule.test('weakpass')).toBe(false);
       expect(rule.test('')).toBe(true); // Empty allowed
@@ -417,7 +417,7 @@ describe('Form Utils', () => {
     describe('characterName', () => {
       it('should have correct validation rules', () => {
         const validators = dndValidators.characterName;
-        
+
         expect(validators).toHaveLength(3);
         expect(validators[0].message).toBe('Character name is required');
         expect(validators[1].message).toBe('Character name must be at least 2 characters');
@@ -426,7 +426,7 @@ describe('Form Utils', () => {
 
       it('should validate character names correctly', () => {
         const validators = dndValidators.characterName;
-        
+
         // Valid names
         expect(validators[0].test('Aragorn')).toBe(true);
         expect(validators[1].test('Aragorn')).toBe(true);
@@ -442,7 +442,7 @@ describe('Form Utils', () => {
     describe('abilityScore', () => {
       it('should have correct validation rules', () => {
         const validators = dndValidators.abilityScore;
-        
+
         expect(validators).toHaveLength(4);
         expect(validators[0].message).toBe('Ability score is required');
         expect(validators[1].message).toBe('Ability score must be a number');
@@ -452,7 +452,7 @@ describe('Form Utils', () => {
 
       it('should validate ability scores correctly', () => {
         const validators = dndValidators.abilityScore;
-        
+
         // Valid scores
         expect(validators[1].test(15)).toBe(true);
         expect(validators[2].test(15)).toBe(true);
@@ -468,7 +468,7 @@ describe('Form Utils', () => {
     describe('hitPoints', () => {
       it('should have correct validation rules', () => {
         const validators = dndValidators.hitPoints;
-        
+
         expect(validators).toHaveLength(4);
         expect(validators[0].message).toBe('Hit points are required');
         expect(validators[1].message).toBe('Hit points must be a number');
@@ -478,7 +478,7 @@ describe('Form Utils', () => {
 
       it('should validate hit points correctly', () => {
         const validators = dndValidators.hitPoints;
-        
+
         // Valid HP
         expect(validators[1].test(50)).toBe(true);
         expect(validators[2].test(0)).toBe(true); // Zero HP allowed
@@ -493,7 +493,7 @@ describe('Form Utils', () => {
     describe('armorClass', () => {
       it('should have correct validation rules', () => {
         const validators = dndValidators.armorClass;
-        
+
         expect(validators).toHaveLength(4);
         expect(validators[0].message).toBe('Armor class is required');
         expect(validators[1].message).toBe('Armor class must be a number');
@@ -503,7 +503,7 @@ describe('Form Utils', () => {
 
       it('should validate armor class correctly', () => {
         const validators = dndValidators.armorClass;
-        
+
         // Valid AC
         expect(validators[1].test(15)).toBe(true);
         expect(validators[2].test(10)).toBe(true);
@@ -518,7 +518,7 @@ describe('Form Utils', () => {
     describe('initiative', () => {
       it('should have correct validation rules', () => {
         const validators = dndValidators.initiative;
-        
+
         expect(validators).toHaveLength(3);
         expect(validators[0].message).toBe('Initiative must be a number');
         expect(validators[1].message).toBe('Initiative modifier cannot be less than -10');
@@ -527,7 +527,7 @@ describe('Form Utils', () => {
 
       it('should validate initiative correctly', () => {
         const validators = dndValidators.initiative;
-        
+
         // Valid initiative
         expect(validators[0].test(5)).toBe(true);
         expect(validators[1].test(-5)).toBe(true);
@@ -542,7 +542,7 @@ describe('Form Utils', () => {
     describe('level', () => {
       it('should have correct validation rules', () => {
         const validators = dndValidators.level;
-        
+
         expect(validators).toHaveLength(4);
         expect(validators[0].message).toBe('Level is required');
         expect(validators[1].message).toBe('Level must be a number');
@@ -552,7 +552,7 @@ describe('Form Utils', () => {
 
       it('should validate level correctly', () => {
         const validators = dndValidators.level;
-        
+
         // Valid levels
         expect(validators[1].test(10)).toBe(true);
         expect(validators[2].test(1)).toBe(true);
@@ -569,7 +569,7 @@ describe('Form Utils', () => {
     it('should extract data from HTML form element', () => {
       // Create a mock form element
       const formElement = document.createElement('form');
-      
+
       // Add input elements
       const nameInput = document.createElement('input');
       nameInput.name = 'name';
@@ -605,7 +605,7 @@ describe('Form Utils', () => {
 
     it('should handle empty form', () => {
       const formElement = document.createElement('form');
-      
+
       // Mock empty FormData
       const mockFormData = new Map();
 
@@ -623,7 +623,7 @@ describe('Form Utils', () => {
 
     it('should handle multiple values for same field', () => {
       const formElement = document.createElement('form');
-      
+
       // Mock FormData with multiple values
       const mockFormData = new Map();
       mockFormData.set('hobbies', 'reading');
@@ -662,7 +662,7 @@ describe('Form Utils', () => {
 
     it('should handle empty errors array', () => {
       const result = formatValidationErrors([]);
-      
+
       expect(result).toEqual([]);
     });
 
@@ -748,7 +748,7 @@ describe('Form Utils', () => {
 
       expect(result.isValid).toBe(false);
       expect(result.errors).toHaveLength(5);
-      
+
       // Check that we get one error per field (stops at first error)
       const fieldNames = result.errors.map(error => error.field);
       expect(fieldNames).toEqual(['characterName', 'level', 'hitPoints', 'armorClass', 'strength']);
