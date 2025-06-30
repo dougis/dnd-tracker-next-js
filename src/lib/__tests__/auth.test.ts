@@ -56,29 +56,17 @@ const createMockUser = (overrides: Partial<any> = {}) => ({
   ...overrides,
 });
 
-const createMockUserWithStrings = (overrides: Partial<any> = {}) => ({
-  _id: 'user123',
-  email: 'test@example.com',
-  username: 'johndoe',
-  firstName: 'John',
-  lastName: 'Doe',
-  role: 'user' as const,
-  subscriptionTier: 'expert' as const,
-  isEmailVerified: true,
-  preferences: {
-    theme: 'system' as const,
-    emailNotifications: true,
-    browserNotifications: false,
-    timezone: 'UTC',
-    language: 'en',
-    diceRollAnimations: true,
-    autoSaveEncounters: true,
-  },
-  lastLoginAt: new Date().toISOString(),
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-  ...overrides,
-});
+const createMockUserWithStrings = (overrides: Partial<any> = {}) => {
+  const baseUser = createMockUser(overrides);
+  return {
+    ...baseUser,
+    _id: baseUser.id,
+    id: undefined,
+    lastLoginAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+};
 
 const transformUserForSession = (mockUser: any) => ({
   id: mockUser._id?.toString() || '',
