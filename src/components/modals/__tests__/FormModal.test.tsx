@@ -145,13 +145,13 @@ describe('FormModal', () => {
 
       expect(submitButton).toBeInTheDocument();
       expect(formWrapper).toBeInTheDocument();
-      
+
       // Test that the form is configured correctly
       expect(formWrapper).toHaveAttribute('data-submitting', 'false');
-      
+
       // Test button interaction works
       await user.click(submitButton);
-      
+
       // Button should still be present after click
       expect(submitButton).toBeInTheDocument();
     });
@@ -167,7 +167,7 @@ describe('FormModal', () => {
 
       const formWrapper = screen.getByTestId('form-wrapper');
       expect(formWrapper).toBeInTheDocument();
-      
+
       // Modal should remain open with preventCloseOnSubmit configuration
       expect(screen.getByTestId('modal')).toHaveAttribute('data-open', 'true');
     });
@@ -179,7 +179,7 @@ describe('FormModal', () => {
 
       const formWrapper = screen.getByTestId('form-wrapper');
       const submitButton = screen.getByTestId('form-submit-button');
-      
+
       expect(formWrapper).toBeInTheDocument();
       expect(submitButton).toBeInTheDocument();
       expect(formWrapper).toHaveAttribute('data-submitting', 'false');
