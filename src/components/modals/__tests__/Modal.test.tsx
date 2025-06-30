@@ -352,49 +352,38 @@ describe('Modal', () => {
   });
 
   it('applies correct CSS classes for different type variants', () => {
-    const { rerender } = render(
-      <Modal {...defaultProps} type="warning" />
-    );
+    const { rerender } = render(<Modal {...defaultProps} type="warning" />);
 
-    let content = screen.getByTestId('dialog-content');
-    expect(content.className).toContain('border-yellow-200');
+    const testTypeVariant = (type: string, expectedClass: string) => {
+      rerender(<Modal {...defaultProps} type={type as any} />);
+      const content = screen.getByTestId('dialog-content');
+      expect(content.className).toContain(expectedClass);
+    };
 
-    rerender(<Modal {...defaultProps} type="success" />);
-    content = screen.getByTestId('dialog-content');
-    expect(content.className).toContain('border-green-200');
+    testTypeVariant('warning', 'border-yellow-200');
+    testTypeVariant('success', 'border-green-200');
+    testTypeVariant('error', 'border-red-200');
 
-    rerender(<Modal {...defaultProps} type="error" />);
-    content = screen.getByTestId('dialog-content');
-    expect(content.className).toContain('border-red-200');
-
+    // Test default variant separately
     rerender(<Modal {...defaultProps} type="default" />);
-    content = screen.getByTestId('dialog-content');
+    const content = screen.getByTestId('dialog-content');
     expect(content.className).not.toContain('border-');
   });
 
   it('applies correct CSS classes for different size variants', () => {
-    const { rerender } = render(
-      <Modal {...defaultProps} size="xl" />
-    );
+    const { rerender } = render(<Modal {...defaultProps} size="xl" />);
 
-    let content = screen.getByTestId('dialog-content');
-    expect(content.className).toContain('max-w-xl');
+    const testSizeVariant = (size: string, expectedClass: string) => {
+      rerender(<Modal {...defaultProps} size={size as any} />);
+      const content = screen.getByTestId('dialog-content');
+      expect(content.className).toContain(expectedClass);
+    };
 
-    rerender(<Modal {...defaultProps} size="2xl" />);
-    content = screen.getByTestId('dialog-content');
-    expect(content.className).toContain('max-w-2xl');
-
-    rerender(<Modal {...defaultProps} size="3xl" />);
-    content = screen.getByTestId('dialog-content');
-    expect(content.className).toContain('max-w-3xl');
-
-    rerender(<Modal {...defaultProps} size="4xl" />);
-    content = screen.getByTestId('dialog-content');
-    expect(content.className).toContain('max-w-4xl');
-
-    rerender(<Modal {...defaultProps} size="full" />);
-    content = screen.getByTestId('dialog-content');
-    expect(content.className).toContain('max-w-[95vw]');
+    testSizeVariant('xl', 'max-w-xl');
+    testSizeVariant('2xl', 'max-w-2xl');
+    testSizeVariant('3xl', 'max-w-3xl');
+    testSizeVariant('4xl', 'max-w-4xl');
+    testSizeVariant('full', 'max-w-[95vw]');
   });
 
   it('handles open state changes correctly', () => {
@@ -463,28 +452,30 @@ describe('Modal', () => {
   });
 
   it('cleans up event listeners on unmount', () => {
-    const addEventListenerSpy = jest.spyOn(document, 'addEventListener');
-    const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener');
+    const testEventListenerCleanup = () => {
+      const addEventListenerSpy = jest.spyOn(document, 'addEventListener');
+      const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener');
 
-    const { unmount } = render(
-      <Modal {...defaultProps} closeOnEscapeKey={false} />
-    );
+      const { unmount } = render(<Modal {...defaultProps} closeOnEscapeKey={false} />);
 
-    expect(addEventListenerSpy).toHaveBeenCalledWith(
-      'keydown',
-      expect.any(Function),
-      { capture: true }
-    );
+      expect(addEventListenerSpy).toHaveBeenCalledWith(
+        'keydown',
+        expect.any(Function),
+        { capture: true }
+      );
 
-    unmount();
+      unmount();
 
-    expect(removeEventListenerSpy).toHaveBeenCalledWith(
-      'keydown',
-      expect.any(Function),
-      { capture: true }
-    );
+      expect(removeEventListenerSpy).toHaveBeenCalledWith(
+        'keydown',
+        expect.any(Function),
+        { capture: true }
+      );
 
-    addEventListenerSpy.mockRestore();
-    removeEventListenerSpy.mockRestore();
+      addEventListenerSpy.mockRestore();
+      removeEventListenerSpy.mockRestore();
+    };
+
+    testEventListenerCleanup();
   });
 });

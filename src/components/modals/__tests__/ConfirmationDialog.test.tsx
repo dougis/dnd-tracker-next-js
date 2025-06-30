@@ -128,25 +128,21 @@ describe('ConfirmationDialog', () => {
 
   it('renders custom children', () => {
     const customContent = <div>Additional warning text</div>;
-    render(
-      <ConfirmationDialog
-        {...defaultProps}
-        config={{ ...defaultProps.config, children: customContent }}
-      />
+    const renderCustomDialog = (config: any) => render(
+      <ConfirmationDialog {...defaultProps} config={config} />
     );
 
+    renderCustomDialog({ ...defaultProps.config, children: customContent });
     expect(screen.getByText('Additional warning text')).toBeInTheDocument();
   });
 
   it('prevents interaction when loading', async () => {
     const loadingConfig = createLoadingConfig(true);
-    render(
-      <ConfirmationDialog
-        {...defaultProps}
-        config={loadingConfig}
-      />
+    const renderCustomDialog = (config: any) => render(
+      <ConfirmationDialog {...defaultProps} config={config} />
     );
 
+    renderCustomDialog(loadingConfig);
     testLoadingButtons();
   });
 });
@@ -233,19 +229,18 @@ describe('ConfirmationDialog Extended Coverage', () => {
 
   describe('Advanced Configuration', () => {
     it('handles all variant types correctly', () => {
-      const variants = ['default', 'destructive', 'warning'] as const;
-
-      variants.forEach((variant) => {
+      const testVariant = (variant: string) => {
         const { rerender } = render(
           <ConfirmationDialog
             {...defaultProps}
-            config={{ ...defaultProps.config, variant }}
+            config={{ ...defaultProps.config, variant: variant as any }}
           />
         );
-
         expect(screen.getByText('Confirm Action')).toBeInTheDocument();
-        rerender(<div />); // Clear for next iteration
-      });
+        rerender(<div />);
+      };
+
+      ['default', 'destructive', 'warning'].forEach(testVariant);
     });
 
     it('handles missing optional config properties', () => {
@@ -503,7 +498,6 @@ describe('ConfirmationDialog Extended Coverage', () => {
         />
       );
 
-      // Test that destructive variant renders (specific styling tests are complex)
       expect(screen.getByText('Confirm Action')).toBeInTheDocument();
     });
 
@@ -518,7 +512,6 @@ describe('ConfirmationDialog Extended Coverage', () => {
         />
       );
 
-      // Test that warning variant renders
       expect(screen.getByText('Confirm Action')).toBeInTheDocument();
     });
   });
