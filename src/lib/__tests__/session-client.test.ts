@@ -35,7 +35,7 @@ const createMockUser = (overrides = {}) => ({
   ...overrides,
 });
 
-const createSessionWithUser = (userOverrides = {}) => 
+const createSessionWithUser = (userOverrides = {}) =>
   createMockSession({ user: createMockUser(userOverrides) });
 
 describe('Client-side Session Management', () => {
