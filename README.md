@@ -4,6 +4,7 @@
 
 A modern web application for D&D Dungeon Masters to manage combat encounters efficiently
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/39a5d88b0d414f7398a9444c0dd42f79)](https://app.codacy.com/gh/dougis/dnd-tracker-next-js?utm_source=github.com&utm_medium=referral&utm_content=dougis/dnd-tracker-next-js&utm_campaign=Badge_Grade)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-7.0+-green?logo=mongodb)](https://www.mongodb.com/)
