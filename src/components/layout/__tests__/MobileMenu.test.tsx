@@ -102,7 +102,7 @@ describe('MobileMenu', () => {
 
       const backdrop = container.querySelector('.fixed.inset-0.z-40.bg-black\\/50.lg\\:hidden');
       expect(backdrop).toBeInTheDocument();
-      expect(backdrop).toHaveClass('fixed', 'inset-0', 'z-40', 'bg-black/50', 'lg:hidden');
+      expect(backdrop).toHaveClass('fixed inset-0 z-40 bg-black/50 lg:hidden');
     });
 
     test('renders mobile menu panel with correct styling', () => {
@@ -111,8 +111,7 @@ describe('MobileMenu', () => {
       const menuPanel = container.querySelector('.fixed.inset-y-0.left-0.z-50.w-64');
       expect(menuPanel).toBeInTheDocument();
       expect(menuPanel).toHaveClass(
-        'bg-card', 'border-r', 'border-border', 'transform',
-        'transition-transform', 'duration-300', 'ease-in-out', 'lg:hidden'
+        'bg-card border-r border-border transform transition-transform duration-300 ease-in-out lg:hidden'
       );
     });
 
@@ -148,14 +147,14 @@ describe('MobileMenu', () => {
 
       const iconContainer = logoContainer?.querySelector('.flex.h-8.w-8');
       expect(iconContainer).toBeInTheDocument();
-      expect(iconContainer).toHaveClass('bg-primary', 'text-primary-foreground', 'rounded-lg');
+      expect(iconContainer).toHaveClass('bg-primary text-primary-foreground rounded-lg');
     });
 
     test('brand title has fantasy font class', () => {
       render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
 
       const brandTitle = screen.getByText('D&D Tracker');
-      expect(brandTitle).toHaveClass('text-lg', 'font-fantasy', 'font-bold', 'text-foreground');
+      expect(brandTitle).toHaveClass('text-lg font-fantasy font-bold text-foreground');
     });
 
     test('header has correct height and styling', () => {
@@ -163,7 +162,7 @@ describe('MobileMenu', () => {
 
       const header = screen.getByText('D&D Tracker').closest('.flex.h-16');
       expect(header).toBeInTheDocument();
-      expect(header).toHaveClass('items-center', 'justify-between', 'border-b', 'border-border', 'px-4');
+      expect(header).toHaveClass('items-center justify-between border-b border-border px-4');
     });
   });
 
@@ -181,8 +180,7 @@ describe('MobileMenu', () => {
 
       const closeButton = screen.getByLabelText('Close menu');
       expect(closeButton).toHaveClass(
-        'rounded-md', 'p-2', 'text-muted-foreground',
-        'hover:bg-accent', 'hover:text-accent-foreground'
+        'rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground'
       );
     });
 
@@ -193,7 +191,7 @@ describe('MobileMenu', () => {
       const icon = closeButton.querySelector('svg');
 
       expect(icon).toBeInTheDocument();
-      expect(icon).toHaveClass('h-6', 'w-6');
+      expect(icon).toHaveClass('h-6 w-6');
       expect(icon).toHaveAttribute('viewBox', '0 0 24 24');
 
       const path = icon?.querySelector('path');
@@ -314,8 +312,8 @@ describe('MobileMenu', () => {
       const userName = screen.getByText('Demo User');
       const userEmail = screen.getByText('demo@example.com');
 
-      expect(userName).toHaveClass('text-sm', 'font-medium', 'text-foreground', 'truncate');
-      expect(userEmail).toHaveClass('text-xs', 'text-muted-foreground', 'truncate');
+      expect(userName).toHaveClass('text-sm font-medium text-foreground truncate');
+      expect(userEmail).toHaveClass('text-xs text-muted-foreground truncate');
     });
   });
 
@@ -347,7 +345,7 @@ describe('MobileMenu', () => {
 
       expect(navigationLinks.length).toBeGreaterThan(0);
       for (const link of navigationLinks) {
-        expect(link).toHaveClass('px-3', 'py-2', 'rounded-md');
+        expect(link).toHaveClass('px-3 py-2 rounded-md');
       }
     });
   });
@@ -357,14 +355,14 @@ describe('MobileMenu', () => {
       const { container } = render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
 
       const menuPanel = container.querySelector('.fixed.inset-y-0.left-0.z-50.w-64');
-      expect(menuPanel).toHaveClass('transform', 'transition-transform', 'duration-300', 'ease-in-out');
+      expect(menuPanel).toHaveClass('transform transition-transform duration-300 ease-in-out');
     });
 
     test('navigation section has proper spacing', () => {
       render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
 
       const navigation = screen.getByRole('navigation');
-      expect(navigation).toHaveClass('flex-1', 'space-y-1', 'px-3', 'py-4');
+      expect(navigation).toHaveClass('flex-1 space-y-1 px-3 py-4');
     });
   });
 
