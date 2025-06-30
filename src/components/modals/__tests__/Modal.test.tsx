@@ -151,7 +151,7 @@ describe('Modal', () => {
 
     it('renders with all size variants', () => {
       const sizes = ['sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', 'full'] as const;
-      
+
       sizes.forEach((size) => {
         const { rerender } = render(<Modal {...defaultProps} size={size} />);
         const content = screen.getByTestId('dialog-content');
@@ -162,11 +162,11 @@ describe('Modal', () => {
 
     it('renders with all type variants', () => {
       const types = ['default', 'info', 'warning', 'error'] as const;
-      
+
       types.forEach((type) => {
         const { rerender } = render(<Modal {...defaultProps} type={type} />);
         const content = screen.getByTestId('dialog-content');
-        
+
         if (type === 'info') {
           expect(content.className).toContain('border-blue-200');
         } else if (type === 'warning') {
@@ -174,26 +174,26 @@ describe('Modal', () => {
         } else if (type === 'error') {
           expect(content.className).toContain('border-red-200');
         }
-        
+
         rerender(<div />); // Clear for next iteration
       });
     });
 
     it('handles empty children gracefully', () => {
-      render(<Modal {...defaultProps} children={null} />);
-      
+      render(<Modal {...defaultProps}>{null}</Modal>);
+
       expect(screen.getByTestId('dialog-content')).toBeInTheDocument();
     });
 
     it('renders without footer when not provided', () => {
       render(<Modal {...defaultProps} footer={undefined} />);
-      
+
       expect(screen.queryByTestId('dialog-footer')).not.toBeInTheDocument();
     });
 
     it('renders when closed', () => {
       render(<Modal {...defaultProps} open={false} />);
-      
+
       const dialog = screen.getByTestId('dialog');
       expect(dialog.getAttribute('data-open')).toBe('false');
     });
@@ -261,7 +261,7 @@ describe('Modal', () => {
 
       // Without title or description
       rerender(<Modal {...defaultProps} title={undefined} description={undefined} />);
-      
+
       expect(screen.queryByTestId('dialog-header')).not.toBeInTheDocument();
     });
 
@@ -276,7 +276,7 @@ describe('Modal', () => {
 
       // Without footer
       rerender(<Modal {...defaultProps} footer={undefined} />);
-      
+
       expect(screen.queryByTestId('dialog-footer')).not.toBeInTheDocument();
     });
 
@@ -309,11 +309,9 @@ describe('Modal', () => {
       render(
         <div>
           <Modal {...defaultProps} open={true} />
-          <Modal
-            open={false}
-            onOpenChange={jest.fn()}
-            children={<div>Second modal</div>}
-          />
+          <Modal open={false} onOpenChange={jest.fn()}>
+            <div>Second modal</div>
+          </Modal>
         </div>
       );
 

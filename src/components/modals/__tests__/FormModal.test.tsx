@@ -1,6 +1,6 @@
 import React from 'react';
 import userEvent from '@testing-library/user-event';
-import { render, screen, waitFor, act } from './test-utils';
+import { render, screen, act } from './test-utils';
 import {
   FormModal,
   useFormModal,
@@ -312,10 +312,6 @@ describe('FormModal', () => {
         />
       );
 
-      // Simulate trying to close modal
-      const modal = screen.getByTestId('modal');
-      const closeHandler = modal.onclick;
-      
       // This test verifies the logic exists but actual prevention happens in handleOpenChange
       expect(screen.getByTestId('modal')).toHaveAttribute(
         'data-close-on-overlay',
@@ -493,9 +489,9 @@ describe('useFormModal Hook', () => {
 
   it('updates modal config when opening with new config', async () => {
     const user = userEvent.setup();
-    
+
     function TestComponentWithUpdate() {
-      const { isOpen, openModal, FormModal: FormModalComponent } = useFormModal();
+      const { openModal, FormModal: FormModalComponent } = useFormModal();
 
       const handleOpen1 = () => {
         openModal({

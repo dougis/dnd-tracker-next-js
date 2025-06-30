@@ -58,8 +58,7 @@ jest.mock('../ModalManager', () => {
 });
 
 // Sample modal types for testing
-// eslint-disable-next-line no-unused-vars
-type TestModals = {
+type _TestModals = {
   basicModal: ModalProps;
   confirmModal: ModalProps & { onConfirm: () => void };
 };
@@ -90,9 +89,6 @@ describe('ModalManager', () => {
   describe('Provider Context', () => {
     it('provides modal context to children', () => {
       const ChildComponent = () => {
-        const context = React.useContext(
-          React.createContext(null as any)
-        );
         return <div data-testid="child">Context available</div>;
       };
 
@@ -191,21 +187,21 @@ describe('ModalManager', () => {
 
     it('handles null children', () => {
       render(<ModalManager>{null}</ModalManager>);
-      
+
       // Should render without errors
       expect(document.body).toBeInTheDocument();
     });
 
     it('handles undefined children', () => {
       render(<ModalManager>{undefined}</ModalManager>);
-      
+
       // Should render without errors
       expect(document.body).toBeInTheDocument();
     });
 
     it('handles empty children array', () => {
       render(<ModalManager>{[]}</ModalManager>);
-      
+
       // Should render without errors
       expect(document.body).toBeInTheDocument();
     });
@@ -241,7 +237,7 @@ describe('ModalManager', () => {
 
       // Unmount should not throw errors
       unmount();
-      
+
       expect(screen.queryByText('Test Content')).not.toBeInTheDocument();
     });
 
@@ -252,7 +248,7 @@ describe('ModalManager', () => {
             <div>Cycle {i}</div>
           </ModalManager>
         );
-        
+
         expect(screen.getByText(`Cycle ${i}`)).toBeInTheDocument();
         unmount();
       }
@@ -299,7 +295,7 @@ describe('ModalManager', () => {
             <TestComponent count={renderCount} />
           </ModalManager>
         );
-        
+
         expect(screen.getByText(`Render count: ${i}`)).toBeInTheDocument();
       }
     });
@@ -334,7 +330,7 @@ describe('ModalManager', () => {
 
     it('preserves component props and refs', () => {
       const ref = React.createRef<HTMLDivElement>();
-      
+
       render(
         <ModalManager>
           <div ref={ref} data-custom-prop="test-value">

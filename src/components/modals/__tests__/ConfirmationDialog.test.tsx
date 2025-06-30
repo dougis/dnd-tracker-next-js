@@ -260,7 +260,7 @@ describe('ConfirmationDialog Extended Coverage', () => {
   describe('Advanced Configuration', () => {
     it('handles all variant types correctly', () => {
       const variants = ['default', 'destructive', 'warning'] as const;
-      
+
       variants.forEach((variant) => {
         const { rerender } = render(
           <ConfirmationDialog
@@ -268,7 +268,7 @@ describe('ConfirmationDialog Extended Coverage', () => {
             config={{ ...defaultProps.config, variant }}
           />
         );
-        
+
         expect(screen.getByText('Confirm Action')).toBeInTheDocument();
         rerender(<div />); // Clear for next iteration
       });
@@ -340,7 +340,7 @@ describe('ConfirmationDialog Extended Coverage', () => {
     it('prevents multiple clicks when loading', async () => {
       const user = userEvent.setup();
       const onConfirm = jest.fn();
-      
+
       render(
         <ConfirmationDialog
           {...defaultProps}
@@ -350,7 +350,7 @@ describe('ConfirmationDialog Extended Coverage', () => {
       );
 
       const confirmButton = screen.getByText('Confirm');
-      
+
       // Try to click multiple times while disabled
       await user.click(confirmButton);
       await user.click(confirmButton);
@@ -364,7 +364,7 @@ describe('ConfirmationDialog Extended Coverage', () => {
     it('handles onConfirm returning promises', async () => {
       const user = userEvent.setup();
       const onConfirm = jest.fn().mockResolvedValue(undefined);
-      
+
       render(
         <ConfirmationDialog {...defaultProps} onConfirm={onConfirm} />
       );
@@ -378,13 +378,13 @@ describe('ConfirmationDialog Extended Coverage', () => {
     it('handles onConfirm throwing errors', async () => {
       const user = userEvent.setup();
       const onConfirm = jest.fn().mockRejectedValue(new Error('Test error'));
-      
+
       render(
         <ConfirmationDialog {...defaultProps} onConfirm={onConfirm} />
       );
 
       const confirmButton = screen.getByText('Confirm');
-      
+
       // Should not throw error in test
       await user.click(confirmButton);
       expect(onConfirm).toHaveBeenCalled();
@@ -392,7 +392,7 @@ describe('ConfirmationDialog Extended Coverage', () => {
 
     it('handles missing onCancel callback', async () => {
       const user = userEvent.setup();
-      
+
       render(<ConfirmationDialog {...defaultProps} />);
 
       const cancelButton = screen.getByText('Cancel');
@@ -405,7 +405,7 @@ describe('ConfirmationDialog Extended Coverage', () => {
     it('calls both onCancel and onOpenChange when cancel is clicked', async () => {
       const user = userEvent.setup();
       const onCancel = jest.fn();
-      
+
       render(
         <ConfirmationDialog {...defaultProps} onCancel={onCancel} />
       );
@@ -508,7 +508,7 @@ describe('ConfirmationDialog Extended Coverage', () => {
 
     it('handles modal close from overlay/escape', async () => {
       const user = userEvent.setup();
-      
+
       render(<ConfirmationDialog {...defaultProps} />);
 
       const closeButton = screen.getByTestId('close-button');
