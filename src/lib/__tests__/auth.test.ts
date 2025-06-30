@@ -138,7 +138,7 @@ describe('Authentication System', () => {
 
     it('should return null when credentials are missing', async () => {
       // Import the auth module to verify it can be loaded
-      const _authModule = await import('../auth');
+      await import('../auth');
 
       // Since we can't directly access the authorize function from the mocked NextAuth,
       // we'll test the logic by checking UserService calls
@@ -317,7 +317,6 @@ describe('Authentication System', () => {
 
     it('should handle missing session user gracefully', () => {
       const mockSession = {};
-      const _mockUser = { id: 'user123' };
 
       const updatedSession = { ...mockSession };
 
