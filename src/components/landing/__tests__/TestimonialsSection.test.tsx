@@ -4,8 +4,7 @@ import { TestimonialsSection } from '../TestimonialsSection';
 
 // Mock the TestimonialCard component
 jest.mock('../TestimonialCard', () => ({
-  TestimonialCard: ({ rating, quote, author }: {
-    rating: number;
+  TestimonialCard: ({ quote, author }: {
     quote: string;
     author: { name: string; title: string };
   }) => (

@@ -62,7 +62,6 @@ describe('FeaturesSection Component', () => {
     // Check for feature descriptions in the actual CardDescription elements
     const descriptions = screen.getAllByText(/rolling|tracking|management|building|actions|responsive/i);
     expect(descriptions.length).toBeGreaterThan(3);
-    
     descriptions.forEach(description => {
       expect(description.textContent).toBeTruthy();
       expect(description.textContent!.length).toBeGreaterThan(10);
