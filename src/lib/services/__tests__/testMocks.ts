@@ -177,7 +177,7 @@ export const setupFormatPaginatedResultTest = (
   userCount: number = 1
 ) => {
   const users = createMockUsers(userCount);
-  const publicUsers = users.map((_, i) => createPublicUser({ _id: `user${i + 1}` }));
+  const publicUsers = users.map((_, i) => createPublicUser({ id: `user${i + 1}` }));
 
   mockConverter.mockReturnValue(publicUsers);
 

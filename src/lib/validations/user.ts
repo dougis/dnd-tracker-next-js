@@ -135,6 +135,9 @@ export const publicUserSchema = userSchema.omit({
   emailVerificationToken: true,
   passwordResetToken: true,
   passwordResetExpires: true,
+  _id: true,
+}).extend({
+  id: objectIdSchema,
 });
 
 // User session schema

@@ -285,7 +285,7 @@ describe('UserServiceQueryHelpers', () => {
 
     it('should handle large numbers', () => {
       const users = createMockUsers(1);
-      const publicUsers = [createPublicUser({ _id: 'user1' })];
+      const publicUsers = [createPublicUser({ id: 'user1' })];
       const total = 999;
       const page = 50;
       const limit = 20;
@@ -299,7 +299,7 @@ describe('UserServiceQueryHelpers', () => {
 
     it('should preserve exact pagination values', () => {
       const users = createMockUsers(1);
-      const publicUsers = [createPublicUser({ _id: 'user1' })];
+      const publicUsers = [createPublicUser({ id: 'user1' })];
       const total = 100;
       const page = 7;
       const limit = 15;

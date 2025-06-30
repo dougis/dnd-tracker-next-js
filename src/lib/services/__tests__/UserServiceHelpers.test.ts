@@ -276,8 +276,8 @@ describe('UserServiceHelpers', () => {
       const result = convertLeansUsersToPublic(users);
 
       expect(result).toHaveLength(2);
-      expect(result[0]._id).toBe('user1');
-      expect(result[1]._id).toBe('user2');
+      expect(result[0].id).toBe('user1');
+      expect(result[1].id).toBe('user2');
       expectSensitiveFieldsRemoved(result[0]);
       expectSensitiveFieldsRemoved(result[1]);
     });
@@ -322,9 +322,9 @@ describe('UserServiceHelpers', () => {
       const result = convertLeansUsersToPublic(users);
 
       expect(result).toHaveLength(3); // 1 valid user + 1 empty object + 1 valid user
-      expect(result[0]._id).toBe('user1');
+      expect(result[0].id).toBe('user1');
       expect(result[1]).toEqual({});
-      expect(result[2]._id).toBe('user2');
+      expect(result[2].id).toBe('user2');
     });
   });
 });
