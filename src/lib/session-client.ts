@@ -81,7 +81,7 @@ export function useSessionGuard(config: RedirectConfig): void {
 
   useEffect(() => {
     if (status !== 'unauthenticated') return;
-    
+
     const redirectUrl = buildRedirectUrl(config.redirectTo, config.includeCallbackUrl);
     performRedirect(router, redirectUrl, config.replace);
   }, [status, router, config]);

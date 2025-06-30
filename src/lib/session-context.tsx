@@ -3,7 +3,7 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
 import { Session } from 'next-auth';
-import { SUBSCRIPTION_TIERS, hasRequiredTier, getUserTier, getUserId, getUserEmail } from './session-shared';
+import { hasRequiredTier, getUserTier, getUserId, getUserEmail } from './session-shared';
 
 /**
  * Session context type definition
