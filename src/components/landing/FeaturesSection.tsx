@@ -29,8 +29,8 @@ const features = [
   },
   {
     icon: '/features/mobile-ready.png',
-    title: 'Mobile & Desktop',
-    description: 'Responsive design optimized for both mobile and desktop gaming sessions.'
+    title: 'Mobile & Tablet Ready',
+    description: 'Responsive design optimized for mobile, tablet and desktop gaming sessions with real-time collaboration.'
   }
 ];
 
@@ -42,7 +42,7 @@ export function FeaturesSection() {
           Everything You Need for Epic D&D Encounters
         </h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Professional tools designed specifically for D&D 5e combat management
+          Professional tools designed specifically for D&D 5e combat management and Dungeon Master workflow optimization
         </p>
       </div>
 

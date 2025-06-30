@@ -42,6 +42,32 @@ const pricingTiers = [
       'Lair actions support',
       'Advanced analytics'
     ]
+  },
+  {
+    name: 'Master of Dungeons',
+    price: '$19.99',
+    description: 'For professional DMs and large campaigns',
+    popular: false,
+    features: [
+      '25 parties',
+      '100 encounters',
+      '500 creatures',
+      'Priority support',
+      'Advanced customization'
+    ]
+  },
+  {
+    name: 'Guild Master',
+    price: '$39.99',
+    description: 'For organizations and gaming groups',
+    popular: false,
+    features: [
+      'Unlimited parties',
+      'Unlimited encounters',
+      'Unlimited creatures',
+      'Organization features',
+      'Team management'
+    ]
   }
 ];
 
