@@ -33,6 +33,53 @@ afterAll(() => {
 });
 
 // Helper functions to reduce code duplication
+const createMockUser = (overrides: Partial<any> = {}) => ({
+  id: 'user123',
+  email: 'test@example.com',
+  username: 'johndoe',
+  firstName: 'John',
+  lastName: 'Doe',
+  role: 'user' as const,
+  subscriptionTier: 'expert' as const,
+  isEmailVerified: true,
+  preferences: {
+    theme: 'system' as const,
+    emailNotifications: true,
+    browserNotifications: false,
+    timezone: 'UTC',
+    language: 'en',
+    diceRollAnimations: true,
+    autoSaveEncounters: true,
+  },
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  ...overrides,
+});
+
+const createMockUserWithStrings = (overrides: Partial<any> = {}) => ({
+  _id: 'user123',
+  email: 'test@example.com',
+  username: 'johndoe',
+  firstName: 'John',
+  lastName: 'Doe',
+  role: 'user' as const,
+  subscriptionTier: 'expert' as const,
+  isEmailVerified: true,
+  preferences: {
+    theme: 'system' as const,
+    emailNotifications: true,
+    browserNotifications: false,
+    timezone: 'UTC',
+    language: 'en',
+    diceRollAnimations: true,
+    autoSaveEncounters: true,
+  },
+  lastLoginAt: new Date().toISOString(),
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  ...overrides,
+});
+
 const transformUserForSession = (mockUser: any) => ({
   id: mockUser._id?.toString() || '',
   email: mockUser.email,
@@ -110,27 +157,7 @@ describe('Authentication System', () => {
     });
 
     it('should authenticate valid user credentials', async () => {
-      const mockUser = {
-        id: 'user123',
-        email: 'test@example.com',
-        username: 'johndoe',
-        firstName: 'John',
-        lastName: 'Doe',
-        role: 'user' as const,
-        subscriptionTier: 'expert' as const,
-        isEmailVerified: true,
-        preferences: {
-          theme: 'system' as const,
-          emailNotifications: true,
-          browserNotifications: false,
-          timezone: 'UTC',
-          language: 'en',
-          diceRollAnimations: true,
-          autoSaveEncounters: true,
-        },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockUser = createMockUser();
 
       mockUserService.getUserByEmail.mockResolvedValue({
         success: true,
@@ -161,28 +188,7 @@ describe('Authentication System', () => {
     });
 
     it('should handle authentication failure', async () => {
-      const mockUser = {
-        _id: 'user123',
-        email: 'test@example.com',
-        username: 'johndoe',
-        firstName: 'John',
-        lastName: 'Doe',
-        role: 'user' as const,
-        subscriptionTier: 'expert' as const,
-        isEmailVerified: true,
-        preferences: {
-          theme: 'system' as const,
-          emailNotifications: true,
-          browserNotifications: false,
-          timezone: 'UTC',
-          language: 'en',
-          diceRollAnimations: true,
-          autoSaveEncounters: true,
-        },
-        lastLoginAt: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      const mockUser = createMockUserWithStrings();
 
       mockUserService.getUserByEmail.mockResolvedValue({
         success: true,
