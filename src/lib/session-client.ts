@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Session } from 'next-auth';
+import { hasRequiredTier, getUserTier, getUserId, getUserEmail } from './session-shared';
 
 /**
  * Authentication state interface
@@ -79,12 +80,10 @@ export function useSessionGuard(config: RedirectConfig): void {
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'loading') return;
-
-    if (status === 'unauthenticated') {
-      const redirectUrl = buildRedirectUrl(config.redirectTo, config.includeCallbackUrl);
-      performRedirect(router, redirectUrl, config.replace);
-    }
+    if (status !== 'unauthenticated') return;
+    
+    const redirectUrl = buildRedirectUrl(config.redirectTo, config.includeCallbackUrl);
+    performRedirect(router, redirectUrl, config.replace);
   }, [status, router, config]);
 }
 
@@ -98,19 +97,12 @@ export function useRequireAuth(options: RequireAuthOptions = {}): {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const redirectTo = options.redirectTo || '/auth/signin';
-
   useEffect(() => {
-    if (status === 'loading') return;
-
     if (status === 'unauthenticated') {
-      if (options.replace) {
-        router.replace(redirectTo);
-      } else {
-        router.push(redirectTo);
-      }
+      const redirectTo = options.redirectTo || '/auth/signin';
+      performRedirect(router, redirectTo, options.replace);
     }
-  }, [status, router, redirectTo, options.replace]);
+  }, [status, router, options]);
 
   return {
     session: status === 'authenticated' ? session : null,
@@ -130,14 +122,9 @@ export class ClientSessionUtils {
     session: Session | null,
     requiredTier: string
   ): boolean {
-    if (!session) return false;
-
-    const tierHierarchy = ['free', 'basic', 'premium', 'pro', 'enterprise'];
-    const userTier = (session.user as any)?.subscriptionTier || 'free';
-    const userTierIndex = tierHierarchy.indexOf(userTier);
-    const requiredTierIndex = tierHierarchy.indexOf(requiredTier);
-
-    return userTierIndex >= requiredTierIndex;
+    if (!session?.user) return false;
+    const userTier = getUserTier(session.user);
+    return hasRequiredTier(userTier, requiredTier);
   }
 
   /**
@@ -145,23 +132,23 @@ export class ClientSessionUtils {
    */
   static getUserId(session: Session | null): string | null {
     if (!session?.user) return null;
-    return (session.user as any).id || null;
+    return getUserId(session.user);
   }
 
   /**
    * Get user email from session
    */
   static getUserEmail(session: Session | null): string | null {
-    if (!session?.user?.email) return null;
-    return session.user.email;
+    if (!session?.user) return null;
+    return getUserEmail(session.user);
   }
 
   /**
    * Get user subscription tier from session
    */
   static getSubscriptionTier(session: Session | null): string {
-    if (!session) return 'free';
-    return (session.user as any)?.subscriptionTier || 'free';
+    if (!session?.user) return 'free';
+    return getUserTier(session.user);
   }
 }
 

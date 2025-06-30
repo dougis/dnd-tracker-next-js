@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken, JWT } from 'next-auth/jwt';
+import { hasRequiredTier, getUserTier, getUserId, getUserEmail } from './session-shared';
 
 /**
  * List of protected API route prefixes that require authentication
@@ -22,21 +23,19 @@ const PUBLIC_API_ROUTES = [
 ];
 
 /**
+ * Check if a route matches any in the given list
+ */
+function routeMatches(pathname: string, routes: string[]): boolean {
+  return routes.some(route => pathname.startsWith(route));
+}
+
+/**
  * Check if an API route requires authentication
  */
 export function isProtectedApiRoute(pathname: string): boolean {
-  // Return false for non-API routes
-  if (!pathname.startsWith('/api/')) {
-    return false;
-  }
-
-  // Check if it's explicitly public
-  if (PUBLIC_API_ROUTES.some(route => pathname.startsWith(route))) {
-    return false;
-  }
-
-  // Check if it's explicitly protected
-  return PROTECTED_API_ROUTES.some(route => pathname.startsWith(route));
+  if (!pathname.startsWith('/api/')) return false;
+  if (routeMatches(pathname, PUBLIC_API_ROUTES)) return false;
+  return routeMatches(pathname, PROTECTED_API_ROUTES);
 }
 
 /**
@@ -178,29 +177,24 @@ export class SessionUtils {
     requiredTier: string
   ): boolean {
     if (!token) return false;
-
-    const tierHierarchy = ['free', 'basic', 'premium', 'pro', 'enterprise'];
-    const userTier = (token as any).subscriptionTier || 'free';
-    const userTierIndex = tierHierarchy.indexOf(userTier);
-    const requiredTierIndex = tierHierarchy.indexOf(requiredTier);
-
-    return userTierIndex >= requiredTierIndex;
+    const userTier = getUserTier(token);
+    return hasRequiredTier(userTier, requiredTier);
   }
 
   /**
    * Get user ID from token
    */
   static getUserId(token: JWT | null): string | null {
-    if (!token || !token.sub) return null;
-    return token.sub;
+    if (!token) return null;
+    return getUserId(token);
   }
 
   /**
    * Get user email from token
    */
   static getUserEmail(token: JWT | null): string | null {
-    if (!token || !token.email) return null;
-    return token.email;
+    if (!token) return null;
+    return getUserEmail(token);
   }
 
   /**

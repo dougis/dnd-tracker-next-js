@@ -38,6 +38,30 @@ const createMockUser = (overrides = {}) => ({
 const createSessionWithUser = (userOverrides = {}) =>
   createMockSession({ user: createMockUser(userOverrides) });
 
+// Helper to create session return value for useSession mock
+const createSessionReturn = (session, status = 'authenticated') => ({
+  data: session,
+  status,
+  update: jest.fn(),
+});
+
+// Helper to setup authenticated user test
+const setupAuthenticatedUser = (userOverrides = {}) => {
+  const session = createSessionWithUser(userOverrides);
+  mockUseSession.mockReturnValue(createSessionReturn(session));
+  return session;
+};
+
+// Helper to setup unauthenticated user test
+const setupUnauthenticatedUser = () => {
+  mockUseSession.mockReturnValue(createSessionReturn(null, 'unauthenticated'));
+};
+
+// Helper to setup loading state test
+const setupLoadingState = () => {
+  mockUseSession.mockReturnValue(createSessionReturn(null, 'loading'));
+};
+
 describe('Client-side Session Management', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -45,13 +69,7 @@ describe('Client-side Session Management', () => {
 
   describe('useAuthState', () => {
     it('should return authenticated state for valid session', () => {
-      const mockSession = createSessionWithUser();
-      mockUseSession.mockReturnValue({
-        data: mockSession,
-        status: 'authenticated',
-        update: jest.fn(),
-      });
-
+      const mockSession = setupAuthenticatedUser();
       const { result } = renderHook(() => useAuthState());
 
       expect(result.current).toEqual({
@@ -64,12 +82,7 @@ describe('Client-side Session Management', () => {
     });
 
     it('should return loading state when session is loading', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'loading',
-        update: jest.fn(),
-      });
-
+      setupLoadingState();
       const { result } = renderHook(() => useAuthState());
 
       expect(result.current).toEqual({
@@ -82,12 +95,7 @@ describe('Client-side Session Management', () => {
     });
 
     it('should return unauthenticated state for no session', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-        update: jest.fn(),
-      });
-
+      setupUnauthenticatedUser();
       const { result } = renderHook(() => useAuthState());
 
       expect(result.current).toEqual({
@@ -107,12 +115,7 @@ describe('Client-side Session Management', () => {
     };
 
     it('should not redirect when user is authenticated', () => {
-      mockUseSession.mockReturnValue({
-        data: createSessionWithUser(),
-        status: 'authenticated',
-        update: jest.fn(),
-      });
-
+      setupAuthenticatedUser();
       renderHook(() => useSessionGuard(defaultConfig));
 
       expect(mockPush).not.toHaveBeenCalled();
@@ -120,24 +123,14 @@ describe('Client-side Session Management', () => {
     });
 
     it('should redirect when user is unauthenticated', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-        update: jest.fn(),
-      });
-
+      setupUnauthenticatedUser();
       renderHook(() => useSessionGuard(defaultConfig));
 
       expect(mockPush).toHaveBeenCalledWith('/auth/signin');
     });
 
     it('should use replace navigation when configured', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-        update: jest.fn(),
-      });
-
+      setupUnauthenticatedUser();
       const config: RedirectConfig = {
         redirectTo: '/auth/signin',
         replace: true,
@@ -149,12 +142,7 @@ describe('Client-side Session Management', () => {
     });
 
     it('should redirect with basic URL when callback URL not configured', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-        update: jest.fn(),
-      });
-
+      setupUnauthenticatedUser();
       const config: RedirectConfig = {
         redirectTo: '/auth/signin',
         includeCallbackUrl: false,
@@ -166,12 +154,7 @@ describe('Client-side Session Management', () => {
     });
 
     it('should not redirect during loading', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'loading',
-        update: jest.fn(),
-      });
-
+      setupLoadingState();
       renderHook(() => useSessionGuard(defaultConfig));
 
       expect(mockPush).not.toHaveBeenCalled();
@@ -181,13 +164,7 @@ describe('Client-side Session Management', () => {
 
   describe('useRequireAuth', () => {
     it('should return session when authenticated', () => {
-      const mockSession = createSessionWithUser();
-      mockUseSession.mockReturnValue({
-        data: mockSession,
-        status: 'authenticated',
-        update: jest.fn(),
-      });
-
+      const mockSession = setupAuthenticatedUser();
       const { result } = renderHook(() => useRequireAuth());
 
       expect(result.current).toEqual({
@@ -197,12 +174,7 @@ describe('Client-side Session Management', () => {
     });
 
     it('should return loading state when session is loading', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'loading',
-        update: jest.fn(),
-      });
-
+      setupLoadingState();
       const { result } = renderHook(() => useRequireAuth());
 
       expect(result.current).toEqual({
@@ -212,12 +184,7 @@ describe('Client-side Session Management', () => {
     });
 
     it('should redirect and return null when unauthenticated', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-        update: jest.fn(),
-      });
-
+      setupUnauthenticatedUser();
       const { result } = renderHook(() => useRequireAuth());
 
       expect(result.current).toEqual({
@@ -228,12 +195,7 @@ describe('Client-side Session Management', () => {
     });
 
     it('should use custom redirect URL when provided', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-        update: jest.fn(),
-      });
-
+      setupUnauthenticatedUser();
       renderHook(() =>
         useRequireAuth({ redirectTo: '/custom-login' })
       );
@@ -242,12 +204,7 @@ describe('Client-side Session Management', () => {
     });
 
     it('should use replace navigation when replace option is true', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-        update: jest.fn(),
-      });
-
+      setupUnauthenticatedUser();
       renderHook(() =>
         useRequireAuth({ redirectTo: '/auth/signin', replace: true })
       );
@@ -278,12 +235,7 @@ describe('Client-side Session Management', () => {
     });
 
     it('should include callback URL when configured', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-        update: jest.fn(),
-      });
-
+      setupUnauthenticatedUser();
       const config: RedirectConfig = {
         redirectTo: '/auth/signin',
         includeCallbackUrl: true,

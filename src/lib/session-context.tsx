@@ -3,6 +3,7 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
 import { Session } from 'next-auth';
+import { SUBSCRIPTION_TIERS, hasRequiredTier, getUserTier, getUserId, getUserEmail } from './session-shared';
 
 /**
  * Session context type definition
@@ -38,19 +39,14 @@ interface SessionContextProviderProps {
 }
 
 /**
- * Subscription tier hierarchy for access control
- */
-const SUBSCRIPTION_TIERS = ['free', 'basic', 'premium', 'pro', 'enterprise'];
-
-/**
  * Extract user information from session
  */
 function extractUserInfo(session: Session | null) {
   return {
-    userId: session?.user ? (session.user as any).id || null : null,
-    userEmail: session?.user?.email || null,
+    userId: session?.user ? getUserId(session.user) : null,
+    userEmail: session?.user ? getUserEmail(session.user) : null,
     userName: session?.user?.name || null,
-    subscriptionTier: session?.user ? (session.user as any).subscriptionTier || 'free' : 'free',
+    subscriptionTier: session?.user ? getUserTier(session.user) : 'free',
   };
 }
 
@@ -60,9 +56,7 @@ function extractUserInfo(session: Session | null) {
 function createTierChecker(session: Session | null, userTier: string) {
   return (requiredTier: string): boolean => {
     if (!session) return false;
-    const userTierIndex = SUBSCRIPTION_TIERS.indexOf(userTier);
-    const requiredTierIndex = SUBSCRIPTION_TIERS.indexOf(requiredTier);
-    return userTierIndex >= requiredTierIndex;
+    return hasRequiredTier(userTier, requiredTier);
   };
 }
 
