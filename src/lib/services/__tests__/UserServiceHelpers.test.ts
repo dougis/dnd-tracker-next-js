@@ -70,8 +70,8 @@ describe('UserServiceHelpers', () => {
       const existingEmailUser = createExistingUserWithEmail(TEST_EMAIL, 'user1');
       const existingUsernameUser = createExistingUserWithUsername(TEST_USERNAME, 'user2');
 
-      mockUser.findByEmail.mockResolvedValue(existingEmailUser);
-      mockUser.findByUsername.mockResolvedValue(existingUsernameUser);
+      mockUser.findByEmail.mockResolvedValue(existingEmailUser as any);
+      mockUser.findByUsername.mockResolvedValue(existingUsernameUser as any);
 
       // Should throw for email first (order of checks)
       await expect(
@@ -132,7 +132,7 @@ describe('UserServiceHelpers', () => {
 
     it('should not throw when email belongs to same user', async () => {
       const existingUser = createUserWithObjectId(userId, { email: TEST_EMAIL });
-      mockUser.findByEmail.mockResolvedValue(existingUser);
+      mockUser.findByEmail.mockResolvedValue(existingUser as any);
 
       await expect(
         checkProfileUpdateConflicts(userId, TEST_EMAIL)
@@ -141,7 +141,7 @@ describe('UserServiceHelpers', () => {
 
     it('should not throw when username belongs to same user', async () => {
       const existingUser = createUserWithObjectId(userId, { username: TEST_USERNAME });
-      mockUser.findByUsername.mockResolvedValue(existingUser);
+      mockUser.findByUsername.mockResolvedValue(existingUser as any);
 
       await expect(
         checkProfileUpdateConflicts(userId, undefined, TEST_USERNAME)
@@ -276,8 +276,8 @@ describe('UserServiceHelpers', () => {
       const result = convertLeansUsersToPublic(users);
 
       expect(result).toHaveLength(2);
-      expect(result[0].id).toBe('user1');
-      expect(result[1].id).toBe('user2');
+      expect(result[0]._id).toBe('user1');
+      expect(result[1]._id).toBe('user2');
       expectSensitiveFieldsRemoved(result[0]);
       expectSensitiveFieldsRemoved(result[1]);
     });
@@ -295,7 +295,7 @@ describe('UserServiceHelpers', () => {
         _id: undefined,
         passwordHash: 'hashedpassword'
       });
-      delete user._id; // Remove _id completely
+      delete (user as any)._id; // Remove _id completely
 
       const result = convertLeansUsersToPublic([user]);
 
@@ -322,9 +322,9 @@ describe('UserServiceHelpers', () => {
       const result = convertLeansUsersToPublic(users);
 
       expect(result).toHaveLength(3); // 1 valid user + 1 empty object + 1 valid user
-      expect(result[0].id).toBe('user1');
+      expect(result[0]._id).toBe('user1');
       expect(result[1]).toEqual({});
-      expect(result[2].id).toBe('user2');
+      expect(result[2]._id).toBe('user2');
     });
   });
 });

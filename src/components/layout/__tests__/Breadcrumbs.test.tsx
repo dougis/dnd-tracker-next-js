@@ -48,7 +48,7 @@ describe('Breadcrumbs', () => {
       const icon = iconContainer?.querySelector('svg');
 
       expect(icon).toBeInTheDocument();
-      expect(icon).toHaveClass('mr-2', 'h-4', 'w-4');
+      expect(icon).toHaveClass('mr-2 h-4 w-4');
       expect(icon).toHaveAttribute('viewBox', '0 0 24 24');
     });
 
@@ -58,7 +58,7 @@ describe('Breadcrumbs', () => {
 
       const dashboardContainer = container.querySelector('[class*="flex items-center text-sm text-muted-foreground"]');
       expect(dashboardContainer).toBeInTheDocument();
-      expect(dashboardContainer).toHaveClass('flex', 'items-center', 'text-sm', 'text-muted-foreground');
+      expect(dashboardContainer).toHaveClass('flex items-center text-sm text-muted-foreground');
     });
   });
 
@@ -79,7 +79,7 @@ describe('Breadcrumbs', () => {
       const dashboardLink = screen.getByText('Dashboard').closest('a');
       expect(dashboardLink).toBeInTheDocument();
       expect(dashboardLink).toHaveAttribute('href', '/');
-      expect(dashboardLink).toHaveClass('hover:text-foreground', 'transition-colors');
+      expect(dashboardLink).toHaveClass('hover:text-foreground transition-colors');
     });
 
     test('current page is not clickable and has different styling', () => {
@@ -88,7 +88,7 @@ describe('Breadcrumbs', () => {
 
       const charactersElement = screen.getByText('Characters');
       expect(charactersElement.tagName).toBe('SPAN');
-      expect(charactersElement).toHaveClass('font-medium', 'text-foreground');
+      expect(charactersElement).toHaveClass('font-medium text-foreground');
     });
 
     test('renders separator between breadcrumb items', () => {
@@ -105,7 +105,7 @@ describe('Breadcrumbs', () => {
       });
 
       expect(separatorIcon).toBeInTheDocument();
-      expect(separatorIcon).toHaveClass('h-4', 'w-4', 'text-muted-foreground/50');
+      expect(separatorIcon).toHaveClass('h-4 w-4 text-muted-foreground/50');
     });
   });
 
@@ -205,7 +205,7 @@ describe('Breadcrumbs', () => {
 
       const nav = screen.getByRole('navigation');
       expect(nav).toBeInTheDocument();
-      expect(nav).toHaveClass('flex', 'items-center', 'space-x-1', 'text-sm', 'text-muted-foreground');
+      expect(nav).toHaveClass('flex items-center space-x-1 text-sm text-muted-foreground');
     });
 
     test('links have proper accessibility attributes', () => {
@@ -224,7 +224,7 @@ describe('Breadcrumbs', () => {
       render(<Breadcrumbs />);
 
       const currentPage = screen.getByText('New Character');
-      expect(currentPage).toHaveClass('font-medium', 'text-foreground');
+      expect(currentPage).toHaveClass('font-medium text-foreground');
       expect(currentPage).not.toHaveClass('hover:text-foreground');
     });
   });

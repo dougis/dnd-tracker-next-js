@@ -27,7 +27,7 @@ export const createMockUsers = (count: number = 2) =>
   }));
 
 export const createPublicUser = (overrides: Partial<PublicUser> = {}): PublicUser => ({
-  id: 'user1',
+  _id: 'user1',
   email: 'user1@example.com',
   username: 'user1',
   firstName: 'Test',

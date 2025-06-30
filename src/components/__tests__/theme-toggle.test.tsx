@@ -285,8 +285,8 @@ describe('ThemeToggle', () => {
       const moonIcon = screen.getByTestId('moon-icon');
 
       // In light mode, sun should be visible, moon hidden
-      expect(sunIcon).toHaveClass('rotate-0', 'scale-100');
-      expect(moonIcon).toHaveClass('rotate-90', 'scale-0');
+      expect(sunIcon).toHaveClass('rotate-0 scale-100');
+      expect(moonIcon).toHaveClass('rotate-90 scale-0');
     });
 
     it('shows correct icon state for dark theme', async () => {
@@ -299,8 +299,8 @@ describe('ThemeToggle', () => {
       const moonIcon = screen.getByTestId('moon-icon');
 
       // In dark mode, moon should be visible, sun hidden
-      expect(sunIcon).toHaveClass('dark:-rotate-90', 'dark:scale-0');
-      expect(moonIcon).toHaveClass('dark:rotate-0', 'dark:scale-100');
+      expect(sunIcon).toHaveClass('dark:-rotate-90 dark:scale-0');
+      expect(moonIcon).toHaveClass('dark:rotate-0 dark:scale-100');
     });
 
     it('applies transition classes for smooth animations', () => {

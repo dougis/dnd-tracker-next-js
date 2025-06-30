@@ -61,10 +61,7 @@ describe('Sidebar', () => {
 
       const sidebarElement = container.firstChild as HTMLElement;
       expect(sidebarElement).toHaveClass(
-        'fixed', 'inset-y-0', 'left-0', 'z-50', 'w-64',
-        'bg-card', 'border-r', 'border-border',
-        'transition-transform', 'duration-300', 'ease-in-out',
-        'lg:relative', 'lg:z-auto'
+        'fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transition-transform duration-300 ease-in-out lg:relative lg:z-auto'
       );
     });
 
@@ -99,7 +96,7 @@ describe('Sidebar', () => {
 
       const iconContainer = logoContainer?.parentElement?.querySelector('.flex.h-8.w-8');
       expect(iconContainer).toBeInTheDocument();
-      expect(iconContainer).toHaveClass('bg-primary', 'text-primary-foreground', 'rounded-lg');
+      expect(iconContainer).toHaveClass('bg-primary text-primary-foreground rounded-lg');
     });
 
     test('brand header has correct height and styling', () => {
@@ -107,14 +104,14 @@ describe('Sidebar', () => {
 
       const brandHeader = screen.getByText('D&D Tracker').closest('.flex.h-16');
       expect(brandHeader).toBeInTheDocument();
-      expect(brandHeader).toHaveClass('border-b', 'border-border', 'px-6');
+      expect(brandHeader).toHaveClass('border-b border-border px-6');
     });
 
     test('brand title has fantasy font class', () => {
       render(<Sidebar isOpen={true} />);
 
       const brandTitle = screen.getByText('D&D Tracker');
-      expect(brandTitle).toHaveClass('text-lg', 'font-fantasy', 'font-bold', 'text-foreground');
+      expect(brandTitle).toHaveClass('text-lg font-fantasy font-bold text-foreground');
     });
   });
 
@@ -155,7 +152,7 @@ describe('Sidebar', () => {
       const icon = dashboardLink?.querySelector('svg');
 
       expect(icon).toBeInTheDocument();
-      expect(icon).toHaveClass('h-5', 'w-5');
+      expect(icon).toHaveClass('h-5 w-5');
       expect(icon).toHaveAttribute('viewBox', '0 0 24 24');
     });
 
@@ -174,7 +171,7 @@ describe('Sidebar', () => {
       render(<Sidebar isOpen={true} />);
 
       const charactersLink = screen.getByText('Characters').closest('a');
-      expect(charactersLink).toHaveClass('bg-primary', 'text-primary-foreground');
+      expect(charactersLink).toHaveClass('bg-primary text-primary-foreground');
     });
 
     test('inactive navigation items have muted styling', () => {
@@ -191,7 +188,7 @@ describe('Sidebar', () => {
       render(<Sidebar isOpen={true} />);
 
       const dashboardLink = screen.getByText('Dashboard').closest('a');
-      expect(dashboardLink).toHaveClass('bg-primary', 'text-primary-foreground');
+      expect(dashboardLink).toHaveClass('bg-primary text-primary-foreground');
     });
 
     test('active state works for secondary navigation items', () => {
@@ -199,7 +196,7 @@ describe('Sidebar', () => {
       render(<Sidebar isOpen={true} />);
 
       const settingsLink = screen.getByText('Settings').closest('a');
-      expect(settingsLink).toHaveClass('bg-primary', 'text-primary-foreground');
+      expect(settingsLink).toHaveClass('bg-primary text-primary-foreground');
     });
 
     test('only one navigation item is active at a time', () => {
@@ -210,7 +207,7 @@ describe('Sidebar', () => {
       const dashboardLink = screen.getByText('Dashboard').closest('a');
       const charactersLink = screen.getByText('Characters').closest('a');
 
-      expect(combatLink).toHaveClass('bg-primary', 'text-primary-foreground');
+      expect(combatLink).toHaveClass('bg-primary text-primary-foreground');
       expect(dashboardLink).not.toHaveClass('bg-primary');
       expect(charactersLink).not.toHaveClass('bg-primary');
     });
@@ -244,8 +241,8 @@ describe('Sidebar', () => {
       const userName = screen.getByText('Demo User');
       const userEmail = screen.getByText('demo@example.com');
 
-      expect(userName).toHaveClass('text-sm', 'font-medium', 'text-foreground', 'truncate');
-      expect(userEmail).toHaveClass('text-xs', 'text-muted-foreground', 'truncate');
+      expect(userName).toHaveClass('text-sm font-medium text-foreground truncate');
+      expect(userEmail).toHaveClass('text-xs text-muted-foreground truncate');
     });
   });
 
@@ -267,7 +264,7 @@ describe('Sidebar', () => {
 
       expect(navigationLinks.length).toBeGreaterThan(0);
       for (const link of navigationLinks) {
-        expect(link).toHaveClass('px-3', 'py-2', 'rounded-md');
+        expect(link).toHaveClass('px-3 py-2 rounded-md');
       }
     });
 
@@ -277,8 +274,8 @@ describe('Sidebar', () => {
       const navigationSection = screen.getByRole('navigation');
       const icons = navigationSection.querySelectorAll('svg');
 
-      for (const icon of icons) {
-        expect(icon).toHaveClass('h-5', 'w-5');
+      for (const icon of Array.from(icons)) {
+        expect(icon).toHaveClass('h-5 w-5');
       }
     });
   });
@@ -288,21 +285,21 @@ describe('Sidebar', () => {
       const { container } = render(<Sidebar isOpen={true} />);
 
       const sidebar = container.firstChild as HTMLElement;
-      expect(sidebar).toHaveClass('z-50', 'lg:z-auto');
+      expect(sidebar).toHaveClass('z-50 lg:z-auto');
     });
 
     test('has correct positioning classes for mobile and desktop', () => {
       const { container } = render(<Sidebar isOpen={true} />);
 
       const sidebar = container.firstChild as HTMLElement;
-      expect(sidebar).toHaveClass('fixed', 'lg:relative');
+      expect(sidebar).toHaveClass('fixed lg:relative');
     });
 
     test('navigation sections have proper spacing', () => {
       render(<Sidebar isOpen={true} />);
 
       const navigation = screen.getByRole('navigation');
-      expect(navigation).toHaveClass('flex-1', 'space-y-1', 'px-3', 'py-4');
+      expect(navigation).toHaveClass('flex-1 space-y-1 px-3 py-4');
     });
   });
 });
