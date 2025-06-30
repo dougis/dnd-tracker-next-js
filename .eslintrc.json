@@ -7,7 +7,6 @@
       "error",
       { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
     ],
-    "eol-last": "warn",
     "no-multiple-empty-lines": "error",
     "padding-line-between-statements": "warn",
     "lines-between-class-members": "error",
