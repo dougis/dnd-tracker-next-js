@@ -2,7 +2,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import Image from 'next/image';
+import { FeatureIcon } from './FeatureIcon';
+import { TestimonialCard } from './TestimonialCard';
 
 export function LandingPage() {
   return (
@@ -42,9 +43,7 @@ export function LandingPage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           <Card>
             <CardHeader>
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <Image src="/features/initiative-tracker.png" alt="Initiative Tracking" width={32} height={32} />
-              </div>
+              <FeatureIcon src="/features/initiative-tracker.png" alt="Initiative Tracking" />
               <CardTitle>
                 <h3>Initiative Tracking</h3>
               </CardTitle>
@@ -56,9 +55,7 @@ export function LandingPage() {
 
           <Card>
             <CardHeader>
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <Image src="/features/hp-management.png" alt="HP Management" width={32} height={32} />
-              </div>
+              <FeatureIcon src="/features/hp-management.png" alt="HP Management" />
               <CardTitle>HP & AC Management</CardTitle>
               <CardDescription>
                 Real-time health tracking with damage calculation, healing, and temporary HP support.
@@ -68,9 +65,7 @@ export function LandingPage() {
 
           <Card>
             <CardHeader>
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <Image src="/features/character-management.png" alt="Character Management" width={32} height={32} />
-              </div>
+              <FeatureIcon src="/features/character-management.png" alt="Character Management" />
               <CardTitle>Character Management</CardTitle>
               <CardDescription>
                 Complete character sheets with multiclass support and D&D 5e rule compliance.
@@ -80,9 +75,7 @@ export function LandingPage() {
 
           <Card>
             <CardHeader>
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <Image src="/features/encounter-builder.png" alt="Encounter Builder" width={32} height={32} />
-              </div>
+              <FeatureIcon src="/features/encounter-builder.png" alt="Encounter Builder" />
               <CardTitle>Encounter Builder</CardTitle>
               <CardDescription>
                 Drag-and-drop encounter creation with CR calculation and balancing tools.
@@ -92,9 +85,7 @@ export function LandingPage() {
 
           <Card>
             <CardHeader>
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <Image src="/features/lair-actions.png" alt="Lair Actions" width={32} height={32} />
-              </div>
+              <FeatureIcon src="/features/lair-actions.png" alt="Lair Actions" />
               <CardTitle>Lair Actions</CardTitle>
               <CardDescription>
                 Unique lair action support that competitors don&apos;t offer. Enhance your boss encounters.
@@ -104,9 +95,7 @@ export function LandingPage() {
 
           <Card>
             <CardHeader>
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <Image src="/features/mobile-ready.png" alt="Mobile Ready" width={32} height={32} />
-              </div>
+              <FeatureIcon src="/features/mobile-ready.png" alt="Mobile Ready" />
               <CardTitle>Mobile & Desktop</CardTitle>
               <CardDescription>
                 Responsive design optimized for both mobile and desktop gaming sessions.
@@ -203,62 +192,21 @@ export function LandingPage() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="mb-4">
-                <div className="text-yellow-400">★★★★★</div>
-              </div>
-              <p className="text-muted-foreground mb-4">
-                &quot;This encounter tracker has completely transformed my D&D sessions.
-                The initiative system is flawless and the lair actions feature is a game-changer!&quot;
-              </p>
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-primary/10 rounded-full mr-3"></div>
-                <div>
-                  <div className="font-semibold">Sarah M.</div>
-                  <div className="text-sm text-muted-foreground">DM for 5 years</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="mb-4">
-                <div className="text-yellow-400">★★★★★</div>
-              </div>
-              <p className="text-muted-foreground mb-4">
-                &quot;Finally, an encounter tracker that understands D&D 5e rules!
-                The multiclass character support saved me hours of manual calculation.&quot;
-              </p>
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-primary/10 rounded-full mr-3"></div>
-                <div>
-                  <div className="font-semibold">Marcus R.</div>
-                  <div className="text-sm text-muted-foreground">Professional DM</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="mb-4">
-                <div className="text-yellow-400">★★★★★</div>
-              </div>
-              <p className="text-muted-foreground mb-4">
-                &quot;The mobile interface is perfect for in-person sessions.
-                I can manage everything from my tablet without missing a beat.&quot;
-              </p>
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-primary/10 rounded-full mr-3"></div>
-                <div>
-                  <div className="font-semibold">Alex K.</div>
-                  <div className="text-sm text-muted-foreground">Casual DM</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <TestimonialCard
+            rating={5}
+            quote="This encounter tracker has completely transformed my D&D sessions. The initiative system is flawless and the lair actions feature is a game-changer!"
+            author={{ name: "Sarah M.", title: "DM for 5 years" }}
+          />
+          <TestimonialCard
+            rating={5}
+            quote="Finally, an encounter tracker that understands D&D 5e rules! The multiclass character support saved me hours of manual calculation."
+            author={{ name: "Marcus R.", title: "Professional DM" }}
+          />
+          <TestimonialCard
+            rating={5}
+            quote="The mobile interface is perfect for in-person sessions. I can manage everything from my tablet without missing a beat."
+            author={{ name: "Alex K.", title: "Casual DM" }}
+          />
         </div>
       </section>
 
