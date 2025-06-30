@@ -101,8 +101,14 @@ describe('ThemeProvider', () => {
       // Suppress console.error for this test
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
       
+      // Use a function wrapper to properly test the thrown error
+      const TestThrowComponent = () => {
+        const { theme } = useTheme();
+        return <div>{theme}</div>;
+      };
+      
       expect(() => {
-        render(<TestComponent />);
+        render(<TestThrowComponent />);
       }).toThrow('useTheme must be used within a ThemeProvider');
       
       consoleSpy.mockRestore();
@@ -151,6 +157,9 @@ describe('ThemeProvider', () => {
     });
 
     it('handles localStorage errors gracefully', () => {
+      // Mock console.error to suppress error logs during test
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
       mockLocalStorage.getItem.mockImplementation(() => {
         throw new Error('localStorage not available');
       });
@@ -164,6 +173,8 @@ describe('ThemeProvider', () => {
       }).not.toThrow();
 
       expect(screen.getByTestId('current-theme')).toHaveTextContent('light');
+      
+      consoleSpy.mockRestore();
     });
   });
 
@@ -351,6 +362,9 @@ describe('ThemeProvider', () => {
     it('handles localStorage setItem errors gracefully', async () => {
       const user = (await import('@testing-library/user-event')).default.setup();
       
+      // Mock console.error to suppress error logs during test
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
       mockLocalStorage.setItem.mockImplementation(() => {
         throw new Error('localStorage quota exceeded');
       });
@@ -362,12 +376,12 @@ describe('ThemeProvider', () => {
       );
 
       // Should not throw error when trying to save theme
-      expect(async () => {
-        await user.click(screen.getByTestId('set-dark'));
-      }).not.toThrow();
+      await user.click(screen.getByTestId('set-dark'));
 
       // Theme state should still update even if saving fails
       expect(screen.getByTestId('current-theme')).toHaveTextContent('dark');
+      
+      consoleSpy.mockRestore();
     });
 
     it('handles missing window.matchMedia gracefully', () => {
@@ -401,6 +415,9 @@ describe('ThemeProvider', () => {
 
     it('accepts and uses custom storageKey prop', async () => {
       const user = (await import('@testing-library/user-event')).default.setup();
+
+      // Reset the setItem mock to prevent interference from previous tests
+      mockLocalStorage.setItem.mockClear();
 
       render(
         <ThemeProvider storageKey="my-custom-theme">
