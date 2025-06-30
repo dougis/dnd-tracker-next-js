@@ -318,4 +318,196 @@ describe('Modal', () => {
       expect(screen.getAllByTestId('dialog')).toHaveLength(2);
     });
   });
+
+  // Additional tests from main branch
+  it('handles keyboard events properly when escape key is disabled', () => {
+    const handleOpenChange = jest.fn();
+    render(
+      <Modal
+        {...defaultProps}
+        onOpenChange={handleOpenChange}
+        closeOnEscapeKey={false}
+      />
+    );
+
+    // Simulate escape key press
+    const event = new KeyboardEvent('keydown', { key: 'Escape' });
+    document.dispatchEvent(event);
+
+    // Should not close the modal
+    expect(handleOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('handles keyboard events properly when escape key is enabled', async () => {
+    const user = userEvent.setup();
+    const handleOpenChange = jest.fn();
+    render(
+      <Modal
+        {...defaultProps}
+        onOpenChange={handleOpenChange}
+        closeOnEscapeKey={true}
+      />
+    );
+
+    // Simulate escape key press
+    await user.keyboard('{Escape}');
+
+    // Should close the modal
+    expect(handleOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('prevents closing when both overlay click and escape key are disabled', () => {
+    const handleOpenChange = jest.fn();
+    render(
+      <Modal
+        {...defaultProps}
+        onOpenChange={handleOpenChange}
+        closeOnOverlayClick={false}
+        closeOnEscapeKey={false}
+      />
+    );
+
+    // Try to close via onOpenChange callback
+    const content = screen.getByTestId('dialog-content');
+    expect(content.getAttribute('data-overlay-disabled')).toBe('true');
+    expect(content.getAttribute('data-escape-disabled')).toBe('true');
+  });
+
+  it('applies correct CSS classes for different type variants', () => {
+    const { rerender } = render(
+      <Modal {...defaultProps} type="warning" />
+    );
+
+    let content = screen.getByTestId('dialog-content');
+    expect(content.className).toContain('border-yellow-200');
+
+    rerender(<Modal {...defaultProps} type="success" />);
+    content = screen.getByTestId('dialog-content');
+    expect(content.className).toContain('border-green-200');
+
+    rerender(<Modal {...defaultProps} type="error" />);
+    content = screen.getByTestId('dialog-content');
+    expect(content.className).toContain('border-red-200');
+
+    rerender(<Modal {...defaultProps} type="default" />);
+    content = screen.getByTestId('dialog-content');
+    expect(content.className).not.toContain('border-');
+  });
+
+  it('applies correct CSS classes for different size variants', () => {
+    const { rerender } = render(
+      <Modal {...defaultProps} size="xl" />
+    );
+
+    let content = screen.getByTestId('dialog-content');
+    expect(content.className).toContain('max-w-xl');
+
+    rerender(<Modal {...defaultProps} size="2xl" />);
+    content = screen.getByTestId('dialog-content');
+    expect(content.className).toContain('max-w-2xl');
+
+    rerender(<Modal {...defaultProps} size="3xl" />);
+    content = screen.getByTestId('dialog-content');
+    expect(content.className).toContain('max-w-3xl');
+
+    rerender(<Modal {...defaultProps} size="4xl" />);
+    content = screen.getByTestId('dialog-content');
+    expect(content.className).toContain('max-w-4xl');
+
+    rerender(<Modal {...defaultProps} size="full" />);
+    content = screen.getByTestId('dialog-content');
+    expect(content.className).toContain('max-w-[95vw]');
+  });
+
+  it('handles open state changes correctly', () => {
+    const { rerender } = render(<Modal {...defaultProps} open={false} />);
+
+    const dialog = screen.getByTestId('dialog');
+    expect(dialog.getAttribute('data-open')).toBe('false');
+
+    rerender(<Modal {...defaultProps} open={true} />);
+    expect(dialog.getAttribute('data-open')).toBe('true');
+  });
+
+  it('renders with custom className', () => {
+    render(<Modal {...defaultProps} className="custom-modal-class" />);
+
+    const content = screen.getByTestId('dialog-content');
+    expect(content.className).toContain('custom-modal-class');
+  });
+
+  it('shows close button by default', () => {
+    render(<Modal {...defaultProps} />);
+    
+    expect(screen.getByTestId('dialog-close')).toBeInTheDocument();
+  });
+
+  it('does not render header when no title or description provided', () => {
+    render(<Modal {...defaultProps} title={undefined} description={undefined} />);
+
+    expect(screen.queryByTestId('dialog-header')).not.toBeInTheDocument();
+  });
+
+  it('renders only title when description is not provided', () => {
+    render(<Modal {...defaultProps} title="Test Title" description={undefined} />);
+
+    expect(screen.getByText('Test Title')).toBeInTheDocument();
+    expect(screen.queryByTestId('dialog-description')).not.toBeInTheDocument();
+  });
+
+  it('renders only description when title is not provided', () => {
+    render(<Modal {...defaultProps} title={undefined} description="Test Description" />);
+
+    expect(screen.getByText('Test Description')).toBeInTheDocument();
+    expect(screen.queryByTestId('dialog-title')).not.toBeInTheDocument();
+  });
+
+  it('does not render footer when no footer content provided', () => {
+    render(<Modal {...defaultProps} footer={undefined} />);
+
+    expect(screen.queryByTestId('dialog-footer')).not.toBeInTheDocument();
+  });
+
+  it('properly handles overlay click when enabled', async () => {
+    const user = userEvent.setup();
+    const handleOpenChange = jest.fn();
+    
+    render(
+      <Modal
+        {...defaultProps}
+        onOpenChange={handleOpenChange}
+        closeOnOverlayClick={true}
+      />
+    );
+
+    // Click outside should trigger close
+    const content = screen.getByTestId('dialog-content');
+    expect(content.getAttribute('data-overlay-disabled')).toBe('false');
+  });
+
+  it('cleans up event listeners on unmount', () => {
+    const addEventListenerSpy = jest.spyOn(document, 'addEventListener');
+    const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener');
+    
+    const { unmount } = render(
+      <Modal {...defaultProps} closeOnEscapeKey={false} />
+    );
+
+    expect(addEventListenerSpy).toHaveBeenCalledWith(
+      'keydown',
+      expect.any(Function),
+      { capture: true }
+    );
+
+    unmount();
+
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      'keydown',
+      expect.any(Function),
+      { capture: true }
+    );
+
+    addEventListenerSpy.mockRestore();
+    removeEventListenerSpy.mockRestore();
+  });
 });
