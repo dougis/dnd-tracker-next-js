@@ -47,7 +47,7 @@ describe('LandingPage Component', () => {
 
     const sections = [
       screen.getByTestId('hero-section'),
-      screen.getByTestId('features-section'), 
+      screen.getByTestId('features-section'),
       screen.getByTestId('pricing-section'),
       screen.getByTestId('testimonials-section'),
       screen.getByTestId('cta-section'),
@@ -63,7 +63,7 @@ describe('LandingPage Component', () => {
 
   it('has proper semantic structure for accessibility', () => {
     render(<LandingPage />);
-    
+
     const mainElement = screen.getByRole('main');
     expect(mainElement).toBeInTheDocument();
   });
