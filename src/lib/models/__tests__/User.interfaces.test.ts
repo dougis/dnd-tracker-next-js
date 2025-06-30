@@ -6,15 +6,40 @@ import {
 } from '../User';
 
 describe('User Model Types and Interfaces', () => {
+  // Constants to avoid duplication
+  const VALID_FEATURES: SubscriptionFeature[] = ['parties', 'encounters', 'characters'];
+  const TIER_NAMES = ['free', 'seasoned', 'expert', 'master', 'guild'];
+  const NON_GUILD_TIERS = ['free', 'seasoned', 'expert', 'master'];
+
+  const SAMPLE_PREFERENCES = {
+    theme: 'dark' as const,
+    emailNotifications: true,
+    browserNotifications: false,
+    timezone: 'UTC',
+    language: 'en',
+    diceRollAnimations: true,
+    autoSaveEncounters: true,
+  };
+
+  const DEFAULT_PREFERENCES = {
+    theme: 'system' as const,
+    emailNotifications: true,
+    browserNotifications: false,
+    timezone: 'UTC',
+    language: 'en',
+    diceRollAnimations: true,
+    autoSaveEncounters: true,
+  };
+
+  const SENSITIVE_FIELDS = ['passwordHash', 'emailVerificationToken', 'passwordResetToken', 'passwordResetExpires'];
+
   describe('Type Definitions', () => {
     it('should have User model defined', () => {
-      // Just check that the module exports exist
       expect(SUBSCRIPTION_LIMITS).toBeDefined();
     });
 
     it('should have correct SubscriptionFeature type', () => {
-      const validFeatures: SubscriptionFeature[] = ['parties', 'encounters', 'characters'];
-      expect(validFeatures).toHaveLength(3);
+      expect(VALID_FEATURES).toHaveLength(3);
     });
 
     it('should validate CreateUserInput interface shape', () => {
@@ -26,15 +51,7 @@ describe('User Model Types and Interfaces', () => {
         password: 'password123',
         role: 'user',
         subscriptionTier: 'free',
-        preferences: {
-          theme: 'dark',
-          emailNotifications: true,
-          browserNotifications: false,
-          timezone: 'UTC',
-          language: 'en',
-          diceRollAnimations: true,
-          autoSaveEncounters: true,
-        }
+        preferences: SAMPLE_PREFERENCES
       };
 
       expect(validInput.email).toBe('test@example.com');
@@ -57,23 +74,16 @@ describe('User Model Types and Interfaces', () => {
         role: 'user',
         subscriptionTier: 'free',
         isEmailVerified: false,
-        preferences: {
-          theme: 'system',
-          emailNotifications: true,
-          browserNotifications: false,
-          timezone: 'UTC',
-          language: 'en',
-          diceRollAnimations: true,
-          autoSaveEncounters: true,
-        },
+        preferences: DEFAULT_PREFERENCES,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      expect(mockPublicUser).not.toHaveProperty('passwordHash');
-      expect(mockPublicUser).not.toHaveProperty('emailVerificationToken');
-      expect(mockPublicUser).not.toHaveProperty('passwordResetToken');
-      expect(mockPublicUser).not.toHaveProperty('passwordResetExpires');
+      // Check sensitive fields are excluded
+      SENSITIVE_FIELDS.forEach(field => {
+        expect(mockPublicUser).not.toHaveProperty(field);
+      });
+
       expect(mockPublicUser).toHaveProperty('id');
       expect(mockPublicUser).not.toHaveProperty('_id');
     });
@@ -84,19 +94,14 @@ describe('User Model Types and Interfaces', () => {
       expect(SUBSCRIPTION_LIMITS).toBeDefined();
       expect(typeof SUBSCRIPTION_LIMITS).toBe('object');
 
-      const expectedTiers = ['free', 'seasoned', 'expert', 'master', 'guild'];
       const actualTiers = Object.keys(SUBSCRIPTION_LIMITS);
-
-      expect(actualTiers.sort()).toEqual(expectedTiers.sort());
+      expect(actualTiers.sort()).toEqual(TIER_NAMES.sort());
     });
 
     it('should have numeric limits for all tiers except guild', () => {
-      const nonGuildTiers = ['free', 'seasoned', 'expert', 'master'];
-      const features = ['parties', 'encounters', 'characters'];
-
-      nonGuildTiers.forEach(tier => {
-        features.forEach(feature => {
-          const limit = SUBSCRIPTION_LIMITS[tier as keyof typeof SUBSCRIPTION_LIMITS][feature as SubscriptionFeature];
+      NON_GUILD_TIERS.forEach(tier => {
+        VALID_FEATURES.forEach(feature => {
+          const limit = SUBSCRIPTION_LIMITS[tier as keyof typeof SUBSCRIPTION_LIMITS][feature];
           expect(typeof limit).toBe('number');
           expect(limit).toBeGreaterThan(0);
           expect(Number.isFinite(limit)).toBe(true);
@@ -105,9 +110,7 @@ describe('User Model Types and Interfaces', () => {
     });
 
     it('should have infinite limits for guild tier', () => {
-      const features: SubscriptionFeature[] = ['parties', 'encounters', 'characters'];
-
-      features.forEach(feature => {
+      VALID_FEATURES.forEach(feature => {
         const limit = SUBSCRIPTION_LIMITS.guild[feature];
         expect(limit).toBe(Infinity);
       });
@@ -115,46 +118,24 @@ describe('User Model Types and Interfaces', () => {
   });
 
   describe('Model Schema Validation Logic', () => {
-    it('should validate theme enum values', () => {
-      const validThemes = ['light', 'dark', 'system'];
-      expect(validThemes).toContain('light');
-      expect(validThemes).toContain('dark');
-      expect(validThemes).toContain('system');
-    });
+    const enumValidationTests = [
+      { name: 'theme', values: ['light', 'dark', 'system'] },
+      { name: 'role', values: ['user', 'admin'] },
+      { name: 'subscription tier', values: TIER_NAMES },
+    ];
 
-    it('should validate role enum values', () => {
-      const validRoles = ['user', 'admin'];
-      expect(validRoles).toContain('user');
-      expect(validRoles).toContain('admin');
-    });
-
-    it('should validate subscription tier enum values', () => {
-      const validTiers = ['free', 'seasoned', 'expert', 'master', 'guild'];
-      expect(validTiers).toContain('free');
-      expect(validTiers).toContain('seasoned');
-      expect(validTiers).toContain('expert');
-      expect(validTiers).toContain('master');
-      expect(validTiers).toContain('guild');
+    enumValidationTests.forEach(({ name, values }) => {
+      it(`should validate ${name} enum values`, () => {
+        values.forEach(value => {
+          expect(values).toContain(value);
+        });
+      });
     });
 
     it('should have proper default preferences structure', () => {
-      const defaultPreferences = {
-        theme: 'system',
-        emailNotifications: true,
-        browserNotifications: false,
-        timezone: 'UTC',
-        language: 'en',
-        diceRollAnimations: true,
-        autoSaveEncounters: true,
-      };
-
-      expect(defaultPreferences.theme).toBe('system');
-      expect(defaultPreferences.emailNotifications).toBe(true);
-      expect(defaultPreferences.browserNotifications).toBe(false);
-      expect(defaultPreferences.timezone).toBe('UTC');
-      expect(defaultPreferences.language).toBe('en');
-      expect(defaultPreferences.diceRollAnimations).toBe(true);
-      expect(defaultPreferences.autoSaveEncounters).toBe(true);
+      Object.entries(DEFAULT_PREFERENCES).forEach(([key, expectedValue]) => {
+        expect(DEFAULT_PREFERENCES[key as keyof typeof DEFAULT_PREFERENCES]).toBe(expectedValue);
+      });
     });
   });
 });

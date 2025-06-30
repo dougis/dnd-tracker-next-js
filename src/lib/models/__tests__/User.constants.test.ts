@@ -1,72 +1,47 @@
 import { SUBSCRIPTION_LIMITS } from '../User';
 
 describe('User Model Constants', () => {
+  // Constants to avoid duplication
+  const TIER_NAMES = ['free', 'seasoned', 'expert', 'master', 'guild'] as const;
+  const FEATURE_NAMES = ['parties', 'encounters', 'characters'] as const;
+
+  const EXPECTED_LIMITS = {
+    free: { parties: 1, encounters: 3, characters: 10 },
+    seasoned: { parties: 3, encounters: 15, characters: 50 },
+    expert: { parties: 10, encounters: 50, characters: 200 },
+    master: { parties: 25, encounters: 100, characters: 500 },
+    guild: { parties: Infinity, encounters: Infinity, characters: Infinity },
+  } as const;
+
   describe('SUBSCRIPTION_LIMITS', () => {
-    it('should have correct limits for free tier', () => {
-      expect(SUBSCRIPTION_LIMITS.free).toEqual({
-        parties: 1,
-        encounters: 3,
-        characters: 10,
-      });
-    });
-
-    it('should have correct limits for seasoned tier', () => {
-      expect(SUBSCRIPTION_LIMITS.seasoned).toEqual({
-        parties: 3,
-        encounters: 15,
-        characters: 50,
-      });
-    });
-
-    it('should have correct limits for expert tier', () => {
-      expect(SUBSCRIPTION_LIMITS.expert).toEqual({
-        parties: 10,
-        encounters: 50,
-        characters: 200,
-      });
-    });
-
-    it('should have correct limits for master tier', () => {
-      expect(SUBSCRIPTION_LIMITS.master).toEqual({
-        parties: 25,
-        encounters: 100,
-        characters: 500,
-      });
-    });
-
-    it('should have correct limits for guild tier', () => {
-      expect(SUBSCRIPTION_LIMITS.guild).toEqual({
-        parties: Infinity,
-        encounters: Infinity,
-        characters: Infinity,
+    it('should have correct limits for all tiers', () => {
+      TIER_NAMES.forEach(tier => {
+        expect(SUBSCRIPTION_LIMITS[tier]).toEqual(EXPECTED_LIMITS[tier]);
       });
     });
 
     it('should have all required subscription tiers', () => {
-      const tiers = Object.keys(SUBSCRIPTION_LIMITS);
-      expect(tiers).toEqual(['free', 'seasoned', 'expert', 'master', 'guild']);
+      const actualTiers = Object.keys(SUBSCRIPTION_LIMITS);
+      expect(actualTiers.sort()).toEqual([...TIER_NAMES].sort());
     });
 
     it('should have all required features for each tier', () => {
-      const requiredFeatures = ['parties', 'encounters', 'characters'];
-
       Object.values(SUBSCRIPTION_LIMITS).forEach(tierLimits => {
         const features = Object.keys(tierLimits);
-        expect(features.sort()).toEqual(requiredFeatures.sort());
+        expect(features.sort()).toEqual([...FEATURE_NAMES].sort());
       });
     });
 
     it('should have increasing limits across tiers (except guild)', () => {
-      const tiers = ['free', 'seasoned', 'expert', 'master'];
-      const features = ['parties', 'encounters', 'characters'];
+      const nonGuildTiers = TIER_NAMES.slice(0, -1); // All except 'guild'
 
-      features.forEach(feature => {
-        for (let i = 1; i < tiers.length; i++) {
-          const prevTier = tiers[i - 1] as keyof typeof SUBSCRIPTION_LIMITS;
-          const currentTier = tiers[i] as keyof typeof SUBSCRIPTION_LIMITS;
+      FEATURE_NAMES.forEach(feature => {
+        for (let i = 1; i < nonGuildTiers.length; i++) {
+          const prevTier = nonGuildTiers[i - 1];
+          const currentTier = nonGuildTiers[i];
 
-          expect(SUBSCRIPTION_LIMITS[currentTier][feature as keyof typeof SUBSCRIPTION_LIMITS.free])
-            .toBeGreaterThan(SUBSCRIPTION_LIMITS[prevTier][feature as keyof typeof SUBSCRIPTION_LIMITS.free]);
+          expect(SUBSCRIPTION_LIMITS[currentTier][feature])
+            .toBeGreaterThan(SUBSCRIPTION_LIMITS[prevTier][feature]);
         }
       });
     });
