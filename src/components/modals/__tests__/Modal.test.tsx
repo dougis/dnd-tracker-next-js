@@ -1,7 +1,13 @@
 import React from 'react';
-import userEvent from '@testing-library/user-event';
 import { render, screen } from './test-utils';
 import { Modal } from '../Modal';
+import { setupMockClearing, setupUserEvent } from './utils/testHelpers';
+import { testSizeVariants, testTypeVariants } from './utils/variantTestHelpers';
+import { createDefaultModalProps } from './fixtures/modalFixtures';
+import {
+  assertElementNotExists,
+  assertElementByTestId,
+} from './utils/commonAssertions';
 
 // Mock the Dialog component
 jest.mock('@/components/ui/dialog', () => ({
@@ -59,15 +65,9 @@ jest.mock('@/components/ui/dialog', () => ({
 }));
 
 describe('Modal', () => {
-  const defaultProps = {
-    open: true,
-    onOpenChange: jest.fn(),
-    children: <div>Modal content</div>,
-  };
+  const defaultProps = createDefaultModalProps();
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  setupMockClearing();
 
   it('renders basic modal without title or description', () => {
     render(<Modal {...defaultProps} />);
@@ -98,7 +98,7 @@ describe('Modal', () => {
   });
 
   it('calls onOpenChange when dialog is closed', async () => {
-    const user = userEvent.setup();
+    const user = setupUserEvent();
     render(<Modal {...defaultProps} />);
 
     const closeButton = screen.getByTestId('dialog-close');
@@ -152,47 +152,25 @@ describe('Modal', () => {
     it('renders with all size variants', () => {
       const sizes = ['sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', 'full'] as const;
 
-      sizes.forEach((size) => {
-        const { rerender } = render(<Modal {...defaultProps} size={size} />);
-        const content = screen.getByTestId('dialog-content');
-        if (size === 'full') {
-          expect(content.className).toContain('max-w-[95vw]');
-        } else {
-          expect(content.className).toContain(`max-w-${size}`);
-        }
-        rerender(<div />); // Clear for next iteration
-      });
+      testSizeVariants(sizes, (size) => <Modal {...defaultProps} size={size} />);
     });
 
     it('renders with all type variants', () => {
       const types = ['default', 'info', 'warning', 'error'] as const;
 
-      types.forEach((type) => {
-        const { rerender } = render(<Modal {...defaultProps} type={type} />);
-        const content = screen.getByTestId('dialog-content');
-
-        if (type === 'info') {
-          expect(content.className).toContain('border-blue-200');
-        } else if (type === 'warning') {
-          expect(content.className).toContain('border-yellow-200');
-        } else if (type === 'error') {
-          expect(content.className).toContain('border-red-200');
-        }
-
-        rerender(<div />); // Clear for next iteration
-      });
+      testTypeVariants(types, (type) => <Modal {...defaultProps} type={type} />);
     });
 
     it('handles empty children gracefully', () => {
       render(<Modal {...defaultProps}>{null}</Modal>);
 
-      expect(screen.getByTestId('dialog-content')).toBeInTheDocument();
+      assertElementByTestId('dialog-content');
     });
 
     it('renders without footer when not provided', () => {
       render(<Modal {...defaultProps} footer={undefined} />);
 
-      expect(screen.queryByTestId('dialog-footer')).not.toBeInTheDocument();
+      assertElementNotExists('dialog-footer');
     });
 
     it('renders when closed', () => {
