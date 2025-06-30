@@ -31,6 +31,7 @@ Dungeon Masters need efficient tools to manage complex D&D 5e combat encounters,
 - **Missing features**: No support for lair actions (unique to this tracker)
 
 ### **Our Solution**
+
 A modern, purpose-built encounter tracker that:
 - Focuses specifically on combat management (not trying to be everything)
 - Provides intuitive UI/UX optimized for both desktop and mobile DMs
