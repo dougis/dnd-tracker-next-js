@@ -24,6 +24,22 @@ export const mockButton = (testId: string = 'button') => {
   }));
 };
 
+// Common mock for CTAButtons component
+export const mockCTAButtons = (testId: string = 'button') => {
+  jest.mock('../CTAButtons', () => ({
+    CTAButtons: () => (
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="btn" data-testid={testId}>
+          <a href="/signup">Get Started Free</a>
+        </div>
+        <div className="btn outline" data-testid={testId}>
+          <a href="/signin">Sign In</a>
+        </div>
+      </div>
+    ),
+  }));
+};
+
 // Common render helper
 export const renderComponent = (Component: React.ComponentType) => {
   return render(<Component />);

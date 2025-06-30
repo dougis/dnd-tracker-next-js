@@ -1,24 +1,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { HeroSection } from '../HeroSection';
-import { mockNextLink, mockButton, getSection, expectSemanticStructure } from './test-utils';
+import { mockNextLink, mockButton, mockCTAButtons, getSection, expectSemanticStructure } from './test-utils';
 
 mockNextLink();
 mockButton();
-
-// Mock CTAButtons component
-jest.mock('../CTAButtons', () => ({
-  CTAButtons: () => (
-    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-      <div className="btn" data-testid="button">
-        <a href="/signup">Get Started Free</a>
-      </div>
-      <div className="btn outline" data-testid="button">
-        <a href="/signin">Sign In</a>
-      </div>
-    </div>
-  ),
-}));
+mockCTAButtons();
 
 describe('HeroSection Component', () => {
   it('renders compelling headline for D&D Encounter Tracker', () => {
