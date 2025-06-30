@@ -29,9 +29,13 @@ export function ThemeProvider({
   storageKey = 'dnd-tracker-theme',
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = React.useState<Theme>(
-    () => (localStorage?.getItem(storageKey) as Theme) || defaultTheme
-  );
+  const [theme, setTheme] = React.useState<Theme>(() => {
+    try {
+      return (localStorage?.getItem(storageKey) as Theme) || defaultTheme;
+    } catch {
+      return defaultTheme;
+    }
+  });
 
   React.useEffect(() => {
     const root = window.document.documentElement;
@@ -54,7 +58,11 @@ export function ThemeProvider({
   const value = {
     theme,
     setTheme: (newTheme: Theme) => {
-      localStorage?.setItem(storageKey, newTheme);
+      try {
+        localStorage?.setItem(storageKey, newTheme);
+      } catch {
+        // Ignore localStorage errors
+      }
       setTheme(newTheme);
     },
   };

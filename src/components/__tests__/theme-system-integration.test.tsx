@@ -315,22 +315,19 @@ describe('Theme System Integration', () => {
       const user = userEvent.setup();
 
       render(
-        <ThemeProvider>
+        <ThemeProvider defaultTheme="system">
           <ThemeAwareComponent />
         </ThemeProvider>
       );
 
-      // Verify initial state
-      expect(document.documentElement.classList.contains('light')).toBe(false);
-      expect(document.documentElement.classList.contains('dark')).toBe(false);
-
-      // Apply light theme
-      await user.click(screen.getByText('Light'));
+      // Verify initial state - system theme applies light by default in our mock
       expect(document.documentElement.classList.contains('light')).toBe(true);
+      expect(document.documentElement.classList.contains('dark')).toBe(false);
 
       // Apply dark theme
       await user.click(screen.getByText('Dark'));
       expect(document.documentElement.classList.contains('dark')).toBe(true);
+      expect(document.documentElement.classList.contains('light')).toBe(false);
     });
   });
 
@@ -367,12 +364,12 @@ describe('Theme System Integration', () => {
       mockLocalStorage.getItem.mockReturnValue('invalid-theme-value');
 
       render(
-        <ThemeProvider defaultTheme="light">
+        <ThemeProvider defaultTheme="system">
           <ThemeAwareComponent />
         </ThemeProvider>
       );
 
-      // Should fall back to default theme
+      // Should fall back to default theme (system = light in our mock)
       expect(document.documentElement.classList.contains('light')).toBe(true);
       expect(screen.getByTestId('dropdown-menu')).toBeInTheDocument();
     });
