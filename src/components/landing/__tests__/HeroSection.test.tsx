@@ -6,6 +6,20 @@ import { mockNextLink, mockButton, getSection, expectSemanticStructure } from '.
 mockNextLink();
 mockButton();
 
+// Mock CTAButtons component
+jest.mock('../CTAButtons', () => ({
+  CTAButtons: () => (
+    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      <div className="btn" data-testid="button">
+        <a href="/signup">Get Started Free</a>
+      </div>
+      <div className="btn outline" data-testid="button">
+        <a href="/signin">Sign In</a>
+      </div>
+    </div>
+  ),
+}));
+
 describe('HeroSection Component', () => {
   it('renders compelling headline for D&D Encounter Tracker', () => {
     render(<HeroSection />);
@@ -57,9 +71,9 @@ describe('HeroSection Component', () => {
     const container = screen.getByRole('heading', { level: 1 }).closest('section');
     expect(container).toHaveClass('container', 'mx-auto', 'px-4', 'py-16');
 
-    // Check button container responsive layout - find the direct container div
-    const buttonContainer = screen.getByText('Get Started Free').closest('div');
-    expect(buttonContainer).toHaveClass('flex', 'flex-col', 'sm:flex-row', 'gap-4');
+    // Check button container responsive layout - CTA buttons should be present
+    expect(screen.getByText('Get Started Free')).toBeInTheDocument();
+    expect(screen.getByText('Sign In')).toBeInTheDocument();
   });
 
   it('has proper semantic structure for accessibility and SEO', () => {

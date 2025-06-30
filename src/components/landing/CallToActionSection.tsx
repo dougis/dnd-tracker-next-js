@@ -1,5 +1,4 @@
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { CTAButtons } from './CTAButtons';
 
 export function CallToActionSection() {
   return (
@@ -12,14 +11,7 @@ export function CallToActionSection() {
           Join thousands of Dungeon Masters who trust our encounter tracker to streamline combat and enhance their games.
           Save time, manage characters effortlessly, and perfect your DM sessions with our trusted community.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button asChild size="lg" className="text-lg px-8 py-3">
-            <Link href="/signup">Get Started Free</Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="text-lg px-8 py-3">
-            <Link href="/signin">Sign In</Link>
-          </Button>
-        </div>
+        <CTAButtons />
       </div>
     </section>
   );

@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { TestimonialsSection } from '../TestimonialsSection';
-import { getSection, expectResponsiveLayout, expectSemanticStructure } from './test-utils';
+import { renderComponent, getSection, expectResponsiveLayout, expectSemanticStructure } from './test-utils';
 
 // Mock the TestimonialCard component
 jest.mock('../TestimonialCard', () => ({
@@ -19,24 +19,24 @@ jest.mock('../TestimonialCard', () => ({
 }));
 
 describe('TestimonialsSection Component', () => {
-  it('renders section heading about user testimonials and social proof', () => {
-    render(<TestimonialsSection />);
+  let renderedComponent: any;
 
+  beforeEach(() => {
+    renderedComponent = renderComponent(TestimonialsSection);
+  });
+
+  it('renders section heading about user testimonials and social proof', () => {
     const heading = screen.getByRole('heading', { level: 2 });
     expect(heading).toBeInTheDocument();
     expect(heading.textContent).toMatch(/testimonial|review|what.*say|love/i);
   });
 
   it('displays multiple customer testimonials for credibility', () => {
-    render(<TestimonialsSection />);
-
     const testimonialCards = screen.getAllByTestId('testimonial-card');
     expect(testimonialCards.length).toBeGreaterThanOrEqual(3); // Should have at least 3 testimonials
   });
 
   it('shows testimonials from different types of D&D users', () => {
-    render(<TestimonialsSection />);
-
     const roles = screen.getAllByTestId('testimonial-role');
     const roleTexts = roles.map(role => role.textContent?.toLowerCase() || '');
 
@@ -46,8 +46,6 @@ describe('TestimonialsSection Component', () => {
   });
 
   it('includes compelling testimonial content that highlights key benefits', () => {
-    render(<TestimonialsSection />);
-
     const testimonialContents = screen.getAllByTestId('testimonial-content');
 
     testimonialContents.forEach(content => {
@@ -61,8 +59,6 @@ describe('TestimonialsSection Component', () => {
   });
 
   it('displays customer names and roles for authenticity', () => {
-    render(<TestimonialsSection />);
-
     const names = screen.getAllByTestId('testimonial-name');
     const roles = screen.getAllByTestId('testimonial-role');
 
@@ -78,8 +74,6 @@ describe('TestimonialsSection Component', () => {
   });
 
   it('uses responsive layout for testimonial display', () => {
-    render(<TestimonialsSection />);
-
     const section = getSection(screen);
     expectResponsiveLayout(section);
     expect(section).toHaveClass('py-16');
@@ -90,15 +84,11 @@ describe('TestimonialsSection Component', () => {
   });
 
   it('includes customer avatars for personal connection', () => {
-    render(<TestimonialsSection />);
-
     const avatars = screen.getAllByTestId('testimonial-avatar');
     expect(avatars.length).toBeGreaterThan(0); // Should have some customer avatars
   });
 
   it('emphasizes positive emotional outcomes from using the app', () => {
-    render(<TestimonialsSection />);
-
     const testimonialContents = screen.getAllByTestId('testimonial-content');
     const allTestimonialText = testimonialContents
       .map(content => content.textContent)
@@ -110,8 +100,6 @@ describe('TestimonialsSection Component', () => {
   });
 
   it('highlights specific feature benefits mentioned by users', () => {
-    render(<TestimonialsSection />);
-
     const testimonialContents = screen.getAllByTestId('testimonial-content');
     const allTestimonialText = testimonialContents
       .map(content => content.textContent)
@@ -123,8 +111,6 @@ describe('TestimonialsSection Component', () => {
   });
 
   it('shows variety in user experience levels', () => {
-    render(<TestimonialsSection />);
-
     const roles = screen.getAllByTestId('testimonial-role');
     const roleTexts = roles.map(role => role.textContent?.toLowerCase() || '');
 
@@ -134,8 +120,6 @@ describe('TestimonialsSection Component', () => {
   });
 
   it('has proper semantic structure for accessibility', () => {
-    render(<TestimonialsSection />);
-
     const section = getSection(screen);
     expectSemanticStructure(section);
   });

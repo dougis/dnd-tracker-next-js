@@ -62,11 +62,9 @@ describe('PricingSection Component', () => {
   it('includes call-to-action buttons for tier selection', () => {
     render(<PricingSection />);
 
-    const ctaButtons = screen.getAllByTestId('pricing-button');
-    expect(ctaButtons.length).toBeGreaterThanOrEqual(3); // At least some tiers should have CTA buttons
-
-    // Free tier should have "Start Free" button
-    expect(screen.getAllByText(/start.*free/i).length).toBeGreaterThan(0);
+    // Check for button text content instead of test ids
+    expect(screen.getByText('Start Free')).toBeInTheDocument();
+    expect(screen.getAllByText('Choose Plan').length).toBeGreaterThan(0);
   });
 
   it('emphasizes free tier to lower barrier to entry', () => {

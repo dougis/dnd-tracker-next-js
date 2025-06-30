@@ -1,5 +1,4 @@
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { CTAButtons } from './CTAButtons';
 
 export function HeroSection() {
   return (
@@ -12,14 +11,7 @@ export function HeroSection() {
           The ultimate D&D Encounter Tracker for Dungeon Masters.
           Streamline combat, manage characters, and create epic adventures with ease.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button asChild size="lg" className="text-lg px-8 py-3">
-            <Link href="/signup">Get Started Free</Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="text-lg px-8 py-3">
-            <Link href="/signin">Sign In</Link>
-          </Button>
-        </div>
+        <CTAButtons />
       </div>
     </section>
   );

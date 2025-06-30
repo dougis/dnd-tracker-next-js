@@ -1,4 +1,5 @@
 import React from 'react';
+import { render } from '@testing-library/react';
 
 // Common mock for next/link
 export const mockNextLink = () => {
@@ -21,6 +22,11 @@ export const mockButton = (testId: string = 'button') => {
       </div>
     ),
   }));
+};
+
+// Common render helper
+export const renderComponent = (Component: React.ComponentType) => {
+  return render(<Component />);
 };
 
 // Common test helpers

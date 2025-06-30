@@ -6,6 +6,20 @@ import { mockNextLink, mockButton, getSection, expectResponsiveLayout, expectSem
 mockNextLink();
 mockButton('cta-button');
 
+// Mock CTAButtons component
+jest.mock('../CTAButtons', () => ({
+  CTAButtons: () => (
+    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      <div className="btn" data-testid="cta-button">
+        <a href="/signup">Get Started Free</a>
+      </div>
+      <div className="btn outline" data-testid="cta-button">
+        <a href="/signin">Sign In</a>
+      </div>
+    </div>
+  ),
+}));
+
 describe('CallToActionSection Component', () => {
   it('renders compelling final call-to-action heading', () => {
     render(<CallToActionSection />);
