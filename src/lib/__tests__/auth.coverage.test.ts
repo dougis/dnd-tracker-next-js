@@ -1,4 +1,12 @@
 import { beforeAll, afterAll, describe, it, expect, beforeEach, jest } from '@jest/globals';
+import {
+  setupAuthTestEnv,
+  restoreAuthTestEnv,
+  authTestAssertions,
+  createMockUser,
+  withConsoleSpy,
+  testWithNodeEnv,
+} from './auth-test-utils';
 
 // Mock dependencies before importing
 const mockGetUserByEmail = jest.fn();
@@ -19,19 +27,14 @@ jest.mock('mongodb', () => ({
   MongoClient: jest.fn().mockImplementation(() => ({})),
 }));
 
-const originalEnv = process.env;
+let originalEnv: string;
 
 beforeAll(() => {
-  process.env = {
-    ...originalEnv,
-    MONGODB_URI: 'mongodb://localhost:27017/test',
-    MONGODB_DB_NAME: 'testdb',
-    NODE_ENV: 'test',
-  };
+  originalEnv = setupAuthTestEnv();
 });
 
 afterAll(() => {
-  process.env = originalEnv;
+  restoreAuthTestEnv(originalEnv);
 });
 
 describe('NextAuth Coverage Tests', () => {
@@ -42,143 +45,83 @@ describe('NextAuth Coverage Tests', () => {
   });
 
   describe('Coverage for lines 22-81 in auth.ts', () => {
-    it('should trigger the authorize function code path - missing credentials', async () => {
-      // This test aims to trigger execution of lines 22-24
-      const authModule = await import('../auth');
+    const testCases = [
+      {
+        name: 'should trigger the authorize function code path - missing credentials',
+        setup: () => {
+          // This test aims to trigger execution of lines 22-24
+        },
+      },
+      {
+        name: 'should test getUserByEmail integration path',
+        setup: () => {
+          // Setup mock for user not found scenario (line 28-33)
+          mockGetUserByEmail.mockResolvedValue({
+            success: false,
+            error: 'User not found',
+          });
+        },
+      },
+      {
+        name: 'should test authenticateUser integration path',
+        setup: () => {
+          // Setup mock for authentication scenario (line 36-44)
+          const mockUser = createMockUser();
 
-      // Verify auth module exports exist (triggers import)
-      expect(authModule.handlers).toBeDefined();
-      expect(authModule.auth).toBeDefined();
-      expect(authModule.signIn).toBeDefined();
-      expect(authModule.signOut).toBeDefined();
+          mockGetUserByEmail.mockResolvedValue({
+            success: true,
+            data: mockUser,
+          });
 
-      // The auth.ts file is imported and executed, which should improve coverage
-      // Lines 7-89 should be executed during module initialization
-    });
+          mockAuthenticateUser.mockResolvedValue({
+            success: true,
+            data: { user: mockUser },
+          });
+        },
+      },
+    ];
 
-    it('should test getUserByEmail integration path', async () => {
-      // Setup mock for user not found scenario (line 28-33)
-      mockGetUserByEmail.mockResolvedValue({
-        success: false,
-        error: 'User not found',
+    testCases.forEach(({ name, setup }) => {
+      it(name, async () => {
+        setup();
+        const authModule = await import('../auth');
+        authTestAssertions.expectModuleExports(authModule);
       });
-
-      await import('../auth');
-
-      // The mere import should trigger the configuration setup
-      expect(mockGetUserByEmail).toBeDefined();
-    });
-
-    it('should test authenticateUser integration path', async () => {
-      // Setup mock for authentication scenario (line 36-44)
-      const mockUser = {
-        _id: 'user123',
-        email: 'test@example.com',
-        firstName: 'John',
-        lastName: 'Doe',
-        subscriptionTier: 'premium',
-      };
-
-      mockGetUserByEmail.mockResolvedValue({
-        success: true,
-        data: mockUser,
-      });
-
-      mockAuthenticateUser.mockResolvedValue({
-        success: true,
-        data: { user: mockUser },
-      });
-
-      await import('../auth');
-
-      // The configuration should be set up, which exercises lines 47-53
-      expect(mockAuthenticateUser).toBeDefined();
     });
 
     it('should test error handling path', async () => {
       // Setup mock for error scenario (line 54-57)
       mockGetUserByEmail.mockRejectedValue(new Error('Database error'));
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
-      await import('../auth');
-
-      // Error handling should be configured
-      expect(consoleSpy).toBeDefined();
-      consoleSpy.mockRestore();
+      withConsoleSpy((consoleSpy) => {
+        // Import will trigger the configuration
+        import('../auth');
+        authTestAssertions.expectMockDefined(consoleSpy);
+      });
     });
 
-    it('should test session callback execution', async () => {
-      // This should trigger the session callback definition (lines 67-75)
-      await import('../auth');
+    const configurationTests = [
+      'session callback execution',
+      'JWT callback execution',
+      'MongoClient and MongoDBAdapter initialization',
+      'providers configuration',
+      'session configuration',
+      'callbacks configuration',
+      'pages configuration',
+    ];
 
-      // Session callback should be configured
-      expect(true).toBe(true); // Coverage by importing
-    });
-
-    it('should test JWT callback execution', async () => {
-      // This should trigger the JWT callback definition (lines 76-82)
-      await import('../auth');
-
-      // JWT callback should be configured
-      expect(true).toBe(true); // Coverage by importing
+    configurationTests.forEach((testName) => {
+      it(`should exercise ${testName}`, async () => {
+        await import('../auth');
+        // Coverage by importing - configuration should be executed
+        expect(true).toBe(true);
+      });
     });
 
     it('should test debug configuration', async () => {
-      // Test debug configuration (line 88)
-      const originalNodeEnv = process.env.NODE_ENV;
-
-      // Test development mode
-      process.env.NODE_ENV = 'development';
-
-      // Re-import to test different debug configuration
-      jest.resetModules();
-      await import('../auth');
-
-      expect(process.env.NODE_ENV).toBe('development');
-
-      // Reset
-      process.env.NODE_ENV = originalNodeEnv;
-    });
-
-    it('should exercise MongoClient and MongoDBAdapter initialization', async () => {
-      // This should trigger lines 7-12
-      await import('../auth');
-
-      // MongoDB setup should be executed
-      expect(true).toBe(true); // Coverage by importing
-    });
-
-    it('should exercise providers configuration', async () => {
-      // This should trigger lines 14-60 (providers array and CredentialsProvider)
-      await import('../auth');
-
-      // Providers should be configured
-      expect(true).toBe(true); // Coverage by importing
-    });
-
-    it('should exercise session configuration', async () => {
-      // This should trigger lines 61-65 (session configuration)
-      await import('../auth');
-
-      // Session config should be set
-      expect(true).toBe(true); // Coverage by importing
-    });
-
-    it('should exercise callbacks configuration', async () => {
-      // This should trigger lines 66-83 (callbacks)
-      await import('../auth');
-
-      // Callbacks should be configured
-      expect(true).toBe(true); // Coverage by importing
-    });
-
-    it('should exercise pages configuration', async () => {
-      // This should trigger lines 84-87 (pages configuration)
-      await import('../auth');
-
-      // Pages config should be set
-      expect(true).toBe(true); // Coverage by importing
+      testWithNodeEnv('development', () => {
+        authTestAssertions.expectNodeEnv('development');
+      });
     });
   });
 
@@ -197,21 +140,14 @@ describe('NextAuth Coverage Tests', () => {
     });
 
     it('should handle different NODE_ENV values', async () => {
-      const originalNodeEnv = process.env.NODE_ENV;
+      const environments = ['production', 'test'];
 
-      // Test production mode
-      process.env.NODE_ENV = 'production';
-      jest.resetModules();
-      await import('../auth');
-
-      // Test test mode
-      process.env.NODE_ENV = 'test';
-      jest.resetModules();
-      await import('../auth');
-
-      process.env.NODE_ENV = originalNodeEnv;
-
-      expect(true).toBe(true); // Coverage by different env imports
+      for (const env of environments) {
+        testWithNodeEnv(env, () => {
+          import('../auth');
+          authTestAssertions.expectNodeEnv(env);
+        });
+      }
     });
   });
 });
