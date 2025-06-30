@@ -46,7 +46,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // Return user object for session
           const authenticatedUser = authResult.data.user;
           return {
-            id: authenticatedUser._id?.toString() || '',
+            id: authenticatedUser.id?.toString() || '',
             email: authenticatedUser.email,
             name: `${authenticatedUser.firstName} ${authenticatedUser.lastName}`,
             subscriptionTier: authenticatedUser.subscriptionTier,

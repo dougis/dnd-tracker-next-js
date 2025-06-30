@@ -173,7 +173,7 @@ describe('UserServiceResponseHelpers - Error Handling Tests', () => {
 
   describe('Integration and type safety', () => {
     it('should maintain type safety in responses', () => {
-      const typedData = createTestData('typed');
+      const typedData = createTestData('typed') as { count: number; items: string[] };
       const result = UserServiceResponseHelpers.createSuccessResponse(typedData);
 
       expect(result.success).toBe(true);

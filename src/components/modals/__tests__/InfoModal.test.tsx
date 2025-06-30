@@ -359,11 +359,7 @@ describe('InfoModal', () => {
       const footer = screen.getByTestId('modal-footer');
       const footerContent = footer.querySelector('div');
       expect(footerContent).toHaveClass(
-        'flex',
-        'flex-col-reverse',
-        'sm:flex-row',
-        'sm:justify-end',
-        'sm:space-x-2'
+        'flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2'
       );
     });
   });
@@ -401,12 +397,7 @@ describe('InfoSection Component', () => {
 
     const title = screen.getByText('Character Stats');
     expect(title).toHaveClass(
-      'text-sm',
-      'font-semibold',
-      'text-muted-foreground',
-      'mb-2',
-      'uppercase',
-      'tracking-wide'
+      'text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wide'
     );
   });
 });
@@ -446,10 +437,7 @@ describe('InfoField Component', () => {
 
     const field = screen.getByText('Test:').closest('div');
     expect(field).toHaveClass(
-      'flex',
-      'justify-between',
-      'items-center',
-      'py-1'
+      'flex justify-between items-center py-1'
     );
   });
 });

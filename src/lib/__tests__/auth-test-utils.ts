@@ -5,7 +5,7 @@
 /**
  * Helper to setup mock environment variables for auth tests
  */
-export function setupAuthTestEnv(): string {
+export function setupAuthTestEnv(): NodeJS.ProcessEnv {
   const originalEnv = process.env;
   process.env = {
     ...originalEnv,
@@ -19,7 +19,7 @@ export function setupAuthTestEnv(): string {
 /**
  * Helper to restore environment variables
  */
-export function restoreAuthTestEnv(originalEnv: string): void {
+export function restoreAuthTestEnv(originalEnv: NodeJS.ProcessEnv): void {
   process.env = originalEnv;
 }
 
@@ -74,12 +74,20 @@ export function withConsoleSpy(callback: (_spy: jest.SpyInstance) => void): void
  */
 export function testWithNodeEnv(env: string, testFn: () => void): void {
   const originalNodeEnv = process.env.NODE_ENV;
-  process.env.NODE_ENV = env;
+  Object.defineProperty(process.env, 'NODE_ENV', {
+    value: env,
+    writable: true,
+    configurable: true,
+  });
   jest.resetModules();
 
   try {
     testFn();
   } finally {
-    process.env.NODE_ENV = originalNodeEnv;
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      value: originalNodeEnv,
+      writable: true,
+      configurable: true,
+    });
   }
 }

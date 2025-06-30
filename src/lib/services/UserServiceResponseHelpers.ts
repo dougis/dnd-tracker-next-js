@@ -58,7 +58,7 @@ export class UserServiceResponseHelpers {
 
     // Fallback for test compatibility
     return {
-      _id: user._id?.toString() || user.id,
+      id: user._id?.toString() || user.id,
       email: user.email || '',
       username: user.username || '',
       firstName: user.firstName || '',
