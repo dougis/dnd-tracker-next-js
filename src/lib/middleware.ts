@@ -84,12 +84,14 @@ export async function requireAuthentication(
 }
 
 /**
+ * Type for authenticated handler functions
+ */
+type AuthenticatedHandler = (_request: NextRequest, _token: JWT) => Promise<NextResponse>;
+
+/**
  * Higher-order function to create authenticated API handlers
  */
-// eslint-disable-next-line no-unused-vars
-export function createAuthenticatedHandler(
-  handler: (request: NextRequest, token: JWT) => Promise<NextResponse>
-) {
+export function createAuthenticatedHandler(handler: AuthenticatedHandler) {
   return async function authenticatedHandler(request: NextRequest): Promise<NextResponse> {
     try {
       const token = await getToken({

@@ -6,6 +6,7 @@ import {
   isProtectedApiRoute,
   extractBearerToken,
   ApiResponse,
+  SessionUtils,
 } from '../middleware';
 
 // Mock NextAuth JWT
@@ -205,6 +206,136 @@ describe('API Middleware', () => {
       expect(response).toEqual(
         NextResponse.json({ error: 'Database error' }, { status: 500 })
       );
+    });
+
+    it('should create forbidden response', () => {
+      const response = ApiResponse.forbidden('Access denied');
+
+      expect(response).toEqual(
+        NextResponse.json({ error: 'Access denied' }, { status: 403 })
+      );
+    });
+
+    it('should create forbidden response with default message', () => {
+      const response = ApiResponse.forbidden();
+
+      expect(response).toEqual(
+        NextResponse.json({ error: 'Access denied' }, { status: 403 })
+      );
+    });
+
+    it('should create not found response', () => {
+      const response = ApiResponse.notFound('Resource not found');
+
+      expect(response).toEqual(
+        NextResponse.json({ error: 'Resource not found' }, { status: 404 })
+      );
+    });
+
+    it('should create not found response with default message', () => {
+      const response = ApiResponse.notFound();
+
+      expect(response).toEqual(
+        NextResponse.json({ error: 'Resource not found' }, { status: 404 })
+      );
+    });
+  });
+
+  describe('SessionUtils', () => {
+    describe('hasSubscriptionTier', () => {
+      it('should return false for null token', () => {
+        const result = SessionUtils.hasSubscriptionTier(null, 'premium');
+        expect(result).toBe(false);
+      });
+
+      it('should return true for exact tier match', () => {
+        const token = { subscriptionTier: 'premium' } as any;
+        const result = SessionUtils.hasSubscriptionTier(token, 'premium');
+        expect(result).toBe(true);
+      });
+
+      it('should return true for higher tier', () => {
+        const token = { subscriptionTier: 'pro' } as any;
+        const result = SessionUtils.hasSubscriptionTier(token, 'basic');
+        expect(result).toBe(true);
+      });
+
+      it('should return false for lower tier', () => {
+        const token = { subscriptionTier: 'basic' } as any;
+        const result = SessionUtils.hasSubscriptionTier(token, 'pro');
+        expect(result).toBe(false);
+      });
+
+      it('should default to free tier when no subscriptionTier', () => {
+        const token = {} as any;
+        const result = SessionUtils.hasSubscriptionTier(token, 'free');
+        expect(result).toBe(true);
+      });
+    });
+
+    describe('getUserId', () => {
+      it('should return null for null token', () => {
+        const result = SessionUtils.getUserId(null);
+        expect(result).toBeNull();
+      });
+
+      it('should return null for token without sub', () => {
+        const token = {} as any;
+        const result = SessionUtils.getUserId(token);
+        expect(result).toBeNull();
+      });
+
+      it('should return user ID from token', () => {
+        const token = { sub: 'user-123' } as any;
+        const result = SessionUtils.getUserId(token);
+        expect(result).toBe('user-123');
+      });
+    });
+
+    describe('getUserEmail', () => {
+      it('should return null for null token', () => {
+        const result = SessionUtils.getUserEmail(null);
+        expect(result).toBeNull();
+      });
+
+      it('should return null for token without email', () => {
+        const token = {} as any;
+        const result = SessionUtils.getUserEmail(token);
+        expect(result).toBeNull();
+      });
+
+      it('should return email from token', () => {
+        const token = { email: 'test@example.com' } as any;
+        const result = SessionUtils.getUserEmail(token);
+        expect(result).toBe('test@example.com');
+      });
+    });
+
+    describe('isTokenExpired', () => {
+      it('should return true for null token', () => {
+        const result = SessionUtils.isTokenExpired(null);
+        expect(result).toBe(true);
+      });
+
+      it('should return true for token without exp', () => {
+        const token = {} as any;
+        const result = SessionUtils.isTokenExpired(token);
+        expect(result).toBe(true);
+      });
+
+      it('should return true for expired token', () => {
+        const expiredTime = Math.floor(Date.now() / 1000) - 3600; // 1 hour ago
+        const token = { exp: expiredTime } as any;
+        const result = SessionUtils.isTokenExpired(token);
+        expect(result).toBe(true);
+      });
+
+      it('should return false for valid token', () => {
+        const futureTime = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
+        const token = { exp: futureTime } as any;
+        const result = SessionUtils.isTokenExpired(token);
+        expect(result).toBe(false);
+      });
     });
   });
 });
