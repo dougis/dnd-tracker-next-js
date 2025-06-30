@@ -8,14 +8,20 @@ import { screen } from '@testing-library/react';
 /**
  * Assert that an element has expected CSS classes
  */
-export const assertHasClasses = (element: Element | null, classes: string[]) => {
+export const assertHasClasses = (
+  element: Element | null,
+  classes: string[]
+) => {
   expect(element).toHaveClass(...classes);
 };
 
 /**
  * Assert navigation link has correct href
  */
-export const assertNavigationLink = (linkText: string, expectedHref: string) => {
+export const assertNavigationLink = (
+  linkText: string,
+  expectedHref: string
+) => {
   const link = screen.getByText(linkText).closest('a');
   expect(link).toHaveAttribute('href', expectedHref);
   return link;
@@ -24,7 +30,10 @@ export const assertNavigationLink = (linkText: string, expectedHref: string) => 
 /**
  * Assert SVG icon properties
  */
-export const assertSvgIcon = (element: Element | null, expectedClasses: string[] = ['h-5', 'w-5']) => {
+export const assertSvgIcon = (
+  element: Element | null,
+  expectedClasses: string[] = ['h-5', 'w-5']
+) => {
   const icon = element?.querySelector('svg');
   expect(icon).toBeInTheDocument();
   expect(icon).toHaveClass(...expectedClasses);
@@ -64,7 +73,10 @@ export const assertNavigationItems = (expectedItems: string[]) => {
 /**
  * Assert active navigation state
  */
-export const assertActiveNavigation = (activeItemText: string, activeClasses = ['bg-primary', 'text-primary-foreground']) => {
+export const assertActiveNavigation = (
+  activeItemText: string,
+  activeClasses = ['bg-primary', 'text-primary-foreground']
+) => {
   const activeLink = screen.getByText(activeItemText).closest('a');
   expect(activeLink).toHaveClass(...activeClasses);
   return activeLink;
@@ -73,7 +85,10 @@ export const assertActiveNavigation = (activeItemText: string, activeClasses = [
 /**
  * Assert inactive navigation state
  */
-export const assertInactiveNavigation = (itemText: string, inactiveClasses = ['text-muted-foreground']) => {
+export const assertInactiveNavigation = (
+  itemText: string,
+  inactiveClasses = ['text-muted-foreground']
+) => {
   const inactiveLink = screen.getByText(itemText).closest('a');
   expect(inactiveLink).toHaveClass(...inactiveClasses);
   expect(inactiveLink).not.toHaveClass('bg-primary');
