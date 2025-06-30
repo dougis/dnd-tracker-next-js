@@ -52,7 +52,7 @@ export function testRuleWithValues(
 /**
  * Helper to mock FormData for testing extractFormData
  */
-export function mockFormData(entries: [string, string][]): void {
+export function mockFormData(entries: [string, string][]): typeof FormData {
   const mockMap = new Map(entries);
 
   const originalFormData = global.FormData;

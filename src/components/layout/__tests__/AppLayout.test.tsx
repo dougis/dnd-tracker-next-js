@@ -236,7 +236,7 @@ describe('AppLayout', () => {
 
       const header = screen.getByRole('banner');
       expect(header).toBeInTheDocument();
-      expect(header).toHaveClass('sticky', 'top-0', 'z-40', 'border-b', 'border-border', 'bg-card/80', 'backdrop-blur-sm');
+      expect(header).toHaveClass('sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur-sm');
     });
 
     test('header contains breadcrumbs in flex-1 container', () => {
@@ -256,7 +256,7 @@ describe('AppLayout', () => {
       render(<AppLayout>{mockChildren}</AppLayout>);
 
       const userButton = screen.getByRole('button', { name: '' }); // SVG button
-      expect(userButton).toHaveClass('rounded-full', 'bg-primary', 'p-2', 'text-primary-foreground');
+      expect(userButton).toHaveClass('rounded-full bg-primary p-2 text-primary-foreground');
     });
   });
 
@@ -278,7 +278,7 @@ describe('AppLayout', () => {
 
       const mainElement = screen.getByRole('main');
       expect(mainElement).toBeInTheDocument();
-      expect(mainElement).toHaveClass('flex-1', 'overflow-auto');
+      expect(mainElement).toHaveClass('flex-1 overflow-auto');
     });
 
     test('header has proper role', () => {
@@ -302,7 +302,7 @@ describe('AppLayout', () => {
       const svg = mobileMenuButton.querySelector('svg');
 
       expect(svg).toBeInTheDocument();
-      expect(svg).toHaveClass('h-6', 'w-6');
+      expect(svg).toHaveClass('h-6 w-6');
       expect(svg).toHaveAttribute('viewBox', '0 0 24 24');
     });
   });
