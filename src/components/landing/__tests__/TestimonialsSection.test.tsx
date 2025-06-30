@@ -19,10 +19,8 @@ jest.mock('../TestimonialCard', () => ({
 }));
 
 describe('TestimonialsSection Component', () => {
-  let renderedComponent: any;
-
   beforeEach(() => {
-    renderedComponent = renderComponent(TestimonialsSection);
+    renderComponent(TestimonialsSection);
   });
 
   it('renders section heading about user testimonials and social proof', () => {
