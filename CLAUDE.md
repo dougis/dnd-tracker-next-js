@@ -454,4 +454,5 @@ All comprehensive project documentation is in the `docs/` folder:
 ### Workflow Memories
 
 - Always check the status of any opened PR and merge if all checks pass
-- Always run `npm run lint:fix` before committing code~
+- Always run `npm run lint:fix` before committing code
+- Always run `npm run lint:fix` and `npm run test:ci` before pushing code to remote, if any test fails it must be fixed
