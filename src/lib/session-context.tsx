@@ -3,7 +3,7 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
 import { Session } from 'next-auth';
-import { hasRequiredTier, getUserTier, getUserId, getUserEmail } from './session-shared';
+import { hasRequiredTier, getUserTier, extractUserId, extractUserEmail } from './session-shared';
 
 /**
  * Session context type definition
@@ -43,8 +43,8 @@ interface SessionContextProviderProps {
  */
 function extractUserInfo(session: Session | null) {
   return {
-    userId: session?.user ? getUserId(session.user) : null,
-    userEmail: session?.user ? getUserEmail(session.user) : null,
+    userId: session?.user ? extractUserId(session.user) : null,
+    userEmail: session?.user ? extractUserEmail(session.user) : null,
     userName: session?.user?.name || null,
     subscriptionTier: session?.user ? getUserTier(session.user) : 'free',
   };

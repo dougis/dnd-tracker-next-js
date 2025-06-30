@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken, JWT } from 'next-auth/jwt';
-import { hasRequiredTier, getUserTier, getUserId, getUserEmail } from './session-shared';
+import { hasRequiredTier, getUserTier, extractUserId, extractUserEmail } from './session-shared';
 
 /**
  * List of protected API route prefixes that require authentication
@@ -186,7 +186,7 @@ export class SessionUtils {
    */
   static getUserId(token: JWT | null): string | null {
     if (!token) return null;
-    return getUserId(token);
+    return extractUserId(token);
   }
 
   /**
@@ -194,7 +194,7 @@ export class SessionUtils {
    */
   static getUserEmail(token: JWT | null): string | null {
     if (!token) return null;
-    return getUserEmail(token);
+    return extractUserEmail(token);
   }
 
   /**

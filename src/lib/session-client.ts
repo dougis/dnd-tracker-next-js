@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Session } from 'next-auth';
-import { hasRequiredTier, getUserTier, getUserId, getUserEmail } from './session-shared';
+import { hasRequiredTier, getUserTier, extractUserId, extractUserEmail } from './session-shared';
 
 /**
  * Authentication state interface
@@ -132,7 +132,7 @@ export class ClientSessionUtils {
    */
   static getUserId(session: Session | null): string | null {
     if (!session?.user) return null;
-    return getUserId(session.user);
+    return extractUserId(session.user);
   }
 
   /**
@@ -140,7 +140,7 @@ export class ClientSessionUtils {
    */
   static getUserEmail(session: Session | null): string | null {
     if (!session?.user) return null;
-    return getUserEmail(session.user);
+    return extractUserEmail(session.user);
   }
 
   /**
