@@ -1,25 +1,10 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { HeroSection } from '../HeroSection';
+import { mockNextLink, mockButton, getSection, expectSemanticStructure } from './test-utils';
 
-// Mock next/link
-jest.mock('next/link', () => {
-  return function MockLink({ children, href }: { children: React.ReactNode; href: string }) {
-    return <a href={href}>{children}</a>;
-  };
-});
-
-// Mock the Button component
-jest.mock('@/components/ui/button', () => ({
-  Button: ({ children, size, variant, className }: any) => (
-    <div
-      className={`btn ${size || ''} ${variant || ''} ${className || ''}`}
-      data-testid="button"
-    >
-      {children}
-    </div>
-  ),
-}));
+mockNextLink();
+mockButton();
 
 describe('HeroSection Component', () => {
   it('renders compelling headline for D&D Encounter Tracker', () => {
@@ -72,16 +57,16 @@ describe('HeroSection Component', () => {
     const container = screen.getByRole('heading', { level: 1 }).closest('section');
     expect(container).toHaveClass('container', 'mx-auto', 'px-4', 'py-16');
 
-    // Check button container responsive layout - find the parent container div
-    const buttonContainer = screen.getByText('Get Started Free').closest('div')?.parentElement;
+    // Check button container responsive layout - find the direct container div
+    const buttonContainer = screen.getByText('Get Started Free').closest('div');
     expect(buttonContainer).toHaveClass('flex', 'flex-col', 'sm:flex-row', 'gap-4');
   });
 
   it('has proper semantic structure for accessibility and SEO', () => {
     render(<HeroSection />);
 
-    // Check section element
-    expect(screen.getByRole('heading', { level: 1 }).closest('section')).toBeInTheDocument();
+    const section = getSection(screen, 1);
+    expectSemanticStructure(section);
 
     // Check heading hierarchy
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();

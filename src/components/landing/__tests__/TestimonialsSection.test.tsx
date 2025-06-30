@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { TestimonialsSection } from '../TestimonialsSection';
+import { getSection, expectResponsiveLayout, expectSemanticStructure } from './test-utils';
 
 // Mock the TestimonialCard component
 jest.mock('../TestimonialCard', () => ({
@@ -79,8 +80,9 @@ describe('TestimonialsSection Component', () => {
   it('uses responsive layout for testimonial display', () => {
     render(<TestimonialsSection />);
 
-    const section = screen.getByRole('heading', { level: 2 }).closest('section');
-    expect(section).toHaveClass('container', 'mx-auto', 'px-4', 'py-16');
+    const section = getSection(screen);
+    expectResponsiveLayout(section);
+    expect(section).toHaveClass('py-16');
 
     // Should have responsive grid or layout for testimonials
     const testimonialsGrid = section?.querySelector('.grid');
@@ -134,8 +136,7 @@ describe('TestimonialsSection Component', () => {
   it('has proper semantic structure for accessibility', () => {
     render(<TestimonialsSection />);
 
-    const section = screen.getByRole('heading', { level: 2 }).closest('section');
-    expect(section).toBeInTheDocument();
-    expect(section?.tagName.toLowerCase()).toBe('section');
+    const section = getSection(screen);
+    expectSemanticStructure(section);
   });
 });

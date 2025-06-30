@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { FeaturesSection } from '../FeaturesSection';
+import { getSection, expectResponsiveLayout, expectSemanticStructure } from './test-utils';
 
 // Mock the FeatureIcon component
 jest.mock('../FeatureIcon', () => ({
@@ -71,8 +72,9 @@ describe('FeaturesSection Component', () => {
   it('implements responsive grid layout for different screen sizes', () => {
     render(<FeaturesSection />);
 
-    const section = screen.getByRole('heading', { level: 2 }).closest('section');
-    expect(section).toHaveClass('container', 'mx-auto', 'px-4', 'py-16');
+    const section = getSection(screen);
+    expectResponsiveLayout(section);
+    expect(section).toHaveClass('py-16');
 
     // Should have grid layout for features
     const featuresGrid = section?.querySelector('.grid');
@@ -115,8 +117,7 @@ describe('FeaturesSection Component', () => {
   it('has proper semantic structure for accessibility', () => {
     render(<FeaturesSection />);
 
-    const section = screen.getByRole('heading', { level: 2 }).closest('section');
-    expect(section).toBeInTheDocument();
-    expect(section?.tagName.toLowerCase()).toBe('section');
+    const section = getSection(screen);
+    expectSemanticStructure(section);
   });
 });

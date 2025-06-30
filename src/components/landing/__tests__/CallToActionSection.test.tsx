@@ -1,25 +1,10 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { CallToActionSection } from '../CallToActionSection';
+import { mockNextLink, mockButton, getSection, expectResponsiveLayout, expectSemanticStructure } from './test-utils';
 
-// Mock next/link
-jest.mock('next/link', () => {
-  return function MockLink({ children, href }: { children: React.ReactNode; href: string }) {
-    return <a href={href}>{children}</a>;
-  };
-});
-
-// Mock the Button component
-jest.mock('@/components/ui/button', () => ({
-  Button: ({ children, size, variant, className }: any) => (
-    <div
-      className={`btn ${size || ''} ${variant || ''} ${className || ''}`}
-      data-testid="cta-button"
-    >
-      {children}
-    </div>
-  ),
-}));
+mockNextLink();
+mockButton('cta-button');
 
 describe('CallToActionSection Component', () => {
   it('renders compelling final call-to-action heading', () => {
@@ -115,16 +100,15 @@ describe('CallToActionSection Component', () => {
   it('has proper semantic structure for accessibility', () => {
     render(<CallToActionSection />);
 
-    const section = screen.getByRole('heading', { level: 2 }).closest('section');
-    expect(section).toBeInTheDocument();
-    expect(section?.tagName.toLowerCase()).toBe('section');
+    const section = getSection(screen);
+    expectSemanticStructure(section);
   });
 
   it('implements responsive design for mobile conversion optimization', () => {
     render(<CallToActionSection />);
 
-    const section = screen.getByRole('heading', { level: 2 }).closest('section');
-    expect(section).toHaveClass('container', 'mx-auto', 'px-4');
+    const section = getSection(screen);
+    expectResponsiveLayout(section);
 
     // Button container should be responsive - find the parent container div
     const buttonContainer = screen.getByText(/get.*started/i).closest('div')?.parentElement;
