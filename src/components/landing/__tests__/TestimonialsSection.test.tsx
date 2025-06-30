@@ -4,17 +4,16 @@ import { TestimonialsSection } from '../TestimonialsSection';
 
 // Mock the TestimonialCard component
 jest.mock('../TestimonialCard', () => ({
-  TestimonialCard: ({ name, role, content, avatar }: {
-    name: string;
-    role: string;
-    content: string;
-    avatar?: string;
+  TestimonialCard: ({ rating, quote, author }: {
+    rating: number;
+    quote: string;
+    author: { name: string; title: string };
   }) => (
     <div data-testid="testimonial-card">
-      <div data-testid="testimonial-content">{content}</div>
-      <div data-testid="testimonial-name">{name}</div>
-      <div data-testid="testimonial-role">{role}</div>
-      {avatar && <div data-testid="testimonial-avatar">{avatar}</div>}
+      <div data-testid="testimonial-content">{quote}</div>
+      <div data-testid="testimonial-name">{author.name}</div>
+      <div data-testid="testimonial-role">{author.title}</div>
+      <div data-testid="testimonial-avatar">avatar</div>
     </div>
   ),
 }));

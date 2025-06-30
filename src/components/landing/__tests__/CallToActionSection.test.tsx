@@ -126,8 +126,8 @@ describe('CallToActionSection Component', () => {
     const section = screen.getByRole('heading', { level: 2 }).closest('section');
     expect(section).toHaveClass('container', 'mx-auto', 'px-4');
 
-    // Button container should be responsive
-    const buttonContainer = screen.getByText(/get.*started/i).closest('div');
+    // Button container should be responsive - find the parent container div
+    const buttonContainer = screen.getByText(/get.*started/i).closest('div')?.parentElement;
     expect(buttonContainer).toHaveClass('flex');
   });
 });

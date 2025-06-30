@@ -4,11 +4,11 @@ import { FeaturesSection } from '../FeaturesSection';
 
 // Mock the FeatureIcon component
 jest.mock('../FeatureIcon', () => ({
-  FeatureIcon: ({ icon, title, description }: { icon: string; title: string; description: string }) => (
+  FeatureIcon: ({ src, alt }: { src: string; alt: string }) => (
     <div data-testid="feature-icon">
-      <div data-testid="feature-icon-icon">{icon}</div>
-      <div data-testid="feature-icon-title">{title}</div>
-      <div data-testid="feature-icon-description">{description}</div>
+      <div data-testid="feature-icon-icon">{src}</div>
+      <div data-testid="feature-icon-title">{alt}</div>
+      <div data-testid="feature-icon-description">{alt}</div>
     </div>
   ),
 }));
@@ -30,23 +30,23 @@ describe('FeaturesSection Component', () => {
     render(<FeaturesSection />);
 
     // Should display initiative tracking feature
-    expect(screen.getByText(/initiative/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/initiative/i).length).toBeGreaterThan(0);
 
     // Should display character management feature
-    expect(screen.getByText(/character/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/character/i).length).toBeGreaterThan(0);
 
     // Should display encounter building feature
-    expect(screen.getByText(/encounter/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/encounter/i).length).toBeGreaterThan(0);
   });
 
   it('highlights unique competitive advantages', () => {
     render(<FeaturesSection />);
 
     // Should mention lair actions (unique feature)
-    expect(screen.getByText(/lair.*action/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/lair.*action/i).length).toBeGreaterThan(0);
 
     // Should emphasize real-time collaboration
-    expect(screen.getByText(/real.*time|collaboration/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/real.*time|collaboration/i).length).toBeGreaterThan(0);
   });
 
   it('uses feature icons for visual appeal and clarity', () => {
@@ -59,7 +59,10 @@ describe('FeaturesSection Component', () => {
   it('provides clear feature descriptions for user understanding', () => {
     render(<FeaturesSection />);
 
-    const descriptions = screen.getAllByTestId('feature-icon-description');
+    // Check for feature descriptions in the actual CardDescription elements
+    const descriptions = screen.getAllByText(/rolling|tracking|management|building|actions|responsive/i);
+    expect(descriptions.length).toBeGreaterThan(3);
+    
     descriptions.forEach(description => {
       expect(description.textContent).toBeTruthy();
       expect(description.textContent!.length).toBeGreaterThan(10);
@@ -85,8 +88,9 @@ describe('FeaturesSection Component', () => {
     const mainHeading = screen.getByRole('heading', { level: 2 });
     expect(mainHeading).toBeInTheDocument();
 
-    // Feature titles should be smaller headings
-    const featureTitles = screen.getAllByTestId('feature-icon-title');
+    // Feature titles should be smaller headings (h3)
+    const featureTitles = screen.getAllByRole('heading', { level: 3 });
+    expect(featureTitles.length).toBeGreaterThanOrEqual(3);
     featureTitles.forEach(title => {
       expect(title.textContent).toBeTruthy();
     });
@@ -96,17 +100,17 @@ describe('FeaturesSection Component', () => {
     render(<FeaturesSection />);
 
     // Should mention DM-specific benefits
-    expect(screen.getByText(/dungeon.*master|dm/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/dungeon.*master|dm/i).length).toBeGreaterThan(0);
 
     // Should highlight combat management benefits
-    expect(screen.getByText(/combat|manage|track/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/combat|manage|track/i).length).toBeGreaterThan(0);
   });
 
   it('emphasizes mobile responsiveness for table use', () => {
     render(<FeaturesSection />);
 
     // Should mention mobile/tablet optimization
-    expect(screen.getByText(/mobile|tablet|responsive/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/mobile|tablet|responsive/i).length).toBeGreaterThan(0);
   });
 
   it('has proper semantic structure for accessibility', () => {

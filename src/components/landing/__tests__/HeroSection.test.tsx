@@ -72,8 +72,8 @@ describe('HeroSection Component', () => {
     const container = screen.getByRole('heading', { level: 1 }).closest('section');
     expect(container).toHaveClass('container', 'mx-auto', 'px-4', 'py-16');
 
-    // Check button container responsive layout
-    const buttonContainer = screen.getByText('Get Started Free').closest('div');
+    // Check button container responsive layout - find the parent container div
+    const buttonContainer = screen.getByText('Get Started Free').closest('div')?.parentElement;
     expect(buttonContainer).toHaveClass('flex', 'flex-col', 'sm:flex-row', 'gap-4');
   });
 

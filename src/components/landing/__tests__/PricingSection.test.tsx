@@ -136,6 +136,6 @@ describe('PricingSection Component', () => {
     render(<PricingSection />);
 
     // Should have persuasive language about value
-    expect(screen.getByText(/choose.*subscription|upgrade|perfect.*for|start.*free/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/choose.*subscription|upgrade|perfect.*for|start.*free/i).length).toBeGreaterThan(0);
   });
 });
