@@ -320,6 +320,11 @@ describe('Middleware Route Protection', () => {
         '/characters/:path*',
         '/encounters/:path*',
         '/combat/:path*',
+        '/api/users/:path*',
+        '/api/characters/:path*',
+        '/api/encounters/:path*',
+        '/api/combat/:path*',
+        '/api/parties/:path*',
       ]);
     });
   });
