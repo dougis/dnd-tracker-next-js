@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react';
 import { CallToActionSection } from '../CallToActionSection';
-import { mockNextLink, mockButton, mockCTAButtons, renderComponent, getSection, expectResponsiveLayout, expectSemanticStructure } from './test-utils';
+import { mockNextLink, mockButton, mockCTAButtons, renderComponent, expectResponsiveLayout, expectSemanticStructure } from './test-utils';
 
 mockNextLink();
 mockButton('cta-button');
