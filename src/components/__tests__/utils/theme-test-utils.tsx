@@ -50,13 +50,13 @@ export const resetThemeTestEnvironment = (
   mockMatchMedia: ReturnType<typeof createMockMatchMedia>
 ) => {
   jest.clearAllMocks();
-  
+
   // Reset DOM classes
   document.documentElement.className = '';
-  
+
   // Default localStorage mock behavior
   mockLocalStorage.getItem.mockReturnValue(null);
-  
+
   // Default matchMedia mock behavior
   mockMatchMedia.mockImplementation(getDefaultMatchMediaMock(false));
 };
@@ -114,7 +114,7 @@ export const testLocalStorageError = (
   errorMessage: string
 ) => {
   const consoleSpy = createConsoleSpy();
-  
+
   mockLocalStorage[method].mockImplementation(() => {
     throw new Error(errorMessage);
   });
