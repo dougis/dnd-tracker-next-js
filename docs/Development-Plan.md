@@ -17,7 +17,8 @@
 
 ### 1.2 MVP Scope Definition
 
-The MVP includes 46 GitHub issues organized into 12 weekly development phases, focusing on:
+The MVP includes 46 GitHub issues organized into 12 weekly development
+phases, focusing on:
 
 - Core encounter tracking functionality
 - User authentication and management
@@ -35,6 +36,7 @@ The MVP includes 46 GitHub issues organized into 12 weekly development phases, f
 **Status**: 13 of 13 issues completed and merged
 
 **Achievements:**
+
 - ✅ Next.js 15 project with TypeScript setup
 - ✅ Development environment (ESLint, Prettier, VS Code)
 - ✅ Tailwind CSS and shadcn/ui component library
@@ -46,6 +48,7 @@ The MVP includes 46 GitHub issues organized into 12 weekly development phases, f
 - ✅ User service layer with comprehensive testing
 
 **Foundation Stack Established:**
+
 - Next.js 15 with App Router and TypeScript
 - Tailwind CSS with custom design system
 - shadcn/ui component library
@@ -61,18 +64,21 @@ The MVP includes 46 GitHub issues organized into 12 weekly development phases, f
 **Focus**: User authentication, data models, and core UI patterns
 
 **Week 4 Issues (Priority 1):**
+
 - Issue #10: NextAuth.js authentication setup and configuration
 - Issue #11: User registration and login flows
 - Issue #12: Email verification system implementation
 - Issue #13: Password reset functionality
 
 **Week 5 Issues (Priority 1):**
+
 - Issue #14: MongoDB User model with Mongoose schemas
 - Issue #15: Character data model and validation
 - Issue #16: Encounter data model design
 - Issue #17: User service layer implementation ✅ **COMPLETED**
 
 **Week 6 Issues (Priority 1):**
+
 - Issue #18: Character service layer
 - Issue #19: Encounter service layer
 - Issue #20: Authentication middleware and route protection
@@ -85,6 +91,7 @@ The MVP includes 46 GitHub issues organized into 12 weekly development phases, f
 **Week 7-9 Focus**: Character creation, party management, and multiclass support
 
 **Key Issues:**
+
 - Issue #22: Character creation form with validation
 - Issue #23: Multiclass support implementation
 - Issue #24: Party creation and management
@@ -96,6 +103,7 @@ The MVP includes 46 GitHub issues organized into 12 weekly development phases, f
 **Week 10-12 Focus**: Encounter building, creature library, and CR calculation
 
 **Key Issues:**
+
 - Issue #27: Encounter builder interface
 - Issue #28: Creature library and database
 - Issue #29: CR calculation and encounter balancing
@@ -105,6 +113,7 @@ The MVP includes 46 GitHub issues organized into 12 weekly development phases, f
 ### 2.4 Remaining MVP Issues Summary
 
 **Issues by Week:**
+
 - Week 4: 4 issues (Auth foundation)
 - Week 5: 4 issues (Data models)
 - Week 6: 4 issues (Service layers)
@@ -151,6 +160,7 @@ Each GitHub issue follows this standardized format:
 ### 3.3 Dependency Management
 
 **Critical Dependencies:**
+
 - Auth system (Issues #10-13) → All protected features
 - Data models (Issues #14-16) → Service layers and UI
 - Service layers (Issues #17-19) → Frontend components
@@ -171,6 +181,7 @@ Each GitHub issue follows this standardized format:
 **Focus**: Real-time combat tracking and advanced features
 
 **Key Features:**
+
 - Initiative tracking with dexterity tiebreakers
 - HP/damage tracking with undo functionality
 - Status effect management with timers
@@ -184,6 +195,7 @@ Each GitHub issue follows this standardized format:
 **Focus**: Freemium model implementation and billing
 
 **Key Features:**
+
 - Stripe payment integration
 - Five-tier subscription system
 - Usage tracking and enforcement
@@ -197,6 +209,7 @@ Each GitHub issue follows this standardized format:
 **Focus**: Collaboration, mobile optimization, and integrations
 
 **Key Features:**
+
 - Real-time collaboration for shared campaigns
 - Mobile-responsive interface optimization
 - Import/export with D&D Beyond, Roll20
@@ -210,11 +223,13 @@ Each GitHub issue follows this standardized format:
 ### 5.1 Technical Risks
 
 **High Risk:**
+
 - Authentication integration complexity
 - Real-time collaboration implementation
 - Payment processing integration
 
 **Mitigation:**
+
 - Early prototyping of complex features
 - Incremental implementation with fallbacks
 - Third-party service integration testing
@@ -222,11 +237,13 @@ Each GitHub issue follows this standardized format:
 ### 5.2 Timeline Risks
 
 **Medium Risk:**
+
 - Scope creep beyond MVP requirements
 - Underestimated complexity in combat features
 - Testing and QA bottlenecks
 
 **Mitigation:**
+
 - Strict MVP scope enforcement
 - Weekly progress reviews and estimate adjustments
 - Automated testing and CI/CD pipeline
@@ -234,11 +251,13 @@ Each GitHub issue follows this standardized format:
 ### 5.3 Quality Risks
 
 **Low Risk:**
+
 - Code quality with established standards
 - Performance with optimized architecture
 - Security with NextAuth.js and best practices
 
 **Mitigation:**
+
 - Codacy quality gates on all PRs
 - Performance monitoring from day one
 - Security audit before launch
@@ -298,9 +317,11 @@ Each GitHub issue follows this standardized format:
 
 This consolidated Development Plan was created from the following legacy documents:
 
-- `legacy/12-Week MVP Development Phase Plan.md` - Detailed weekly breakdown and issue assignments
+- `legacy/12-Week MVP Development Phase Plan.md` - Detailed weekly breakdown
+  and issue assignments
 - `legacy/GitHub Issues Update Guide - Phase Assignments.md` - Issue management standards
-- `legacy/Complete GitHub Issues Update Script.md` - Complete issue descriptions and CLI commands
+- `legacy/Complete GitHub Issues Update Script.md` - Complete issue
+  descriptions and CLI commands
 - `legacy/Project Roadmap.md` - Long-term feature roadmap and post-MVP planning
 
 **Last Updated:** June 30, 2025  

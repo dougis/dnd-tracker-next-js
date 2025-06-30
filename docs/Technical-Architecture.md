@@ -382,11 +382,14 @@ POST   /api/webhooks/stripe
 Our ESLint setup has been optimized to work harmoniously with Codacy static analysis:
 
 **Resolved Conflicts:**
-- Added `prettier` extension to ESLint config to disable conflicting formatting rules
+
+- Added `prettier` extension to ESLint config to disable conflicting
+  formatting rules
 - Removed `padded-blocks` and `indent` rules that conflicted with Prettier
 - Maintained 2-space indentation consistency across all tools
 
 **ESLint Rules Covered by Codacy:**
+
 - `no-irregular-whitespace` - Error level detection
 - `no-regex-spaces` - Warning level detection  
 - `no-multiple-empty-lines` - Formatting rules coverage
@@ -395,12 +398,14 @@ Our ESLint setup has been optimized to work harmoniously with Codacy static anal
 - `no-unused-vars` - Standard ESLint rules
 
 **Custom ESLint Rules (Not covered by Codacy):**
+
 - `eol-last` (Warning) - File consistency and Git diff cleanliness
 - `padding-line-between-statements` (Warning) - Code readability
 - `lines-between-class-members` (Error) - Class formatting
 - `lines-around-comment` (Warning) - Comment formatting
 
 **Tool Priority Order:**
+
 1. **Codacy** - Primary static analysis and quality gates
 2. **ESLint** - Code quality and custom project rules  
 3. **Prettier** - Code formatting (integrated with ESLint)
@@ -462,11 +467,15 @@ Our ESLint setup has been optimized to work harmoniously with Codacy static anal
 
 ## Appendix: Source Documents
 
-This consolidated Technical Architecture document was created from the following legacy documents:
+This consolidated Technical Architecture document was created from the
+following legacy documents:
 
-- `legacy/High Level Design.md` - Complete technical architecture and system design
-- `legacy/High Level Design Document.md` - Earlier architecture version (superseded)
-- `legacy/ESLint-Codacy-Configuration-Analysis.md` - Development standards and tool configuration
+- `legacy/High Level Design.md` - Complete technical architecture and
+  system design
+- `legacy/High Level Design Document.md` - Earlier architecture version
+  (superseded)
+- `legacy/ESLint-Codacy-Configuration-Analysis.md` - Development standards
+  and tool configuration
 
 **Last Updated:** June 30, 2025  
 **Document Status:** Current and comprehensive

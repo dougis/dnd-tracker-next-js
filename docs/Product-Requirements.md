@@ -15,9 +15,11 @@ monetize advanced features while providing a robust free tier for new users.
 ## 2. Scope
 
 - **Core Features**: Party/encounter management, initiative and combat tracking
-- **Monetization**: Multi-tier subscription system with usage limits and premium features
+- **Monetization**: Multi-tier subscription system with usage limits and
+  premium features
 - **Data Management**: Cloud sync, automated backups, and data persistence
-- **User Management**: Account creation, subscription management, and billing integration
+- **User Management**: Account creation, subscription management, and billing
+  integration
 
 ## 3. Subscription Tiers & Monetization Strategy
 
@@ -109,38 +111,47 @@ monetize advanced features while providing a robust free tier for new users.
 
 ### 4.2 Party Management
 
-- **Character Creation**: Name, race, class(es) with multiclassing support, Dexterity, AC, max/current HP
+- **Character Creation**: Name, race, class(es) with multiclassing support,
+  Dexterity, AC, max/current HP
 - **Player Assignment**: Link characters to player names and contact info
 - **Party Templates**: Save and reuse common party compositions
 - **Import/Export**: Character data import from D&D Beyond, Roll20, etc.
 
 ### 4.3 Encounter Management
 
-- **NPC/Monster Creation**: Name, AC, Dexterity, initiative modifier, HP, legendary actions, lair actions
-- **Creature Library**: Searchable database with filtering by CR, type, source, special abilities
+- **NPC/Monster Creation**: Name, AC, Dexterity, initiative modifier, HP,
+  legendary actions, lair actions
+- **Creature Library**: Searchable database with filtering by CR, type, source,
+  special abilities
 - **Template System**: Save custom creatures as templates for reuse
 - **Encounter Builder**: Drag-and-drop encounter creation with CR calculation
-- **Lair Configuration**: Define lair action triggers, descriptions, and environmental effects
+- **Lair Configuration**: Define lair action triggers, descriptions, and
+  environmental effects
 
 ### 4.4 Initiative & Combat Tracker
 
 - **Initiative Rolling**: Automated or manual initiative input
-- **Smart Sorting**: Initiative > Dexterity > manual override with tie-breaking
+- **Smart Sorting**: Initiative > Dexterity > manual override with
+  tie-breaking
 - **Turn Management**: Clear current turn indication, next/previous controls
 - **Round Tracking**: Automatic round advancement with duration tracking
-- **Lair Action Integration**: Automatic lair action prompts on initiative count 20
+- **Lair Action Integration**: Automatic lair action prompts on initiative
+  count 20
 
 ### 4.5 Combat Management
 
 - **HP Tracking**: Damage/healing with undo functionality
 - **Status Effects**: Comprehensive condition tracking with duration timers
-- **Legendary Actions**: Counter management with action descriptions and usage tracking
-- **Lair Actions**: Automated initiative count 20 triggers with customizable effects
+- **Legendary Actions**: Counter management with action descriptions and usage
+  tracking
+- **Lair Actions**: Automated initiative count 20 triggers with customizable
+  effects
   - Environment-based action descriptions
   - Visual indicators for lair action timing
   - Optional automation for recurring environmental effects
   - Integration with initiative tracker for seamless flow
-- **Combat Log**: Detailed action history with timestamps including lair action usage (premium feature)
+- **Combat Log**: Detailed action history with timestamps including lair action
+  usage (premium feature)
 
 ### 4.6 Data Persistence & Sync
 
@@ -153,8 +164,10 @@ monetize advanced features while providing a robust free tier for new users.
 
 ### 5.1 Onboarding
 
-- **Welcome Flow**: Feature tour highlighting key capabilities including lair actions
-- **Quick Start**: Guided encounter creation for new users with lair action examples
+- **Welcome Flow**: Feature tour highlighting key capabilities including lair
+  actions
+- **Quick Start**: Guided encounter creation for new users with lair action
+  examples
 - **Trial Promotion**: Clear value proposition for premium features
 - **Upgrade Prompts**: Contextual subscription offers when hitting limits
 
@@ -162,7 +175,8 @@ monetize advanced features while providing a robust free tier for new users.
 
 - **Billing Dashboard**: Current plan, usage metrics, billing history
 - **Plan Comparison**: Feature matrix with clear upgrade benefits
-- **Payment Integration**: Stripe/PayPal integration with saved payment methods
+- **Payment Integration**: Stripe/PayPal integration with saved payment
+  methods
 - **Cancellation Flow**: Retention offers and feedback collection
 
 ### 5.3 Responsive Design
@@ -175,8 +189,10 @@ monetize advanced features while providing a robust free tier for new users.
 
 - **Lair Action UX**: Clear visual cues for initiative count 20
 - **Action Notifications**: Prominent alerts when lair actions are available
-- **Quick Actions**: One-click lair action execution with customizable descriptions
-- **Environmental Integration**: Visual themes that reflect lair-specific effects
+- **Quick Actions**: One-click lair action execution with customizable
+  descriptions
+- **Environmental Integration**: Visual themes that reflect lair-specific
+  effects
 
 ## 6. Technical Requirements
 
@@ -207,7 +223,8 @@ monetize advanced features while providing a robust free tier for new users.
 
 - **Framework**: Next.js 15 with TypeScript and App Router
 - **Runtime**: Node.js 22 LTS with Edge Runtime support
-- **Language**: TypeScript 5.0+ for type safety across frontend and backend
+- **Language**: TypeScript 5.0+ for type safety across frontend and
+  backend
 - **Package Manager**: pnpm for efficient dependency management
 
 ### 7.2 Frontend & UI
@@ -236,7 +253,8 @@ monetize advanced features while providing a robust free tier for new users.
 ### 7.5 Authentication & Security
 
 - **Authentication**: NextAuth.js (Auth.js) v5 with JWT strategy
-- **Session Management**: NextAuth.js database sessions with MongoDB adapter
+- **Session Management**: NextAuth.js database sessions with MongoDB
+  adapter
 - **Authorization**: Role-based access control (RBAC) with middleware
 - **Security Headers**: Next.js built-in security headers + Helmet.js
 - **Rate Limiting**: Built-in Next.js rate limiting for API routes
@@ -251,7 +269,8 @@ monetize advanced features while providing a robust free tier for new users.
 ### 7.7 File Storage & CDN
 
 - **File Storage**: Vercel Blob for user uploads and assets
-- **Image Optimization**: Next.js Image component with automatic optimization
+- **Image Optimization**: Next.js Image component with automatic
+  optimization
 - **CDN**: Vercel Edge Network for global content delivery
 - **Static Assets**: Next.js static file serving with caching
 
@@ -276,7 +295,8 @@ monetize advanced features while providing a robust free tier for new users.
 - **Hosting**: Vercel with automatic deployments and preview environments
 - **Version Control**: Git with GitHub integration
 - **CI/CD**: Vercel automatic deployments with GitHub Actions for testing
-- **Environment Management**: Vercel environment variables with preview/production separation
+- **Environment Management**: Vercel environment variables with
+  preview/production separation
 - **Database Migrations**: Custom MongoDB migration scripts via API routes
 
 ### 7.11 Developer Experience
@@ -302,7 +322,8 @@ monetize advanced features while providing a robust free tier for new users.
 - **Feature Adoption**: > 70% of premium users use advanced features
 - **User Engagement**: > 4 sessions per month for active users
 - **NPS Score**: > 50 Net Promoter Score from user surveys
-- **Lair Action Usage**: > 60% of encounters with legendary creatures also use lair actions
+- **Lair Action Usage**: > 60% of encounters with legendary creatures also
+  use lair actions
 
 ### 8.3 Technical Metrics
 
@@ -395,29 +416,35 @@ monetize advanced features while providing a robust free tier for new users.
 
 ### 12.2 Content Integration
 
-- **Official Content**: Licensed D&D monster statblocks with lair actions and encounters
+- **Official Content**: Licensed D&D monster statblocks with lair actions
+  and encounters
 - **Community Content**: User-generated content marketplace for custom lairs
 - **Third-Party APIs**: Integration with D&D Beyond, Roll20, Foundry VTT
 
 ### 12.3 Advanced Features
 
-- **AI-Powered Tools**: Encounter balancing suggestions, automatic statblock generation with lair actions
+- **AI-Powered Tools**: Encounter balancing suggestions, automatic statblock
+  generation with lair actions
 - **Campaign Management**: Session planning, note-taking, story tracking
 - **Analytics Dashboard**: Play style analytics and optimization suggestions
-- **Environmental Effects**: Advanced lair action automation with visual effects
+- **Environmental Effects**: Advanced lair action automation with visual
+  effects
 
 ### 12.4 Lair Action Enhancements
 
 - **Lair Templates**: Pre-built lair configurations for popular monster types
-- **Environmental Animations**: Visual effects that trigger with lair actions
-- **Conditional Lair Actions**: Complex triggers based on HP thresholds or turn counts
+- **Environmental Animations**: Visual effects that trigger with lair
+  actions
+- **Conditional Lair Actions**: Complex triggers based on HP thresholds or
+  turn counts
 - **Lair Evolution**: Dynamic lair actions that change throughout combat
 
 ---
 
 ## Appendix: Source Documents
 
-This consolidated Product Requirements document was created from the following legacy documents:
+This consolidated Product Requirements document was created from the
+following legacy documents:
 
 - `legacy/Product Requirements Document.md` - Complete business and technical requirements
 
