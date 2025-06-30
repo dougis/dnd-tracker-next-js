@@ -385,7 +385,7 @@ describe('ConfirmationDialog Extended Coverage', () => {
 
       const confirmButton = screen.getByText('Confirm');
       await user.click(confirmButton);
-      
+
       expect(onConfirm).toHaveBeenCalled();
     });
 

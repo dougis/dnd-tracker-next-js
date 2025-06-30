@@ -469,7 +469,6 @@ describe('Modal', () => {
   });
 
   it('properly handles overlay click when enabled', async () => {
-    const user = userEvent.setup();
     const handleOpenChange = jest.fn();
 
     render(

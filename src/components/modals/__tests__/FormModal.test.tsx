@@ -30,14 +30,14 @@ jest.mock('../Modal', () => ({
 }));
 
 jest.mock('@/components/forms/FormWrapper', () => ({
-  FormWrapper: ({ children, onSubmit, isSubmitting, className, reset, ...props }: any) => {
+  FormWrapper: ({ children, onSubmit, isSubmitting, className, reset: _reset, ...props }: any) => {
     const handleSubmit = (e: any) => {
       e.preventDefault();
       if (onSubmit) {
         onSubmit({ test: 'data' });
       }
     };
-    
+
     return (
       <form
         data-testid="form-wrapper"
@@ -141,7 +141,7 @@ describe('FormModal', () => {
       renderFormModal({ onSubmit, onOpenChange });
 
       const submitButton = screen.getByTestId('form-submit-button');
-      
+
       await act(async () => {
         await user.click(submitButton);
         // Wait for the async submission to complete
