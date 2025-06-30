@@ -12,7 +12,9 @@ export const assertHasClasses = (
   element: Element | null,
   classes: string[]
 ) => {
-  expect(element).toHaveClass(...classes);
+  classes.forEach(cls => {
+    expect(element).toHaveClass(cls);
+  });
 };
 
 /**
@@ -36,7 +38,9 @@ export const assertSvgIcon = (
 ) => {
   const icon = element?.querySelector('svg');
   expect(icon).toBeInTheDocument();
-  expect(icon).toHaveClass(...expectedClasses);
+  expectedClasses.forEach(cls => {
+    expect(icon).toHaveClass(cls);
+  });
   expect(icon).toHaveAttribute('viewBox', '0 0 24 24');
   return icon;
 };
@@ -53,12 +57,14 @@ export const assertUserProfile = () => {
  * Assert component visibility based on isOpen prop
  */
 export const assertComponentVisibility = (
-  Component: React.ComponentType<any>,
   identifier: string,
   isOpen: boolean
 ) => {
-  const expectMethod = isOpen ? 'toBeInTheDocument' : 'not.toBeInTheDocument';
-  expect(screen.queryByText(identifier))[expectMethod]();
+  if (isOpen) {
+    expect(screen.queryByText(identifier)).toBeInTheDocument();
+  } else {
+    expect(screen.queryByText(identifier)).not.toBeInTheDocument();
+  }
 };
 
 /**
@@ -78,7 +84,9 @@ export const assertActiveNavigation = (
   activeClasses = ['bg-primary', 'text-primary-foreground']
 ) => {
   const activeLink = screen.getByText(activeItemText).closest('a');
-  expect(activeLink).toHaveClass(...activeClasses);
+  activeClasses.forEach(cls => {
+    expect(activeLink).toHaveClass(cls);
+  });
   return activeLink;
 };
 
@@ -90,7 +98,9 @@ export const assertInactiveNavigation = (
   inactiveClasses = ['text-muted-foreground']
 ) => {
   const inactiveLink = screen.getByText(itemText).closest('a');
-  expect(inactiveLink).toHaveClass(...inactiveClasses);
+  inactiveClasses.forEach(cls => {
+    expect(inactiveLink).toHaveClass(cls);
+  });
   expect(inactiveLink).not.toHaveClass('bg-primary');
   return inactiveLink;
 };
