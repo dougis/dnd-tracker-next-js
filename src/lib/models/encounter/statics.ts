@@ -1,6 +1,9 @@
 import { Types } from 'mongoose';
 import { z } from 'zod';
-import { encounterStatusSchema, encounterDifficultySchema } from '../../validations/encounter';
+import {
+  encounterStatusSchema,
+  encounterDifficultySchema,
+} from '../../validations/encounter';
 import { IEncounter, CreateEncounterInput } from './interfaces';
 import { createDefaultEncounterSettings } from './utils';
 
@@ -32,9 +35,12 @@ export function findPublic(this: any): Promise<IEncounter[]> {
   return this.find({ isPublic: true }).sort({ updatedAt: -1 });
 }
 
-export function searchByName(this: any, searchTerm: string): Promise<IEncounter[]> {
+export function searchByName(
+  this: any,
+  searchTerm: string
+): Promise<IEncounter[]> {
   return this.find({
-    $text: { $search: searchTerm }
+    $text: { $search: searchTerm },
   }).sort({ score: { $meta: 'textScore' } });
 }
 
@@ -45,13 +51,18 @@ export function findByDifficulty(
   return this.find({ difficulty }).sort({ updatedAt: -1 });
 }
 
-export function findByTargetLevel(this: any, level: number): Promise<IEncounter[]> {
+export function findByTargetLevel(
+  this: any,
+  level: number
+): Promise<IEncounter[]> {
   return this.find({ targetLevel: level }).sort({ updatedAt: -1 });
 }
 
 // eslint-disable-next-line no-unused-vars
 export function findActive(this: any): Promise<IEncounter[]> {
-  return this.find({ 'combatState.isActive': true }).sort({ 'combatState.startedAt': -1 });
+  return this.find({ 'combatState.isActive': true }).sort({
+    'combatState.startedAt': -1,
+  });
 }
 
 export async function createEncounter(
@@ -71,7 +82,9 @@ export async function createEncounter(
       ...createDefaultEncounterSettings(),
       ...encounterData.settings,
     },
-    partyId: encounterData.partyId ? new Types.ObjectId(encounterData.partyId) : undefined,
+    partyId: encounterData.partyId
+      ? new Types.ObjectId(encounterData.partyId)
+      : undefined,
     isPublic: encounterData.isPublic || false,
   });
 

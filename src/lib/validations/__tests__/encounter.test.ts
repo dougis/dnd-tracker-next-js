@@ -147,13 +147,15 @@ describe('Encounter Validation Schemas', () => {
         isActive: true,
         currentRound: 3,
         currentTurn: 1,
-        initiativeOrder: [{
-          participantId: '507f1f77bcf86cd799439011',
-          initiative: 15,
-          dexterity: 14,
-          isActive: true,
-          hasActed: false,
-        }],
+        initiativeOrder: [
+          {
+            participantId: '507f1f77bcf86cd799439011',
+            initiative: 15,
+            dexterity: 14,
+            isActive: true,
+            hasActed: false,
+          },
+        ],
         startedAt: new Date().toISOString(),
         totalDuration: 120000,
       };
@@ -174,19 +176,21 @@ describe('Encounter Validation Schemas', () => {
       ownerId: '507f1f77bcf86cd799439011',
       name: 'Test Encounter',
       description: 'A test encounter',
-      participants: [{
-        characterId: '507f1f77bcf86cd799439012',
-        name: 'Test Character',
-        type: 'pc' as const,
-        maxHitPoints: 100,
-        currentHitPoints: 100,
-        temporaryHitPoints: 0,
-        armorClass: 15,
-        isPlayer: true,
-        isVisible: true,
-        notes: '',
-        conditions: [],
-      }],
+      participants: [
+        {
+          characterId: '507f1f77bcf86cd799439012',
+          name: 'Test Character',
+          type: 'pc' as const,
+          maxHitPoints: 100,
+          currentHitPoints: 100,
+          temporaryHitPoints: 0,
+          armorClass: 15,
+          isPlayer: true,
+          isVisible: true,
+          notes: '',
+          conditions: [],
+        },
+      ],
     };
 
     it('should validate a valid encounter creation', () => {
@@ -324,15 +328,23 @@ describe('Encounter Validation Schemas', () => {
 
     describe('encounterDifficultySchema', () => {
       it('should validate valid difficulty values', () => {
-        expect(encounterDifficultySchema.safeParse('trivial').success).toBe(true);
+        expect(encounterDifficultySchema.safeParse('trivial').success).toBe(
+          true
+        );
         expect(encounterDifficultySchema.safeParse('easy').success).toBe(true);
-        expect(encounterDifficultySchema.safeParse('medium').success).toBe(true);
+        expect(encounterDifficultySchema.safeParse('medium').success).toBe(
+          true
+        );
         expect(encounterDifficultySchema.safeParse('hard').success).toBe(true);
-        expect(encounterDifficultySchema.safeParse('deadly').success).toBe(true);
+        expect(encounterDifficultySchema.safeParse('deadly').success).toBe(
+          true
+        );
       });
 
       it('should reject invalid difficulty values', () => {
-        expect(encounterDifficultySchema.safeParse('impossible').success).toBe(false);
+        expect(encounterDifficultySchema.safeParse('impossible').success).toBe(
+          false
+        );
         expect(encounterDifficultySchema.safeParse('').success).toBe(false);
       });
     });
@@ -349,6 +361,5 @@ describe('Encounter Validation Schemas', () => {
         expect(participantTypeSchema.safeParse('').success).toBe(false);
       });
     });
-
   });
 });

@@ -14,7 +14,10 @@ import {
 } from '../utils';
 import { IInitiativeEntry, IParticipantReference } from '../interfaces';
 import { Types } from 'mongoose';
-import { createTestParticipant, createTestInitiativeEntry } from './test-helpers';
+import {
+  createTestParticipant,
+  createTestInitiativeEntry,
+} from './test-helpers';
 
 describe('Encounter Utils', () => {
   describe('sortInitiativeOrder', () => {
@@ -90,7 +93,10 @@ describe('Encounter Utils', () => {
     it('should return null for non-existent ID', () => {
       const participants: IParticipantReference[] = [];
 
-      const found = findParticipantById(participants, new Types.ObjectId().toString());
+      const found = findParticipantById(
+        participants,
+        new Types.ObjectId().toString()
+      );
       expect(found).toBeNull();
     });
   });
@@ -159,7 +165,7 @@ describe('Encounter Utils', () => {
     beforeEach(() => {
       participant = createTestParticipant({
         currentHitPoints: 100,
-        conditions: ['poisoned']
+        conditions: ['poisoned'],
       });
     });
 
@@ -173,7 +179,9 @@ describe('Encounter Utils', () => {
       it('should not add duplicate condition', () => {
         const result = addConditionToParticipant(participant, 'poisoned');
         expect(result).toBe(false);
-        expect(participant.conditions.filter(c => c === 'poisoned')).toHaveLength(1);
+        expect(
+          participant.conditions.filter(c => c === 'poisoned')
+        ).toHaveLength(1);
       });
     });
 
@@ -244,7 +252,7 @@ describe('Encounter Utils', () => {
   describe('validateParticipantHP', () => {
     it('should cap current HP at maximum', () => {
       const participant: IParticipantReference = createTestParticipant({
-        currentHitPoints: 150
+        currentHitPoints: 150,
       });
 
       validateParticipantHP(participant);
@@ -254,7 +262,7 @@ describe('Encounter Utils', () => {
     it('should ensure temporary HP is not negative', () => {
       const participant: IParticipantReference = createTestParticipant({
         currentHitPoints: 100,
-        temporaryHitPoints: -10
+        temporaryHitPoints: -10,
       });
 
       validateParticipantHP(participant);

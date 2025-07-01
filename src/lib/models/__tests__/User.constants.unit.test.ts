@@ -14,7 +14,7 @@ describe('User Model Constants', () => {
     seasoned: { parties: 3, encounters: 15, characters: 50 },
     expert: { parties: 10, encounters: 50, characters: 200 },
     master: { parties: 25, encounters: 100, characters: 500 },
-    guild: { parties: -1, encounters: -1, characters: -1 } // -1 = unlimited
+    guild: { parties: -1, encounters: -1, characters: -1 }, // -1 = unlimited
   };
 
   describe('SUBSCRIPTION_LIMITS Constant', () => {
@@ -25,7 +25,7 @@ describe('User Model Constants', () => {
           expect.objectContaining({
             parties: expect.any(Number),
             encounters: expect.any(Number),
-            characters: expect.any(Number)
+            characters: expect.any(Number),
           })
         );
       });
@@ -41,7 +41,12 @@ describe('User Model Constants', () => {
     });
 
     it('should have progressive limits (free < seasoned < expert < master)', () => {
-      const progressiveTiers = ['free', 'seasoned', 'expert', 'master'] as const;
+      const progressiveTiers = [
+        'free',
+        'seasoned',
+        'expert',
+        'master',
+      ] as const;
 
       FEATURE_NAMES.forEach(feature => {
         for (let i = 0; i < progressiveTiers.length - 1; i++) {
@@ -128,7 +133,7 @@ describe('User Model Constants', () => {
     it('should support limit checking logic', () => {
       const checkLimit = (
         tier: keyof typeof MOCK_SUBSCRIPTION_LIMITS,
-        feature: keyof typeof MOCK_SUBSCRIPTION_LIMITS[typeof tier],
+        feature: keyof (typeof MOCK_SUBSCRIPTION_LIMITS)[typeof tier],
         currentCount: number
       ): boolean => {
         const limit = MOCK_SUBSCRIPTION_LIMITS[tier][feature];
@@ -151,7 +156,7 @@ describe('User Model Constants', () => {
       const calculateUpgradeBenefit = (
         fromTier: keyof typeof MOCK_SUBSCRIPTION_LIMITS,
         toTier: keyof typeof MOCK_SUBSCRIPTION_LIMITS,
-        feature: keyof typeof MOCK_SUBSCRIPTION_LIMITS[typeof fromTier]
+        feature: keyof (typeof MOCK_SUBSCRIPTION_LIMITS)[typeof fromTier]
       ) => {
         const fromLimit = MOCK_SUBSCRIPTION_LIMITS[fromTier][feature];
         const toLimit = MOCK_SUBSCRIPTION_LIMITS[toTier][feature];
@@ -162,9 +167,15 @@ describe('User Model Constants', () => {
       };
 
       expect(calculateUpgradeBenefit('free', 'seasoned', 'parties')).toBe(2);
-      expect(calculateUpgradeBenefit('free', 'seasoned', 'encounters')).toBe(12);
-      expect(calculateUpgradeBenefit('free', 'seasoned', 'characters')).toBe(40);
-      expect(calculateUpgradeBenefit('master', 'guild', 'parties')).toBe('unlimited');
+      expect(calculateUpgradeBenefit('free', 'seasoned', 'encounters')).toBe(
+        12
+      );
+      expect(calculateUpgradeBenefit('free', 'seasoned', 'characters')).toBe(
+        40
+      );
+      expect(calculateUpgradeBenefit('master', 'guild', 'parties')).toBe(
+        'unlimited'
+      );
     });
   });
 
@@ -198,9 +209,15 @@ describe('User Model Constants', () => {
         const limits = MOCK_SUBSCRIPTION_LIMITS[tier];
 
         // Paid tiers should offer significantly more than free
-        expect(limits.parties).toBeGreaterThan(MOCK_SUBSCRIPTION_LIMITS.free.parties);
-        expect(limits.encounters).toBeGreaterThan(MOCK_SUBSCRIPTION_LIMITS.free.encounters);
-        expect(limits.characters).toBeGreaterThan(MOCK_SUBSCRIPTION_LIMITS.free.characters);
+        expect(limits.parties).toBeGreaterThan(
+          MOCK_SUBSCRIPTION_LIMITS.free.parties
+        );
+        expect(limits.encounters).toBeGreaterThan(
+          MOCK_SUBSCRIPTION_LIMITS.free.encounters
+        );
+        expect(limits.characters).toBeGreaterThan(
+          MOCK_SUBSCRIPTION_LIMITS.free.characters
+        );
       });
     });
 
@@ -229,7 +246,7 @@ describe('User Model Constants', () => {
           expect.objectContaining({
             parties: expect.any(Number),
             encounters: expect.any(Number),
-            characters: expect.any(Number)
+            characters: expect.any(Number),
           })
         );
 

@@ -214,48 +214,56 @@ describe('UserServiceLookup', () => {
         try {
           await UserServiceLookup.findUserOrError(input);
         } catch (e) {
+
           /* expected */
         }
 
         try {
           await UserServiceLookup.findUserByIdOrThrow(input);
         } catch (e) {
+
           /* expected */
         }
 
         try {
           await UserServiceLookup.findUserByEmailOrThrow(input);
         } catch (e) {
+
           /* expected */
         }
 
         try {
           await UserServiceLookup.findUserByEmailNullable(input);
         } catch (e) {
+
           /* expected */
         }
 
         try {
           await UserServiceLookup.findUserByResetTokenOrThrow(input);
         } catch (e) {
+
           /* expected */
         }
 
         try {
           await UserServiceLookup.findUserByVerificationTokenOrThrow(input);
         } catch (e) {
+
           /* expected */
         }
 
         try {
           await UserServiceLookup.userExists(input);
         } catch (e) {
+
           /* expected */
         }
 
         try {
           await UserServiceLookup.emailExists(input);
         } catch (e) {
+
           /* expected */
         }
       }

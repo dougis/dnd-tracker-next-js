@@ -26,7 +26,13 @@ describe('TestimonialAvatar Component', () => {
 
   it('applies correct styling to the avatar circle', () => {
     const avatar = screen.getByTestId('testimonial-avatar');
-    expect(avatar).toHaveClass('w-10', 'h-10', 'bg-primary/10', 'rounded-full', 'mr-3');
+    expect(avatar).toHaveClass(
+      'w-10',
+      'h-10',
+      'bg-primary/10',
+      'rounded-full',
+      'mr-3'
+    );
   });
 
   it('applies correct styling to the name', () => {

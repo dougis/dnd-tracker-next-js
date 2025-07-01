@@ -3,10 +3,24 @@ duplication:
         - '**/__tests__/**'
         - '**/*.test.ts'
         - '**/*.test.tsx'
+        - coverage/**
+        - coverage-final/**
+        - coverage-temp/**
+        - .next/**
+        - node_modules/**
+        - dist/**
+        - build/**
 exclude_paths:
     - '**/__tests__/**'
     - '**/*.test.ts'
     - '**/*.test.tsx'
+    - coverage/**
+    - coverage-final/**
+    - coverage-temp/**
+    - .next/**
+    - node_modules/**
+    - dist/**
+    - build/**
 runtimes:
     - java@17.0.10
     - node@22.2.0

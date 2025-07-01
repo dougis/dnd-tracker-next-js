@@ -5,10 +5,7 @@
 
 import { UserService } from '../UserService';
 import { UserServiceProfile } from '../UserServiceProfile';
-import type {
-  PublicUser,
-  SubscriptionTier,
-} from '../../validations/user';
+import type { PublicUser, SubscriptionTier } from '../../validations/user';
 import {
   createMockPublicUser,
   createMockUserProfileUpdate,
@@ -24,7 +21,9 @@ import {
 // Mock UserServiceProfile
 jest.mock('../UserServiceProfile');
 
-const mockUserServiceProfile = UserServiceProfile as jest.Mocked<typeof UserServiceProfile>;
+const mockUserServiceProfile = UserServiceProfile as jest.Mocked<
+  typeof UserServiceProfile
+>;
 
 describe('UserService Profile Management Operations', () => {
   setupMockClearance();
@@ -112,7 +111,9 @@ describe('UserService Profile Management Operations', () => {
       });
       const expectedResult = createSuccessResult(mockUser);
 
-      mockUserServiceProfile.updateUserProfile.mockResolvedValue(expectedResult);
+      mockUserServiceProfile.updateUserProfile.mockResolvedValue(
+        expectedResult
+      );
 
       const result = await UserService.updateUserProfile(userId, updateData);
 
@@ -126,7 +127,9 @@ describe('UserService Profile Management Operations', () => {
 
     it('should handle update conflicts', async () => {
       const userId = TEST_USER_ID;
-      const updateData = createMockUserProfileUpdate({ email: 'existing@example.com' });
+      const updateData = createMockUserProfileUpdate({
+        email: 'existing@example.com',
+      });
       const expectedError = createUserAlreadyExistsError<PublicUser>();
 
       mockUserServiceProfile.updateUserProfile.mockResolvedValue(expectedError);
@@ -152,7 +155,9 @@ describe('UserService Profile Management Operations', () => {
       });
       const expectedResult = createSuccessResult(mockUser);
 
-      mockUserServiceProfile.updateSubscription.mockResolvedValue(expectedResult);
+      mockUserServiceProfile.updateSubscription.mockResolvedValue(
+        expectedResult
+      );
 
       const result = await UserService.updateSubscription(userId, newTier);
 
@@ -169,7 +174,9 @@ describe('UserService Profile Management Operations', () => {
       const newTier: SubscriptionTier = 'pro';
       const expectedError = createUserNotFoundError<PublicUser>();
 
-      mockUserServiceProfile.updateSubscription.mockResolvedValue(expectedError);
+      mockUserServiceProfile.updateSubscription.mockResolvedValue(
+        expectedError
+      );
 
       const result = await UserService.updateSubscription(userId, newTier);
 
