@@ -42,6 +42,58 @@ export const setupMockClearance = () => {
 // Mock Data Factories
 // ================================
 
+export const createMockCharacterData = (overrides: Partial<CharacterCreation> = {}): CharacterCreation => ({
+  name: 'Test Character',
+  type: 'pc',
+  race: 'human',
+  size: 'medium',
+  classes: [{
+    class: 'fighter',
+    level: 1,
+    hitDie: 10,
+  }],
+  abilityScores: {
+    strength: 16,
+    dexterity: 14,
+    constitution: 15,
+    intelligence: 10,
+    wisdom: 12,
+    charisma: 8,
+  },
+  hitPoints: {
+    maximum: 12,
+    current: 12,
+    temporary: 0,
+  },
+  armorClass: 16,
+  speed: 30,
+  proficiencyBonus: 2,
+  savingThrows: {
+    strength: true,
+    dexterity: false,
+    constitution: true,
+    intelligence: false,
+    wisdom: false,
+    charisma: false,
+  },
+  skills: {
+    'athletics': true,
+    'intimidation': true,
+  },
+  equipment: [{
+    name: 'Chain Mail',
+    quantity: 1,
+    weight: 55,
+    value: 75,
+    equipped: true,
+    magical: false,
+  }],
+  spells: [],
+  backstory: 'A brave warrior seeking adventure.',
+  notes: 'Player prefers tactical combat.',
+  ...overrides,
+});
+
 export const createMockCharacterCreation = (overrides: Partial<CharacterCreation> = {}): CharacterCreation => ({
   name: 'Test Character',
   type: 'pc',
