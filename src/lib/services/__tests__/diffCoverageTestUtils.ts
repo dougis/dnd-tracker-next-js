@@ -4,8 +4,7 @@
  * This covers the method lines for diff coverage without requiring full setup
  */
 export const exerciseMethodForCoverage = async (
-  methodCall: () => Promise<any>,
-  description?: string
+  methodCall: () => Promise<any>
 ): Promise<void> => {
   try {
     await methodCall();
