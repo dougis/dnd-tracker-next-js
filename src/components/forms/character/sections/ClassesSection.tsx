@@ -15,7 +15,7 @@ interface ClassData {
 
 interface ClassesSectionProps {
   value: ClassData[];
-  onChange: (value: ClassData[]) => void;
+  onChange: (_value: ClassData[]) => void;
   errors: Record<string, string>;
 }
 

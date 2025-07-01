@@ -15,7 +15,7 @@ interface BasicInfoData {
 
 interface BasicInfoSectionProps {
   value: BasicInfoData;
-  onChange: (value: BasicInfoData) => void;
+  onChange: (_value: BasicInfoData) => void;
   errors: Record<string, string>;
 }
 

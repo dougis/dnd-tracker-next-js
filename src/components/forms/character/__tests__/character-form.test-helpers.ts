@@ -145,34 +145,34 @@ export const createFormTestHelpers = (
   screen: any,
   userEvent: any
 ): FormTestHelpers => ({
-  async fillBasicInfo(character: TestCharacterData) {
+  async fillBasicInfo(_character: TestCharacterData) {
     const nameField = screen.getByLabelText(/character name/i);
     await userEvent.clear(nameField);
-    await userEvent.type(nameField, character.name);
+    await userEvent.type(nameField, _character.name);
 
     const typeField = screen.getByLabelText(/character type/i);
-    await userEvent.selectOptions(typeField, character.type);
+    await userEvent.selectOptions(typeField, _character.type);
 
     const raceField = screen.getByLabelText(/race/i);
     await userEvent.click(raceField);
-    if (character.race === 'custom' && character.customRace) {
+    if (_character.race === 'custom' && _character.customRace) {
       await userEvent.click(screen.getByText('Custom'));
       const customRaceField = screen.getByLabelText(/custom race name/i);
-      await userEvent.type(customRaceField, character.customRace);
+      await userEvent.type(customRaceField, _character.customRace);
     } else {
-      const raceOption = screen.getByText(new RegExp(character.race as string, 'i'));
+      const raceOption = screen.getByText(new RegExp(_character.race as string, 'i'));
       await userEvent.click(raceOption);
     }
   },
 
-  async fillAbilityScores(scores: TestCharacterData['abilityScores']) {
+  async fillAbilityScores(_scores: TestCharacterData['abilityScores']) {
     const abilities = [
-      { name: 'Strength', value: scores.strength },
-      { name: 'Dexterity', value: scores.dexterity },
-      { name: 'Constitution', value: scores.constitution },
-      { name: 'Intelligence', value: scores.intelligence },
-      { name: 'Wisdom', value: scores.wisdom },
-      { name: 'Charisma', value: scores.charisma },
+      { name: 'Strength', value: _scores.strength },
+      { name: 'Dexterity', value: _scores.dexterity },
+      { name: 'Constitution', value: _scores.constitution },
+      { name: 'Intelligence', value: _scores.intelligence },
+      { name: 'Wisdom', value: _scores.wisdom },
+      { name: 'Charisma', value: _scores.charisma },
     ];
 
     for (const ability of abilities) {
@@ -182,51 +182,51 @@ export const createFormTestHelpers = (
     }
   },
 
-  async fillClasses(classes: TestCharacterData['classes']) {
+  async fillClasses(_classes: TestCharacterData['classes']) {
     // Fill first class (always present)
-    if (classes.length > 0) {
+    if (_classes.length > 0) {
       const classField = screen.getAllByLabelText(/character class/i)[0];
       await userEvent.click(classField);
-      await userEvent.click(screen.getByText(new RegExp(classes[0].className, 'i')));
+      await userEvent.click(screen.getByText(new RegExp(_classes[0].className, 'i')));
 
       const levelField = screen.getAllByLabelText(/level/i)[0];
       await userEvent.clear(levelField);
-      await userEvent.type(levelField, classes[0].level.toString());
+      await userEvent.type(levelField, _classes[0].level.toString());
     }
 
     // Add additional classes
-    for (let i = 1; i < classes.length; i++) {
+    for (let i = 1; i < _classes.length; i++) {
       const addClassButton = screen.getByRole('button', { name: /add class/i });
       await userEvent.click(addClassButton);
 
       const classField = screen.getAllByLabelText(/character class/i)[i];
       await userEvent.click(classField);
-      await userEvent.click(screen.getByText(new RegExp(classes[i].className, 'i')));
+      await userEvent.click(screen.getByText(new RegExp(_classes[i].className, 'i')));
 
       const levelField = screen.getAllByLabelText(/level/i)[i];
       await userEvent.clear(levelField);
-      await userEvent.type(levelField, classes[i].level.toString());
+      await userEvent.type(levelField, _classes[i].level.toString());
     }
   },
 
-  async fillCombatStats(hitPoints: TestCharacterData['hitPoints'], armorClass: number) {
+  async fillCombatStats(_hitPoints: TestCharacterData['hitPoints'], _armorClass: number) {
     const maxHpField = screen.getByLabelText(/maximum hit points/i);
     await userEvent.clear(maxHpField);
-    await userEvent.type(maxHpField, hitPoints.maximum.toString());
+    await userEvent.type(maxHpField, _hitPoints.maximum.toString());
 
     const currentHpField = screen.getByLabelText(/current hit points/i);
     await userEvent.clear(currentHpField);
-    await userEvent.type(currentHpField, hitPoints.current.toString());
+    await userEvent.type(currentHpField, _hitPoints.current.toString());
 
-    if (hitPoints.temporary) {
+    if (_hitPoints.temporary) {
       const tempHpField = screen.getByLabelText(/temporary hit points/i);
       await userEvent.clear(tempHpField);
-      await userEvent.type(tempHpField, hitPoints.temporary.toString());
+      await userEvent.type(tempHpField, _hitPoints.temporary.toString());
     }
 
     const acField = screen.getByLabelText(/armor class/i);
     await userEvent.clear(acField);
-    await userEvent.type(acField, armorClass.toString());
+    await userEvent.type(acField, _armorClass.toString());
   },
 
   async submitForm() {
@@ -234,8 +234,8 @@ export const createFormTestHelpers = (
     await userEvent.click(submitButton);
   },
 
-  expectValidationError(fieldName: string, errorMessage: string) {
-    const errorElement = screen.getByText(new RegExp(errorMessage, 'i'));
+  expectValidationError(_fieldName: string, _errorMessage: string) {
+    const errorElement = screen.getByText(new RegExp(_errorMessage, 'i'));
     expect(errorElement).toBeInTheDocument();
     expect(errorElement).toHaveAttribute('role', 'alert');
   },
@@ -293,7 +293,7 @@ export const expectCharacterPreviewToShow = (screen: any, character: TestCharact
   expect(screen.getByText(new RegExp(character.race as string, 'i'))).toBeInTheDocument();
 
   // Check ability scores in preview
-  Object.entries(character.abilityScores).forEach(([ability, score]) => {
+  Object.entries(character.abilityScores).forEach(([_ability, score]) => {
     expect(screen.getByText(score.toString())).toBeInTheDocument();
   });
 };

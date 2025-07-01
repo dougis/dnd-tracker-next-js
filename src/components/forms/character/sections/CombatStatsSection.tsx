@@ -23,7 +23,7 @@ interface ClassData {
 
 interface CombatStatsSectionProps {
   value: CombatStatsData;
-  onChange: (value: CombatStatsData) => void;
+  onChange: (_value: CombatStatsData) => void;
   errors: Record<string, string>;
   abilityScores: {
     strength: number;

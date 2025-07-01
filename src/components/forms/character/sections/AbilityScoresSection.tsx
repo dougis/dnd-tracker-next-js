@@ -18,7 +18,7 @@ interface AbilityScores {
 
 interface AbilityScoresSectionProps {
   value: AbilityScores;
-  onChange: (value: AbilityScores) => void;
+  onChange: (_value: AbilityScores) => void;
   errors: Record<string, string>;
   showPointBuy?: boolean;
 }
