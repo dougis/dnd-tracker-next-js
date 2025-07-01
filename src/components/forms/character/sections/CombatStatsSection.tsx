@@ -3,7 +3,6 @@
 import React from 'react';
 import { FormInput } from '@/components/forms/FormInput';
 import { FormGroup } from '@/components/forms/FormGroup';
-import { Badge } from '@/components/ui/badge';
 
 interface CombatStatsData {
   hitPoints: {
