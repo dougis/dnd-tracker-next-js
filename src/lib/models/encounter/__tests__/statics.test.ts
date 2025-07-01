@@ -26,18 +26,18 @@ describe('Encounter Static Methods', () => {
   describe('findByOwnerId', () => {
     it('should find encounters by owner ID without shared', async () => {
       const ownerId = new Types.ObjectId();
-      
+
       await findByOwnerId.call(mockModel, ownerId, false);
-      
+
       expect(mockModel.find).toHaveBeenCalledWith({ ownerId });
       expect(mockModel.sort).toHaveBeenCalledWith({ updatedAt: -1 });
     });
 
     it('should find encounters by owner ID with shared', async () => {
       const ownerId = new Types.ObjectId();
-      
+
       await findByOwnerId.call(mockModel, ownerId, true);
-      
+
       expect(mockModel.find).toHaveBeenCalledWith({
         $or: [{ ownerId }, { sharedWith: ownerId }]
       });
@@ -48,7 +48,7 @@ describe('Encounter Static Methods', () => {
   describe('findByStatus', () => {
     it('should find encounters by status', async () => {
       await findByStatus.call(mockModel, 'active');
-      
+
       expect(mockModel.find).toHaveBeenCalledWith({ status: 'active' });
       expect(mockModel.sort).toHaveBeenCalledWith({ updatedAt: -1 });
     });
@@ -57,7 +57,7 @@ describe('Encounter Static Methods', () => {
   describe('findPublic', () => {
     it('should find public encounters', async () => {
       await findPublic.call(mockModel);
-      
+
       expect(mockModel.find).toHaveBeenCalledWith({ isPublic: true });
       expect(mockModel.sort).toHaveBeenCalledWith({ updatedAt: -1 });
     });
@@ -66,7 +66,7 @@ describe('Encounter Static Methods', () => {
   describe('searchByName', () => {
     it('should search encounters by name', async () => {
       await searchByName.call(mockModel, 'dragon');
-      
+
       expect(mockModel.find).toHaveBeenCalledWith({
         $text: { $search: 'dragon' }
       });
@@ -77,7 +77,7 @@ describe('Encounter Static Methods', () => {
   describe('findByDifficulty', () => {
     it('should find encounters by difficulty', async () => {
       await findByDifficulty.call(mockModel, 'hard');
-      
+
       expect(mockModel.find).toHaveBeenCalledWith({ difficulty: 'hard' });
       expect(mockModel.sort).toHaveBeenCalledWith({ updatedAt: -1 });
     });
@@ -86,7 +86,7 @@ describe('Encounter Static Methods', () => {
   describe('findByTargetLevel', () => {
     it('should find encounters by target level', async () => {
       await findByTargetLevel.call(mockModel, 5);
-      
+
       expect(mockModel.find).toHaveBeenCalledWith({ targetLevel: 5 });
       expect(mockModel.sort).toHaveBeenCalledWith({ updatedAt: -1 });
     });
@@ -95,7 +95,7 @@ describe('Encounter Static Methods', () => {
   describe('findActive', () => {
     it('should find active encounters', async () => {
       await findActive.call(mockModel);
-      
+
       expect(mockModel.find).toHaveBeenCalledWith({ 'combatState.isActive': true });
       expect(mockModel.sort).toHaveBeenCalledWith({ 'combatState.startedAt': -1 });
     });
@@ -127,9 +127,9 @@ describe('Encounter Static Methods', () => {
       };
 
       const MockConstructor = jest.fn().mockReturnValue(mockEncounter);
-      
+
       await createEncounter.call(MockConstructor, encounterData);
-      
+
       expect(MockConstructor).toHaveBeenCalledWith(
         expect.objectContaining({
           name: 'Test Encounter',
@@ -175,9 +175,9 @@ describe('Encounter Static Methods', () => {
       };
 
       const MockConstructor = jest.fn().mockReturnValue(mockEncounter);
-      
+
       await createEncounter.call(MockConstructor, encounterData);
-      
+
       expect(MockConstructor).toHaveBeenCalledWith(
         expect.objectContaining({
           name: 'Test Encounter',
