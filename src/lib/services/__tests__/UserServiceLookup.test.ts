@@ -41,7 +41,8 @@ describe('UserServiceLookup', () => {
       const result = await UserServiceLookup.findUserOrError('valid-id');
 
       expect(mockFindById).toHaveBeenCalledWith('valid-id');
-      expect(result.success).toEqual(mockUserData);
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(mockUserData);
     });
 
     it('should return error result when user not found', async () => {
@@ -63,7 +64,8 @@ describe('UserServiceLookup', () => {
         const result = await UserServiceLookup.findUserOrError(id);
 
         if (returnValue) {
-          expect(result.success).toEqual(mockUserData);
+          expect(result.success).toBe(true);
+          expect(result.data).toEqual(mockUserData);
         } else {
           expect(result.error).toBeDefined();
         }
@@ -288,7 +290,8 @@ describe('UserServiceLookup', () => {
         // Test findUserOrError success
         mockFindById.mockResolvedValueOnce(mockUserData);
         const successResult = await UserServiceLookup.findUserOrError(successCase);
-        expect(successResult.success).toEqual(mockUserData);
+        expect(successResult.success).toBe(true);
+        expect(successResult.data).toEqual(mockUserData);
 
         // Test userExists success
         mockFindById.mockResolvedValueOnce(mockUserData);
