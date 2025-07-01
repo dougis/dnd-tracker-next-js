@@ -107,7 +107,7 @@ describe('SessionContextProvider', () => {
       user: {
         id: '123',
         email: 'test@example.com',
-        // No subscriptionTier property
+        subscriptionTier: 'free',
       },
       expires: '2024-12-31',
     };

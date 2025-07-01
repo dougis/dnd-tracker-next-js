@@ -1,32 +1,79 @@
 import mongoose, { Document, Model, Schema, Types } from 'mongoose';
-import { z } from 'zod';
-import { 
-  characterCreationSchema, 
-  characterUpdateSchema,
-  type CharacterClass,
-  type Character as ValidatedCharacter,
-  type CharacterCreation,
-  type CharacterType,
-  type DnDRace,
-  type DnDClass,
-  type AbilityName
-} from '../validations/character';
 
-// Base Character interface from validation schema
-export type ICharacter = CharacterCreation & {
-  _id?: mongoose.Types.ObjectId;
-  ownerId: mongoose.Types.ObjectId; // Maps to userId in our system
-  createdAt?: Date;
-  updatedAt?: Date;
-};
+// Ability name type for calculations
+type AbilityName = 'strength' | 'dexterity' | 'constitution' | 'intelligence' | 'wisdom' | 'charisma';
 
-// Character document interface with instance methods
-export interface ICharacterDocument extends ICharacter, Document {
-  _id: mongoose.Types.ObjectId;
-  
+// Character document interface
+export interface ICharacter extends Document {
+  _id: Types.ObjectId;
+  ownerId: Types.ObjectId;
+  name: string;
+  type: 'pc' | 'npc';
+  race: string;
+  customRace?: string;
+  size: 'tiny' | 'small' | 'medium' | 'large' | 'huge' | 'gargantuan';
+  classes: Array<{
+    class: string;
+    level: number;
+    subclass?: string;
+    hitDie: number;
+  }>;
+  abilityScores: {
+    strength: number;
+    dexterity: number;
+    constitution: number;
+    intelligence: number;
+    wisdom: number;
+    charisma: number;
+  };
+  hitPoints: {
+    maximum: number;
+    current: number;
+    temporary: number;
+  };
+  armorClass: number;
+  speed: number;
+  proficiencyBonus: number;
+  savingThrows: {
+    strength: boolean;
+    dexterity: boolean;
+    constitution: boolean;
+    intelligence: boolean;
+    wisdom: boolean;
+    charisma: boolean;
+  };
+  skills: Map<string, boolean>;
+  equipment: Array<{
+    name: string;
+    quantity: number;
+    weight: number;
+    value: number;
+    description?: string;
+    equipped: boolean;
+    magical: boolean;
+  }>;
+  spells: Array<{
+    name: string;
+    level: number;
+    school: string;
+    castingTime: string;
+    range: string;
+    components: string;
+    duration: string;
+    description: string;
+    isPrepared: boolean;
+  }>;
+  backstory: string;
+  notes: string;
+  imageUrl?: string;
+  isPublic: boolean;
+  partyId?: Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+
   // Computed properties
   readonly level: number;
-  
+
   // Instance methods
   getAbilityModifier(_ability: AbilityName): number;
   getInitiativeModifier(): number;
@@ -40,36 +87,41 @@ export interface ICharacterDocument extends ICharacter, Document {
 }
 
 // Character model interface with static methods
-export interface ICharacterModel extends Model<ICharacterDocument> {
-  findByOwnerId(_ownerId: mongoose.Types.ObjectId): Promise<ICharacterDocument[]>;
-  findByType(_characterType: CharacterType): Promise<ICharacterDocument[]>;
-  findPublic(): Promise<ICharacterDocument[]>;
-  searchByName(_searchTerm: string): Promise<ICharacterDocument[]>;
-  findByClass(_className: DnDClass): Promise<ICharacterDocument[]>;
-  findByRace(_race: DnDRace): Promise<ICharacterDocument[]>;
+export interface CharacterModel extends Model<ICharacter> {
+  findByOwnerId(_ownerId: Types.ObjectId): Promise<ICharacter[]>;
+  findByType(_characterType: 'pc' | 'npc'): Promise<ICharacter[]>;
+  findPublic(): Promise<ICharacter[]>;
+  searchByName(_searchTerm: string): Promise<ICharacter[]>;
+  findByClass(_className: string): Promise<ICharacter[]>;
+  findByRace(_race: string): Promise<ICharacter[]>;
 }
 
 // Summary type for lightweight character data
 export interface CharacterSummary {
-  _id: mongoose.Types.ObjectId;
+  _id: Types.ObjectId;
   name: string;
-  race: DnDRace | string;
-  type: CharacterType;
+  race: string;
+  type: 'pc' | 'npc';
   level: number;
-  classes: CharacterClass[];
+  classes: Array<{
+    class: string;
+    level: number;
+    subclass?: string;
+    hitDie: number;
+  }>;
   hitPoints: {
     maximum: number;
     current: number;
     temporary: number;
   };
   armorClass: number;
-  isPublic?: boolean;
+  isPublic: boolean;
 }
 
 // Mongoose schema definition
-const CharacterSchema = new Schema<ICharacterDocument, ICharacterModel>({
+const characterSchema = new Schema<ICharacter, CharacterModel>({
   ownerId: {
-    type: Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
     index: true
@@ -330,7 +382,7 @@ const CharacterSchema = new Schema<ICharacterDocument, ICharacterModel>({
     index: true
   },
   partyId: {
-    type: Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Party',
     index: true
   }
@@ -346,47 +398,47 @@ const CharacterSchema = new Schema<ICharacterDocument, ICharacterModel>({
 });
 
 // Virtual for total character level
-CharacterSchema.virtual('level').get(function() {
+characterSchema.virtual('level').get(function() {
   return this.classes.reduce((total: number, charClass: any) => total + charClass.level, 0);
 });
 
 // Instance method: Calculate ability modifier
-CharacterSchema.methods.getAbilityModifier = function(ability: AbilityName): number {
+characterSchema.methods.getAbilityModifier = function(ability: AbilityName): number {
   const score = this.abilityScores[ability];
   return Math.floor((score - 10) / 2);
 };
 
 // Instance method: Calculate initiative modifier
-CharacterSchema.methods.getInitiativeModifier = function(): number {
+characterSchema.methods.getInitiativeModifier = function(): number {
   return this.getAbilityModifier('dexterity');
 };
 
 // Instance method: Get effective HP (current + temporary)
-CharacterSchema.methods.getEffectiveHP = function(): number {
+characterSchema.methods.getEffectiveHP = function(): number {
   return this.hitPoints.current + this.hitPoints.temporary;
 };
 
 // Instance method: Check if character is alive
-CharacterSchema.methods.isAlive = function(): boolean {
+characterSchema.methods.isAlive = function(): boolean {
   return this.hitPoints.current > 0;
 };
 
 // Instance method: Check if character is unconscious
-CharacterSchema.methods.isUnconscious = function(): boolean {
+characterSchema.methods.isUnconscious = function(): boolean {
   return this.hitPoints.current <= 0;
 };
 
 // Instance method: Apply damage
-CharacterSchema.methods.takeDamage = function(damage: number): void {
+characterSchema.methods.takeDamage = function(damage: number): void {
   if (damage <= 0) return;
-  
+
   // Apply damage to temporary HP first
   if (this.hitPoints.temporary > 0) {
     const tempDamage = Math.min(damage, this.hitPoints.temporary);
     this.hitPoints.temporary -= tempDamage;
     damage -= tempDamage;
   }
-  
+
   // Apply remaining damage to current HP
   if (damage > 0) {
     this.hitPoints.current = Math.max(0, this.hitPoints.current - damage);
@@ -394,9 +446,9 @@ CharacterSchema.methods.takeDamage = function(damage: number): void {
 };
 
 // Instance method: Heal damage
-CharacterSchema.methods.heal = function(healing: number): void {
+characterSchema.methods.heal = function(healing: number): void {
   if (healing <= 0) return;
-  
+
   this.hitPoints.current = Math.min(
     this.hitPoints.maximum,
     this.hitPoints.current + healing
@@ -404,15 +456,15 @@ CharacterSchema.methods.heal = function(healing: number): void {
 };
 
 // Instance method: Add temporary HP
-CharacterSchema.methods.addTemporaryHP = function(tempHP: number): void {
+characterSchema.methods.addTemporaryHP = function(tempHP: number): void {
   if (tempHP <= 0) return;
-  
+
   // Temporary HP doesn't stack, take the higher value
   this.hitPoints.temporary = Math.max(this.hitPoints.temporary, tempHP);
 };
 
 // Instance method: Get character summary
-CharacterSchema.methods.toSummary = function(): CharacterSummary {
+characterSchema.methods.toSummary = function(): CharacterSummary {
   return {
     _id: this._id,
     name: this.name,
@@ -427,79 +479,66 @@ CharacterSchema.methods.toSummary = function(): CharacterSummary {
 };
 
 // Static method: Find characters by owner ID
-CharacterSchema.statics.findByOwnerId = function(ownerId: mongoose.Types.ObjectId) {
+characterSchema.statics.findByOwnerId = function(ownerId: Types.ObjectId) {
   return this.find({ ownerId }).sort({ name: 1 });
 };
 
 // Static method: Find characters by type
-CharacterSchema.statics.findByType = function(characterType: CharacterType) {
+characterSchema.statics.findByType = function(characterType: 'pc' | 'npc') {
   return this.find({ type: characterType }).sort({ name: 1 });
 };
 
 // Static method: Find public characters
-CharacterSchema.statics.findPublic = function() {
+characterSchema.statics.findPublic = function() {
   return this.find({ isPublic: true }).sort({ name: 1 });
 };
 
 // Static method: Search characters by name
-CharacterSchema.statics.searchByName = function(searchTerm: string) {
+characterSchema.statics.searchByName = function(searchTerm: string) {
   return this.find({
     $text: { $search: searchTerm }
   }).sort({ score: { $meta: 'textScore' } });
 };
 
 // Static method: Find characters by class
-CharacterSchema.statics.findByClass = function(className: DnDClass) {
+characterSchema.statics.findByClass = function(className: string) {
   return this.find({
     'classes.class': className
   }).sort({ name: 1 });
 };
 
 // Static method: Find characters by race
-CharacterSchema.statics.findByRace = function(race: DnDRace) {
+characterSchema.statics.findByRace = function(race: string) {
   return this.find({ race }).sort({ name: 1 });
 };
 
 // Pre-save middleware for validation
-CharacterSchema.pre('save', function(next) {
-  // Validate with Zod schema
-  const validation = this.isNew 
-    ? characterCreationSchema.safeParse(this.toObject())
-    : characterUpdateSchema.safeParse(this.toObject());
-    
-  if (!validation.success) {
-    const error = new Error(`Character validation failed: ${validation.error.message}`);
-    return next(error);
-  }
-  
+characterSchema.pre('save', function(next) {
   // Ensure current HP doesn't exceed maximum
   if (this.hitPoints.current > this.hitPoints.maximum) {
     this.hitPoints.current = this.hitPoints.maximum;
   }
-  
+
   // Ensure temporary HP is not negative
   if (this.hitPoints.temporary < 0) {
     this.hitPoints.temporary = 0;
   }
-  
+
   next();
 });
 
 // Post-save middleware for logging
-CharacterSchema.post('save', function(doc, next) {
+characterSchema.post('save', function(doc, next) {
   console.log(`Character saved: ${doc.name} (ID: ${doc._id})`);
   next();
 });
 
 // Indexes for performance
-CharacterSchema.index({ ownerId: 1, name: 1 });
-CharacterSchema.index({ type: 1, isPublic: 1 });
-CharacterSchema.index({ 'classes.class': 1 });
-CharacterSchema.index({ race: 1 });
-CharacterSchema.index({ partyId: 1 });
+characterSchema.index({ ownerId: 1, name: 1 });
+characterSchema.index({ type: 1, isPublic: 1 });
+characterSchema.index({ 'classes.class': 1 });
+characterSchema.index({ race: 1 });
+characterSchema.index({ partyId: 1 });
 
 // Create and export the model
-export const Character = mongoose.model<ICharacterDocument, ICharacterModel>('Character', CharacterSchema);
-
-// Export types for use in other files
-export type { ICharacter, ICharacterDocument, ICharacterModel, CharacterSummary };
+export const Character = mongoose.model<ICharacter, CharacterModel>('Character', characterSchema);

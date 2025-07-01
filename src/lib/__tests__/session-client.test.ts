@@ -32,6 +32,7 @@ const createMockSession = (overrides = {}) => ({
 const createMockUser = (overrides = {}) => ({
   id: '123',
   email: 'test@example.com',
+  subscriptionTier: 'free',
   ...overrides,
 });
 
@@ -39,7 +40,7 @@ const createSessionWithUser = (userOverrides = {}) =>
   createMockSession({ user: createMockUser(userOverrides) });
 
 // Helper to create session return value for useSession mock
-const createSessionReturn = (session, status = 'authenticated') => ({
+const createSessionReturn = (session: any, status: 'authenticated' | 'loading' | 'unauthenticated' = 'authenticated') => ({
   data: session,
   status,
   update: jest.fn(),

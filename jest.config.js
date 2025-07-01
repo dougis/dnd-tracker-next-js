@@ -46,7 +46,7 @@ const customJestConfig = {
     '^next-auth/jwt$': '<rootDir>/src/__mocks__/next-auth/jwt.js',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(bson|next-auth|@auth)/)',
+    'node_modules/(?!(bson|mongodb|mongoose|next-auth|@auth)/)',
   ],
 };
 

@@ -79,7 +79,8 @@ describe('FeaturesSection Component', () => {
     // Should have grid layout for features
     const featuresGrid = section?.querySelector('.grid');
     expect(featuresGrid).toBeInTheDocument();
-    expect(featuresGrid).toHaveClass('md:grid-cols-2', 'lg:grid-cols-3');
+    expect(featuresGrid).toHaveClass('md:grid-cols-2');
+    expect(featuresGrid).toHaveClass('lg:grid-cols-3');
   });
 
   it('follows proper content hierarchy for readability', () => {

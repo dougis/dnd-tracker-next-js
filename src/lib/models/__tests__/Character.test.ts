@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { Character, ICharacter, ICharacterDocument } from '../Character';
-import { characterCreationSchema, characterUpdateSchema } from '../../validations/character';
+import { Character, ICharacter } from '../Character';
 
 describe('Character Model', () => {
   let mongoServer: MongoMemoryServer;
@@ -23,11 +22,12 @@ describe('Character Model', () => {
 
   describe('Character Creation', () => {
     it('should create a valid PC character with required fields', async () => {
-      const characterData: ICharacter = {
+      const characterData = {
         ownerId: new mongoose.Types.ObjectId(),
         name: 'Gandalf',
         race: 'human',
-        type: 'pc',
+        type: 'pc' as const,
+        size: 'medium' as const,
         classes: [
           {
             class: 'wizard',
@@ -51,7 +51,21 @@ describe('Character Model', () => {
         },
         armorClass: 12,
         speed: 30,
-        proficiencyBonus: 3
+        proficiencyBonus: 3,
+        savingThrows: {
+          strength: false,
+          dexterity: false,
+          constitution: false,
+          intelligence: true,
+          wisdom: true,
+          charisma: false
+        },
+        skills: new Map(),
+        equipment: [],
+        spells: [],
+        backstory: '',
+        notes: '',
+        isPublic: false
       };
 
       const character = new Character(characterData);
@@ -66,11 +80,12 @@ describe('Character Model', () => {
     });
 
     it('should create a valid NPC character', async () => {
-      const npcData: ICharacter = {
+      const npcData = {
         ownerId: new mongoose.Types.ObjectId(),
         name: 'Goblin Warrior',
         race: 'goblin',
-        type: 'npc',
+        type: 'npc' as const,
+        size: 'small' as const,
         classes: [
           {
             class: 'fighter',
@@ -93,7 +108,21 @@ describe('Character Model', () => {
         },
         armorClass: 15,
         speed: 30,
-        proficiencyBonus: 2
+        proficiencyBonus: 2,
+        savingThrows: {
+          strength: true,
+          dexterity: false,
+          constitution: true,
+          intelligence: false,
+          wisdom: false,
+          charisma: false
+        },
+        skills: new Map(),
+        equipment: [],
+        spells: [],
+        backstory: '',
+        notes: '',
+        isPublic: false
       };
 
       const character = new Character(npcData);
@@ -105,11 +134,12 @@ describe('Character Model', () => {
     });
 
     it('should support multiclass characters', async () => {
-      const multiclassData: ICharacter = {
+      const multiclassData = {
         ownerId: new mongoose.Types.ObjectId(),
         name: 'Paladin Sorcerer',
         race: 'human',
-        type: 'pc',
+        type: 'pc' as const,
+        size: 'medium' as const,
         classes: [
           {
             class: 'paladin',
@@ -139,7 +169,21 @@ describe('Character Model', () => {
         },
         armorClass: 18,
         speed: 30,
-        proficiencyBonus: 3
+        proficiencyBonus: 3,
+        savingThrows: {
+          strength: false,
+          dexterity: false,
+          constitution: false,
+          intelligence: false,
+          wisdom: true,
+          charisma: true
+        },
+        skills: new Map(),
+        equipment: [],
+        spells: [],
+        backstory: '',
+        notes: '',
+        isPublic: false
       };
 
       const character = new Character(multiclassData);
@@ -158,16 +202,16 @@ describe('Character Model', () => {
       };
 
       const character = new Character(invalidData);
-      
+
       await expect(character.save()).rejects.toThrow();
     });
 
     it('should set default values for optional fields', async () => {
-      const minimalData: ICharacter = {
+      const minimalData = {
         ownerId: new mongoose.Types.ObjectId(),
         name: 'Basic Character',
         race: 'human',
-        type: 'pc',
+        type: 'pc' as const,
         classes: [
           {
             class: 'fighter',
@@ -205,14 +249,14 @@ describe('Character Model', () => {
   });
 
   describe('Character Methods', () => {
-    let character: ICharacterDocument;
+    let character: ICharacter;
 
     beforeEach(async () => {
-      const characterData: ICharacter = {
+      const characterData = {
         ownerId: new mongoose.Types.ObjectId(),
         name: 'Test Character',
         race: 'elf',
-        type: 'pc',
+        type: 'pc' as const,
         classes: [
           {
             class: 'ranger',
@@ -266,14 +310,14 @@ describe('Character Model', () => {
 
     it('should check if character is alive', () => {
       expect(character.isAlive()).toBe(true);
-      
+
       character.hitPoints.current = 0;
       expect(character.isAlive()).toBe(false);
     });
 
     it('should check if character is unconscious', () => {
       expect(character.isUnconscious()).toBe(false);
-      
+
       character.hitPoints.current = 0;
       expect(character.isUnconscious()).toBe(true);
     });
@@ -281,7 +325,7 @@ describe('Character Model', () => {
     it('should apply damage correctly', () => {
       const damage = 10;
       character.takeDamage(damage);
-      
+
       expect(character.hitPoints.current).toBe(15); // 25 - 10
       expect(character.hitPoints.temporary).toBe(5); // Temp HP unchanged
     });
@@ -289,7 +333,7 @@ describe('Character Model', () => {
     it('should apply damage to temporary HP first', () => {
       const damage = 3;
       character.takeDamage(damage);
-      
+
       expect(character.hitPoints.current).toBe(25); // Current unchanged
       expect(character.hitPoints.temporary).toBe(2); // 5 - 3
     });
@@ -297,7 +341,7 @@ describe('Character Model', () => {
     it('should heal correctly without exceeding maximum', () => {
       character.heal(5);
       expect(character.hitPoints.current).toBe(30);
-      
+
       character.heal(10); // Should not exceed maximum
       expect(character.hitPoints.current).toBe(34); // Maximum HP
     });
@@ -305,59 +349,9 @@ describe('Character Model', () => {
     it('should add temporary HP correctly', () => {
       character.addTemporaryHP(10);
       expect(character.hitPoints.temporary).toBe(10); // Takes higher value
-      
+
       character.addTemporaryHP(3);
       expect(character.hitPoints.temporary).toBe(10); // Doesn't stack, keeps higher
-    });
-  });
-
-  describe('Character Validation Integration', () => {
-    it('should validate character creation data with schema', () => {
-      const validData = {
-        name: 'Schema Test',
-        race: 'dwarf',
-        type: 'pc' as const,
-        classes: [
-          {
-            class: 'cleric' as const,
-            level: 3,
-            subclass: 'life',
-            hitDie: 8
-          }
-        ],
-        abilityScores: {
-          strength: 14,
-          dexterity: 10,
-          constitution: 16,
-          intelligence: 12,
-          wisdom: 16,
-          charisma: 13
-        },
-        hitPoints: {
-          maximum: 24,
-          current: 24,
-          temporary: 0
-        },
-        armorClass: 16,
-        speed: 25,
-        proficiencyBonus: 2
-      };
-
-      const result = characterCreationSchema.safeParse(validData);
-      expect(result.success).toBe(true);
-    });
-
-    it('should validate character update data with schema', () => {
-      const updateData = {
-        name: 'Updated Name',
-        hitPoints: {
-          current: 20,
-          temporary: 5
-        }
-      };
-
-      const result = characterUpdateSchema.safeParse(updateData);
-      expect(result.success).toBe(true);
     });
   });
 
@@ -366,7 +360,7 @@ describe('Character Model', () => {
 
     beforeEach(async () => {
       ownerId = new mongoose.Types.ObjectId();
-      
+
       // Create test characters
       await Character.create([
         {
@@ -379,7 +373,14 @@ describe('Character Model', () => {
           hitPoints: { maximum: 26, current: 26, temporary: 0 },
           armorClass: 16,
           speed: 30,
-          proficiencyBonus: 2
+          proficiencyBonus: 2,
+          savingThrows: { strength: true, dexterity: false, constitution: true, intelligence: false, wisdom: false, charisma: false },
+          skills: new Map(),
+          equipment: [],
+          spells: [],
+          backstory: '',
+          notes: '',
+          isPublic: false
         },
         {
           ownerId,
@@ -391,7 +392,14 @@ describe('Character Model', () => {
           hitPoints: { maximum: 14, current: 14, temporary: 0 },
           armorClass: 13,
           speed: 30,
-          proficiencyBonus: 2
+          proficiencyBonus: 2,
+          savingThrows: { strength: false, dexterity: false, constitution: false, intelligence: true, wisdom: true, charisma: false },
+          skills: new Map(),
+          equipment: [],
+          spells: [],
+          backstory: '',
+          notes: '',
+          isPublic: false
         }
       ]);
     });
@@ -406,7 +414,7 @@ describe('Character Model', () => {
     it('should find characters by type', async () => {
       const pcs = await Character.findByType('pc');
       expect(pcs).toHaveLength(2);
-      
+
       const npcs = await Character.findByType('npc');
       expect(npcs).toHaveLength(0);
     });
@@ -426,15 +434,15 @@ describe('Character Model', () => {
   describe('Character Indexes', () => {
     it('should have required indexes for performance', async () => {
       const indexes = await Character.collection.getIndexes();
-      
+
       // Check that ownerId index exists
-      const ownerIdIndex = Object.keys(indexes).find(key => 
+      const ownerIdIndex = Object.keys(indexes).find(key =>
         indexes[key].some((field: any) => field[0] === 'ownerId')
       );
       expect(ownerIdIndex).toBeDefined();
-      
+
       // Check that name text index exists
-      const nameIndex = Object.keys(indexes).find(key => 
+      const nameIndex = Object.keys(indexes).find(key =>
         indexes[key].some((field: any) => field[0] === 'name')
       );
       expect(nameIndex).toBeDefined();

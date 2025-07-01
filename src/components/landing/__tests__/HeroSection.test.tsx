@@ -45,10 +45,14 @@ describe('HeroSection Component', () => {
     render(<HeroSection />);
 
     const headline = screen.getByRole('heading', { level: 1 });
-    expect(headline).toHaveClass('text-4xl', 'md:text-6xl', 'font-fantasy', 'font-bold');
+    expect(headline).toHaveClass('text-4xl');
+    expect(headline).toHaveClass('md:text-6xl');
+    expect(headline).toHaveClass('font-fantasy');
+    expect(headline).toHaveClass('font-bold');
 
     const valueProposition = screen.getByText(/The ultimate D&D Encounter Tracker/);
-    expect(valueProposition).toHaveClass('text-xl', 'text-muted-foreground');
+    expect(valueProposition).toHaveClass('text-xl');
+    expect(valueProposition).toHaveClass('text-muted-foreground');
   });
 
   it('implements responsive design for mobile and desktop', () => {
@@ -56,7 +60,10 @@ describe('HeroSection Component', () => {
 
     // Check container responsive classes
     const container = screen.getByRole('heading', { level: 1 }).closest('section');
-    expect(container).toHaveClass('container', 'mx-auto', 'px-4', 'py-16');
+    expect(container).toHaveClass('container');
+    expect(container).toHaveClass('mx-auto');
+    expect(container).toHaveClass('px-4');
+    expect(container).toHaveClass('py-16');
 
     // Check button container responsive layout - CTA buttons should be present
     expect(screen.getByText('Get Started Free')).toBeInTheDocument();
