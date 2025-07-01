@@ -1,23 +1,22 @@
 /**
  * Comprehensive Character Service Tests
- * 
+ *
  * Tests all major functionality of the CharacterService facade and its modules
  * to achieve high test coverage and meet PR requirements.
  */
 
-import { Types } from 'mongoose';
 import { CharacterService } from '../CharacterService';
 import { CHARACTER_ERROR_CODES } from '../CharacterServiceErrors';
 import { Character } from '../../models/Character';
 import { createMockCharacter, createMockCharacterData } from './CharacterService.test-helpers';
-import type { CharacterCreation, CharacterUpdate } from '../../validations/character';
+import type { CharacterUpdate } from '../../validations/character';
 
 // Mock the Character model completely
 jest.mock('../../models/Character');
 
 // Mock mongoose completely
 jest.mock('mongoose', () => {
-  const mockSchema = jest.fn().mockImplementation((definition, options) => ({
+  const mockSchema = jest.fn().mockImplementation((_definition, _options) => ({
     pre: jest.fn(),
     post: jest.fn(),
     methods: {},
@@ -26,7 +25,7 @@ jest.mock('mongoose', () => {
     plugin: jest.fn(),
     index: jest.fn(),
   }));
-  
+
   mockSchema.Types = {
     ObjectId: 'ObjectId',
     String: 'String',
@@ -84,7 +83,7 @@ describe('CharacterService - Comprehensive Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Set up default successful mocks
     (Character.countDocuments as jest.Mock).mockResolvedValue(5);
     (Character.findById as jest.Mock).mockResolvedValue(createMockCharacter());
@@ -107,7 +106,7 @@ describe('CharacterService - Comprehensive Tests', () => {
     describe('createCharacter', () => {
       it('should create character successfully', async () => {
         const result = await CharacterService.createCharacter(validUserId, mockCharacterData);
-        
+
         expect(result.success).toBe(true);
         expect(result.data).toBeDefined();
       });
@@ -121,7 +120,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         });
 
         const result = await CharacterService.createCharacter(validUserId, invalidData);
-        
+
         expect(result.success).toBe(false);
         expect(result.error.code).toBe(CHARACTER_ERROR_CODES.INVALID_CHARACTER_DATA);
       });
@@ -130,7 +129,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.countDocuments as jest.Mock).mockResolvedValue(10);
 
         const result = await CharacterService.createCharacter(validUserId, mockCharacterData);
-        
+
         expect(result.success).toBe(false);
         expect(result.error.code).toBe(CHARACTER_ERROR_CODES.CHARACTER_LIMIT_EXCEEDED);
       });
@@ -143,7 +142,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.findById as jest.Mock).mockResolvedValue(mockCharacter);
 
         const result = await CharacterService.getCharacterById(validCharacterId, validUserId);
-        
+
         expect(result.success).toBe(true);
         expect(result.data).toBeDefined();
       });
@@ -155,7 +154,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.findById as jest.Mock).mockResolvedValue(mockCharacter);
 
         const result = await CharacterService.getCharacterById(validCharacterId, validUserId);
-        
+
         expect(result.success).toBe(true);
       });
 
@@ -166,7 +165,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.findById as jest.Mock).mockResolvedValue(mockCharacter);
 
         const result = await CharacterService.getCharacterById(validCharacterId, validUserId);
-        
+
         expect(result.success).toBe(false);
         expect(result.error.code).toBe(CHARACTER_ERROR_CODES.UNAUTHORIZED_ACCESS);
       });
@@ -177,10 +176,10 @@ describe('CharacterService - Comprehensive Tests', () => {
         const mockCharacter = createMockCharacter();
         mockCharacter.ownerId = { toString: () => validUserId } as any;
         (Character.findById as jest.Mock).mockResolvedValue(mockCharacter);
-        
+
         const updateData: CharacterUpdate = { name: 'Updated Name' };
         const result = await CharacterService.updateCharacter(validCharacterId, validUserId, updateData);
-        
+
         expect(result.success).toBe(true);
       });
 
@@ -191,7 +190,7 @@ describe('CharacterService - Comprehensive Tests', () => {
 
         const updateData: CharacterUpdate = { name: 'Updated Name' };
         const result = await CharacterService.updateCharacter(validCharacterId, validUserId, updateData);
-        
+
         expect(result.success).toBe(false);
         expect(result.error.code).toBe(CHARACTER_ERROR_CODES.UNAUTHORIZED_ACCESS);
       });
@@ -204,7 +203,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.findById as jest.Mock).mockResolvedValue(mockCharacter);
 
         const result = await CharacterService.deleteCharacter(validCharacterId, validUserId);
-        
+
         expect(result.success).toBe(true);
       });
 
@@ -214,7 +213,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.findById as jest.Mock).mockResolvedValue(mockCharacter);
 
         const result = await CharacterService.deleteCharacter(validCharacterId, validUserId);
-        
+
         expect(result.success).toBe(false);
         expect(result.error.code).toBe(CHARACTER_ERROR_CODES.UNAUTHORIZED_ACCESS);
       });
@@ -234,7 +233,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.countDocuments as jest.Mock).mockResolvedValue(25);
 
         const result = await CharacterService.getCharactersByOwner(validUserId, 1, 10);
-        
+
         expect(result.success).toBe(true);
         expect(result.data.items).toEqual(mockCharacters);
         expect(result.data.pagination.total).toBe(25);
@@ -250,14 +249,14 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.find as jest.Mock).mockReturnValue(mockFind);
 
         const result = await CharacterService.searchCharacters('Gandalf', validUserId);
-        
+
         expect(result.success).toBe(true);
         expect(result.data).toEqual(mockCharacters);
       });
 
       it('should reject empty search terms', async () => {
         const result = await CharacterService.searchCharacters('', validUserId);
-        
+
         expect(result.success).toBe(false);
         expect(result.error.code).toBe(CHARACTER_ERROR_CODES.INVALID_SEARCH_CRITERIA);
       });
@@ -272,7 +271,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.find as jest.Mock).mockReturnValue(mockFind);
 
         const result = await CharacterService.getCharactersByClass('wizard', validUserId);
-        
+
         expect(result.success).toBe(true);
         expect(result.data).toEqual(mockCharacters);
       });
@@ -285,7 +284,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.find as jest.Mock).mockReturnValue(mockFind);
 
         const result = await CharacterService.getCharactersByRace('elf', validUserId);
-        
+
         expect(result.success).toBe(true);
         expect(result.data).toEqual(mockCharacters);
       });
@@ -298,7 +297,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.find as jest.Mock).mockReturnValue(mockFind);
 
         const result = await CharacterService.getCharactersByType('pc', validUserId);
-        
+
         expect(result.success).toBe(true);
         expect(result.data).toEqual(mockCharacters);
       });
@@ -311,7 +310,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.find as jest.Mock).mockReturnValue(mockFind);
 
         const result = await CharacterService.getPublicCharacters();
-        
+
         expect(result.success).toBe(true);
         expect(result.data).toEqual(mockCharacters);
       });
@@ -325,7 +324,7 @@ describe('CharacterService - Comprehensive Tests', () => {
       (Character.findById as jest.Mock).mockResolvedValue(mockCharacter);
 
       const result = await CharacterService.calculateCharacterStats(validCharacterId, validUserId);
-      
+
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       expect(result.data.abilityModifiers).toBeDefined();
@@ -346,35 +345,35 @@ describe('CharacterService - Comprehensive Tests', () => {
       (Character.findById as jest.Mock).mockResolvedValue(mockCharacter);
 
       const result = await CharacterService.getCharacterSummary(validCharacterId, validUserId);
-      
+
       expect(result.success).toBe(true);
       expect(result.data.name).toBe('Test Character');
     });
 
     it('should calculate spellcasting stats (stub)', async () => {
       const result = await CharacterService.calculateSpellcastingStats(validCharacterId, validUserId);
-      
+
       expect(result.success).toBe(true);
       expect(result.data.casterLevel).toBe(0);
     });
 
     it('should calculate carrying capacity (stub)', async () => {
       const result = await CharacterService.calculateCarryingCapacity(validCharacterId, validUserId);
-      
+
       expect(result.success).toBe(true);
       expect(result.data.maximum).toBe(240);
     });
 
     it('should calculate equipment weight (stub)', async () => {
       const result = await CharacterService.calculateEquipmentWeight(validCharacterId, validUserId);
-      
+
       expect(result.success).toBe(true);
       expect(result.data.total).toBe(55);
     });
 
     it('should calculate experience info (stub)', async () => {
       const result = await CharacterService.calculateExperienceInfo(validCharacterId, validUserId);
-      
+
       expect(result.success).toBe(true);
       expect(result.data.currentLevel).toBe(1);
     });
@@ -388,7 +387,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.findById as jest.Mock).mockResolvedValue(mockCharacter);
 
         const result = await CharacterService.createCharacterTemplate(validCharacterId, validUserId, 'Fighter Template');
-        
+
         expect(result.success).toBe(true);
         expect(result.data.name).toBe('Fighter Template');
       });
@@ -401,7 +400,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.findById as jest.Mock).mockResolvedValue(mockCharacter);
 
         const result = await CharacterService.cloneCharacter(validCharacterId, validUserId, 'Cloned Character');
-        
+
         expect(result.success).toBe(true);
       });
     });
@@ -427,7 +426,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         };
 
         const result = await CharacterService.createCharacterFromTemplate(templateData, validUserId);
-        
+
         expect(result.success).toBe(true);
       });
     });
@@ -437,7 +436,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         const charactersData = [mockCharacterData, { ...mockCharacterData, name: 'Character 2' }];
 
         const result = await CharacterService.createMultipleCharacters(validUserId, charactersData);
-        
+
         expect(result.success).toBe(true);
         expect(result.data.successful).toHaveLength(2);
         expect(result.data.failed).toHaveLength(0);
@@ -454,7 +453,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         ];
 
         const result = await CharacterService.updateMultipleCharacters(validUserId, updates);
-        
+
         expect(result.success).toBe(true);
         expect(result.data).toHaveLength(2);
       });
@@ -467,7 +466,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         const characterIds = [validCharacterId, '507f1f77bcf86cd799439013'];
 
         const result = await CharacterService.deleteMultipleCharacters(validUserId, characterIds);
-        
+
         expect(result.success).toBe(true);
       });
     });
@@ -477,7 +476,7 @@ describe('CharacterService - Comprehensive Tests', () => {
     describe('validateCharacterData', () => {
       it('should validate correct character data', async () => {
         const result = await CharacterService.validateCharacterData(mockCharacterData);
-        
+
         expect(result.success).toBe(true);
         expect(result.data).toBeDefined();
       });
@@ -490,7 +489,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         });
 
         const result = await CharacterService.validateCharacterData({ invalid: 'data' });
-        
+
         expect(result.success).toBe(false);
         expect(result.error.code).toBe(CHARACTER_ERROR_CODES.INVALID_CHARACTER_DATA);
       });
@@ -502,7 +501,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         };
 
         const result = await CharacterService.validateCharacterData(invalidData);
-        
+
         expect(result.success).toBe(false);
         expect(result.error.code).toBe(CHARACTER_ERROR_CODES.INVALID_CHARACTER_LEVEL);
       });
@@ -515,7 +514,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.findById as jest.Mock).mockResolvedValue(mockCharacter);
 
         const result = await CharacterService.checkCharacterOwnership(validCharacterId, validUserId);
-        
+
         expect(result.success).toBe(true);
       });
 
@@ -525,7 +524,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.findById as jest.Mock).mockResolvedValue(mockCharacter);
 
         const result = await CharacterService.checkCharacterAccess(validCharacterId, validUserId);
-        
+
         expect(result.success).toBe(true);
       });
 
@@ -535,7 +534,7 @@ describe('CharacterService - Comprehensive Tests', () => {
         (Character.findById as jest.Mock).mockResolvedValue(mockCharacter);
 
         const result = await CharacterService.getCharacterPermissions(validCharacterId, validUserId);
-        
+
         expect(result.success).toBe(true);
         expect(result.data.canView).toBe(true);
         expect(result.data.canEdit).toBe(true);
@@ -548,7 +547,7 @@ describe('CharacterService - Comprehensive Tests', () => {
   describe('Error Handling', () => {
     it('should handle invalid ObjectId formats', async () => {
       const result = await CharacterService.getCharacterById('invalid-id', validUserId);
-      
+
       expect(result.success).toBe(false);
       expect(result.error.code).toBe(CHARACTER_ERROR_CODES.INVALID_CHARACTER_ID);
     });
@@ -557,7 +556,7 @@ describe('CharacterService - Comprehensive Tests', () => {
       (Character.findById as jest.Mock).mockRejectedValue(new Error('Database connection failed'));
 
       const result = await CharacterService.getCharacterById(validCharacterId, validUserId);
-      
+
       expect(result.success).toBe(false);
       expect(result.error.code).toBe(CHARACTER_ERROR_CODES.DATABASE_ERROR);
     });
@@ -566,7 +565,7 @@ describe('CharacterService - Comprehensive Tests', () => {
       (Character.findById as jest.Mock).mockResolvedValue(null);
 
       const result = await CharacterService.getCharacterById(validCharacterId, validUserId);
-      
+
       expect(result.success).toBe(false);
       expect(result.error.code).toBe(CHARACTER_ERROR_CODES.CHARACTER_NOT_FOUND);
     });

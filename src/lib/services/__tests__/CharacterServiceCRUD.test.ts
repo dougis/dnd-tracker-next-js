@@ -6,8 +6,8 @@
 import { Types } from 'mongoose';
 import { CharacterServiceCRUD } from '../CharacterServiceCRUD';
 import { Character } from '../../models/Character';
-import { CharacterServiceErrors, CHARACTER_ERROR_CODES } from '../CharacterServiceErrors';
-import type { CharacterCreation, CharacterUpdate } from '../../validations/character';
+import { CHARACTER_ERROR_CODES } from '../CharacterServiceErrors';
+import type { CharacterUpdate } from '../../validations/character';
 import { createMockCharacter, createMockCharacterData } from './CharacterService.test-helpers';
 
 // Mock the Character model
@@ -47,7 +47,7 @@ describe('CharacterServiceCRUD', () => {
     it('should create character successfully with valid data', async () => {
       const mockCharacter = createMockCharacter();
       (Character.countDocuments as jest.Mock).mockResolvedValue(5);
-      
+
       // Mock the character constructor and save
       const mockSave = jest.fn().mockResolvedValue(mockCharacter);
       const mockCharacterConstructor = jest.fn().mockImplementation(() => ({

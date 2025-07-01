@@ -6,7 +6,7 @@
 import { Types } from 'mongoose';
 import { CharacterServiceSearch } from '../CharacterServiceSearch';
 import { Character } from '../../models/Character';
-import { CharacterServiceErrors, CHARACTER_ERROR_CODES } from '../CharacterServiceErrors';
+import { CHARACTER_ERROR_CODES } from '../CharacterServiceErrors';
 import { createMockCharacter } from './CharacterService.test-helpers';
 
 // Mock the Character model
