@@ -67,19 +67,40 @@ export const createInvalidLoginData = () => ({
   rememberMe: false,
 });
 
-// Helper functions to exercise methods for coverage
-export const exerciseCreateUserVariations = async () => {
-  const variations = [
-    createValidUserData(),
-    createValidUserData({ email: 'different@test.com', username: 'different' }),
-    createInvalidUserData(),
-    createValidUserData({
-      email: 'special+chars@test.com',
-      password: 'SpecialPass123!@#',
-      confirmPassword: 'SpecialPass123!@#',
-    }),
-  ];
+// Consolidated test case generators
+export const getCreateUserTestCases = () => [
+  createValidUserData(),
+  createValidUserData({ email: 'different@test.com', username: 'different' }),
+  createInvalidUserData(),
+  createValidUserData({
+    email: 'special+chars@test.com',
+    password: 'SpecialPass123!@#',
+    confirmPassword: 'SpecialPass123!@#',
+  }),
+  createValidUserData({ email: 'success@test.com', username: 'success' }),
+  createValidUserData({ email: 'another@example.com', subscribeToNewsletter: true }),
+];
 
+export const getAuthenticationTestCases = () => [
+  createValidLoginData(),
+  createValidLoginData({ email: 'different@test.com', rememberMe: true }),
+  createInvalidLoginData(),
+  createValidLoginData({ password: 'WrongPassword!' }),
+  createValidLoginData({ email: 'nonexistent@example.com' }),
+  createValidLoginData({ email: 'invalid-email' }),
+];
+
+export const getPasswordChangeTestCases = () => [
+  { userId: 'user1', data: createValidPasswordChangeData() },
+  { userId: 'user2', data: createValidPasswordChangeData({ newPassword: 'NewPass789!' }) },
+  { userId: '', data: createValidPasswordChangeData() },
+  { userId: 'invalid', data: { currentPassword: '', newPassword: '', confirmNewPassword: '' } },
+  { userId: 'test-user', data: createValidPasswordChangeData({ currentPassword: 'WrongCurrentPass123!' }) },
+];
+
+// Consolidated exercise functions
+export const exerciseCreateUserVariations = async () => {
+  const variations = getCreateUserTestCases();
   for (const userData of variations) {
     await UserServiceAuth.createUser(userData);
   }
