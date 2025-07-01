@@ -1,6 +1,6 @@
 /**
  * Character Validation Utilities
- * 
+ *
  * Centralized validation logic to eliminate duplication across Character service modules.
  * Handles ObjectId validation, character data validation, and common validation patterns.
  */
@@ -8,14 +8,15 @@
 import { Types } from 'mongoose';
 import { characterCreationSchema, characterUpdateSchema } from '../../validations/character';
 import type { CharacterCreation, CharacterUpdate } from '../../validations/character';
-import { 
-  ServiceResult, 
-  createSuccessResult, 
-  createErrorResult, 
-  CharacterServiceErrors 
+import {
+  ServiceResult,
+  createSuccessResult,
+  createErrorResult,
+  CharacterServiceErrors
 } from '../CharacterServiceErrors';
 
 export class CharacterValidationUtils {
+
   /**
    * Validate ObjectId format for different entity types
    */

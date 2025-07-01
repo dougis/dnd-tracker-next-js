@@ -1,20 +1,20 @@
 /**
  * Character Database Query Utilities
- * 
+ *
  * Centralized database query logic to eliminate duplication across Character service modules.
  * Handles common query patterns, pagination, sorting, and filtering.
  */
 
-import { Types } from 'mongoose';
+// import { Types } from 'mongoose'; // Will be used when we add more complex query logic
 import { Character } from '../../models/Character';
 import type { ICharacter } from '../../models/Character';
 import { CharacterAccessUtils } from './CharacterAccessUtils';
 import { CharacterValidationUtils } from './CharacterValidationUtils';
-import { 
-  ServiceResult, 
-  createSuccessResult, 
-  createErrorResult, 
-  CharacterServiceErrors 
+import {
+  ServiceResult,
+  createSuccessResult,
+  createErrorResult,
+  CharacterServiceErrors
 } from '../CharacterServiceErrors';
 
 export interface PaginationResult<T> {
@@ -36,6 +36,7 @@ export interface QueryOptions {
 }
 
 export class CharacterQueryUtils {
+
   /**
    * Execute a paginated query with user access control
    */
@@ -47,7 +48,7 @@ export class CharacterQueryUtils {
     try {
       // Validate pagination parameters
       const paginationValidation = CharacterValidationUtils.validatePagination(
-        options.page, 
+        options.page,
         options.limit
       );
       if (!paginationValidation.success) {
@@ -115,7 +116,7 @@ export class CharacterQueryUtils {
 
       // Build query with sorting
       let query = Character.find(filter);
-      
+
       // Apply sorting
       const defaultSort = { name: 1 };
       const sortOption = options.sort || defaultSort;
@@ -226,9 +227,9 @@ export class CharacterQueryUtils {
   static async findPublicCharacters(options: QueryOptions = {}): Promise<ServiceResult<ICharacter[]>> {
     try {
       const filter = { isPublic: true };
-      
+
       let query = Character.find(filter);
-      
+
       // Apply sorting
       const defaultSort = { name: 1 };
       const sortOption = options.sort || defaultSort;
@@ -282,7 +283,7 @@ export class CharacterQueryUtils {
     options: QueryOptions = {}
   ): Promise<ServiceResult<ICharacter[]>> {
     try {
-      let queryFilter: any = {};
+      const queryFilter: any = {};
 
       // Build filter conditions
       if (filter.classes && filter.classes.length > 0) {
@@ -316,7 +317,7 @@ export class CharacterQueryUtils {
           return createErrorResult(searchValidation.error);
         }
         queryFilter.$text = { $search: searchValidation.data };
-        
+
         // Override sort for text search
         options = {
           ...options,

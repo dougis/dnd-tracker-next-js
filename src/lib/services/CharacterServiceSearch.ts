@@ -14,12 +14,8 @@ import type {
 } from '../validations/character';
 import {
   ServiceResult,
-  createSuccessResult,
-  createErrorResult,
-  CharacterServiceErrors,
 } from './CharacterServiceErrors';
-import { CharacterQueryUtils, type PaginationResult } from './utils/CharacterQueryUtils';
-import { CharacterValidationUtils } from './utils/CharacterValidationUtils';
+import { CharacterQueryUtils } from './utils/CharacterQueryUtils';
 
 export interface PaginatedCharacters {
   items: ICharacter[];

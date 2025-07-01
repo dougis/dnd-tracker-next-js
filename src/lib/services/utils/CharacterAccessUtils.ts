@@ -1,6 +1,6 @@
 /**
  * Character Access Control Utilities
- * 
+ *
  * Centralized access control logic to eliminate duplication across Character service modules.
  * Handles ownership checking, access permissions, and authorization logic.
  */
@@ -8,11 +8,11 @@
 import { Types } from 'mongoose';
 import { Character } from '../../models/Character';
 import type { ICharacter } from '../../models/Character';
-import { 
-  ServiceResult, 
-  createSuccessResult, 
-  createErrorResult, 
-  CharacterServiceErrors 
+import {
+  ServiceResult,
+  createSuccessResult,
+  createErrorResult,
+  CharacterServiceErrors
 } from '../CharacterServiceErrors';
 
 export interface CharacterPermissions {
@@ -24,6 +24,7 @@ export interface CharacterPermissions {
 }
 
 export class CharacterAccessUtils {
+
   /**
    * Check if user owns the character
    */
@@ -97,11 +98,11 @@ export class CharacterAccessUtils {
    * Batch check access for multiple characters
    */
   static async checkMultipleAccess(
-    characterIds: string[], 
+    characterIds: string[],
     userId: string
   ): Promise<ServiceResult<{ accessible: ICharacter[]; denied: string[] }>> {
     try {
-      const userObjectId = new Types.ObjectId(userId);
+      const _userObjectId = new Types.ObjectId(userId);
       const characters = await Character.find({
         _id: { $in: characterIds.map(id => new Types.ObjectId(id)) }
       });
@@ -134,14 +135,14 @@ export class CharacterAccessUtils {
    * Check ownership for multiple characters (bulk operations)
    */
   static async checkMultipleOwnership(
-    characterIds: string[], 
+    characterIds: string[],
     userId: string
   ): Promise<ServiceResult<{ owned: ICharacter[]; denied: string[] }>> {
     try {
-      const userObjectId = new Types.ObjectId(userId);
+      const _userObjectId = new Types.ObjectId(userId);
       const characters = await Character.find({
         _id: { $in: characterIds.map(id => new Types.ObjectId(id)) },
-        ownerId: userObjectId
+        ownerId: _userObjectId
       });
 
       const ownedIds = characters.map(c => c._id.toString());
@@ -177,7 +178,7 @@ export class CharacterAccessUtils {
    * Validate and prepare user access query
    */
   static async prepareUserAccessQuery(
-    baseFilter: object, 
+    baseFilter: object,
     userId: string
   ): Promise<ServiceResult<object>> {
     try {
@@ -199,12 +200,12 @@ export class CharacterAccessUtils {
   /**
    * Check if character is in use (for deletion safety)
    */
-  static async checkCharacterInUse(characterId: string): Promise<ServiceResult<{ inUse: boolean; usage?: string }>> {
+  static async checkCharacterInUse(_characterId: string): Promise<ServiceResult<{ inUse: boolean; usage?: string }>> {
     try {
       // Note: This would typically check encounters, parties, active combat sessions, etc.
       // For now, we'll just return not in use, but this can be expanded later
       // when we have encounter and party models implemented
-      
+
       return createSuccessResult({ inUse: false });
     } catch (error) {
       return createErrorResult(CharacterServiceErrors.databaseError('check character usage', error));
