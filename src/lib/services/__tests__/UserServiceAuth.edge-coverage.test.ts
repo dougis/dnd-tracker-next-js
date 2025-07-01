@@ -3,6 +3,7 @@ import { UserServiceAuth } from '../UserServiceAuth';
 import User from '../../models/User';
 import { createMockUser } from './testUtils';
 import { UserAlreadyExistsError, UserServiceError } from '../UserServiceErrors';
+import { mockUserData } from '../__test-helpers__/test-setup';
 
 /**
  * Edge case tests specifically targeting uncovered lines to reach 80% coverage
