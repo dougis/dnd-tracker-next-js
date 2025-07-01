@@ -7,9 +7,7 @@ import { UserService } from '../UserService';
 import { UserServiceAuth } from '../UserServiceAuth';
 import { UserServiceProfile } from '../UserServiceProfile';
 import { UserServiceStats } from '../UserServiceStats';
-import type {
-  PublicUser,
-} from '../../validations/user';
+import type { PublicUser } from '../../validations/user';
 import type { UserStats, PaginatedResult } from '../UserServiceStats';
 import {
   createMockPublicUser,
@@ -36,9 +34,15 @@ jest.mock('../UserServiceAuth');
 jest.mock('../UserServiceProfile');
 jest.mock('../UserServiceStats');
 
-const mockUserServiceAuth = UserServiceAuth as jest.Mocked<typeof UserServiceAuth>;
-const mockUserServiceProfile = UserServiceProfile as jest.Mocked<typeof UserServiceProfile>;
-const mockUserServiceStats = UserServiceStats as jest.Mocked<typeof UserServiceStats>;
+const mockUserServiceAuth = UserServiceAuth as jest.Mocked<
+  typeof UserServiceAuth
+>;
+const mockUserServiceProfile = UserServiceProfile as jest.Mocked<
+  typeof UserServiceProfile
+>;
+const mockUserServiceStats = UserServiceStats as jest.Mocked<
+  typeof UserServiceStats
+>;
 
 describe('UserService Administrative Operations', () => {
   setupMockClearance();
@@ -46,7 +50,9 @@ describe('UserService Administrative Operations', () => {
   describe('getUsers', () => {
     it('should delegate to UserServiceStats.getUsers with default parameters', async () => {
       const mockUsers = [createMockPublicUser()];
-      const expectedResult = createSuccessResult(createMockPaginatedResult(mockUsers));
+      const expectedResult = createSuccessResult(
+        createMockPaginatedResult(mockUsers)
+      );
 
       mockUserServiceStats.getUsers.mockResolvedValue(expectedResult);
 
@@ -64,14 +70,16 @@ describe('UserService Administrative Operations', () => {
       const page = 2;
       const limit = 10;
       const filters = createMockQueryFilters();
-      const expectedResult = createSuccessResult(createMockPaginatedResult([], {
-        pagination: {
-          currentPage: 2,
-          totalPages: 1,
-          pageSize: 10,
-          total: 0,
-        },
-      }));
+      const expectedResult = createSuccessResult(
+        createMockPaginatedResult([], {
+          pagination: {
+            page: 2,
+            totalPages: 1,
+            limit: 10,
+            total: 0,
+          },
+        })
+      );
 
       mockUserServiceStats.getUsers.mockResolvedValue(expectedResult);
 
@@ -144,15 +152,20 @@ describe('UserService Administrative Operations', () => {
       const userData = createMockUserRegistration();
       const error = new Error('Database connection failed');
 
-      mockUserServiceAuth.createUser.mockImplementation(createMockRejection(error));
+      mockUserServiceAuth.createUser.mockImplementation(
+        createMockRejection(error)
+      );
 
-      await expectErrorThrown(UserService.createUser(userData), 'Database connection failed');
+      await expectErrorThrown(
+        UserService.createUser(userData),
+        'Database connection failed'
+      );
       expect(mockUserServiceAuth.createUser).toHaveBeenCalledWith(userData);
     });
 
     it('should preserve async nature of operations', async () => {
       const userId = TEST_USER_ID;
-      const mockUser = createMockPublicUser({ _id: userId });
+      const mockUser = createMockPublicUser({ id: userId });
       const delayedResult = createSuccessResult(mockUser);
 
       mockUserServiceProfile.getUserById.mockImplementation(
@@ -185,17 +198,17 @@ describe('UserService Administrative Operations', () => {
 
     it('should handle concurrent operations correctly', async () => {
       const user1 = createMockPublicUser({
-        _id: TEST_USER_ID,
+        id: TEST_USER_ID,
         email: 'user1@example.com',
         username: 'user1',
         subscriptionTier: 'free',
       });
 
       const user2 = createMockPublicUser({
-        _id: TEST_USER_ID_2,
+        id: TEST_USER_ID_2,
         email: 'user2@example.com',
         username: 'user2',
-        subscriptionTier: 'pro',
+        subscriptionTier: 'expert',
       });
 
       const result1 = createSuccessResult(user1);

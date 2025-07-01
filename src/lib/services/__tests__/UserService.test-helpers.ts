@@ -14,84 +14,125 @@ import type {
   EmailVerification,
   PublicUser,
 } from '../../validations/user';
-import type { QueryFilters, UserStats, PaginatedResult } from '../UserServiceStats';
+import type {
+  QueryFilters,
+  UserStats,
+  PaginatedResult,
+} from '../UserServiceStats';
 
 // ================================
 // Mock Data Factories
 // ================================
 
-export const createMockPublicUser = (overrides: Partial<PublicUser> = {}): PublicUser => ({
-  _id: '507f1f77bcf86cd799439011',
+export const createMockPublicUser = (
+  overrides: Partial<PublicUser> = {}
+): PublicUser => ({
+  id: '507f1f77bcf86cd799439011',
   email: 'test@example.com',
   username: 'testuser',
+  firstName: 'Test',
+  lastName: 'User',
+  role: 'user',
   subscriptionTier: 'free',
+  preferences: {
+    theme: 'system',
+    language: 'en',
+    timezone: 'UTC',
+    emailNotifications: true,
+    pushNotifications: true,
+    autoSaveEncounters: true,
+  },
   isEmailVerified: true,
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,
 });
 
-export const createMockUserRegistration = (overrides: Partial<UserRegistration> = {}): UserRegistration => ({
+export const createMockUserRegistration = (
+  overrides: Partial<UserRegistration> = {}
+): UserRegistration => ({
   email: 'test@example.com',
   username: 'testuser',
+  firstName: 'Test',
+  lastName: 'User',
   password: 'Password123!',
   confirmPassword: 'Password123!',
+  agreeToTerms: true,
+  subscribeToNewsletter: false,
   ...overrides,
 });
 
-export const createMockUserLogin = (overrides: Partial<UserLogin> = {}): UserLogin => ({
+export const createMockUserLogin = (
+  overrides: Partial<UserLogin> = {}
+): UserLogin => ({
   email: 'test@example.com',
   password: 'Password123!',
+  rememberMe: false,
   ...overrides,
 });
 
-export const createMockUserProfileUpdate = (overrides: Partial<UserProfileUpdate> = {}): UserProfileUpdate => ({
+export const createMockUserProfileUpdate = (
+  overrides: Partial<UserProfileUpdate> = {}
+): UserProfileUpdate => ({
   username: 'newusername',
   firstName: 'John',
   lastName: 'Doe',
   ...overrides,
 });
 
-export const createMockChangePassword = (overrides: Partial<ChangePassword> = {}): ChangePassword => ({
+export const createMockChangePassword = (
+  overrides: Partial<ChangePassword> = {}
+): ChangePassword => ({
   currentPassword: 'OldPassword123!',
   newPassword: 'NewPassword123!',
-  confirmPassword: 'NewPassword123!',
+  confirmNewPassword: 'NewPassword123!',
   ...overrides,
 });
 
-export const createMockPasswordResetRequest = (overrides: Partial<PasswordResetRequest> = {}): PasswordResetRequest => ({
+export const createMockPasswordResetRequest = (
+  overrides: Partial<PasswordResetRequest> = {}
+): PasswordResetRequest => ({
   email: 'test@example.com',
   ...overrides,
 });
 
-export const createMockPasswordReset = (overrides: Partial<PasswordReset> = {}): PasswordReset => ({
+export const createMockPasswordReset = (
+  overrides: Partial<PasswordReset> = {}
+): PasswordReset => ({
   token: 'reset-token-123',
-  newPassword: 'NewPassword123!',
+  password: 'NewPassword123!',
   confirmPassword: 'NewPassword123!',
   ...overrides,
 });
 
-export const createMockEmailVerification = (overrides: Partial<EmailVerification> = {}): EmailVerification => ({
+export const createMockEmailVerification = (
+  overrides: Partial<EmailVerification> = {}
+): EmailVerification => ({
   token: 'verification-token-123',
   ...overrides,
 });
 
-export const createMockQueryFilters = (overrides: Partial<QueryFilters> = {}): QueryFilters => ({
-  subscriptionTier: 'pro',
+export const createMockQueryFilters = (
+  overrides: Partial<QueryFilters> = {}
+): QueryFilters => ({
+  subscriptionTier: 'expert',
   isEmailVerified: true,
   ...overrides,
 });
 
-export const createMockUserStats = (overrides: Partial<UserStats> = {}): UserStats => ({
+export const createMockUserStats = (
+  overrides: Partial<UserStats> = {}
+): UserStats => ({
   totalUsers: 100,
   verifiedUsers: 80,
+  activeUsers: 60,
   subscriptionBreakdown: {
     free: 70,
-    pro: 20,
-    premium: 10,
+    seasoned: 15,
+    expert: 10,
+    master: 4,
+    guild: 1,
   },
-  newUsersThisMonth: 15,
-  activeUsersThisMonth: 60,
   ...overrides,
 });
 
@@ -99,12 +140,12 @@ export const createMockPaginatedResult = <T>(
   items: T[],
   overrides: Partial<PaginatedResult<T>> = {}
 ): PaginatedResult<T> => ({
-  users: items,
+  data: items,
   pagination: {
-    currentPage: 1,
-    totalPages: 1,
-    pageSize: 20,
+    page: 1,
+    limit: 20,
     total: items.length,
+    totalPages: 1,
   },
   ...overrides,
 });
@@ -119,36 +160,46 @@ export const createSuccessResult = <T>(data: T): ServiceResult<T> => ({
 });
 
 export const createErrorResult = <T>(
-  type: string,
+  code: string,
   message: string,
-  field?: string
+  statusCode: number = 400
 ): ServiceResult<T> => ({
   success: false,
   error: {
-    type,
     message,
-    ...(field && { field }),
+    code,
+    statusCode,
   },
 });
 
 // Common error results
 export const createUserNotFoundError = <T>(): ServiceResult<T> =>
-  createErrorResult('USER_NOT_FOUND', 'User not found', 'userId');
+  createErrorResult('USER_NOT_FOUND', 'User not found', 404);
 
-export const createUserAlreadyExistsError = <T>(field: string = 'email'): ServiceResult<T> =>
-  createErrorResult('USER_ALREADY_EXISTS', `User with this ${field} already exists`, field);
+export const createUserAlreadyExistsError = <T>(
+  field: string = 'email'
+): ServiceResult<T> =>
+  createErrorResult(
+    'USER_ALREADY_EXISTS',
+    `User with this ${field} already exists`,
+    409
+  );
 
 export const createInvalidCredentialsError = <T>(): ServiceResult<T> =>
-  createErrorResult('INVALID_CREDENTIALS', 'Invalid email or password', 'password');
+  createErrorResult(
+    'INVALID_CREDENTIALS',
+    'Invalid email or password',
+    401
+  );
 
 export const createInvalidTokenError = <T>(): ServiceResult<T> =>
-  createErrorResult('INVALID_TOKEN', 'Invalid or expired token', 'token');
+  createErrorResult('INVALID_TOKEN', 'Invalid or expired token', 400);
 
 export const createDatabaseError = <T>(): ServiceResult<T> =>
-  createErrorResult('DATABASE_ERROR', 'Database connection failed');
+  createErrorResult('DATABASE_ERROR', 'Database connection failed', 500);
 
 export const createValidationError = <T>(): ServiceResult<T> =>
-  createErrorResult('VALIDATION_ERROR', 'Invalid input');
+  createErrorResult('VALIDATION_ERROR', 'Invalid input', 400);
 
 // ================================
 // Test Utilities
@@ -162,7 +213,8 @@ export const setupMockClearance = () => {
 
 export const createMockImplementation = <T>(result: T, delay: number = 0) => {
   if (delay > 0) {
-    return () => new Promise<T>((resolve) => setTimeout(() => resolve(result), delay));
+    return () =>
+      new Promise<T>(resolve => setTimeout(() => resolve(result), delay));
   }
   return () => Promise.resolve(result);
 };
@@ -185,27 +237,42 @@ export const expectDelegationCall = (
   expect(actualResult).toEqual(expectedResult);
 };
 
-export const expectSingleCall = (mockFn: jest.MockedFunction<any>, ...expectedArgs: any[]) => {
+export const expectSingleCall = (
+  mockFn: jest.MockedFunction<any>,
+  ...expectedArgs: any[]
+) => {
   expect(mockFn).toHaveBeenCalledTimes(1);
   expect(mockFn).toHaveBeenCalledWith(...expectedArgs);
 };
 
-export const expectMultipleCalls = (mockFn: jest.MockedFunction<any>, expectedCallCount: number) => {
+export const expectMultipleCalls = (
+  mockFn: jest.MockedFunction<any>,
+  expectedCallCount: number
+) => {
   expect(mockFn).toHaveBeenCalledTimes(expectedCallCount);
 };
 
-export const expectErrorThrown = async (promise: Promise<any>, expectedError: string) => {
+export const expectErrorThrown = async (
+  promise: Promise<any>,
+  expectedError: string
+) => {
   await expect(promise).rejects.toThrow(expectedError);
 };
 
-export const expectSuccessResult = <T>(result: ServiceResult<T>, expectedData: T) => {
+export const expectSuccessResult = <T>(
+  result: ServiceResult<T>,
+  expectedData: T
+) => {
   expect(result.success).toBe(true);
   expect(result.data).toEqual(expectedData);
 };
 
-export const expectErrorResult = <T>(result: ServiceResult<T>, expectedErrorType: string) => {
+export const expectErrorResult = <T>(
+  result: ServiceResult<T>,
+  expectedErrorType: string
+) => {
   expect(result.success).toBe(false);
-  expect(result.error?.type).toBe(expectedErrorType);
+  expect(result.error?.code).toBe(expectedErrorType);
 };
 
 // ================================
