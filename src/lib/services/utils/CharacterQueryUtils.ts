@@ -285,13 +285,13 @@ export class CharacterQueryUtils {
     try {
       // Build query filter using helper methods
       const queryFilter = this.buildAdvancedFilterQuery(filter);
-      
+
       // Handle search criteria separately due to validation needs
       const searchResult = this.handleSearchFilter(filter.search, options);
       if (!searchResult.success) {
         return createErrorResult(searchResult.error);
       }
-      
+
       // Merge search filter and options
       const finalFilter = { ...queryFilter, ...searchResult.data.filter };
       const finalOptions = searchResult.data.options;
@@ -346,7 +346,7 @@ export class CharacterQueryUtils {
     if (levelRange.max !== undefined) {
       levelConditions.$lte = levelRange.max;
     }
-    
+
     if (Object.keys(levelConditions).length > 0) {
       queryFilter.level = levelConditions;
     }
@@ -356,7 +356,7 @@ export class CharacterQueryUtils {
    * Handle search filter and options modifications
    */
   private static handleSearchFilter(
-    search?: string, 
+    search?: string,
     options: QueryOptions = {}
   ): ServiceResult<{ filter: object; options: QueryOptions }> {
     if (!search) {
