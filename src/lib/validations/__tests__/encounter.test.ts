@@ -10,6 +10,9 @@ import {
   healParticipantSchema,
   addConditionSchema,
   removeConditionSchema,
+  encounterStatusSchema,
+  encounterDifficultySchema,
+  participantTypeSchema,
 } from '../encounter';
 
 describe('Encounter Validation Schemas', () => {
@@ -301,5 +304,51 @@ describe('Encounter Validation Schemas', () => {
         expect(result.success).toBe(true);
       });
     });
+  });
+
+  describe('Basic Schema Validations', () => {
+    describe('encounterStatusSchema', () => {
+      it('should validate valid status values', () => {
+        expect(encounterStatusSchema.safeParse('draft').success).toBe(true);
+        expect(encounterStatusSchema.safeParse('active').success).toBe(true);
+        expect(encounterStatusSchema.safeParse('completed').success).toBe(true);
+        expect(encounterStatusSchema.safeParse('archived').success).toBe(true);
+      });
+
+      it('should reject invalid status values', () => {
+        expect(encounterStatusSchema.safeParse('invalid').success).toBe(false);
+        expect(encounterStatusSchema.safeParse('').success).toBe(false);
+        expect(encounterStatusSchema.safeParse(null).success).toBe(false);
+      });
+    });
+
+    describe('encounterDifficultySchema', () => {
+      it('should validate valid difficulty values', () => {
+        expect(encounterDifficultySchema.safeParse('trivial').success).toBe(true);
+        expect(encounterDifficultySchema.safeParse('easy').success).toBe(true);
+        expect(encounterDifficultySchema.safeParse('medium').success).toBe(true);
+        expect(encounterDifficultySchema.safeParse('hard').success).toBe(true);
+        expect(encounterDifficultySchema.safeParse('deadly').success).toBe(true);
+      });
+
+      it('should reject invalid difficulty values', () => {
+        expect(encounterDifficultySchema.safeParse('impossible').success).toBe(false);
+        expect(encounterDifficultySchema.safeParse('').success).toBe(false);
+      });
+    });
+
+    describe('participantTypeSchema', () => {
+      it('should validate valid participant types', () => {
+        expect(participantTypeSchema.safeParse('pc').success).toBe(true);
+        expect(participantTypeSchema.safeParse('npc').success).toBe(true);
+        expect(participantTypeSchema.safeParse('monster').success).toBe(true);
+      });
+
+      it('should reject invalid participant types', () => {
+        expect(participantTypeSchema.safeParse('invalid').success).toBe(false);
+        expect(participantTypeSchema.safeParse('').success).toBe(false);
+      });
+    });
+
   });
 });

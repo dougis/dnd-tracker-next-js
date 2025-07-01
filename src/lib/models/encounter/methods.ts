@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Types } from 'mongoose';
 import { z } from 'zod';
 import { encounterDifficultySchema } from '../../validations/encounter';
@@ -106,7 +107,6 @@ export function startCombat(this: IEncounter, autoRollInitiative = false): void 
   }
 }
 
-// eslint-disable-next-line no-unused-vars
 export function endCombat(this: IEncounter): void {
   this.combatState.isActive = false;
   this.combatState.endedAt = new Date();
