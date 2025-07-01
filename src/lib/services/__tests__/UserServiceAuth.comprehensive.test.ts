@@ -2,13 +2,9 @@ import '../__test-helpers__/test-setup';
 import { UserServiceAuth } from '../UserServiceAuth';
 import User from '../../models/User';
 import {
-  createMockUser,
-  TEST_EMAIL,
-  TEST_USERNAME,
-  createExistingUserWithEmail,
-  createExistingUserWithUsername
+  createMockUser
 } from './testUtils';
-import { mockUser, mockUserData } from '../__test-helpers__/test-setup';
+import { mockUserData } from '../__test-helpers__/test-setup';
 
 /**
  * Comprehensive tests for UserServiceAuth class

@@ -1,7 +1,6 @@
 import '../__test-helpers__/test-setup';
 import { UserServiceAuth } from '../UserServiceAuth';
 import User from '../../models/User';
-import { mockUser, mockUserData } from '../__test-helpers__/test-setup';
 import { createMockUser } from './testUtils';
 
 /**
