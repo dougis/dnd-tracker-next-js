@@ -29,7 +29,7 @@ describe('UserServiceAuth - Additional Coverage Tests', () => {
         });
 
         (User.findOne as jest.Mock).mockResolvedValue(mockAuthUser);
-        
+
         // Mock UserServiceLookup.findUserByEmailNullable
         jest.doMock('../UserServiceLookup', () => ({
           findUserByEmailNullable: jest.fn().mockResolvedValue(mockAuthUser),
@@ -334,7 +334,7 @@ describe('UserServiceAuth - Additional Coverage Tests', () => {
 
     describe('Success scenarios', () => {
       it('should successfully verify email with valid token', async () => {
-        const mockUser = createMockUser({ 
+        const mockUser = createMockUser({
           email: 'verify@example.com',
           isEmailVerified: false,
         });
@@ -381,7 +381,7 @@ describe('UserServiceAuth - Additional Coverage Tests', () => {
   describe('resendVerificationEmail', () => {
     describe('Success scenarios', () => {
       it('should resend verification email for unverified user', async () => {
-        const mockUser = createMockUser({ 
+        const mockUser = createMockUser({
           email: 'resend@example.com',
           isEmailVerified: false,
         });
@@ -401,7 +401,7 @@ describe('UserServiceAuth - Additional Coverage Tests', () => {
 
     describe('Failure scenarios', () => {
       it('should return error for already verified email', async () => {
-        const mockUser = createMockUser({ 
+        const mockUser = createMockUser({
           email: 'verified@example.com',
           isEmailVerified: true,
         });

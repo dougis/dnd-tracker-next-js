@@ -1,9 +1,9 @@
 import '../__test-helpers__/test-setup';
 import { UserServiceAuth } from '../UserServiceAuth';
 import User from '../../models/User';
-import { 
-  createMockUser, 
-  TEST_EMAIL, 
+import {
+  createMockUser,
+  TEST_EMAIL,
   TEST_USERNAME,
   createExistingUserWithEmail,
   createExistingUserWithUsername
@@ -36,12 +36,12 @@ describe('UserServiceAuth - Comprehensive Tests', () => {
       beforeEach(() => {
         // Reset mocks and set up successful scenario
         jest.clearAllMocks();
-        
+
         // Mock UserServiceHelpers checkUserExists to not throw
         jest.doMock('../UserServiceHelpers', () => ({
           checkUserExists: jest.fn().mockResolvedValue(undefined),
         }));
-        
+
         // Mock the User constructor and its methods
         const mockSavedUser = {
           ...mockUserData,
@@ -62,7 +62,7 @@ describe('UserServiceAuth - Comprehensive Tests', () => {
             isEmailVerified: false,
           }),
         };
-        
+
         (User as any).mockImplementation(() => mockSavedUser);
       });
 
@@ -272,11 +272,11 @@ describe('UserServiceAuth - Comprehensive Tests', () => {
 
       it('should update last login timestamp on successful authentication', async () => {
         const beforeLogin = new Date();
-        
+
         const result = await UserServiceAuth.authenticateUser(validLoginData);
 
         expect(result.success).toBe(true);
-        
+
         const updatedUser = await User.findById(testUser._id);
         expect(updatedUser?.lastLogin).toBeTruthy();
         expect(updatedUser!.lastLogin!.getTime()).toBeGreaterThanOrEqual(beforeLogin.getTime());
@@ -304,7 +304,7 @@ describe('UserServiceAuth - Comprehensive Tests', () => {
           role: 'user',
           subscriptionTier: 'free',
         });
-        
+
         // Should not include sensitive data
         expect(result.data?.user).not.toHaveProperty('passwordHash');
         expect(result.data?.user).not.toHaveProperty('emailVerificationToken');
@@ -396,7 +396,7 @@ describe('UserServiceAuth - Comprehensive Tests', () => {
 
         expect(result.success).toBe(true);
         expect(result.data).toBeUndefined(); // void return
-        
+
         // Verify password was actually changed
         const updatedUser = await User.findById(testUser._id);
         const isNewPasswordValid = await updatedUser!.comparePassword(newPassword);
@@ -416,7 +416,7 @@ describe('UserServiceAuth - Comprehensive Tests', () => {
         );
 
         expect(result.success).toBe(true);
-        
+
         const updatedUser = await User.findById(testUser._id);
         expect(updatedUser?.passwordResetToken).toBeUndefined();
         expect(updatedUser?.passwordResetExpires).toBeUndefined();
@@ -508,7 +508,7 @@ describe('UserServiceAuth - Comprehensive Tests', () => {
 
         expect(result.success).toBe(true);
         expect(result.data?.token).toBeTruthy();
-        
+
         // Verify token was saved to database
         const updatedUser = await User.findById(testUser._id);
         expect(updatedUser?.passwordResetToken).toBeTruthy();
@@ -529,7 +529,7 @@ describe('UserServiceAuth - Comprehensive Tests', () => {
         const firstResult = await UserServiceAuth.requestPasswordReset({
           email: 'reset@example.com',
         });
-        
+
         const secondResult = await UserServiceAuth.requestPasswordReset({
           email: 'reset@example.com',
         });

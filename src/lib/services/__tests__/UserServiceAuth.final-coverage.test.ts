@@ -315,16 +315,16 @@ describe('UserServiceAuth - Final Coverage Tests', () => {
       // Exercise each method to hit error paths
       await UserServiceAuth.createUser(invalidData);
       await UserServiceAuth.authenticateUser({ email: '', password: '', rememberMe: false });
-      await UserServiceAuth.changePassword('', { 
-        currentPassword: '', 
-        newPassword: '', 
-        confirmNewPassword: '' 
+      await UserServiceAuth.changePassword('', {
+        currentPassword: '',
+        newPassword: '',
+        confirmNewPassword: ''
       });
       await UserServiceAuth.requestPasswordReset({ email: '' });
-      await UserServiceAuth.resetPassword({ 
-        token: '', 
-        password: '', 
-        confirmPassword: '' 
+      await UserServiceAuth.resetPassword({
+        token: '',
+        password: '',
+        confirmPassword: ''
       });
       await UserServiceAuth.verifyEmail({ token: '' });
       await UserServiceAuth.resendVerificationEmail('');

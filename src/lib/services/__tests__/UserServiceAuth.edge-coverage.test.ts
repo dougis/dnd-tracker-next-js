@@ -29,7 +29,7 @@ describe('UserServiceAuth - Edge Coverage Tests', () => {
     it('should handle UserAlreadyExistsError specifically', async () => {
       // Mock checkUserExists to throw UserAlreadyExistsError
       const mockError = new UserAlreadyExistsError('email', 'edge@example.com');
-      
+
       jest.doMock('../UserServiceHelpers', () => ({
         checkUserExists: jest.fn().mockRejectedValue(mockError),
       }));
@@ -440,7 +440,7 @@ describe('UserServiceAuth - Edge Coverage Tests', () => {
     };
 
     it('should handle successful email verification', async () => {
-      const mockUser = createMockUser({ 
+      const mockUser = createMockUser({
         email: 'verify@example.com',
         isEmailVerified: false,
       });
@@ -520,7 +520,7 @@ describe('UserServiceAuth - Edge Coverage Tests', () => {
 
   describe('resendVerificationEmail - Edge Cases', () => {
     it('should handle successful resend for unverified user', async () => {
-      const mockUser = createMockUser({ 
+      const mockUser = createMockUser({
         email: 'resend@example.com',
         isEmailVerified: false,
       });
@@ -547,7 +547,7 @@ describe('UserServiceAuth - Edge Coverage Tests', () => {
     });
 
     it('should handle already verified email error', async () => {
-      const mockUser = createMockUser({ 
+      const mockUser = createMockUser({
         email: 'verified@example.com',
         isEmailVerified: true,
       });
