@@ -196,9 +196,7 @@ describe('Client-side Session Management', () => {
 
     it('should use custom redirect URL when provided', () => {
       setupUnauthenticatedUser();
-      renderHook(() =>
-        useRequireAuth({ redirectTo: '/custom-login' })
-      );
+      renderHook(() => useRequireAuth({ redirectTo: '/custom-login' }));
 
       expect(mockPush).toHaveBeenCalledWith('/custom-login');
     });
@@ -259,7 +257,10 @@ describe('Client-side Session Management', () => {
 
       it('should return true for exact tier match', () => {
         const session = createSessionWithUser({ subscriptionTier: 'premium' });
-        const result = ClientSessionUtils.hasSubscriptionTier(session, 'premium');
+        const result = ClientSessionUtils.hasSubscriptionTier(
+          session,
+          'premium'
+        );
         expect(result).toBe(true);
       });
 

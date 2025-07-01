@@ -2,7 +2,7 @@ import { UserServiceResponseHelpers } from '../UserServiceResponseHelpers';
 import {
   createMockUserForSerialization,
   expectDefaultUserValues,
-  TEST_USER_ID
+  TEST_USER_ID,
 } from './testUtils';
 
 describe('UserServiceResponseHelpers - Serialization Tests', () => {
@@ -12,7 +12,8 @@ describe('UserServiceResponseHelpers - Serialization Tests', () => {
   describe('safeToPublicJSON', () => {
     it('should use toPublicJSON method when available', () => {
       const userWithMethod = createMockUserForSerialization('withMethod');
-      const result = UserServiceResponseHelpers.safeToPublicJSON(userWithMethod);
+      const result =
+        UserServiceResponseHelpers.safeToPublicJSON(userWithMethod);
 
       expect(userWithMethod.toPublicJSON).toHaveBeenCalled();
       expect(result).toEqual(userWithMethod.toPublicJSON());
@@ -20,7 +21,8 @@ describe('UserServiceResponseHelpers - Serialization Tests', () => {
 
     it('should use fallback for user without toPublicJSON method', () => {
       const userWithoutMethod = createMockUserForSerialization('withoutMethod');
-      const result = UserServiceResponseHelpers.safeToPublicJSON(userWithoutMethod);
+      const result =
+        UserServiceResponseHelpers.safeToPublicJSON(userWithoutMethod);
 
       expect(result).toEqual({
         id: mockUserId,
@@ -46,7 +48,8 @@ describe('UserServiceResponseHelpers - Serialization Tests', () => {
 
     it('should handle user with string id instead of _id', () => {
       const userWithStringId = createMockUserForSerialization('withStringId');
-      const result = UserServiceResponseHelpers.safeToPublicJSON(userWithStringId);
+      const result =
+        UserServiceResponseHelpers.safeToPublicJSON(userWithStringId);
 
       expect(result.id).toBe('string-id-123');
     });
@@ -67,15 +70,18 @@ describe('UserServiceResponseHelpers - Serialization Tests', () => {
 
     it('should handle ObjectId with toString method', () => {
       const userWithObjectId = createMockUserForSerialization('withObjectId');
-      const result = UserServiceResponseHelpers.safeToPublicJSON(userWithObjectId);
+      const result =
+        UserServiceResponseHelpers.safeToPublicJSON(userWithObjectId);
 
       expect(userWithObjectId._id.toString).toHaveBeenCalled();
       expect(result.id).toBe(mockUserId);
     });
 
     it('should handle partial preferences object', () => {
-      const userWithPartialPrefs = createMockUserForSerialization('withPartialPrefs');
-      const result = UserServiceResponseHelpers.safeToPublicJSON(userWithPartialPrefs);
+      const userWithPartialPrefs =
+        createMockUserForSerialization('withPartialPrefs');
+      const result =
+        UserServiceResponseHelpers.safeToPublicJSON(userWithPartialPrefs);
 
       expect(result.preferences).toEqual({
         theme: 'dark',

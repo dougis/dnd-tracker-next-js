@@ -4,7 +4,13 @@ import { render } from '@testing-library/react';
 // Common mock for next/link
 export const mockNextLink = () => {
   jest.mock('next/link', () => {
-    return function MockLink({ children, href }: { children: React.ReactNode; href: string }) {
+    return function MockLink({
+      children,
+      href,
+    }: {
+      children: React.ReactNode;
+      href: string;
+    }) {
       return <a href={href}>{children}</a>;
     };
   });
@@ -47,7 +53,9 @@ export const renderComponent = (Component: React.ComponentType) => {
 
 // Common test helpers
 export const getSection = (screen: any, headingLevel: number = 2) => {
-  return screen.getByRole('heading', { level: headingLevel }).closest('section');
+  return screen
+    .getByRole('heading', { level: headingLevel })
+    .closest('section');
 };
 
 export const expectResponsiveLayout = (section: Element | null) => {

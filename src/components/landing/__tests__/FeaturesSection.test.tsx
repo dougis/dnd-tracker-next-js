@@ -1,7 +1,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { FeaturesSection } from '../FeaturesSection';
-import { getSection, expectResponsiveLayout, expectSemanticStructure } from './test-utils';
+import {
+  getSection,
+  expectResponsiveLayout,
+  expectSemanticStructure,
+} from './test-utils';
 
 // Mock the FeatureIcon component
 jest.mock('../FeatureIcon', () => ({
@@ -47,7 +51,9 @@ describe('FeaturesSection Component', () => {
     expect(screen.getAllByText(/lair.*action/i).length).toBeGreaterThan(0);
 
     // Should emphasize real-time collaboration
-    expect(screen.getAllByText(/real.*time|collaboration/i).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/real.*time|collaboration/i).length
+    ).toBeGreaterThan(0);
   });
 
   it('uses feature icons for visual appeal and clarity', () => {
@@ -61,7 +67,9 @@ describe('FeaturesSection Component', () => {
     render(<FeaturesSection />);
 
     // Check for feature descriptions in the actual CardDescription elements
-    const descriptions = screen.getAllByText(/rolling|tracking|management|building|actions|responsive/i);
+    const descriptions = screen.getAllByText(
+      /rolling|tracking|management|building|actions|responsive/i
+    );
     expect(descriptions.length).toBeGreaterThan(3);
     descriptions.forEach(description => {
       expect(description.textContent).toBeTruthy();
@@ -101,17 +109,23 @@ describe('FeaturesSection Component', () => {
     render(<FeaturesSection />);
 
     // Should mention DM-specific benefits
-    expect(screen.getAllByText(/dungeon.*master|dm/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/dungeon.*master|dm/i).length).toBeGreaterThan(
+      0
+    );
 
     // Should highlight combat management benefits
-    expect(screen.getAllByText(/combat|manage|track/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/combat|manage|track/i).length).toBeGreaterThan(
+      0
+    );
   });
 
   it('emphasizes mobile responsiveness for table use', () => {
     render(<FeaturesSection />);
 
     // Should mention mobile/tablet optimization
-    expect(screen.getAllByText(/mobile|tablet|responsive/i).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/mobile|tablet|responsive/i).length
+    ).toBeGreaterThan(0);
   });
 
   it('has proper semantic structure for accessibility', () => {

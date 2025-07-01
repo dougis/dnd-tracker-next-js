@@ -140,11 +140,13 @@ Each GitHub issue follows this standardized format:
 **MVP Component**: [Component Area]
 
 ## Acceptance Criteria
+
 - [ ] Specific, testable requirement
 - [ ] Another specific requirement
 - [ ] Testing requirements
 
 ## Definition of Done
+
 - [ ] Implementation complete
 - [ ] Tests written and passing
 - [ ] Code review approved

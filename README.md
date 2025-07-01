@@ -46,6 +46,7 @@ A modern, purpose-built encounter tracker that:
 ## 🛠️ **Technology Stack**
 
 ### **Frontend**
+
 - **[Next.js 15](https://nextjs.org/)** - React framework with App Router
 - **[TypeScript](https://www.typescriptlang.org/)** - Type safety and developer experience
 - **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
@@ -54,6 +55,7 @@ A modern, purpose-built encounter tracker that:
 - **[Zod](https://zod.dev/)** - Schema validation
 
 ### **Backend**
+
 - **[Next.js API Routes](https://nextjs.org/docs/api-routes/introduction)** - Serverless API endpoints
 - **[MongoDB 7.0+](https://www.mongodb.com/)** - Document database with Atlas hosting
 - **[Mongoose](https://mongoosejs.com/)** - MongoDB object modeling
@@ -61,6 +63,7 @@ A modern, purpose-built encounter tracker that:
 - **[bcryptjs](https://github.com/dcodeIO/bcrypt.js)** - Password hashing
 
 ### **DevOps & Quality**
+
 - **[Vercel](https://vercel.com/)** - Hosting and deployment
 - **[GitHub Actions](https://github.com/features/actions)** - CI/CD pipeline
 - **[Jest](https://jestjs.io/)** - Unit and integration testing
@@ -75,16 +78,19 @@ A modern, purpose-built encounter tracker that:
 All detailed documentation is maintained in the [`docs/`](./docs/) folder. Key documents include:
 
 ### **📊 Core Documentation**
+
 - **[Product Requirements Document](./docs/Product%20Requirements%20Document.md)** - Business requirements, subscription model, success metrics
 - **[High Level Design](./docs/High%20Level%20Design.md)** - Technical architecture, database design, API specifications
 - **[Project Roadmap](./docs/Project%20Roadmap.md)** - Complete task breakdown with MVP identification
 
 ### **🗓️ Development Planning**
+
 - **[12-Week MVP Development Phase Plan](./docs/12-Week%20MVP%20Development%20Phase%20Plan.md)** - Weekly sprint schedule
 - **[Project State Summary](./docs/D%26D%20Encounter%20Tracker%20-%20Project%20State%20Summary.md)** - Current development status
 - **[GitHub Issues Progress](./docs/D%26D%20Tracker%20MVP%20GitHub%20Issues%20-%20Progress%20State.md)** - Issue tracking
 
 ### **🚀 Quick References**
+
 - **[Documentation Index](./docs/README.md)** - Complete guide to all documentation
 - **[Quick Reference Guide](./docs/QUICK%20REFERENCE%20FOR%20OTHER%20CHATS.md)** - Fast project overview
 - **[Development Guide](./CLAUDE.md)** - Development instructions and commands
@@ -94,6 +100,7 @@ All detailed documentation is maintained in the [`docs/`](./docs/) folder. Key d
 ## 🎯 **MVP Features & Scope**
 
 ### **Core Functionality**
+
 - ✅ User authentication and registration
 - ✅ Character creation and management (PCs and NPCs)
 - ✅ Encounter building with participant management
@@ -103,6 +110,7 @@ All detailed documentation is maintained in the [`docs/`](./docs/) folder. Key d
 - ✅ Combat state persistence
 
 ### **Unique Features**
+
 - 🎲 **Lair Actions** - Support for initiative count 20 triggers (competitive advantage)
 - ⚔️ **Multiclass Support** - Proper handling of multiclass characters
 - 📱 **Mobile-First Design** - Optimized for DMs using tablets/phones at the table
@@ -113,15 +121,16 @@ All detailed documentation is maintained in the [`docs/`](./docs/) folder. Key d
 
 ### **Freemium Subscription Tiers**
 
-| Tier | Price | Parties | Encounters | Creatures | Features |
-|------|-------|---------|------------|-----------|----------|
-| **Free Adventurer** | $0/month | 1 | 3 | 10 | Core features |
-| **Seasoned Adventurer** | $4.99/month | 3 | 15 | 50 | Import/Export |
-| **Expert Dungeon Master** | $9.99/month | 10 | 50 | 200 | Advanced features |
-| **Master of Dungeons** | $19.99/month | 25 | 100 | 500 | Priority support |
-| **Guild Master** | $39.99/month | Unlimited | Unlimited | Unlimited | Organization tools |
+| Tier                      | Price        | Parties   | Encounters | Creatures | Features           |
+| ------------------------- | ------------ | --------- | ---------- | --------- | ------------------ |
+| **Free Adventurer**       | $0/month     | 1         | 3          | 10        | Core features      |
+| **Seasoned Adventurer**   | $4.99/month  | 3         | 15         | 50        | Import/Export      |
+| **Expert Dungeon Master** | $9.99/month  | 10        | 50         | 200       | Advanced features  |
+| **Master of Dungeons**    | $19.99/month | 25        | 100        | 500       | Priority support   |
+| **Guild Master**          | $39.99/month | Unlimited | Unlimited  | Unlimited | Organization tools |
 
 ### **Revenue Targets**
+
 - **12 Months**: $25,000+ MRR with 5,000+ users
 - **Conversion Rate**: 15%+ free-to-paid conversion
 - **LTV/CAC**: >4:1 ratio for sustainable growth
@@ -131,6 +140,7 @@ All detailed documentation is maintained in the [`docs/`](./docs/) folder. Key d
 ## 🚀 **Getting Started**
 
 ### **Prerequisites**
+
 - Node.js 20.x or higher
 - MongoDB 7.0+ (local or Atlas account)
 - Git
@@ -207,6 +217,7 @@ dnd-tracker-next-js/
 ## 📊 **Development Progress**
 
 ### **Completed ✅**
+
 - Project setup and configuration
 - CI/CD pipeline with GitHub Actions
 - Database connection and models
@@ -215,11 +226,13 @@ dnd-tracker-next-js/
 - Basic UI components with shadcn/ui
 
 ### **In Progress 🚧**
+
 - Expanding test coverage (Issues #134-141)
 - Character model implementation
 - Character creation forms
 
 ### **Upcoming 📅**
+
 - Character management UI
 - Encounter data models
 - Combat tracking system
@@ -232,12 +245,14 @@ See [GitHub Issues](https://github.com/dougis/dnd-tracker-next-js/issues) for de
 ## 🤝 **Contributing**
 
 ### **For Developers**
+
 1. Review documentation in [`docs/`](./docs/) folder
 2. Check [GitHub Issues](https://github.com/dougis/dnd-tracker-next-js/issues) for available tasks
 3. Follow the established code patterns and testing requirements
 4. Submit PRs with comprehensive test coverage
 
 ### **Code Standards**
+
 - TypeScript for all new code
 - 80%+ test coverage for new features
 - Follow existing patterns in `src/lib/services/`

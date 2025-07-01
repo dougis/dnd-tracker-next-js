@@ -8,7 +8,16 @@ describe('Validation Rules', () => {
 
       testRuleWithValues(
         rule,
-        ['valid string', ' valid with spaces ', 123, 0, false, true, [1], ['item']],
+        [
+          'valid string',
+          ' valid with spaces ',
+          123,
+          0,
+          false,
+          true,
+          [1],
+          ['item'],
+        ],
         ['', '   ', null, undefined, []]
       );
 
@@ -28,11 +37,7 @@ describe('Validation Rules', () => {
     it('should validate minimum length', () => {
       const rule = validationRules.minLength(5);
 
-      testRuleWithValues(
-        rule,
-        ['hello', 'hello world', ''],
-        ['hi', 'ab']
-      );
+      testRuleWithValues(rule, ['hello', 'hello world', ''], ['hi', 'ab']);
 
       expect(rule.message).toBe('Must be at least 5 characters');
     });
@@ -88,14 +93,9 @@ describe('Validation Rules', () => {
           testData.validEmail,
           'user.name@domain.co.uk',
           'user+tag@example.org',
-          ''
+          '',
         ],
-        [
-          testData.invalidEmail,
-          'test@',
-          '@example.com',
-          'test.example.com'
-        ]
+        [testData.invalidEmail, 'test@', '@example.com', 'test.example.com']
       );
 
       expect(rule.message).toBe('Must be a valid email address');
@@ -141,11 +141,7 @@ describe('Validation Rules', () => {
     it('should validate minimum value', () => {
       const rule = validationRules.min(10);
 
-      testRuleWithValues(
-        rule,
-        [10, '10', 15, '15', ''],
-        [0, '0', 5, '5']
-      );
+      testRuleWithValues(rule, [10, '10', 15, '15', ''], [0, '0', 5, '5']);
 
       expect(rule.message).toBe('Must be at least 10');
     });
@@ -215,14 +211,14 @@ describe('Validation Rules', () => {
     });
 
     it('should work with complex patterns', () => {
-      const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-      const rule = validationRules.pattern(strongPasswordRegex, 'Password must be strong');
-
-      testRuleWithValues(
-        rule,
-        ['StrongP@ss1', ''],
-        ['weakpass']
+      const strongPasswordRegex =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      const rule = validationRules.pattern(
+        strongPasswordRegex,
+        'Password must be strong'
       );
+
+      testRuleWithValues(rule, ['StrongP@ss1', ''], ['weakpass']);
     });
   });
 });

@@ -3,7 +3,12 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
 import { Session } from 'next-auth';
-import { hasRequiredTier, getUserTier, extractUserId, extractUserEmail } from './session-shared';
+import {
+  hasRequiredTier,
+  getUserTier,
+  extractUserId,
+  extractUserEmail,
+} from './session-shared';
 
 /**
  * Session context type definition
@@ -73,7 +78,9 @@ function createRefreshFunction(update: any) {
 /**
  * Session context provider component
  */
-export function SessionContextProvider({ children }: SessionContextProviderProps) {
+export function SessionContextProvider({
+  children,
+}: SessionContextProviderProps) {
   const { data: session, status, update } = useSession();
   const userInfo = extractUserInfo(session);
   const hasMinimumTier = createTierChecker(session, userInfo.subscriptionTier);
@@ -102,7 +109,9 @@ export function useSessionContext(): SessionContextType {
   const context = useContext(SessionContext);
 
   if (context === undefined) {
-    throw new Error('useSessionContext must be used within a SessionContextProvider');
+    throw new Error(
+      'useSessionContext must be used within a SessionContextProvider'
+    );
   }
 
   return context;

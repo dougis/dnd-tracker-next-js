@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken, JWT } from 'next-auth/jwt';
-import { hasRequiredTier, getUserTier, extractUserId, extractUserEmail } from './session-shared';
+import {
+  hasRequiredTier,
+  getUserTier,
+  extractUserId,
+  extractUserEmail,
+} from './session-shared';
 
 /**
  * List of protected API route prefixes that require authentication
@@ -16,11 +21,7 @@ const PROTECTED_API_ROUTES = [
 /**
  * List of public API routes that don't require authentication
  */
-const PUBLIC_API_ROUTES = [
-  '/api/auth',
-  '/api/health',
-  '/api/public',
-];
+const PUBLIC_API_ROUTES = ['/api/auth', '/api/health', '/api/public'];
 
 /**
  * Check if a route matches any in the given list
@@ -91,13 +92,18 @@ export async function requireAuthentication(
 /**
  * Type for authenticated handler functions
  */
-type AuthenticatedHandler = (_request: NextRequest, _token: JWT) => Promise<NextResponse>;
+type AuthenticatedHandler = (
+  _request: NextRequest,
+  _token: JWT
+) => Promise<NextResponse>;
 
 /**
  * Higher-order function to create authenticated API handlers
  */
 export function createAuthenticatedHandler(handler: AuthenticatedHandler) {
-  return async function authenticatedHandler(request: NextRequest): Promise<NextResponse> {
+  return async function authenticatedHandler(
+    request: NextRequest
+  ): Promise<NextResponse> {
     const token = await getValidatedToken(request);
 
     if (!token) {
@@ -120,7 +126,6 @@ export function createAuthenticatedHandler(handler: AuthenticatedHandler) {
  * Utility class for creating consistent API responses
  */
 export class ApiResponse {
-
   /**
    * Create a success response
    */
@@ -138,7 +143,9 @@ export class ApiResponse {
   /**
    * Create an unauthorized response
    */
-  static unauthorized(message: string = 'Authentication required'): NextResponse {
+  static unauthorized(
+    message: string = 'Authentication required'
+  ): NextResponse {
     return NextResponse.json({ error: message }, { status: 401 });
   }
 
@@ -168,14 +175,10 @@ export class ApiResponse {
  * Session utilities for checking authentication state
  */
 export class SessionUtils {
-
   /**
    * Check if user has required subscription tier
    */
-  static hasSubscriptionTier(
-    token: JWT | null,
-    requiredTier: string
-  ): boolean {
+  static hasSubscriptionTier(token: JWT | null, requiredTier: string): boolean {
     if (!token) return false;
     const userTier = getUserTier(token);
     return hasRequiredTier(userTier, requiredTier);

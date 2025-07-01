@@ -134,7 +134,7 @@ describe('Authentication System', () => {
         error: {
           message: 'User not found',
           code: 'USER_NOT_FOUND',
-          statusCode: 404
+          statusCode: 404,
         },
       });
 
@@ -187,7 +187,7 @@ describe('Authentication System', () => {
         error: {
           message: 'Invalid credentials',
           code: 'INVALID_CREDENTIALS',
-          statusCode: 401
+          statusCode: 401,
         },
       });
 
@@ -211,7 +211,7 @@ describe('Authentication System', () => {
         error: {
           message: 'User not found',
           code: 'USER_NOT_FOUND',
-          statusCode: 404
+          statusCode: 404,
         },
       });
 
@@ -370,7 +370,7 @@ describe('Authentication System', () => {
         error: {
           message: 'Invalid email',
           code: 'INVALID_EMAIL',
-          statusCode: 400
+          statusCode: 400,
         },
       });
 
@@ -386,7 +386,7 @@ describe('Authentication System', () => {
         error: {
           message: 'User not found',
           code: 'USER_NOT_FOUND',
-          statusCode: 404
+          statusCode: 404,
         },
       });
 

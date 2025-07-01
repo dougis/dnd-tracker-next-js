@@ -391,7 +391,7 @@ Our ESLint setup has been optimized to work harmoniously with Codacy static anal
 **ESLint Rules Covered by Codacy:**
 
 - `no-irregular-whitespace` - Error level detection
-- `no-regex-spaces` - Warning level detection  
+- `no-regex-spaces` - Warning level detection
 - `no-multiple-empty-lines` - Formatting rules coverage
 - `prefer-const` - ES6/best practice rules
 - `no-var` - ES6 modernization rules
@@ -407,7 +407,7 @@ Our ESLint setup has been optimized to work harmoniously with Codacy static anal
 **Tool Priority Order:**
 
 1. **Codacy** - Primary static analysis and quality gates
-2. **ESLint** - Code quality and custom project rules  
+2. **ESLint** - Code quality and custom project rules
 3. **Prettier** - Code formatting (integrated with ESLint)
 
 ### 7.2 Testing Strategy

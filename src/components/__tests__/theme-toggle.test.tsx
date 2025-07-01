@@ -18,7 +18,9 @@ jest.mock('@/components/ui/button', () => ({
 }));
 
 jest.mock('@/components/ui/dropdown-menu', () => ({
-  DropdownMenu: ({ children }: any) => <div data-testid="dropdown-menu">{children}</div>,
+  DropdownMenu: ({ children }: any) => (
+    <div data-testid="dropdown-menu">{children}</div>
+  ),
   DropdownMenuTrigger: ({ children, asChild }: any) =>
     asChild ? children : <div data-testid="dropdown-trigger">{children}</div>,
   DropdownMenuContent: ({ children, align }: any) => (
@@ -77,7 +79,7 @@ describe('ThemeToggle', () => {
     mockLocalStorage.getItem.mockReturnValue(null);
 
     // Default matchMedia mock behavior
-    mockMatchMedia.mockImplementation((query) => ({
+    mockMatchMedia.mockImplementation(query => ({
       matches: query === '(prefers-color-scheme: dark)' ? false : true,
       media: query,
       onchange: null,
@@ -153,7 +155,10 @@ describe('ThemeToggle', () => {
       const lightOption = screen.getByText('Light');
       await user.click(lightOption);
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('dnd-tracker-theme', 'light');
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'dnd-tracker-theme',
+        'light'
+      );
       expect(document.documentElement.classList.contains('light')).toBe(true);
     });
 
@@ -164,7 +169,10 @@ describe('ThemeToggle', () => {
       const darkOption = screen.getByText('Dark');
       await user.click(darkOption);
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('dnd-tracker-theme', 'dark');
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'dnd-tracker-theme',
+        'dark'
+      );
       expect(document.documentElement.classList.contains('dark')).toBe(true);
     });
 
@@ -172,7 +180,7 @@ describe('ThemeToggle', () => {
       const user = userEvent.setup();
 
       // Mock system preference as light
-      mockMatchMedia.mockImplementation((query) => ({
+      mockMatchMedia.mockImplementation(query => ({
         matches: query === '(prefers-color-scheme: dark)' ? false : true,
         media: query,
         onchange: null,
@@ -188,7 +196,10 @@ describe('ThemeToggle', () => {
       const systemOption = screen.getByText('System');
       await user.click(systemOption);
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('dnd-tracker-theme', 'system');
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'dnd-tracker-theme',
+        'system'
+      );
       expect(document.documentElement.classList.contains('light')).toBe(true);
     });
   });
@@ -219,7 +230,10 @@ describe('ThemeToggle', () => {
       const lightOption = screen.getByText('Light');
       await user.click(lightOption); // Testing click interaction
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('dnd-tracker-theme', 'light');
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'dnd-tracker-theme',
+        'light'
+      );
     });
 
     it('supports touch interaction', async () => {
@@ -232,7 +246,10 @@ describe('ThemeToggle', () => {
       fireEvent.touchEnd(darkOption);
       fireEvent.click(darkOption);
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('dnd-tracker-theme', 'dark');
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'dnd-tracker-theme',
+        'dark'
+      );
     });
   });
 
@@ -376,7 +393,9 @@ describe('ThemeToggle', () => {
         throw new Error('localStorage quota exceeded');
       });
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       renderThemeToggle();
 
@@ -414,4 +433,3 @@ describe('ThemeToggle', () => {
     });
   });
 });
-

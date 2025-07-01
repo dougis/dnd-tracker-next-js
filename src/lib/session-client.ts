@@ -4,7 +4,12 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Session } from 'next-auth';
-import { hasRequiredTier, getUserTier, extractUserId, extractUserEmail } from './session-shared';
+import {
+  hasRequiredTier,
+  getUserTier,
+  extractUserId,
+  extractUserEmail,
+} from './session-shared';
 
 /**
  * Authentication state interface
@@ -82,7 +87,10 @@ export function useSessionGuard(config: RedirectConfig): void {
   useEffect(() => {
     if (status !== 'unauthenticated') return;
 
-    const redirectUrl = buildRedirectUrl(config.redirectTo, config.includeCallbackUrl);
+    const redirectUrl = buildRedirectUrl(
+      config.redirectTo,
+      config.includeCallbackUrl
+    );
     performRedirect(router, redirectUrl, config.replace);
   }, [status, router, config]);
 }
@@ -114,7 +122,6 @@ export function useRequireAuth(options: RequireAuthOptions = {}): {
  * Utility functions for client-side session management
  */
 export class ClientSessionUtils {
-
   /**
    * Check if user has required subscription tier
    */
@@ -168,7 +175,7 @@ export async function performLogout(): Promise<void> {
     // Sign out with redirect to home page
     await signOut({
       callbackUrl: '/',
-      redirect: true
+      redirect: true,
     });
   } catch (error) {
     console.error('Logout error:', error);

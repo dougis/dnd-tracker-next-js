@@ -1,5 +1,11 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 
@@ -14,8 +20,8 @@ const pricingTiers = [
       '3 encounters',
       '10 creatures',
       'Basic initiative tracking',
-      'HP/AC management'
-    ]
+      'HP/AC management',
+    ],
   },
   {
     name: 'Seasoned Adventurer',
@@ -27,8 +33,8 @@ const pricingTiers = [
       '15 encounters',
       '50 creatures',
       'Advanced encounter tools',
-      'Character import/export'
-    ]
+      'Character import/export',
+    ],
   },
   {
     name: 'Expert Dungeon Master',
@@ -40,8 +46,8 @@ const pricingTiers = [
       '50 encounters',
       '200 creatures',
       'Lair actions support',
-      'Advanced analytics'
-    ]
+      'Advanced analytics',
+    ],
   },
   {
     name: 'Master of Dungeons',
@@ -53,8 +59,8 @@ const pricingTiers = [
       '100 encounters',
       '500 creatures',
       'Priority support',
-      'Advanced customization'
-    ]
+      'Advanced customization',
+    ],
   },
   {
     name: 'Guild Master',
@@ -66,9 +72,9 @@ const pricingTiers = [
       'Unlimited encounters',
       'Unlimited creatures',
       'Organization features',
-      'Team management'
-    ]
-  }
+      'Team management',
+    ],
+  },
 ];
 
 export function PricingSection() {
@@ -87,9 +93,16 @@ export function PricingSection() {
         {pricingTiers.map((tier, index) => (
           <Card key={index} className="relative">
             <CardHeader>
-              {tier.popular && <Badge variant="secondary" className="w-fit">Most Popular</Badge>}
+              {tier.popular && (
+                <Badge variant="secondary" className="w-fit">
+                  Most Popular
+                </Badge>
+              )}
               <CardTitle>{tier.name}</CardTitle>
-              <div className="text-3xl font-bold">{tier.price}<span className="text-lg font-normal">/month</span></div>
+              <div className="text-3xl font-bold">
+                {tier.price}
+                <span className="text-lg font-normal">/month</span>
+              </div>
               <CardDescription>{tier.description}</CardDescription>
             </CardHeader>
             <CardContent>
@@ -98,8 +111,14 @@ export function PricingSection() {
                   <li key={featureIndex}>✓ {feature}</li>
                 ))}
               </ul>
-              <Button asChild className={`w-full mt-6 ${tier.popular ? '' : 'variant-outline'}`} variant={tier.popular ? 'default' : 'outline'}>
-                <Link href="/signup">{tier.popular ? 'Start Free' : 'Choose Plan'}</Link>
+              <Button
+                asChild
+                className={`w-full mt-6 ${tier.popular ? '' : 'variant-outline'}`}
+                variant={tier.popular ? 'default' : 'outline'}
+              >
+                <Link href="/signup">
+                  {tier.popular ? 'Start Free' : 'Choose Plan'}
+                </Link>
               </Button>
             </CardContent>
           </Card>

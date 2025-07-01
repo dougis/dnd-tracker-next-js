@@ -33,7 +33,8 @@ jest.mock('../UserServiceHelpers', () => ({
 import { convertLeansUsersToPublic } from '../UserServiceHelpers';
 const mockedConvertLeansUsersToPublic = jest.mocked(convertLeansUsersToPublic);
 
-const { mockUser, mockSort, mockSkip, mockLimit, mockLean, resetMocks } = setupUserMocks();
+const { mockUser, mockSort, mockSkip, mockLimit, mockLean, resetMocks } =
+  setupUserMocks();
 
 describe('UserServiceQueryHelpers', () => {
   beforeEach(resetMocks);
@@ -165,33 +166,64 @@ describe('UserServiceQueryHelpers', () => {
   describe('executeFullQuery', () => {
     it('should execute full query chain with pagination', async () => {
       await executeQueryExecutionTest(
-        { role: 'user' }, 10, 5, executeFullQuery,
-        mockUser, mockSort, mockSkip, mockLimit, mockLean,
-        createMockUsers(1), 25
+        { role: 'user' },
+        10,
+        5,
+        executeFullQuery,
+        mockUser,
+        mockSort,
+        mockSkip,
+        mockLimit,
+        mockLean,
+        createMockUsers(1),
+        25
       );
     });
 
     it('should handle zero skip and limit', async () => {
       await executeQueryExecutionTest(
-        { role: 'admin' }, 0, 0, executeFullQuery,
-        mockUser, mockSort, mockSkip, mockLimit, mockLean,
-        [], 0
+        { role: 'admin' },
+        0,
+        0,
+        executeFullQuery,
+        mockUser,
+        mockSort,
+        mockSkip,
+        mockLimit,
+        mockLean,
+        [],
+        0
       );
     });
 
     it('should handle empty query', async () => {
       await executeQueryExecutionTest(
-        {}, 0, 10, executeFullQuery,
-        mockUser, mockSort, mockSkip, mockLimit, mockLean,
+        {},
+        0,
+        10,
+        executeFullQuery,
+        mockUser,
+        mockSort,
+        mockSkip,
+        mockLimit,
+        mockLean,
         createMockUsers(2)
       );
     });
 
     it('should handle Promise.all execution', async () => {
       await executeQueryExecutionTest(
-        { role: 'user' }, 5, 3, executeFullQuery,
-        mockUser, mockSort, mockSkip, mockLimit, mockLean,
-        createMockUsers(1), 10
+        { role: 'user' },
+        5,
+        3,
+        executeFullQuery,
+        mockUser,
+        mockSort,
+        mockSkip,
+        mockLimit,
+        mockLean,
+        createMockUsers(1),
+        10
       );
     });
 
@@ -206,7 +238,9 @@ describe('UserServiceQueryHelpers', () => {
 
     it('should handle database errors in count operation', async () => {
       mockLean.mockResolvedValue([]);
-      mockUser.countDocuments.mockRejectedValue(new Error('Count operation failed'));
+      mockUser.countDocuments.mockRejectedValue(
+        new Error('Count operation failed')
+      );
 
       await testDatabaseError(
         () => executeFullQuery({ role: 'user' }, 0, 10),
@@ -219,7 +253,13 @@ describe('UserServiceQueryHelpers', () => {
     it('should use executeBasicQuery when in test environment (mock without sort)', async () => {
       const mockUsers = [createMockUsers(1)[0]];
       const testSetup = setupExecuteUserQueryTest(
-        'test', { role: 'user' }, 0, 10, mockUsers, 1, mockUser
+        'test',
+        { role: 'user' },
+        0,
+        10,
+        mockUsers,
+        1,
+        mockUser
       );
 
       const result = await testSetup.executeTest(executeUserQuery);
@@ -229,8 +269,17 @@ describe('UserServiceQueryHelpers', () => {
     it('should use executeFullQuery when in production environment', async () => {
       const mockUsers = createMockUsers(1);
       const testSetup = setupExecuteUserQueryTest(
-        'production', { role: 'admin' }, 5, 15, mockUsers, 1,
-        mockUser, mockSort, mockSkip, mockLimit, mockLean
+        'production',
+        { role: 'admin' },
+        5,
+        15,
+        mockUsers,
+        1,
+        mockUser,
+        mockSort,
+        mockSkip,
+        mockLimit,
+        mockLean
       );
 
       await testSetup.executeTest(executeUserQuery);
@@ -253,34 +302,67 @@ describe('UserServiceQueryHelpers', () => {
     });
 
     it('should format paginated result with converted users', () => {
-      const testSetup = setupFormatPaginatedResultTest(25, 2, 10, 3, mockedConvertLeansUsersToPublic, 2);
+      const testSetup = setupFormatPaginatedResultTest(
+        25,
+        2,
+        10,
+        3,
+        mockedConvertLeansUsersToPublic,
+        2
+      );
       const result = testSetup.executeTest(formatPaginatedResult);
 
-      expect(mockedConvertLeansUsersToPublic).toHaveBeenCalledWith(testSetup.users);
+      expect(mockedConvertLeansUsersToPublic).toHaveBeenCalledWith(
+        testSetup.users
+      );
       expect(result.data).toEqual(testSetup.publicUsers);
     });
 
     it('should handle empty users array', () => {
-      testEmptyArrayPagination(formatPaginatedResult, mockedConvertLeansUsersToPublic);
+      testEmptyArrayPagination(
+        formatPaginatedResult,
+        mockedConvertLeansUsersToPublic
+      );
     });
 
     it('should calculate totalPages correctly for exact division', () => {
-      const testSetup = setupFormatPaginatedResultTest(20, 2, 10, 2, mockedConvertLeansUsersToPublic);
+      const testSetup = setupFormatPaginatedResultTest(
+        20,
+        2,
+        10,
+        2,
+        mockedConvertLeansUsersToPublic
+      );
       testSetup.executeTest(formatPaginatedResult);
     });
 
     it('should calculate totalPages correctly for partial pages', () => {
-      const testSetup = setupFormatPaginatedResultTest(23, 3, 10, 3, mockedConvertLeansUsersToPublic);
+      const testSetup = setupFormatPaginatedResultTest(
+        23,
+        3,
+        10,
+        3,
+        mockedConvertLeansUsersToPublic
+      );
       testSetup.executeTest(formatPaginatedResult);
     });
 
     it('should handle single user per page', () => {
-      const testSetup = setupFormatPaginatedResultTest(5, 3, 1, 5, mockedConvertLeansUsersToPublic);
+      const testSetup = setupFormatPaginatedResultTest(
+        5,
+        3,
+        1,
+        5,
+        mockedConvertLeansUsersToPublic
+      );
       testSetup.executeTest(formatPaginatedResult);
     });
 
     it('should handle zero total with non-zero limit', () => {
-      testZeroTotalWithLimit(formatPaginatedResult, mockedConvertLeansUsersToPublic);
+      testZeroTotalWithLimit(
+        formatPaginatedResult,
+        mockedConvertLeansUsersToPublic
+      );
     });
 
     it('should handle large numbers', () => {

@@ -11,7 +11,18 @@ import type { FormModalProps } from '../FormModal';
 
 // Mock components
 jest.mock('../Modal', () => ({
-  Modal: ({ children, footer, onOpenChange, open: _open, title, description, size, className, closeOnOverlayClick, closeOnEscapeKey }: any) => (
+  Modal: ({
+    children,
+    footer,
+    onOpenChange,
+    open: _open,
+    title,
+    description,
+    size,
+    className,
+    closeOnOverlayClick,
+    closeOnEscapeKey,
+  }: any) => (
     <div
       data-testid="modal"
       data-open={_open ? 'true' : 'false'}
@@ -24,13 +35,21 @@ jest.mock('../Modal', () => ({
     >
       <div data-testid="modal-content">{children}</div>
       <div data-testid="modal-footer">{footer}</div>
-      <button data-testid="modal-close" onClick={() => onOpenChange(false)}>Close Modal</button>
+      <button data-testid="modal-close" onClick={() => onOpenChange(false)}>
+        Close Modal
+      </button>
     </div>
   ),
 }));
 
 jest.mock('@/components/forms/FormWrapper', () => ({
-  FormWrapper: ({ children, onSubmit, isSubmitting, className, ...props }: any) => {
+  FormWrapper: ({
+    children,
+    onSubmit,
+    isSubmitting,
+    className,
+    ...props
+  }: any) => {
     const handleSubmit = (e: any) => {
       e.preventDefault();
       if (onSubmit) {
@@ -54,7 +73,11 @@ jest.mock('@/components/forms/FormWrapper', () => ({
 
 jest.mock('@/components/forms/FormSubmitButton', () => ({
   FormSubmitButton: ({ children, className }: any) => (
-    <button type="submit" data-testid="form-submit-button" data-classname={className}>
+    <button
+      type="submit"
+      data-testid="form-submit-button"
+      data-classname={className}
+    >
       {children}
     </button>
   ),
@@ -76,7 +99,9 @@ jest.mock('@/components/ui/button', () => ({
 }));
 
 // Test utilities
-const createDefaultProps = (overrides: Partial<FormModalProps> = {}): FormModalProps => ({
+const createDefaultProps = (
+  overrides: Partial<FormModalProps> = {}
+): FormModalProps => ({
   open: true,
   onOpenChange: jest.fn(),
   children: <div>Form content</div>,
@@ -109,8 +134,14 @@ describe('FormModal', () => {
       renderFormModal();
 
       expect(screen.getByTestId('modal')).toHaveAttribute('data-open', 'true');
-      expect(screen.getByTestId('modal')).toHaveAttribute('data-title', 'Test Form Modal');
-      expect(screen.getByTestId('modal')).toHaveAttribute('data-description', 'Test description');
+      expect(screen.getByTestId('modal')).toHaveAttribute(
+        'data-title',
+        'Test Form Modal'
+      );
+      expect(screen.getByTestId('modal')).toHaveAttribute(
+        'data-description',
+        'Test description'
+      );
       expect(screen.getByText('Form content')).toBeInTheDocument();
       expect(screen.getByText('Submit')).toBeInTheDocument();
       expect(screen.getByText('Cancel')).toBeInTheDocument();
@@ -173,7 +204,9 @@ describe('FormModal', () => {
     });
 
     it('handles error configuration correctly', () => {
-      const onSubmit = jest.fn().mockRejectedValue(new Error('Submission failed'));
+      const onSubmit = jest
+        .fn()
+        .mockRejectedValue(new Error('Submission failed'));
       const onOpenChange = jest.fn();
       renderFormModal({ onSubmit, onOpenChange });
 
@@ -207,8 +240,14 @@ describe('FormModal', () => {
       await user.click(screen.getByText('Cancel'));
 
       expect(onCancel).not.toHaveBeenCalled();
-      expect(screen.getByTestId('modal')).toHaveAttribute('data-close-on-overlay', 'false');
-      expect(screen.getByTestId('modal')).toHaveAttribute('data-close-on-escape', 'false');
+      expect(screen.getByTestId('modal')).toHaveAttribute(
+        'data-close-on-overlay',
+        'false'
+      );
+      expect(screen.getByTestId('modal')).toHaveAttribute(
+        'data-close-on-escape',
+        'false'
+      );
     });
   });
 
@@ -216,27 +255,45 @@ describe('FormModal', () => {
     it('resets form when modal closes and resetOnClose is true', async () => {
       const reset = jest.fn();
       const propsWithReset = { ...createDefaultProps({ open: true }), reset };
-      const { rerender } = render(
-        <FormModal {...propsWithReset} />
+      const { rerender } = render(<FormModal {...propsWithReset} />);
+
+      rerender(
+        <FormModal {...{ ...createDefaultProps({ open: false }), reset }} />
       );
 
-      rerender(<FormModal {...{ ...createDefaultProps({ open: false }), reset }} />);
-
-      act(() => { jest.advanceTimersByTime(200); });
+      act(() => {
+        jest.advanceTimersByTime(200);
+      });
 
       expect(reset).toHaveBeenCalled();
     });
 
     it('does not reset when resetOnClose is false', async () => {
       const reset = jest.fn();
-      const propsWithReset = { ...createDefaultProps({ open: true, config: { title: 'Test', resetOnClose: false } }), reset };
-      const { rerender } = render(
-        <FormModal {...propsWithReset} />
+      const propsWithReset = {
+        ...createDefaultProps({
+          open: true,
+          config: { title: 'Test', resetOnClose: false },
+        }),
+        reset,
+      };
+      const { rerender } = render(<FormModal {...propsWithReset} />);
+
+      rerender(
+        <FormModal
+          {...{
+            ...createDefaultProps({
+              open: false,
+              config: { title: 'Test', resetOnClose: false },
+            }),
+            reset,
+          }}
+        />
       );
 
-      rerender(<FormModal {...{ ...createDefaultProps({ open: false, config: { title: 'Test', resetOnClose: false } }), reset }} />);
-
-      act(() => { jest.advanceTimersByTime(200); });
+      act(() => {
+        jest.advanceTimersByTime(200);
+      });
 
       expect(reset).not.toHaveBeenCalled();
     });
@@ -245,21 +302,30 @@ describe('FormModal', () => {
 
 describe('useFormModal Hook', () => {
   function TestComponent() {
-    const { isOpen, openModal, closeModal, FormModal: FormModalComponent } = useFormModal();
+    const {
+      isOpen,
+      openModal,
+      closeModal,
+      FormModal: FormModalComponent,
+    } = useFormModal();
 
     return (
       <div>
         <button
           data-testid="open-button"
-          onClick={() => openModal({
-            children: <div>Hook content</div>,
-            config: { title: 'Hook Modal' },
-            onSubmit: jest.fn(),
-          })}
+          onClick={() =>
+            openModal({
+              children: <div>Hook content</div>,
+              config: { title: 'Hook Modal' },
+              onSubmit: jest.fn(),
+            })
+          }
         >
           Open
         </button>
-        <button data-testid="close-button" onClick={closeModal}>Close</button>
+        <button data-testid="close-button" onClick={closeModal}>
+          Close
+        </button>
         <div data-testid="is-open">{isOpen ? 'open' : 'closed'}</div>
         <FormModalComponent />
       </div>
@@ -295,9 +361,17 @@ describe('Quick Modal Variants', () => {
 
   describe('QuickAddModal', () => {
     it('renders with default add configuration', () => {
-      render(<QuickAddModal {...quickModalProps} config={{ title: '', description: 'Add description' }} />);
+      render(
+        <QuickAddModal
+          {...quickModalProps}
+          config={{ title: '', description: 'Add description' }}
+        />
+      );
 
-      expect(screen.getByTestId('modal')).toHaveAttribute('data-title', 'Add New Item');
+      expect(screen.getByTestId('modal')).toHaveAttribute(
+        'data-title',
+        'Add New Item'
+      );
       expect(screen.getByText('Add')).toBeInTheDocument();
     });
 
@@ -309,16 +383,27 @@ describe('Quick Modal Variants', () => {
         />
       );
 
-      expect(screen.getByTestId('modal')).toHaveAttribute('data-title', 'Add Character');
+      expect(screen.getByTestId('modal')).toHaveAttribute(
+        'data-title',
+        'Add Character'
+      );
       expect(screen.getByText('Create')).toBeInTheDocument();
     });
   });
 
   describe('QuickEditModal', () => {
     it('renders with default edit configuration', () => {
-      render(<QuickEditModal {...quickModalProps} config={{ title: '', description: 'Edit description' }} />);
+      render(
+        <QuickEditModal
+          {...quickModalProps}
+          config={{ title: '', description: 'Edit description' }}
+        />
+      );
 
-      expect(screen.getByTestId('modal')).toHaveAttribute('data-title', 'Edit Item');
+      expect(screen.getByTestId('modal')).toHaveAttribute(
+        'data-title',
+        'Edit Item'
+      );
       expect(screen.getByText('Save Changes')).toBeInTheDocument();
     });
 
@@ -330,7 +415,10 @@ describe('Quick Modal Variants', () => {
         />
       );
 
-      expect(screen.getByTestId('modal')).toHaveAttribute('data-title', 'Edit Character');
+      expect(screen.getByTestId('modal')).toHaveAttribute(
+        'data-title',
+        'Edit Character'
+      );
       expect(screen.getByText('Update')).toBeInTheDocument();
     });
   });

@@ -19,7 +19,7 @@ import {
   testFilterInvalidUsers,
   TEST_USER_ID,
   TEST_EMAIL,
-  TEST_USERNAME
+  TEST_USERNAME,
 } from './testUtils';
 import { setupBasicUserMocks } from './mockSetup';
 
@@ -67,16 +67,22 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should throw UserAlreadyExistsError when both email and username exist', async () => {
-      const existingEmailUser = createExistingUserWithEmail(TEST_EMAIL, 'user1');
-      const existingUsernameUser = createExistingUserWithUsername(TEST_USERNAME, 'user2');
+      const existingEmailUser = createExistingUserWithEmail(
+        TEST_EMAIL,
+        'user1'
+      );
+      const existingUsernameUser = createExistingUserWithUsername(
+        TEST_USERNAME,
+        'user2'
+      );
 
       mockUser.findByEmail.mockResolvedValue(existingEmailUser as any);
       mockUser.findByUsername.mockResolvedValue(existingUsernameUser as any);
 
       // Should throw for email first (order of checks)
-      await expect(
-        checkUserExists(TEST_EMAIL, TEST_USERNAME)
-      ).rejects.toThrow(`User already exists with email: ${TEST_EMAIL}`);
+      await expect(checkUserExists(TEST_EMAIL, TEST_USERNAME)).rejects.toThrow(
+        `User already exists with email: ${TEST_EMAIL}`
+      );
     });
 
     it('should handle empty string inputs', async () => {
@@ -89,7 +95,9 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should handle database errors gracefully', async () => {
-      mockUser.findByEmail.mockRejectedValue(new Error('Database connection failed'));
+      mockUser.findByEmail.mockRejectedValue(
+        new Error('Database connection failed')
+      );
 
       await testDatabaseError(
         () => checkUserExists(TEST_EMAIL, TEST_USERNAME),
@@ -102,9 +110,7 @@ describe('UserServiceHelpers', () => {
     const userId = TEST_USER_ID;
 
     it('should not throw when no email or username provided', async () => {
-      await expect(
-        checkProfileUpdateConflicts(userId)
-      ).resolves.not.toThrow();
+      await expect(checkProfileUpdateConflicts(userId)).resolves.not.toThrow();
 
       expect(mockUser.findByEmail).not.toHaveBeenCalled();
       expect(mockUser.findByUsername).not.toHaveBeenCalled();
@@ -131,7 +137,9 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should not throw when email belongs to same user', async () => {
-      const existingUser = createUserWithObjectId(userId, { email: TEST_EMAIL });
+      const existingUser = createUserWithObjectId(userId, {
+        email: TEST_EMAIL,
+      });
       mockUser.findByEmail.mockResolvedValue(existingUser as any);
 
       await expect(
@@ -140,7 +148,9 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should not throw when username belongs to same user', async () => {
-      const existingUser = createUserWithObjectId(userId, { username: TEST_USERNAME });
+      const existingUser = createUserWithObjectId(userId, {
+        username: TEST_USERNAME,
+      });
       mockUser.findByUsername.mockResolvedValue(existingUser as any);
 
       await expect(
@@ -159,7 +169,12 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should throw UserAlreadyExistsError when username belongs to different user', async () => {
-      setupConflictTest(mockUser, 'username', TEST_USERNAME, 'different-user-id');
+      setupConflictTest(
+        mockUser,
+        'username',
+        TEST_USERNAME,
+        'different-user-id'
+      );
 
       await expectErrorThrown(
         () => checkProfileUpdateConflicts(userId, undefined, TEST_USERNAME),
@@ -191,7 +206,9 @@ describe('UserServiceHelpers', () => {
     });
 
     it('should handle database errors', async () => {
-      mockUser.findByEmail.mockRejectedValue(new Error('Database connection failed'));
+      mockUser.findByEmail.mockRejectedValue(
+        new Error('Database connection failed')
+      );
 
       await testDatabaseError(
         () => checkProfileUpdateConflicts(userId, TEST_EMAIL),
@@ -293,7 +310,7 @@ describe('UserServiceHelpers', () => {
     it('should handle users without _id field', () => {
       const user = createMockUser({
         _id: undefined,
-        passwordHash: 'hashedpassword'
+        passwordHash: 'hashedpassword',
       });
       delete (user as any)._id; // Remove _id completely
 

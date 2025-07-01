@@ -1,37 +1,48 @@
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { FeatureIcon } from './FeatureIcon';
 
 const features = [
   {
     icon: '/features/initiative-tracker.png',
     title: 'Initiative Tracking',
-    description: 'Automatic initiative rolling with dexterity tiebreakers. Never lose track of turn order again.'
+    description:
+      'Automatic initiative rolling with dexterity tiebreakers. Never lose track of turn order again.',
   },
   {
     icon: '/features/hp-management.png',
     title: 'HP & AC Management',
-    description: 'Real-time health tracking with damage calculation, healing, and temporary HP support.'
+    description:
+      'Real-time health tracking with damage calculation, healing, and temporary HP support.',
   },
   {
     icon: '/features/character-management.png',
     title: 'Character Management',
-    description: 'Complete character sheets with multiclass support and D&D 5e rule compliance.'
+    description:
+      'Complete character sheets with multiclass support and D&D 5e rule compliance.',
   },
   {
     icon: '/features/encounter-builder.png',
     title: 'Encounter Builder',
-    description: 'Drag-and-drop encounter creation with CR calculation and balancing tools.'
+    description:
+      'Drag-and-drop encounter creation with CR calculation and balancing tools.',
   },
   {
     icon: '/features/lair-actions.png',
     title: 'Lair Actions',
-    description: 'Unique lair action support that competitors don\'t offer. Enhance your boss encounters.'
+    description:
+      "Unique lair action support that competitors don't offer. Enhance your boss encounters.",
   },
   {
     icon: '/features/mobile-ready.png',
     title: 'Mobile & Tablet Ready',
-    description: 'Responsive design optimized for mobile, tablet and desktop gaming sessions with real-time collaboration.'
-  }
+    description:
+      'Responsive design optimized for mobile, tablet and desktop gaming sessions with real-time collaboration.',
+  },
 ];
 
 export function FeaturesSection() {
@@ -42,7 +53,8 @@ export function FeaturesSection() {
           Everything You Need for Epic D&D Encounters
         </h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Professional tools designed specifically for D&D 5e combat management and Dungeon Master workflow optimization
+          Professional tools designed specifically for D&D 5e combat management
+          and Dungeon Master workflow optimization
         </p>
       </div>
 
@@ -54,9 +66,7 @@ export function FeaturesSection() {
               <CardTitle>
                 <h3>{feature.title}</h3>
               </CardTitle>
-              <CardDescription>
-                {feature.description}
-              </CardDescription>
+              <CardDescription>{feature.description}</CardDescription>
             </CardHeader>
           </Card>
         ))}

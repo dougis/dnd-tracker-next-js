@@ -1,6 +1,10 @@
 import type { PublicUser } from '@/lib/validations/user';
 import { createMockUsers, createUserWithObjectId } from './testDataFactories';
-import { expectPaginationValues, expectQueryChainCalls, expectPaginatedResult } from './testAssertions';
+import {
+  expectPaginationValues,
+  expectQueryChainCalls,
+  expectPaginatedResult,
+} from './testAssertions';
 
 /**
  * Common test scenario functions for UserService tests
@@ -14,10 +18,20 @@ export const testDatabaseError = async (
   await expect(testFunction()).rejects.toThrow(expectedMessage);
 };
 
-export const setupConflictTest = (mockUser: any, type: 'email' | 'username', value: string, conflictUserId?: string) => {
-  const existingUser = type === 'email'
-    ? createUserWithObjectId(conflictUserId || 'different-user-id', { email: value })
-    : createUserWithObjectId(conflictUserId || 'different-user-id', { username: value });
+export const setupConflictTest = (
+  mockUser: any,
+  type: 'email' | 'username',
+  value: string,
+  conflictUserId?: string
+) => {
+  const existingUser =
+    type === 'email'
+      ? createUserWithObjectId(conflictUserId || 'different-user-id', {
+          email: value,
+        })
+      : createUserWithObjectId(conflictUserId || 'different-user-id', {
+          username: value,
+        });
 
   if (type === 'email') {
     mockUser.findByEmail.mockResolvedValue(existingUser);
@@ -31,13 +45,16 @@ export const setupConflictTest = (mockUser: any, type: 'email' | 'username', val
 };
 
 // Common test scenario functions
-export const setupQueryTest = (mockUsers: any[], total: number = mockUsers.length) => ({
+export const setupQueryTest = (
+  mockUsers: any[],
+  total: number = mockUsers.length
+) => ({
   mockUsers,
   total,
   setupMocks: (mockUser: any, mockLean: any) => {
     mockLean.mockResolvedValue(mockUsers);
     mockUser.countDocuments.mockResolvedValue(total);
-  }
+  },
 });
 
 /**
@@ -66,7 +83,12 @@ export const testFilterInvalidUsers = (
  * @param mockConverter - Mock function for user conversion
  */
 export const testEmptyArrayPagination = (
-  formatFunction: (_users: any[], _total: number, _page: number, _limit: number) => any,
+  formatFunction: (
+    _users: any[],
+    _total: number,
+    _page: number,
+    _limit: number
+  ) => any,
   mockConverter?: jest.Mock
 ) => {
   const users: any[] = [];
@@ -96,7 +118,12 @@ export const testEmptyArrayPagination = (
  * @param mockConverter - Mock function for user conversion
  */
 export const testZeroTotalWithLimit = (
-  formatFunction: (_users: any[], _total: number, _page: number, _limit: number) => any,
+  formatFunction: (
+    _users: any[],
+    _total: number,
+    _page: number,
+    _limit: number
+  ) => any,
   mockConverter?: jest.Mock
 ) => {
   const users: any[] = [];
@@ -139,11 +166,27 @@ export const setupQueryExecutionTest = (
     limit,
     testSetup,
     expectations: {
-      expectSuccess: (result: any, mockUser: any, mockSort: any, mockSkip: any, mockLimit: any, mockLean: any) => {
-        expectQueryChainCalls(mockUser, mockSort, mockSkip, mockLimit, mockLean, query, skip, limit);
+      expectSuccess: (
+        result: any,
+        mockUser: any,
+        mockSort: any,
+        mockSkip: any,
+        mockLimit: any,
+        mockLean: any
+      ) => {
+        expectQueryChainCalls(
+          mockUser,
+          mockSort,
+          mockSkip,
+          mockLimit,
+          mockLean,
+          query,
+          skip,
+          limit
+        );
         expectPaginatedResult(result, testSetup.mockUsers, testSetup.total);
-      }
-    }
+      },
+    },
   };
 };
 
@@ -157,7 +200,7 @@ export const setupDatabaseErrorTest = (
   return {
     testError: async (testFunction: () => Promise<any>) => {
       await testDatabaseError(testFunction, errorMessage);
-    }
+    },
   };
 };
 
@@ -174,12 +217,25 @@ export const executeQueryExecutionTest = async (
   mockUsers: any[] = createMockUsers(1),
   total: number = mockUsers.length
 ) => {
-  const testData = setupQueryExecutionTest(_query, _skip, _limit, mockUsers, total);
+  const testData = setupQueryExecutionTest(
+    _query,
+    _skip,
+    _limit,
+    mockUsers,
+    total
+  );
   testData.testSetup.setupMocks(mockUser, mockLean);
 
   const result = await queryFunction(_query, _skip, _limit);
 
-  testData.expectations.expectSuccess(result, mockUser, mockSort, mockSkip, mockLimit, mockLean);
+  testData.expectations.expectSuccess(
+    result,
+    mockUser,
+    mockSort,
+    mockSkip,
+    mockLimit,
+    mockLean
+  );
   return result;
 };
 
@@ -221,11 +277,20 @@ export const setupExecuteUserQueryTest = (
           total,
         });
       } else {
-        expectQueryChainCalls(mockUser, mockSort, mockSkip, mockLimit, mockLean, query, skip, limit);
+        expectQueryChainCalls(
+          mockUser,
+          mockSort,
+          mockSkip,
+          mockLimit,
+          mockLean,
+          query,
+          skip,
+          limit
+        );
         expectPaginatedResult(result, mockUsers, total);
       }
 
       return result;
-    }
+    },
   };
 };

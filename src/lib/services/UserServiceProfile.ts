@@ -1,8 +1,5 @@
 import User from '../models/User';
-import {
-  ServiceResult,
-  UserAlreadyExistsError,
-} from './UserServiceErrors';
+import { ServiceResult, UserAlreadyExistsError } from './UserServiceErrors';
 import {
   type UserProfileUpdate,
   type PublicUser,
@@ -19,7 +16,6 @@ import { UserServiceLookup } from './UserServiceLookup';
  * Handles user profile retrieval, updates, subscription management, and account deletion
  */
 export class UserServiceProfile {
-
   /**
    * Get user by ID
    */
@@ -50,7 +46,9 @@ export class UserServiceProfile {
   /**
    * Get user by email
    */
-  static async getUserByEmail(email: string): Promise<ServiceResult<PublicUser>> {
+  static async getUserByEmail(
+    email: string
+  ): Promise<ServiceResult<PublicUser>> {
     try {
       const user = await UserServiceLookup.findUserByEmailOrThrow(email);
 
@@ -69,7 +67,9 @@ export class UserServiceProfile {
   /**
    * Find user by ID for profile operations
    */
-  private static async findUserForProfileUpdate(userId: string): Promise<ServiceResult<any>> {
+  private static async findUserForProfileUpdate(
+    userId: string
+  ): Promise<ServiceResult<any>> {
     const user = await User.findById(userId);
     if (!user) {
       return {
@@ -91,10 +91,8 @@ export class UserServiceProfile {
     user: any,
     validatedData: UserProfileUpdate
   ): Promise<ServiceResult<void> | null> {
-    const { emailToCheck, usernameToCheck } = UserServiceValidation.prepareConflictCheckParams(
-      user,
-      validatedData
-    );
+    const { emailToCheck, usernameToCheck } =
+      UserServiceValidation.prepareConflictCheckParams(user, validatedData);
 
     if (!emailToCheck && !usernameToCheck) {
       return null; // No conflicts to check
@@ -103,7 +101,11 @@ export class UserServiceProfile {
     try {
       if (user._id) {
         const userIdString = UserServiceValidation.extractUserIdString(user);
-        await checkProfileUpdateConflicts(userIdString, emailToCheck, usernameToCheck);
+        await checkProfileUpdateConflicts(
+          userIdString,
+          emailToCheck,
+          usernameToCheck
+        );
       }
       return null; // No conflicts found
     } catch (conflictError) {
@@ -123,7 +125,8 @@ export class UserServiceProfile {
   ): Promise<ServiceResult<PublicUser>> {
     try {
       // Validate input data
-      const validatedData = UserServiceValidation.validateAndParseProfileUpdate(updateData);
+      const validatedData =
+        UserServiceValidation.validateAndParseProfileUpdate(updateData);
 
       // Find user
       const userResult = await this.findUserForProfileUpdate(userId);
@@ -133,7 +136,10 @@ export class UserServiceProfile {
       const user = userResult.data;
 
       // Check for conflicts
-      const conflictResult = await this.handleProfileUpdateConflicts(user, validatedData);
+      const conflictResult = await this.handleProfileUpdateConflicts(
+        user,
+        validatedData
+      );
       if (conflictResult) {
         return conflictResult as ServiceResult<PublicUser>;
       }
@@ -171,7 +177,9 @@ export class UserServiceProfile {
       }
 
       const user = userResult.data;
-      await UserServiceDatabase.updateUserFieldsAndSave(user, { subscriptionTier: newTier });
+      await UserServiceDatabase.updateUserFieldsAndSave(user, {
+        subscriptionTier: newTier,
+      });
 
       return UserServiceResponseHelpers.createSuccessResponse(
         UserServiceResponseHelpers.safeToPublicJSON(user)

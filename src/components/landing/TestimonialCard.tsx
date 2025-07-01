@@ -10,7 +10,11 @@ interface TestimonialCardProps {
   };
 }
 
-export function TestimonialCard({ rating, quote, author }: TestimonialCardProps) {
+export function TestimonialCard({
+  rating,
+  quote,
+  author,
+}: TestimonialCardProps) {
   const stars = '★'.repeat(rating);
 
   return (
@@ -19,7 +23,10 @@ export function TestimonialCard({ rating, quote, author }: TestimonialCardProps)
         <div className="mb-4">
           <div className="text-yellow-400">{stars}</div>
         </div>
-        <p className="text-muted-foreground mb-4" data-testid="testimonial-content">
+        <p
+          className="text-muted-foreground mb-4"
+          data-testid="testimonial-content"
+        >
           &quot;{quote}&quot;
         </p>
         <div>

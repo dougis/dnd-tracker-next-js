@@ -14,16 +14,18 @@ export const createMockLocalStorage = () => ({
 export const createMockMatchMedia = () => jest.fn();
 
 // Default matchMedia mock behavior
-export const getDefaultMatchMediaMock = (isDark = false) => (query: string) => ({
-  matches: query === '(prefers-color-scheme: dark)' ? isDark : !isDark,
-  media: query,
-  onchange: null,
-  addListener: jest.fn(),
-  removeListener: jest.fn(),
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
-  dispatchEvent: jest.fn(),
-});
+export const getDefaultMatchMediaMock =
+  (isDark = false) =>
+  (query: string) => ({
+    matches: query === '(prefers-color-scheme: dark)' ? isDark : !isDark,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  });
 
 // Setup function for test environment
 export const setupThemeTestEnvironment = () => {
@@ -73,7 +75,9 @@ export const createUIMocks = () => ({
       {children}
     </button>
   ),
-  DropdownMenu: ({ children }: any) => <div data-testid="dropdown-menu">{children}</div>,
+  DropdownMenu: ({ children }: any) => (
+    <div data-testid="dropdown-menu">{children}</div>
+  ),
   DropdownMenuTrigger: ({ children, asChild }: any) =>
     asChild ? children : <div data-testid="dropdown-trigger">{children}</div>,
   DropdownMenuContent: ({ children, align }: any) => (

@@ -1,14 +1,12 @@
 import { UserServiceResponseHelpers } from '../UserServiceResponseHelpers';
-import {
-  handleServiceError,
-} from '../UserServiceErrors';
+import { handleServiceError } from '../UserServiceErrors';
 import {
   createMockErrorResponse,
   createUserServiceErrorInstance,
   setupMockHandleServiceError,
   expectMockHandleServiceErrorCall,
   expectErrorResponse,
-  createTestData
+  createTestData,
 } from './testUtils';
 
 // Mock dependencies
@@ -24,12 +22,23 @@ describe('UserServiceResponseHelpers - Error Handling Tests', () => {
   describe('handleValidationError', () => {
     it('should handle validation errors', () => {
       const validationError = new Error('validation failed: invalid email');
-      const mockResponse = createMockErrorResponse('Invalid data provided', 'VALIDATION_ERROR', 400);
+      const mockResponse = createMockErrorResponse(
+        'Invalid data provided',
+        'VALIDATION_ERROR',
+        400
+      );
       setupMockHandleServiceError(mockHandleServiceError, mockResponse);
 
-      const result = UserServiceResponseHelpers.handleValidationError(validationError);
+      const result =
+        UserServiceResponseHelpers.handleValidationError(validationError);
 
-      expectMockHandleServiceErrorCall(mockHandleServiceError, validationError, 'Invalid data provided', 'VALIDATION_ERROR', 400);
+      expectMockHandleServiceErrorCall(
+        mockHandleServiceError,
+        validationError,
+        'Invalid data provided',
+        'VALIDATION_ERROR',
+        400
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -43,10 +52,15 @@ describe('UserServiceResponseHelpers - Error Handling Tests', () => {
 
     it('should handle errors with validation substring', () => {
       const validationError = new Error('data validation error occurred');
-      const mockResponse = createMockErrorResponse('Invalid data provided', 'VALIDATION_ERROR', 400);
+      const mockResponse = createMockErrorResponse(
+        'Invalid data provided',
+        'VALIDATION_ERROR',
+        400
+      );
       setupMockHandleServiceError(mockHandleServiceError, mockResponse);
 
-      const result = UserServiceResponseHelpers.handleValidationError(validationError);
+      const result =
+        UserServiceResponseHelpers.handleValidationError(validationError);
 
       expect(result).toEqual(mockResponse);
     });
@@ -74,7 +88,9 @@ describe('UserServiceResponseHelpers - Error Handling Tests', () => {
 
   describe('handleCustomError', () => {
     it('should use createErrorResponse for UserServiceError instances', () => {
-      const userServiceError = createUserServiceErrorInstance('USER_ALREADY_EXISTS');
+      const userServiceError = createUserServiceErrorInstance(
+        'USER_ALREADY_EXISTS'
+      );
 
       const result = UserServiceResponseHelpers.handleCustomError(
         userServiceError,
@@ -87,7 +103,11 @@ describe('UserServiceResponseHelpers - Error Handling Tests', () => {
 
     it('should use handleServiceError for non-UserServiceError instances', () => {
       const genericError = new Error('Generic error');
-      const mockResponse = createMockErrorResponse('Custom message', 'CUSTOM_CODE', 500);
+      const mockResponse = createMockErrorResponse(
+        'Custom message',
+        'CUSTOM_CODE',
+        500
+      );
       setupMockHandleServiceError(mockHandleServiceError, mockResponse);
 
       const result = UserServiceResponseHelpers.handleCustomError(
@@ -96,13 +116,23 @@ describe('UserServiceResponseHelpers - Error Handling Tests', () => {
         'CUSTOM_CODE'
       );
 
-      expectMockHandleServiceErrorCall(mockHandleServiceError, genericError, 'Custom message', 'CUSTOM_CODE', 500);
+      expectMockHandleServiceErrorCall(
+        mockHandleServiceError,
+        genericError,
+        'Custom message',
+        'CUSTOM_CODE',
+        500
+      );
       expect(result).toEqual(mockResponse);
     });
 
     it('should use custom status code', () => {
       const genericError = new Error('Not found');
-      const mockResponse = createMockErrorResponse('Resource not found', 'NOT_FOUND', 404);
+      const mockResponse = createMockErrorResponse(
+        'Resource not found',
+        'NOT_FOUND',
+        404
+      );
       setupMockHandleServiceError(mockHandleServiceError, mockResponse);
 
       const result = UserServiceResponseHelpers.handleCustomError(
@@ -112,13 +142,23 @@ describe('UserServiceResponseHelpers - Error Handling Tests', () => {
         404
       );
 
-      expectMockHandleServiceErrorCall(mockHandleServiceError, genericError, 'Resource not found', 'NOT_FOUND', 404);
+      expectMockHandleServiceErrorCall(
+        mockHandleServiceError,
+        genericError,
+        'Resource not found',
+        'NOT_FOUND',
+        404
+      );
       expect(result).toEqual(mockResponse);
     });
 
     it('should default to 500 status code when not provided', () => {
       const genericError = new Error('Server error');
-      const mockResponse = createMockErrorResponse('Server error', 'SERVER_ERROR', 500);
+      const mockResponse = createMockErrorResponse(
+        'Server error',
+        'SERVER_ERROR',
+        500
+      );
       setupMockHandleServiceError(mockHandleServiceError, mockResponse);
 
       UserServiceResponseHelpers.handleCustomError(
@@ -127,12 +167,22 @@ describe('UserServiceResponseHelpers - Error Handling Tests', () => {
         'SERVER_ERROR'
       );
 
-      expectMockHandleServiceErrorCall(mockHandleServiceError, genericError, 'Server error', 'SERVER_ERROR', 500);
+      expectMockHandleServiceErrorCall(
+        mockHandleServiceError,
+        genericError,
+        'Server error',
+        'SERVER_ERROR',
+        500
+      );
     });
 
     it('should handle string errors', () => {
       const stringError = 'String error message';
-      const mockResponse = createMockErrorResponse('Unknown error', 'UNKNOWN_ERROR', 500);
+      const mockResponse = createMockErrorResponse(
+        'Unknown error',
+        'UNKNOWN_ERROR',
+        500
+      );
       setupMockHandleServiceError(mockHandleServiceError, mockResponse);
 
       const result = UserServiceResponseHelpers.handleCustomError(
@@ -145,7 +195,11 @@ describe('UserServiceResponseHelpers - Error Handling Tests', () => {
     });
 
     it('should handle null errors', () => {
-      const mockResponse = createMockErrorResponse('Null error', 'NULL_ERROR', 500);
+      const mockResponse = createMockErrorResponse(
+        'Null error',
+        'NULL_ERROR',
+        500
+      );
       setupMockHandleServiceError(mockHandleServiceError, mockResponse);
 
       const result = UserServiceResponseHelpers.handleCustomError(
@@ -158,7 +212,11 @@ describe('UserServiceResponseHelpers - Error Handling Tests', () => {
     });
 
     it('should handle undefined errors', () => {
-      const mockResponse = createMockErrorResponse('Undefined error', 'UNDEFINED_ERROR', 500);
+      const mockResponse = createMockErrorResponse(
+        'Undefined error',
+        'UNDEFINED_ERROR',
+        500
+      );
       setupMockHandleServiceError(mockHandleServiceError, mockResponse);
 
       const result = UserServiceResponseHelpers.handleCustomError(
@@ -173,8 +231,12 @@ describe('UserServiceResponseHelpers - Error Handling Tests', () => {
 
   describe('Integration and type safety', () => {
     it('should maintain type safety in responses', () => {
-      const typedData = createTestData('typed') as { count: number; items: string[] };
-      const result = UserServiceResponseHelpers.createSuccessResponse(typedData);
+      const typedData = createTestData('typed') as {
+        count: number;
+        items: string[];
+      };
+      const result =
+        UserServiceResponseHelpers.createSuccessResponse(typedData);
 
       expect(result.success).toBe(true);
       expect(result.data?.count).toBe(42);

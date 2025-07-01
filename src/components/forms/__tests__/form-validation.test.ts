@@ -11,7 +11,7 @@ import {
   createFieldValidator,
   testFormDataExtraction,
   testValidationWorkflow,
-  createDndCharacterData
+  createDndCharacterData,
 } from './test-utils';
 
 describe('Form Validation and Utilities', () => {
@@ -19,7 +19,7 @@ describe('Form Validation and Utilities', () => {
     it('should define correct types', () => {
       // Test type structure with runtime validation
       const rule: ValidationRule = {
-        test: (value) => value !== null,
+        test: value => value !== null,
         message: 'Test message',
       };
 
@@ -59,9 +59,18 @@ describe('Form Validation and Utilities', () => {
       };
 
       const validators: FieldValidator[] = [
-        createFieldValidator('name', [validationRules.required(), validationRules.minLength(2)]),
-        createFieldValidator('email', [validationRules.required(), validationRules.email()]),
-        createFieldValidator('age', [validationRules.number(), validationRules.min(18)]),
+        createFieldValidator('name', [
+          validationRules.required(),
+          validationRules.minLength(2),
+        ]),
+        createFieldValidator('email', [
+          validationRules.required(),
+          validationRules.email(),
+        ]),
+        createFieldValidator('age', [
+          validationRules.number(),
+          validationRules.min(18),
+        ]),
       ];
 
       testValidationWorkflow(data, validators, true, 0);
@@ -75,9 +84,15 @@ describe('Form Validation and Utilities', () => {
       };
 
       const validators: FieldValidator[] = [
-        createFieldValidator('name', [validationRules.required('Name is required')]),
-        createFieldValidator('email', [validationRules.email('Invalid email format')]),
-        createFieldValidator('age', [validationRules.number('Age must be a number')]),
+        createFieldValidator('name', [
+          validationRules.required('Name is required'),
+        ]),
+        createFieldValidator('email', [
+          validationRules.email('Invalid email format'),
+        ]),
+        createFieldValidator('age', [
+          validationRules.number('Age must be a number'),
+        ]),
       ];
 
       const result = testValidationWorkflow(data, validators, false, 3);
@@ -111,7 +126,9 @@ describe('Form Validation and Utilities', () => {
       };
 
       const validators: FieldValidator[] = [
-        createFieldValidator('name', [validationRules.required('Name is required')]),
+        createFieldValidator('name', [
+          validationRules.required('Name is required'),
+        ]),
         createFieldValidator('email', [validationRules.email()]),
       ];
 
@@ -134,7 +151,10 @@ describe('Form Validation and Utilities', () => {
   describe('extractFormData', () => {
     it('should extract data from HTML form element', () => {
       testFormDataExtraction(
-        [['name', 'John Doe'], ['email', 'john@example.com']],
+        [
+          ['name', 'John Doe'],
+          ['email', 'john@example.com'],
+        ],
         { name: 'John Doe', email: 'john@example.com' }
       );
     });
@@ -144,10 +164,7 @@ describe('Form Validation and Utilities', () => {
     });
 
     it('should handle multiple values for same field', () => {
-      testFormDataExtraction(
-        [['hobbies', 'reading']],
-        { hobbies: 'reading' }
-      );
+      testFormDataExtraction([['hobbies', 'reading']], { hobbies: 'reading' });
     });
   });
 
@@ -172,9 +189,7 @@ describe('Form Validation and Utilities', () => {
     });
 
     it('should handle single error', () => {
-      const inputErrors = [
-        { field: 'password', message: 'Password too weak' },
-      ];
+      const inputErrors = [{ field: 'password', message: 'Password too weak' }];
 
       const result = formatValidationErrors(inputErrors);
       expect(result).toEqual([
@@ -183,9 +198,7 @@ describe('Form Validation and Utilities', () => {
     });
 
     it('should create new array instance', () => {
-      const inputErrors = [
-        { field: 'test', message: 'Test error' },
-      ];
+      const inputErrors = [{ field: 'test', message: 'Test error' }];
 
       const result = formatValidationErrors(inputErrors);
 
@@ -238,7 +251,13 @@ describe('Form Validation and Utilities', () => {
 
       // Check that we get one error per field (stops at first error)
       const fieldNames = result.errors.map((error: any) => error.field);
-      expect(fieldNames).toEqual(['characterName', 'level', 'hitPoints', 'armorClass', 'strength']);
+      expect(fieldNames).toEqual([
+        'characterName',
+        'level',
+        'hitPoints',
+        'armorClass',
+        'strength',
+      ]);
     });
   });
 });

@@ -1,4 +1,12 @@
-import { beforeAll, afterAll, describe, it, expect, beforeEach, jest } from '@jest/globals';
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  jest,
+} from '@jest/globals';
 import {
   setupAuthTestEnv,
   restoreAuthTestEnv,
@@ -93,7 +101,7 @@ describe('NextAuth Coverage Tests', () => {
       // Setup mock for error scenario (line 54-57)
       mockGetUserByEmail.mockRejectedValue(new Error('Database error'));
 
-      withConsoleSpy((consoleSpy) => {
+      withConsoleSpy(consoleSpy => {
         // Import will trigger the configuration
         import('../auth');
         authTestAssertions.expectMockDefined(consoleSpy);
@@ -110,7 +118,7 @@ describe('NextAuth Coverage Tests', () => {
       'pages configuration',
     ];
 
-    configurationTests.forEach((testName) => {
+    configurationTests.forEach(testName => {
       it(`should exercise ${testName}`, async () => {
         await import('../auth');
         // Coverage by importing - configuration should be executed

@@ -148,7 +148,9 @@ describe('POST /api/auth/resend-verification', () => {
         },
       };
 
-      UserService.resendVerificationEmail = jest.fn().mockResolvedValue(mockError);
+      UserService.resendVerificationEmail = jest
+        .fn()
+        .mockResolvedValue(mockError);
 
       const request = createMockRequest(mockResendVerificationData);
       const response = await POST(request);
@@ -173,7 +175,9 @@ describe('POST /api/auth/resend-verification', () => {
         },
       };
 
-      UserService.resendVerificationEmail = jest.fn().mockResolvedValue(mockError);
+      UserService.resendVerificationEmail = jest
+        .fn()
+        .mockResolvedValue(mockError);
 
       const request = createMockRequest(mockResendVerificationData);
       const response = await POST(request);
@@ -198,7 +202,9 @@ describe('POST /api/auth/resend-verification', () => {
         },
       };
 
-      UserService.resendVerificationEmail = jest.fn().mockResolvedValue(mockError);
+      UserService.resendVerificationEmail = jest
+        .fn()
+        .mockResolvedValue(mockError);
 
       const request = createMockRequest(mockResendVerificationData);
       const response = await POST(request);
@@ -223,7 +229,9 @@ describe('POST /api/auth/resend-verification', () => {
         },
       };
 
-      UserService.resendVerificationEmail = jest.fn().mockResolvedValue(mockError);
+      UserService.resendVerificationEmail = jest
+        .fn()
+        .mockResolvedValue(mockError);
 
       const request = createMockRequest(mockResendVerificationData);
       const response = await POST(request);
@@ -248,7 +256,9 @@ describe('POST /api/auth/resend-verification', () => {
         },
       };
 
-      UserService.resendVerificationEmail = jest.fn().mockResolvedValue(mockError);
+      UserService.resendVerificationEmail = jest
+        .fn()
+        .mockResolvedValue(mockError);
 
       const request = createMockRequest(mockResendVerificationData);
       const response = await POST(request);
@@ -272,7 +282,9 @@ describe('POST /api/auth/resend-verification', () => {
         },
       };
 
-      UserService.resendVerificationEmail = jest.fn().mockResolvedValue(mockError);
+      UserService.resendVerificationEmail = jest
+        .fn()
+        .mockResolvedValue(mockError);
 
       const request = createMockRequest(mockResendVerificationData);
       const response = await POST(request);
@@ -296,7 +308,9 @@ describe('POST /api/auth/resend-verification', () => {
         },
       };
 
-      UserService.resendVerificationEmail = jest.fn().mockResolvedValue(mockError);
+      UserService.resendVerificationEmail = jest
+        .fn()
+        .mockResolvedValue(mockError);
 
       const request = createMockRequest(mockResendVerificationData);
       const response = await POST(request);
@@ -363,7 +377,9 @@ describe('POST /api/auth/resend-verification', () => {
     });
 
     it('handles service returning undefined', async () => {
-      UserService.resendVerificationEmail = jest.fn().mockResolvedValue(undefined);
+      UserService.resendVerificationEmail = jest
+        .fn()
+        .mockResolvedValue(undefined);
 
       const request = createMockRequest(mockResendVerificationData);
       const response = await POST(request);
@@ -439,7 +455,9 @@ describe('POST /api/auth/resend-verification', () => {
 
       expect(response.status).toBe(200);
       expect(responseData.success).toBe(true);
-      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(longEmail);
+      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(
+        longEmail
+      );
     });
 
     it('handles email with unicode characters as validation error', async () => {
@@ -471,7 +489,9 @@ describe('POST /api/auth/resend-verification', () => {
 
       expect(response.status).toBe(200);
       expect(responseData.success).toBe(true);
-      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(plusEmail);
+      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(
+        plusEmail
+      );
     });
   });
 });

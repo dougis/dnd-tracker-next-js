@@ -2,8 +2,16 @@ import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MobileMenu } from '../MobileMenu';
 import { setupLayoutTest, mockUsePathname } from './test-utils';
-import { assertUserProfile, assertActiveNavigation, assertInactiveNavigation, assertSvgIcon } from './shared-assertions';
-import { testNavigationLinks, NAVIGATION_ITEMS } from './navigation-test-helpers';
+import {
+  assertUserProfile,
+  assertActiveNavigation,
+  assertInactiveNavigation,
+  assertSvgIcon,
+} from './shared-assertions';
+import {
+  testNavigationLinks,
+  NAVIGATION_ITEMS,
+} from './navigation-test-helpers';
 
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
@@ -24,7 +32,11 @@ jest.mock('next/link', () => {
     className?: string;
     onClick?: () => void;
   }) {
-    return React.createElement('a', { href, className, onClick, ...props }, children);
+    return React.createElement(
+      'a',
+      { href, className, onClick, ...props },
+      children
+    );
   };
 });
 
@@ -54,7 +66,9 @@ describe('MobileMenu', () => {
     });
 
     test('returns null when isOpen is false', () => {
-      const { container } = render(<MobileMenu isOpen={false} onClose={mockOnClose} />);
+      const { container } = render(
+        <MobileMenu isOpen={false} onClose={mockOnClose} />
+      );
 
       expect(container.firstChild).toBeNull();
     });
@@ -70,7 +84,9 @@ describe('MobileMenu', () => {
     });
 
     test('restores body scroll when menu is closed', () => {
-      const { rerender } = render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+      const { rerender } = render(
+        <MobileMenu isOpen={true} onClose={mockOnClose} />
+      );
 
       // Verify scroll is disabled
       expect(document.body.style.overflow).toBe('hidden');
@@ -84,7 +100,9 @@ describe('MobileMenu', () => {
     });
 
     test('restores body scroll on component unmount', () => {
-      const { unmount } = render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+      const { unmount } = render(
+        <MobileMenu isOpen={true} onClose={mockOnClose} />
+      );
 
       expect(document.body.style.overflow).toBe('hidden');
 
@@ -98,17 +116,25 @@ describe('MobileMenu', () => {
 
   describe('Layout Structure', () => {
     test('renders backdrop overlay', () => {
-      const { container } = render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+      const { container } = render(
+        <MobileMenu isOpen={true} onClose={mockOnClose} />
+      );
 
-      const backdrop = container.querySelector('.fixed.inset-0.z-40.bg-black\\/50.lg\\:hidden');
+      const backdrop = container.querySelector(
+        '.fixed.inset-0.z-40.bg-black\\/50.lg\\:hidden'
+      );
       expect(backdrop).toBeInTheDocument();
       expect(backdrop).toHaveClass('fixed inset-0 z-40 bg-black/50 lg:hidden');
     });
 
     test('renders mobile menu panel with correct styling', () => {
-      const { container } = render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+      const { container } = render(
+        <MobileMenu isOpen={true} onClose={mockOnClose} />
+      );
 
-      const menuPanel = container.querySelector('.fixed.inset-y-0.left-0.z-50.w-64');
+      const menuPanel = container.querySelector(
+        '.fixed.inset-y-0.left-0.z-50.w-64'
+      );
       expect(menuPanel).toBeInTheDocument();
       expect(menuPanel).toHaveClass(
         'bg-card border-r border-border transform transition-transform duration-300 ease-in-out lg:hidden'
@@ -116,7 +142,9 @@ describe('MobileMenu', () => {
     });
 
     test('has flex column layout structure', () => {
-      const { container } = render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+      const { container } = render(
+        <MobileMenu isOpen={true} onClose={mockOnClose} />
+      );
 
       const flexContainer = container.querySelector('.flex.h-full.flex-col');
       expect(flexContainer).toBeInTheDocument();
@@ -147,14 +175,18 @@ describe('MobileMenu', () => {
 
       const iconContainer = logoContainer?.querySelector('.flex.h-8.w-8');
       expect(iconContainer).toBeInTheDocument();
-      expect(iconContainer).toHaveClass('bg-primary text-primary-foreground rounded-lg');
+      expect(iconContainer).toHaveClass(
+        'bg-primary text-primary-foreground rounded-lg'
+      );
     });
 
     test('brand title has fantasy font class', () => {
       render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
 
       const brandTitle = screen.getByText('D&D Tracker');
-      expect(brandTitle).toHaveClass('text-lg font-fantasy font-bold text-foreground');
+      expect(brandTitle).toHaveClass(
+        'text-lg font-fantasy font-bold text-foreground'
+      );
     });
 
     test('header has correct height and styling', () => {
@@ -162,7 +194,9 @@ describe('MobileMenu', () => {
 
       const header = screen.getByText('D&D Tracker').closest('.flex.h-16');
       expect(header).toBeInTheDocument();
-      expect(header).toHaveClass('items-center justify-between border-b border-border px-4');
+      expect(header).toHaveClass(
+        'items-center justify-between border-b border-border px-4'
+      );
     });
   });
 
@@ -210,18 +244,26 @@ describe('MobileMenu', () => {
 
   describe('Backdrop Interaction', () => {
     test('calls onClose when backdrop is clicked', () => {
-      const { container } = render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+      const { container } = render(
+        <MobileMenu isOpen={true} onClose={mockOnClose} />
+      );
 
-      const backdrop = container.querySelector('.fixed.inset-0.z-40.bg-black\\/50.lg\\:hidden');
+      const backdrop = container.querySelector(
+        '.fixed.inset-0.z-40.bg-black\\/50.lg\\:hidden'
+      );
       fireEvent.click(backdrop!);
 
       expect(mockOnClose).toHaveBeenCalledTimes(1);
     });
 
     test('backdrop has proper z-index for overlay', () => {
-      const { container } = render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+      const { container } = render(
+        <MobileMenu isOpen={true} onClose={mockOnClose} />
+      );
 
-      const backdrop = container.querySelector('.fixed.inset-0.z-40.bg-black\\/50.lg\\:hidden');
+      const backdrop = container.querySelector(
+        '.fixed.inset-0.z-40.bg-black\\/50.lg\\:hidden'
+      );
       expect(backdrop).toHaveClass('z-40');
     });
   });
@@ -295,14 +337,20 @@ describe('MobileMenu', () => {
     test('user profile has correct styling', () => {
       render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
 
-      const userSection = screen.getByText('Demo User').closest('.border-t.border-border.p-4');
+      const userSection = screen
+        .getByText('Demo User')
+        .closest('.border-t.border-border.p-4');
       expect(userSection).toBeInTheDocument();
     });
 
     test('user avatar placeholder exists', () => {
       render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
 
-      const avatar = screen.getByText('Demo User').parentElement?.parentElement?.querySelector('.h-8.w-8.rounded-full.bg-muted');
+      const avatar = screen
+        .getByText('Demo User')
+        .parentElement?.parentElement?.querySelector(
+          '.h-8.w-8.rounded-full.bg-muted'
+        );
       expect(avatar).toBeInTheDocument();
     });
 
@@ -312,17 +360,25 @@ describe('MobileMenu', () => {
       const userName = screen.getByText('Demo User');
       const userEmail = screen.getByText('demo@example.com');
 
-      expect(userName).toHaveClass('text-sm font-medium text-foreground truncate');
+      expect(userName).toHaveClass(
+        'text-sm font-medium text-foreground truncate'
+      );
       expect(userEmail).toHaveClass('text-xs text-muted-foreground truncate');
     });
   });
 
   describe('Mobile-Specific Design', () => {
     test('has lg:hidden class to hide on desktop', () => {
-      const { container } = render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+      const { container } = render(
+        <MobileMenu isOpen={true} onClose={mockOnClose} />
+      );
 
-      const backdrop = container.querySelector('.fixed.inset-0.z-40.bg-black\\/50.lg\\:hidden');
-      const menuPanel = container.querySelector('.fixed.inset-y-0.left-0.z-50.w-64');
+      const backdrop = container.querySelector(
+        '.fixed.inset-0.z-40.bg-black\\/50.lg\\:hidden'
+      );
+      const menuPanel = container.querySelector(
+        '.fixed.inset-y-0.left-0.z-50.w-64'
+      );
 
       expect(backdrop).toHaveClass('lg:hidden');
       expect(menuPanel).toHaveClass('lg:hidden');
@@ -352,10 +408,16 @@ describe('MobileMenu', () => {
 
   describe('Animation and Transitions', () => {
     test('menu panel has transition classes', () => {
-      const { container } = render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+      const { container } = render(
+        <MobileMenu isOpen={true} onClose={mockOnClose} />
+      );
 
-      const menuPanel = container.querySelector('.fixed.inset-y-0.left-0.z-50.w-64');
-      expect(menuPanel).toHaveClass('transform transition-transform duration-300 ease-in-out');
+      const menuPanel = container.querySelector(
+        '.fixed.inset-y-0.left-0.z-50.w-64'
+      );
+      expect(menuPanel).toHaveClass(
+        'transform transition-transform duration-300 ease-in-out'
+      );
     });
 
     test('navigation section has proper spacing', () => {
@@ -368,10 +430,16 @@ describe('MobileMenu', () => {
 
   describe('Z-Index Stacking', () => {
     test('backdrop has lower z-index than menu panel', () => {
-      const { container } = render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+      const { container } = render(
+        <MobileMenu isOpen={true} onClose={mockOnClose} />
+      );
 
-      const backdrop = container.querySelector('.fixed.inset-0.z-40.bg-black\\/50.lg\\:hidden');
-      const menuPanel = container.querySelector('.fixed.inset-y-0.left-0.z-50.w-64');
+      const backdrop = container.querySelector(
+        '.fixed.inset-0.z-40.bg-black\\/50.lg\\:hidden'
+      );
+      const menuPanel = container.querySelector(
+        '.fixed.inset-y-0.left-0.z-50.w-64'
+      );
 
       expect(backdrop).toHaveClass('z-40');
       expect(menuPanel).toHaveClass('z-50');

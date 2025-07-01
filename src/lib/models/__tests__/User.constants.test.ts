@@ -40,8 +40,9 @@ describe('User Model Constants', () => {
           const prevTier = nonGuildTiers[i - 1];
           const currentTier = nonGuildTiers[i];
 
-          expect(SUBSCRIPTION_LIMITS[currentTier][feature])
-            .toBeGreaterThan(SUBSCRIPTION_LIMITS[prevTier][feature]);
+          expect(SUBSCRIPTION_LIMITS[currentTier][feature]).toBeGreaterThan(
+            SUBSCRIPTION_LIMITS[prevTier][feature]
+          );
         }
       });
     });

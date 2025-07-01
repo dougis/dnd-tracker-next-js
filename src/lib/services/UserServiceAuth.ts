@@ -25,7 +25,6 @@ import { UserServiceLookup } from './UserServiceLookup';
  * Handles user registration, login, password management, and email verification
  */
 export class UserServiceAuth {
-
   /**
    * Create a new user account
    */
@@ -34,7 +33,8 @@ export class UserServiceAuth {
   ): Promise<ServiceResult<PublicUser>> {
     try {
       // Validate input data
-      const validatedData = UserServiceValidation.validateAndParseRegistration(userData);
+      const validatedData =
+        UserServiceValidation.validateAndParseRegistration(userData);
 
       // Check if user already exists
       await checkUserExists(validatedData.email, validatedData.username);
@@ -85,19 +85,26 @@ export class UserServiceAuth {
    */
   static async authenticateUser(
     loginData: UserLogin
-  ): Promise<ServiceResult<{ user: PublicUser; requiresVerification: boolean }>> {
+  ): Promise<
+    ServiceResult<{ user: PublicUser; requiresVerification: boolean }>
+  > {
     try {
       // Validate input data
-      const validatedData = UserServiceValidation.validateAndParseLogin(loginData);
+      const validatedData =
+        UserServiceValidation.validateAndParseLogin(loginData);
 
       // Find user by email
-      const user = await UserServiceLookup.findUserByEmailNullable(validatedData.email);
+      const user = await UserServiceLookup.findUserByEmailNullable(
+        validatedData.email
+      );
       if (!user) {
         throw new InvalidCredentialsError();
       }
 
       // Verify password
-      const isPasswordValid = await user.comparePassword(validatedData.password);
+      const isPasswordValid = await user.comparePassword(
+        validatedData.password
+      );
       if (!isPasswordValid) {
         throw new InvalidCredentialsError();
       }
@@ -135,7 +142,8 @@ export class UserServiceAuth {
   ): Promise<ServiceResult<void>> {
     try {
       // Validate input data
-      const validatedData = UserServiceValidation.validateAndParsePasswordChange(passwordData);
+      const validatedData =
+        UserServiceValidation.validateAndParsePasswordChange(passwordData);
 
       // Find user
       const user = await UserServiceLookup.findUserByIdOrThrow(userId);
@@ -153,7 +161,10 @@ export class UserServiceAuth {
       }
 
       // Update password
-      await UserServiceDatabase.updatePasswordAndClearTokens(user, validatedData.newPassword);
+      await UserServiceDatabase.updatePasswordAndClearTokens(
+        user,
+        validatedData.newPassword
+      );
 
       return UserServiceResponseHelpers.createSuccessResponse();
     } catch (error) {
@@ -177,17 +188,21 @@ export class UserServiceAuth {
   ): Promise<ServiceResult<{ token: string }>> {
     try {
       // Validate input data
-      const validatedData = UserServiceValidation.validateAndParsePasswordResetRequest(resetData);
+      const validatedData =
+        UserServiceValidation.validateAndParsePasswordResetRequest(resetData);
 
       // Find user by email
-      const user = await UserServiceLookup.findUserByEmailNullable(validatedData.email);
+      const user = await UserServiceLookup.findUserByEmailNullable(
+        validatedData.email
+      );
       if (!user) {
         // For security, don't reveal that the email doesn't exist
         return UserServiceResponseHelpers.createSecurityResponse('dummy-token');
       }
 
       // Generate reset token and save
-      const resetToken = await UserServiceDatabase.generateAndSaveResetToken(user);
+      const resetToken =
+        await UserServiceDatabase.generateAndSaveResetToken(user);
 
       return UserServiceResponseHelpers.createSecurityResponse(resetToken);
     } catch (error) {
@@ -207,13 +222,19 @@ export class UserServiceAuth {
   ): Promise<ServiceResult<void>> {
     try {
       // Validate input data
-      const validatedData = UserServiceValidation.validateAndParsePasswordReset(resetData);
+      const validatedData =
+        UserServiceValidation.validateAndParsePasswordReset(resetData);
 
       // Find user by reset token
-      const user = await UserServiceLookup.findUserByResetTokenOrThrow(validatedData.token);
+      const user = await UserServiceLookup.findUserByResetTokenOrThrow(
+        validatedData.token
+      );
 
       // Reset password and clear tokens
-      await UserServiceDatabase.updatePasswordAndClearTokens(user, validatedData.password);
+      await UserServiceDatabase.updatePasswordAndClearTokens(
+        user,
+        validatedData.password
+      );
 
       return UserServiceResponseHelpers.createSuccessResponse();
     } catch (error) {
@@ -237,10 +258,15 @@ export class UserServiceAuth {
   ): Promise<ServiceResult<PublicUser>> {
     try {
       // Validate input data
-      const validatedData = UserServiceValidation.validateAndParseEmailVerification(verificationData);
+      const validatedData =
+        UserServiceValidation.validateAndParseEmailVerification(
+          verificationData
+        );
 
       // Find user by verification token
-      const user = await UserServiceLookup.findUserByVerificationTokenOrThrow(validatedData.token);
+      const user = await UserServiceLookup.findUserByVerificationTokenOrThrow(
+        validatedData.token
+      );
 
       // Mark email as verified and clear token
       await UserServiceDatabase.markEmailVerified(user);

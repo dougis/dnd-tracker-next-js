@@ -18,7 +18,9 @@ jest.mock('@/components/ui/button', () => ({
 }));
 
 jest.mock('@/components/ui/dropdown-menu', () => ({
-  DropdownMenu: ({ children }: any) => <div data-testid="dropdown-menu">{children}</div>,
+  DropdownMenu: ({ children }: any) => (
+    <div data-testid="dropdown-menu">{children}</div>
+  ),
   DropdownMenuTrigger: ({ children, asChild }: any) =>
     asChild ? children : <div data-testid="dropdown-trigger">{children}</div>,
   DropdownMenuContent: ({ children, align }: any) => (
@@ -89,7 +91,7 @@ describe('Theme System Integration', () => {
     mockLocalStorage.getItem.mockReturnValue(null);
 
     // Default matchMedia mock behavior
-    mockMatchMedia.mockImplementation((query) => ({
+    mockMatchMedia.mockImplementation(query => ({
       matches: query === '(prefers-color-scheme: dark)' ? false : true,
       media: query,
       onchange: null,
@@ -171,7 +173,9 @@ describe('Theme System Integration', () => {
         </ThemeProvider>
       );
 
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith('dnd-tracker-theme');
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith(
+        'dnd-tracker-theme'
+      );
       expect(document.documentElement.classList.contains('dark')).toBe(true);
     });
 
@@ -187,7 +191,10 @@ describe('Theme System Integration', () => {
       // Change theme via toggle
       await user.click(screen.getByText('Light'));
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('dnd-tracker-theme', 'light');
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'dnd-tracker-theme',
+        'light'
+      );
       expect(document.documentElement.classList.contains('light')).toBe(true);
     });
 
@@ -202,7 +209,10 @@ describe('Theme System Integration', () => {
 
       await user.click(screen.getByText('Dark'));
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('custom-app-theme', 'dark');
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'custom-app-theme',
+        'dark'
+      );
     });
   });
 
@@ -211,7 +221,7 @@ describe('Theme System Integration', () => {
       const user = userEvent.setup();
 
       // Mock system preference as dark
-      mockMatchMedia.mockImplementation((query) => ({
+      mockMatchMedia.mockImplementation(query => ({
         matches: query === '(prefers-color-scheme: dark)' ? true : false,
         media: query,
         onchange: null,
@@ -281,7 +291,9 @@ describe('Theme System Integration', () => {
 
       // Check total number of theme-related classes
       const classList = Array.from(document.documentElement.classList);
-      const themeClasses = classList.filter(cls => ['light', 'dark'].includes(cls));
+      const themeClasses = classList.filter(cls =>
+        ['light', 'dark'].includes(cls)
+      );
       expect(themeClasses).toHaveLength(1);
     });
 
@@ -340,7 +352,9 @@ describe('Theme System Integration', () => {
         throw new Error('Storage quota exceeded');
       });
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       render(
         <ThemeProvider>
@@ -393,4 +407,3 @@ describe('Theme System Integration', () => {
     });
   });
 });
-

@@ -56,9 +56,13 @@ describe('Breadcrumbs', () => {
       mockUsePathname.mockReturnValue('/');
       const { container } = render(<Breadcrumbs />);
 
-      const dashboardContainer = container.querySelector('[class*="flex items-center text-sm text-muted-foreground"]');
+      const dashboardContainer = container.querySelector(
+        '[class*="flex items-center text-sm text-muted-foreground"]'
+      );
       expect(dashboardContainer).toBeInTheDocument();
-      expect(dashboardContainer).toHaveClass('flex items-center text-sm text-muted-foreground');
+      expect(dashboardContainer).toHaveClass(
+        'flex items-center text-sm text-muted-foreground'
+      );
     });
   });
 
@@ -79,7 +83,9 @@ describe('Breadcrumbs', () => {
       const dashboardLink = screen.getByText('Dashboard').closest('a');
       expect(dashboardLink).toBeInTheDocument();
       expect(dashboardLink).toHaveAttribute('href', '/');
-      expect(dashboardLink).toHaveClass('hover:text-foreground transition-colors');
+      expect(dashboardLink).toHaveClass(
+        'hover:text-foreground transition-colors'
+      );
     });
 
     test('current page is not clickable and has different styling', () => {
@@ -96,7 +102,9 @@ describe('Breadcrumbs', () => {
       render(<Breadcrumbs />);
 
       const navigation = screen.getByRole('navigation');
-      const separators = navigation.querySelectorAll('svg[viewBox="0 0 24 24"]');
+      const separators = navigation.querySelectorAll(
+        'svg[viewBox="0 0 24 24"]'
+      );
 
       // Should have one separator (between Dashboard and Characters)
       const separatorIcon = Array.from(separators).find(svg => {
@@ -144,7 +152,9 @@ describe('Breadcrumbs', () => {
       render(<Breadcrumbs />);
 
       const navigation = screen.getByRole('navigation');
-      const separators = navigation.querySelectorAll('svg[viewBox="0 0 24 24"]');
+      const separators = navigation.querySelectorAll(
+        'svg[viewBox="0 0 24 24"]'
+      );
 
       const separatorIcons = Array.from(separators).filter(svg => {
         const path = svg.querySelector('path');
@@ -175,7 +185,10 @@ describe('Breadcrumbs', () => {
     test('handles all predefined route labels correctly', () => {
       const testCases = [
         { path: '/encounters', expectedLabel: 'Encounters' },
-        { path: '/encounters/new', expectedLabels: ['Encounters', 'New Encounter'] },
+        {
+          path: '/encounters/new',
+          expectedLabels: ['Encounters', 'New Encounter'],
+        },
         { path: '/combat', expectedLabel: 'Combat' },
         { path: '/settings', expectedLabel: 'Settings' },
         { path: '/help', expectedLabel: 'Help' },
@@ -205,7 +218,9 @@ describe('Breadcrumbs', () => {
 
       const nav = screen.getByRole('navigation');
       expect(nav).toBeInTheDocument();
-      expect(nav).toHaveClass('flex items-center space-x-1 text-sm text-muted-foreground');
+      expect(nav).toHaveClass(
+        'flex items-center space-x-1 text-sm text-muted-foreground'
+      );
     });
 
     test('links have proper accessibility attributes', () => {
@@ -243,7 +258,9 @@ describe('Breadcrumbs', () => {
       render(<Breadcrumbs />);
 
       const navigation = screen.getByRole('navigation');
-      const separators = navigation.querySelectorAll('svg[viewBox="0 0 24 24"]');
+      const separators = navigation.querySelectorAll(
+        'svg[viewBox="0 0 24 24"]'
+      );
 
       const separatorIcon = Array.from(separators).find(svg => {
         const path = svg.querySelector('path');
@@ -301,7 +318,9 @@ describe('Breadcrumbs', () => {
       render(<Breadcrumbs />);
 
       expect(consoleSpy).not.toHaveBeenCalledWith(
-        expect.stringContaining('Warning: Each child in a list should have a unique "key" prop')
+        expect.stringContaining(
+          'Warning: Each child in a list should have a unique "key" prop'
+        )
       );
 
       consoleSpy.mockRestore();

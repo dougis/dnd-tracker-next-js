@@ -1,7 +1,13 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { PricingSection } from '../PricingSection';
-import { mockNextLink, mockButton, getSection, expectResponsiveLayout, expectSemanticStructure } from './test-utils';
+import {
+  mockNextLink,
+  mockButton,
+  getSection,
+  expectResponsiveLayout,
+  expectSemanticStructure,
+} from './test-utils';
 
 mockNextLink();
 mockButton('pricing-button');
@@ -44,8 +50,12 @@ describe('PricingSection Component', () => {
 
     // Free tier limits
     expect(screen.getAllByText(/1.*part/i).length).toBeGreaterThanOrEqual(1); // 1 party
-    expect(screen.getAllByText(/3.*encounter/i).length).toBeGreaterThanOrEqual(1); // 3 encounters
-    expect(screen.getAllByText(/10.*creature/i).length).toBeGreaterThanOrEqual(1); // 10 creatures
+    expect(screen.getAllByText(/3.*encounter/i).length).toBeGreaterThanOrEqual(
+      1
+    ); // 3 encounters
+    expect(screen.getAllByText(/10.*creature/i).length).toBeGreaterThanOrEqual(
+      1
+    ); // 10 creatures
 
     // Higher tier limits
     expect(screen.getAllByText(/unlimited/i).length).toBeGreaterThan(0); // Guild Master unlimited
@@ -55,7 +65,9 @@ describe('PricingSection Component', () => {
     render(<PricingSection />);
 
     // Should show features/benefits for each tier
-    expect(screen.getAllByText(/parties|encounters|creatures/i).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/parties|encounters|creatures/i).length
+    ).toBeGreaterThan(0);
     expect(screen.getByText(/organization.*feature/i)).toBeInTheDocument(); // Guild Master features
   });
 
@@ -105,7 +117,9 @@ describe('PricingSection Component', () => {
     render(<PricingSection />);
 
     // Should highlight popular/recommended tier
-    expect(screen.getByText(/popular|recommended|most.*popular/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/popular|recommended|most.*popular/i)
+    ).toBeInTheDocument();
   });
 
   it('has proper semantic structure for accessibility', () => {
@@ -119,6 +133,10 @@ describe('PricingSection Component', () => {
     render(<PricingSection />);
 
     // Should have persuasive language about value
-    expect(screen.getAllByText(/choose.*subscription|upgrade|perfect.*for|start.*free/i).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(
+        /choose.*subscription|upgrade|perfect.*for|start.*free/i
+      ).length
+    ).toBeGreaterThan(0);
   });
 });
