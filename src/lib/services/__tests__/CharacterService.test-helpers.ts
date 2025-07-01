@@ -3,17 +3,40 @@
  * Provides reusable mock data, test utilities, and assertion helpers
  */
 
-import { Types } from 'mongoose';
 import { ServiceResult } from '../CharacterServiceErrors';
 import type {
   CharacterCreation,
   CharacterUpdate,
   CharacterSummary,
-  Character,
   CharacterPreset,
-  CharacterExport,
 } from '../../validations/character';
 import type { ICharacter } from '../../models/Character';
+
+// Mock Character model
+export const mockCharacterModel = {
+  find: jest.fn(),
+  findById: jest.fn(),
+  findByIdAndUpdate: jest.fn(),
+  findByIdAndDelete: jest.fn(),
+  countDocuments: jest.fn(),
+  create: jest.fn(),
+  save: jest.fn(),
+  findByOwnerId: jest.fn(),
+  findByType: jest.fn(),
+  findPublic: jest.fn(),
+  searchByName: jest.fn(),
+  findByClass: jest.fn(),
+  findByRace: jest.fn(),
+};
+
+// Mock setup helper
+export const setupMockClearance = () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Reset all mock implementations
+    Object.values(mockCharacterModel).forEach(mock => mock.mockReset());
+  });
+};
 
 // ================================
 // Mock Data Factories
@@ -85,8 +108,8 @@ export const createMockCharacter = (overrides: Partial<ICharacter> = {}): IChara
   const baseCharacter = createMockCharacterCreation();
   return {
     ...baseCharacter,
-    _id: new Types.ObjectId('507f1f77bcf86cd799439011'),
-    ownerId: new Types.ObjectId('507f1f77bcf86cd799439012'),
+    _id: '507f1f77bcf86cd799439011' as any,
+    ownerId: '507f1f77bcf86cd799439012' as any,
     isPublic: false,
     createdAt: new Date('2023-01-01T00:00:00.000Z'),
     updatedAt: new Date('2023-01-01T00:00:00.000Z'),
@@ -106,7 +129,7 @@ export const createMockCharacter = (overrides: Partial<ICharacter> = {}): IChara
 };
 
 export const createMockCharacterSummary = (overrides: Partial<CharacterSummary> = {}): CharacterSummary => ({
-  _id: new Types.ObjectId('507f1f77bcf86cd799439011'),
+  _id: '507f1f77bcf86cd799439011' as any,
   name: 'Test Character',
   race: 'human',
   type: 'pc',
@@ -121,7 +144,7 @@ export const createMockCharacterSummary = (overrides: Partial<CharacterSummary> 
     current: 12,
   },
   armorClass: 16,
-  ownerId: new Types.ObjectId('507f1f77bcf86cd799439012'),
+  ownerId: '507f1f77bcf86cd799439012' as any,
   ...overrides,
 });
 
@@ -149,7 +172,8 @@ export const createMockCharacterPreset = (overrides: Partial<CharacterPreset> = 
 // ================================
 
 export const createValidObjectId = (): string => {
-  return new Types.ObjectId().toString();
+  // Generate a valid 24-character hex string that looks like an ObjectId
+  return '507f1f77bcf86cd799439011';
 };
 
 export const createInvalidObjectId = (): string => {
@@ -184,9 +208,9 @@ export const expectError = <T>(result: ServiceResult<T>, expectedCode?: string):
 // ================================
 
 export const createMockCharacterArray = (count: number): ICharacter[] => {
-  return Array.from({ length: count }, (_, index) => 
+  return Array.from({ length: count }, (_, index) =>
     createMockCharacter({
-      _id: new Types.ObjectId(),
+      _id: `507f1f77bcf86cd79943901${index.toString().padStart(1, '0')}` as any,
       name: `Character ${index + 1}`,
     })
   );

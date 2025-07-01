@@ -16,7 +16,6 @@ import type {
   CharacterUpdate,
   CharacterSummary,
   CharacterPreset,
-  CharacterExport,
   CharacterClass,
   CharacterRace,
   CharacterType,
@@ -26,7 +25,6 @@ import {
   createSuccessResult,
   createErrorResult,
   CharacterServiceErrors,
-  CHARACTER_ERROR_CODES,
 } from './CharacterServiceErrors';
 import {
   characterCreationSchema,
@@ -132,7 +130,7 @@ export class CharacterService {
       // Check character limit for subscription tier (mock implementation)
       const characterCount = await Character.countDocuments({ ownerId: new Types.ObjectId(ownerId) });
       const maxCharacters = await this.getCharacterLimitForUser(ownerId);
-      
+
       if (characterCount >= maxCharacters) {
         return createErrorResult(
           CharacterServiceErrors.characterLimitExceeded(characterCount, maxCharacters)
@@ -345,7 +343,7 @@ export class CharacterService {
       }
 
       const userObjectId = new Types.ObjectId(userId);
-      
+
       // Search in owned characters and public characters
       const characters = await Character.find({
         $and: [
@@ -383,7 +381,7 @@ export class CharacterService {
       }
 
       const userObjectId = new Types.ObjectId(userId);
-      
+
       const characters = await Character.find({
         $and: [
           {
@@ -420,7 +418,7 @@ export class CharacterService {
       }
 
       const userObjectId = new Types.ObjectId(userId);
-      
+
       const characters = await Character.find({
         $and: [
           {
@@ -455,7 +453,7 @@ export class CharacterService {
       }
 
       const userObjectId = new Types.ObjectId(userId);
-      
+
       const characters = await Character.find({
         $and: [
           {
@@ -512,7 +510,7 @@ export class CharacterService {
       }
 
       const character = characterResult.data;
-      
+
       // Calculate ability modifiers
       const abilityModifiers = {
         strength: character.getAbilityModifier('strength'),
@@ -619,7 +617,7 @@ export class CharacterService {
       }
 
       const character = characterResult.data;
-      
+
       // Create template from character
       const template: CharacterPreset = {
         name: templateName,
@@ -656,7 +654,7 @@ export class CharacterService {
       }
 
       const originalCharacter = characterResult.data;
-      
+
       // Create clone data
       const cloneData: CharacterCreation = {
         name: newName,
@@ -754,7 +752,7 @@ export class CharacterService {
   ): Promise<ServiceResult<CharacterCreation>> {
     try {
       const validationResult = characterCreationSchema.safeParse(characterData);
-      
+
       if (!validationResult.success) {
         return createErrorResult(
           CharacterServiceErrors.invalidCharacterData(validationResult.error.errors)
@@ -976,8 +974,8 @@ export class CharacterService {
   // ================================
 
   static async calculateSpellcastingStats(
-    characterId: string,
-    userId: string
+    _characterId: string,
+    _userId: string
   ): Promise<ServiceResult<SpellcastingStats>> {
     // TODO: Implement spellcasting calculations
     return createSuccessResult({
@@ -989,8 +987,8 @@ export class CharacterService {
   }
 
   static async calculateCarryingCapacity(
-    characterId: string,
-    userId: string
+    _characterId: string,
+    _userId: string
   ): Promise<ServiceResult<CarryingCapacity>> {
     // TODO: Implement carrying capacity calculations
     return createSuccessResult({
@@ -1001,8 +999,8 @@ export class CharacterService {
   }
 
   static async calculateEquipmentWeight(
-    characterId: string,
-    userId: string
+    _characterId: string,
+    _userId: string
   ): Promise<ServiceResult<EquipmentWeight>> {
     // TODO: Implement equipment weight calculations
     return createSuccessResult({
@@ -1013,8 +1011,8 @@ export class CharacterService {
   }
 
   static async calculateExperienceInfo(
-    characterId: string,
-    userId: string
+    _characterId: string,
+    _userId: string
   ): Promise<ServiceResult<ExperienceInfo>> {
     // TODO: Implement experience calculations
     return createSuccessResult({
@@ -1030,12 +1028,12 @@ export class CharacterService {
   // Private Helper Methods
   // ================================
 
-  private static async getCharacterLimitForUser(userId: string): Promise<number> {
+  private static async getCharacterLimitForUser(_userId: string): Promise<number> {
     // TODO: Implement subscription tier checking
     return 10; // Default limit for now
   }
 
-  private static async checkCharacterInUse(characterId: string): Promise<ServiceResult<void>> {
+  private static async checkCharacterInUse(_characterId: string): Promise<ServiceResult<void>> {
     // TODO: Check if character is in active encounters
     return createSuccessResult(void 0);
   }

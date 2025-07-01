@@ -1,6 +1,6 @@
 /**
  * Character Service Error Handling
- * 
+ *
  * Provides centralized error management for character operations.
  * Uses same patterns as UserServiceErrors for consistency.
  */
@@ -11,7 +11,7 @@ export interface ServiceError {
   details?: Record<string, any>;
 }
 
-export type ServiceResult<T> = 
+export type ServiceResult<T> =
   | { success: true; data: T }
   | { success: false; error: ServiceError };
 
@@ -23,7 +23,7 @@ export const CHARACTER_ERROR_CODES = {
   CHARACTER_NOT_FOUND: 'CHARACTER_NOT_FOUND',
   OWNER_NOT_FOUND: 'OWNER_NOT_FOUND',
   PARTY_NOT_FOUND: 'PARTY_NOT_FOUND',
-  
+
   // Validation Errors
   INVALID_CHARACTER_DATA: 'INVALID_CHARACTER_DATA',
   INVALID_CHARACTER_ID: 'INVALID_CHARACTER_ID',
@@ -31,23 +31,23 @@ export const CHARACTER_ERROR_CODES = {
   INVALID_PARTY_ID: 'INVALID_PARTY_ID',
   INVALID_SEARCH_CRITERIA: 'INVALID_SEARCH_CRITERIA',
   INVALID_TEMPLATE_DATA: 'INVALID_TEMPLATE_DATA',
-  
+
   // Permission Errors
   UNAUTHORIZED_ACCESS: 'UNAUTHORIZED_ACCESS',
   INSUFFICIENT_PERMISSIONS: 'INSUFFICIENT_PERMISSIONS',
-  
+
   // Business Logic Errors
   CHARACTER_LIMIT_EXCEEDED: 'CHARACTER_LIMIT_EXCEEDED',
   INVALID_CHARACTER_LEVEL: 'INVALID_CHARACTER_LEVEL',
   INVALID_MULTICLASS_COMBINATION: 'INVALID_MULTICLASS_COMBINATION',
   CHARACTER_IN_USE: 'CHARACTER_IN_USE',
   TEMPLATE_CREATION_FAILED: 'TEMPLATE_CREATION_FAILED',
-  
+
   // Database Errors
   DATABASE_ERROR: 'DATABASE_ERROR',
   CONNECTION_ERROR: 'CONNECTION_ERROR',
   TRANSACTION_FAILED: 'TRANSACTION_FAILED',
-  
+
   // Generic Errors
   INTERNAL_ERROR: 'INTERNAL_ERROR',
   OPERATION_FAILED: 'OPERATION_FAILED',
