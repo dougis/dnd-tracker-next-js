@@ -139,3 +139,34 @@ export const testConstants = {
   TEST_USERNAME: 'testuser',
   TEST_PASSWORD: 'Password123!',
 };
+
+/**
+ * Common mock data patterns
+ */
+export const mockDataTemplates = {
+  userBase: {
+    firstName: 'Test',
+    lastName: 'User',
+    email: testConstants.TEST_EMAIL,
+    username: testConstants.TEST_USERNAME,
+  },
+
+  userPreferences: {
+    theme: 'system',
+    language: 'en',
+    timezone: 'UTC',
+    emailNotifications: true,
+    pushNotifications: true,
+    autoSaveEncounters: true,
+  },
+
+  passwordFields: {
+    password: testConstants.TEST_PASSWORD,
+    confirmPassword: testConstants.TEST_PASSWORD,
+  },
+
+  timestamps: {
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+};

@@ -25,6 +25,7 @@ import {
   testUtils,
   assertionHelpers,
   testConstants,
+  mockDataTemplates,
 } from './shared/test-factory-utils';
 
 // ================================
@@ -34,39 +35,24 @@ import {
 // Using the shared factory utility to eliminate duplication
 export const createMockPublicUser = createFactory<PublicUser>({
   id: testConstants.TEST_USER_ID,
-  email: testConstants.TEST_EMAIL,
-  username: testConstants.TEST_USERNAME,
-  firstName: 'Test',
-  lastName: 'User',
+  ...mockDataTemplates.userBase,
   role: 'user',
   subscriptionTier: 'free',
-  preferences: {
-    theme: 'system',
-    language: 'en',
-    timezone: 'UTC',
-    emailNotifications: true,
-    pushNotifications: true,
-    autoSaveEncounters: true,
-  },
+  preferences: mockDataTemplates.userPreferences,
   isEmailVerified: true,
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  ...mockDataTemplates.timestamps,
 });
 
 export const createMockUserRegistration = createFactory<UserRegistration>({
-  email: testConstants.TEST_EMAIL,
-  username: testConstants.TEST_USERNAME,
-  firstName: 'Test',
-  lastName: 'User',
-  password: testConstants.TEST_PASSWORD,
-  confirmPassword: testConstants.TEST_PASSWORD,
+  ...mockDataTemplates.userBase,
+  ...mockDataTemplates.passwordFields,
   agreeToTerms: true,
   subscribeToNewsletter: false,
 });
 
 export const createMockUserLogin = createFactory<UserLogin>({
-  email: testConstants.TEST_EMAIL,
-  password: testConstants.TEST_PASSWORD,
+  email: mockDataTemplates.userBase.email,
+  password: mockDataTemplates.passwordFields.password,
   rememberMe: false,
 });
 

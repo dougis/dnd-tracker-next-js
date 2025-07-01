@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import { Schema } from 'mongoose';
 import {
   IPosition,
   IParticipantReference,
@@ -9,7 +9,8 @@ import {
   EncounterModel,
 } from './interfaces';
 import {
-  getStandardSchemaOptions
+  getStandardSchemaOptions,
+  mongooseObjectIdField
 } from '../shared/schema-utils';
 
 /**
@@ -36,12 +37,7 @@ export const positionSchema = new Schema<IPosition>(
  */
 export const participantReferenceSchema = new Schema<IParticipantReference>(
   {
-    characterId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Character',
-      required: true,
-      index: true,
-    },
+    characterId: mongooseObjectIdField('Character'),
     name: {
       type: String,
       required: true,
@@ -111,10 +107,7 @@ export const participantReferenceSchema = new Schema<IParticipantReference>(
  */
 export const initiativeEntrySchema = new Schema<IInitiativeEntry>(
   {
-    participantId: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-    },
+    participantId: mongooseObjectIdField('', true, false),
     initiative: {
       type: Number,
       required: true,
@@ -235,12 +228,7 @@ export const combatStateSchema = new Schema<ICombatState>(
  */
 export const encounterSchema = new Schema<IEncounter, EncounterModel>(
   {
-    ownerId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-      index: true,
-    },
+    ownerId: mongooseObjectIdField('User'),
     name: {
       type: String,
       required: true,
@@ -291,22 +279,13 @@ export const encounterSchema = new Schema<IEncounter, EncounterModel>(
       default: 'draft',
       index: true,
     },
-    partyId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Party',
-      index: true,
-    },
+    partyId: mongooseObjectIdField('Party', false),
     isPublic: {
       type: Boolean,
       default: false,
       index: true,
     },
-    sharedWith: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-      },
-    ],
+    sharedWith: [mongooseObjectIdField('User', false, false)],
     version: {
       type: Number,
       default: 1,

@@ -3,6 +3,8 @@
  * Eliminates duplication across model files
  */
 
+import mongoose from 'mongoose';
+
 /**
  * Standard transform function for toJSON
  * Converts _id to id and removes __v field
@@ -85,3 +87,35 @@ export const objectIdRef = (ref: string, required: boolean = true) => ({
   required,
   index: true,
 });
+
+/**
+ * Standard MongoDB ObjectId field (using mongoose Schema Types)
+ */
+export const mongooseObjectIdField = (ref: string, required: boolean = true, index: boolean = true) => ({
+  type: mongoose.Schema.Types.ObjectId,
+  ref,
+  required,
+  index,
+});
+
+/**
+ * Common field patterns for reuse
+ */
+export const commonFields = {
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 100,
+  },
+  description: {
+    type: String,
+    default: '',
+    maxlength: 1000,
+  },
+  notes: {
+    type: String,
+    default: '',
+    maxlength: 500,
+  },
+};

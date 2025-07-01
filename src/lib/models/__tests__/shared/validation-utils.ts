@@ -55,6 +55,28 @@ export const calculateUpgradeBenefit = (
 };
 
 /**
+ * Common validation patterns
+ */
+const expectFeatureStructure = {
+  parties: expect.any(Number),
+  encounters: expect.any(Number),
+  characters: expect.any(Number),
+};
+
+/**
+ * Generic validation functions
+ */
+const validateForEachTier = (limits: SubscriptionLimits, validator: (_tier: SubscriptionTier, _tierLimits: any) => void) => {
+  TIER_NAMES.forEach(tier => validator(tier, limits[tier]));
+};
+
+const validateForEachFeature = (limits: SubscriptionLimits, validator: (_feature: FeatureName, _tier: SubscriptionTier, _limit: number) => void) => {
+  FEATURE_NAMES.forEach(feature => {
+    TIER_NAMES.forEach(tier => validator(feature, tier, limits[tier][feature]));
+  });
+};
+
+/**
  * Validation helper functions
  */
 export const validationHelpers = {
@@ -63,15 +85,9 @@ export const validationHelpers = {
    * Validates that all tiers have required structure
    */
   validateTierStructure: (limits: SubscriptionLimits) => {
-    TIER_NAMES.forEach(tier => {
+    validateForEachTier(limits, (tier) => {
       expect(limits).toHaveProperty(tier);
-      expect(limits[tier]).toEqual(
-        expect.objectContaining({
-          parties: expect.any(Number),
-          encounters: expect.any(Number),
-          characters: expect.any(Number),
-        })
-      );
+      expect(limits[tier]).toEqual(expect.objectContaining(expectFeatureStructure));
     });
   },
 
@@ -79,11 +95,9 @@ export const validationHelpers = {
    * Validates that all features exist for all tiers
    */
   validateFeatureStructure: (limits: SubscriptionLimits) => {
-    FEATURE_NAMES.forEach(feature => {
-      TIER_NAMES.forEach(tier => {
-        expect(limits[tier]).toHaveProperty(feature);
-        expect(typeof limits[tier][feature]).toBe('number');
-      });
+    validateForEachFeature(limits, (feature, tier) => {
+      expect(limits[tier]).toHaveProperty(feature);
+      expect(typeof limits[tier][feature]).toBe('number');
     });
   },
 
@@ -118,18 +132,8 @@ export const validationHelpers = {
    * Validates consistent object structure
    */
   validateConsistentStructure: (limits: SubscriptionLimits) => {
-    TIER_NAMES.forEach(tier => {
-      const tierLimits = limits[tier];
-
-      expect(tierLimits).toEqual(
-        expect.objectContaining({
-          parties: expect.any(Number),
-          encounters: expect.any(Number),
-          characters: expect.any(Number),
-        })
-      );
-
-      // Should have exactly these three properties
+    validateForEachTier(limits, (tier, tierLimits) => {
+      expect(tierLimits).toEqual(expect.objectContaining(expectFeatureStructure));
       expect(Object.keys(tierLimits)).toHaveLength(3);
     });
   },
@@ -138,12 +142,9 @@ export const validationHelpers = {
    * Validates data types are consistent
    */
   validateDataTypes: (limits: SubscriptionLimits) => {
-    TIER_NAMES.forEach(tier => {
-      FEATURE_NAMES.forEach(feature => {
-        const limit = limits[tier][feature];
-        expect(typeof limit).toBe('number');
-        expect(Number.isInteger(limit)).toBe(true);
-      });
+    validateForEachFeature(limits, (feature, tier, limit) => {
+      expect(typeof limit).toBe('number');
+      expect(Number.isInteger(limit)).toBe(true);
     });
   },
 
@@ -151,11 +152,8 @@ export const validationHelpers = {
    * Validates no negative limits except unlimited (-1)
    */
   validatePositiveLimits: (limits: SubscriptionLimits) => {
-    TIER_NAMES.forEach(tier => {
-      FEATURE_NAMES.forEach(feature => {
-        const limit = limits[tier][feature];
-        expect(limit === -1 || limit > 0).toBe(true);
-      });
+    validateForEachFeature(limits, (feature, tier, limit) => {
+      expect(limit === -1 || limit > 0).toBe(true);
     });
   },
 };

@@ -4,6 +4,7 @@ import {
   savingThrowField,
   hitPointsSchema,
   getStandardSchemaOptions,
+  mongooseObjectIdField,
 } from './shared/schema-utils';
 
 // Ability name type for calculations
@@ -133,12 +134,7 @@ export interface CharacterSummary {
 // Mongoose schema definition
 const characterSchema = new Schema<ICharacter, CharacterModel>(
   {
-    ownerId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-      index: true,
-    },
+    ownerId: mongooseObjectIdField('User'),
     name: {
       type: String,
       required: true,
@@ -336,11 +332,7 @@ const characterSchema = new Schema<ICharacter, CharacterModel>(
       default: false,
       index: true,
     },
-    partyId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Party',
-      index: true,
-    },
+    partyId: mongooseObjectIdField('Party', false),
   },
   getStandardSchemaOptions()
 );
