@@ -8,10 +8,9 @@ import { UserServiceAuth } from '../UserServiceAuth';
 import { UserServiceProfile } from '../UserServiceProfile';
 import { UserServiceStats } from '../UserServiceStats';
 import type {
-  UserRegistration,
   PublicUser,
 } from '../../validations/user';
-import type { QueryFilters, UserStats, PaginatedResult } from '../UserServiceStats';
+import type { UserStats, PaginatedResult } from '../UserServiceStats';
 import {
   createMockPublicUser,
   createMockUserRegistration,
@@ -160,7 +159,7 @@ describe('UserService Administrative Operations', () => {
         createMockImplementation(delayedResult, 10)
       );
 
-      const { result, duration } = await createTimingTest(
+      const { duration: _duration } = await createTimingTest(
         () => UserService.getUserById(userId),
         10,
         delayedResult

@@ -6,7 +6,6 @@
 import { UserService } from '../UserService';
 import { UserServiceProfile } from '../UserServiceProfile';
 import type {
-  UserProfileUpdate,
   PublicUser,
   SubscriptionTier,
 } from '../../validations/user';

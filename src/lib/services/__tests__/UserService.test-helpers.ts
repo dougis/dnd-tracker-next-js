@@ -13,7 +13,6 @@ import type {
   PasswordReset,
   EmailVerification,
   PublicUser,
-  SubscriptionTier,
 } from '../../validations/user';
 import type { QueryFilters, UserStats, PaginatedResult } from '../UserServiceStats';
 
@@ -97,7 +96,7 @@ export const createMockUserStats = (overrides: Partial<UserStats> = {}): UserSta
 });
 
 export const createMockPaginatedResult = <T>(
-  items: T[], 
+  items: T[],
   overrides: Partial<PaginatedResult<T>> = {}
 ): PaginatedResult<T> => ({
   users: items,
@@ -133,22 +132,22 @@ export const createErrorResult = <T>(
 });
 
 // Common error results
-export const createUserNotFoundError = <T>(): ServiceResult<T> => 
+export const createUserNotFoundError = <T>(): ServiceResult<T> =>
   createErrorResult('USER_NOT_FOUND', 'User not found', 'userId');
 
-export const createUserAlreadyExistsError = <T>(field: string = 'email'): ServiceResult<T> => 
+export const createUserAlreadyExistsError = <T>(field: string = 'email'): ServiceResult<T> =>
   createErrorResult('USER_ALREADY_EXISTS', `User with this ${field} already exists`, field);
 
-export const createInvalidCredentialsError = <T>(): ServiceResult<T> => 
+export const createInvalidCredentialsError = <T>(): ServiceResult<T> =>
   createErrorResult('INVALID_CREDENTIALS', 'Invalid email or password', 'password');
 
-export const createInvalidTokenError = <T>(): ServiceResult<T> => 
+export const createInvalidTokenError = <T>(): ServiceResult<T> =>
   createErrorResult('INVALID_TOKEN', 'Invalid or expired token', 'token');
 
-export const createDatabaseError = <T>(): ServiceResult<T> => 
+export const createDatabaseError = <T>(): ServiceResult<T> =>
   createErrorResult('DATABASE_ERROR', 'Database connection failed');
 
-export const createValidationError = <T>(): ServiceResult<T> => 
+export const createValidationError = <T>(): ServiceResult<T> =>
   createErrorResult('VALIDATION_ERROR', 'Invalid input');
 
 // ================================
@@ -242,7 +241,7 @@ export const createTimingTest = async <T>(
   const start = Date.now();
   const result = await operation();
   const duration = Date.now() - start;
-  
+
   expect(duration).toBeGreaterThanOrEqual(expectedMinDuration);
   expect(result).toEqual(expectedResult);
   return { result, duration };

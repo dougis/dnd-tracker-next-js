@@ -6,12 +6,6 @@
 import { UserService } from '../UserService';
 import { UserServiceAuth } from '../UserServiceAuth';
 import type {
-  UserRegistration,
-  UserLogin,
-  ChangePassword,
-  PasswordResetRequest,
-  PasswordReset,
-  EmailVerification,
   PublicUser,
 } from '../../validations/user';
 import {
