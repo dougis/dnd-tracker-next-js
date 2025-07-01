@@ -10,6 +10,7 @@ import { type PublicUser } from '../validations/user';
  * Consolidates common response patterns and reduces code duplication
  */
 export class UserServiceResponseHelpers {
+
   /**
    * Create a standardized success response
    */

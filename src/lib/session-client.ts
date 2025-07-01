@@ -122,6 +122,7 @@ export function useRequireAuth(options: RequireAuthOptions = {}): {
  * Utility functions for client-side session management
  */
 export class ClientSessionUtils {
+
   /**
    * Check if user has required subscription tier
    */

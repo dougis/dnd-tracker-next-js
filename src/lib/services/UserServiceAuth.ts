@@ -25,6 +25,7 @@ import { UserServiceLookup } from './UserServiceLookup';
  * Handles user registration, login, password management, and email verification
  */
 export class UserServiceAuth {
+
   /**
    * Create a new user account
    */

@@ -126,6 +126,7 @@ export function createAuthenticatedHandler(handler: AuthenticatedHandler) {
  * Utility class for creating consistent API responses
  */
 export class ApiResponse {
+
   /**
    * Create a success response
    */
@@ -175,6 +176,7 @@ export class ApiResponse {
  * Session utilities for checking authentication state
  */
 export class SessionUtils {
+
   /**
    * Check if user has required subscription tier
    */

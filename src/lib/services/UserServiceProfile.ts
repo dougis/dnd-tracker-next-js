@@ -16,6 +16,7 @@ import { UserServiceLookup } from './UserServiceLookup';
  * Handles user profile retrieval, updates, subscription management, and account deletion
  */
 export class UserServiceProfile {
+
   /**
    * Get user by ID
    */

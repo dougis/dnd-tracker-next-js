@@ -11,6 +11,7 @@ import { UserServiceResponseHelpers } from './UserServiceResponseHelpers';
  * Centralizes all user finding operations with consistent error handling
  */
 export class UserServiceLookup {
+
   /**
    * Find user by ID and return standardized error if not found
    */

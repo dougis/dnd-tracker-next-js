@@ -3,6 +3,7 @@
  * Consolidates common database patterns and test compatibility
  */
 export class UserServiceDatabase {
+
   /**
    * Safely save a user with test environment compatibility
    */

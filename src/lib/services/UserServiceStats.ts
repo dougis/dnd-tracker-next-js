@@ -39,6 +39,7 @@ export interface UserStats {
  * Handles paginated user queries and statistical reporting
  */
 export class UserServiceStats {
+
   /**
    * Builds the MongoDB query object from filters
    */

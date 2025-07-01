@@ -16,7 +16,7 @@ jest.mock('next/link', () => {
 
 // Mock Button component
 jest.mock('@/components/ui/button', () => ({
-  Button: ({ children, size, variant, className, asChild }: any) => (
+  Button: ({ children, size, variant, className }: any) => (
     <div
       className={`btn ${size || ''} ${variant || ''} ${className || ''}`}
       data-testid="cta-button"
