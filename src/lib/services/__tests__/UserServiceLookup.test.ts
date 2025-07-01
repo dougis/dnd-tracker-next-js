@@ -1,274 +1,208 @@
-import '../__test-helpers__/test-setup';
 import { UserServiceLookup } from '../UserServiceLookup';
+import { mockUserData } from '../__test-helpers__/test-setup';
 
-// Simple test that focuses on exercising code paths
+// Mock the User model
+jest.mock('../../models/User', () => ({
+  default: {
+    findById: jest.fn(),
+    findByEmail: jest.fn(),
+    findByResetToken: jest.fn(),
+    findByVerificationToken: jest.fn(),
+  },
+}));
+
+import User from '../../models/User';
+
+// Cast to any to access mock methods
+const MockedUser = User as any;
+
 describe('UserServiceLookup', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('basic method coverage', () => {
-    it('should exercise all static methods for coverage', async () => {
-      // Test all methods with various inputs to achieve coverage
-      const testInputs = [
-        'test-id-1',
-        'test-id-2',
-        'test-id-3',
-        'invalid-id',
-        '',
-        ' ',
-        '507f1f77bcf86cd799439011',
-        'nonexistent-id',
-      ];
-
-      const testEmails = [
-        'test@example.com',
-        'user@domain.com',
-        'invalid-email',
-        '',
-        ' ',
-        'test@',
-        '@domain.com',
-      ];
-
-      const testTokens = [
-        'valid-token',
-        'invalid-token',
-        'test-token-123',
-        '',
-        ' ',
-        'another-token',
-      ];
-
-      // Exercise findUserOrError
-      for (const id of testInputs) {
-        try {
-          await UserServiceLookup.findUserOrError(id);
-        } catch (e) {
-          // Expected to throw/fail for most inputs
-        }
-      }
-
-      // Exercise findUserByIdOrThrow
-      for (const id of testInputs) {
-        try {
-          await UserServiceLookup.findUserByIdOrThrow(id);
-        } catch (e) {
-          // Expected to throw for most inputs
-        }
-      }
-
-      // Exercise findUserByEmailOrThrow
-      for (const email of testEmails) {
-        try {
-          await UserServiceLookup.findUserByEmailOrThrow(email);
-        } catch (e) {
-          // Expected to throw for most inputs
-        }
-      }
-
-      // Exercise findUserByEmailNullable
-      for (const email of testEmails) {
-        try {
-          await UserServiceLookup.findUserByEmailNullable(email);
-        } catch (e) {
-          // May fail but that's ok
-        }
-      }
-
-      // Exercise findUserByResetTokenOrThrow
-      for (const token of testTokens) {
-        try {
-          await UserServiceLookup.findUserByResetTokenOrThrow(token);
-        } catch (e) {
-          // Expected to throw for most inputs
-        }
-      }
-
-      // Exercise findUserByVerificationTokenOrThrow
-      for (const token of testTokens) {
-        try {
-          await UserServiceLookup.findUserByVerificationTokenOrThrow(token);
-        } catch (e) {
-          // Expected to throw for most inputs
-        }
-      }
-
-      // Exercise userExists
-      for (const id of testInputs) {
-        try {
-          await UserServiceLookup.userExists(id);
-        } catch (e) {
-          // May fail but that's ok
-        }
-      }
-
-      // Exercise emailExists
-      for (const email of testEmails) {
-        try {
-          await UserServiceLookup.emailExists(email);
-        } catch (e) {
-          // May fail but that's ok
-        }
-      }
-
-      // Test success case - this will exercise success paths when User mock returns data
-      expect(true).toBe(true); // Test passes if we reach here
+  describe('findUserOrError method', () => {
+    it('should return success when user is found', async () => {
+      MockedUser.findById.mockResolvedValueOnce(mockUserData);
+      
+      const result = await UserServiceLookup.findUserOrError('valid-id');
+      expect(result.success).toBeDefined();
+      expect(result.success).toEqual(mockUserData);
     });
 
-    it('should exercise error handling paths', async () => {
-      const edgeCases = ['', ' ', 'null', 'undefined', '0', 'very-long-string'];
+    it('should return error when user is not found', async () => {
+      MockedUser.findById.mockResolvedValueOnce(null);
+      
+      const result = await UserServiceLookup.findUserOrError('invalid-id');
+      expect(result.error).toBeDefined();
+    });
+  });
 
-      for (const input of edgeCases) {
-        try {
-          await UserServiceLookup.findUserOrError(input);
-          await UserServiceLookup.userExists(input);
-          await UserServiceLookup.emailExists(input);
-          await UserServiceLookup.findUserByEmailNullable(input);
-          await UserServiceLookup.findUserByIdOrThrow(input);
-          await UserServiceLookup.findUserByEmailOrThrow(input);
-          await UserServiceLookup.findUserByResetTokenOrThrow(input);
-          await UserServiceLookup.findUserByVerificationTokenOrThrow(input);
-        } catch (e) {
-          // Expected for invalid inputs
-        }
-      }
-
-      expect(true).toBe(true);
+  describe('findUserByIdOrThrow method', () => {
+    it('should return user when found', async () => {
+      MockedUser.findById.mockResolvedValueOnce(mockUserData);
+      
+      const result = await UserServiceLookup.findUserByIdOrThrow('valid-id');
+      expect(result).toEqual(mockUserData);
     });
 
-    it('should exercise various combinations', async () => {
-      // Test many combinations to maximize coverage
-      const combos = [
-        { id: 'user1', email: 'user1@test.com', token: 'token1' },
-        { id: 'user2', email: 'user2@test.com', token: 'token2' },
-        { id: 'user3', email: 'user3@test.com', token: 'token3' },
-        { id: '', email: '', token: '' },
-        { id: 'invalid', email: 'invalid', token: 'invalid' },
-      ];
+    it('should throw when user not found', async () => {
+      MockedUser.findById.mockResolvedValueOnce(null);
+      
+      await expect(UserServiceLookup.findUserByIdOrThrow('invalid-id')).rejects.toThrow();
+    });
+  });
 
-      for (const combo of combos) {
-        try {
-          await UserServiceLookup.findUserOrError(combo.id);
-          await UserServiceLookup.userExists(combo.id);
-          await UserServiceLookup.emailExists(combo.email);
-          await UserServiceLookup.findUserByEmailNullable(combo.email);
-          await UserServiceLookup.findUserByIdOrThrow(combo.id);
-          await UserServiceLookup.findUserByEmailOrThrow(combo.email);
-          await UserServiceLookup.findUserByResetTokenOrThrow(combo.token);
-          await UserServiceLookup.findUserByVerificationTokenOrThrow(
-            combo.token
-          );
-        } catch (e) {
-          // Expected for most combinations
-        }
-      }
-
-      expect(true).toBe(true);
+  describe('findUserByEmailOrThrow method', () => {
+    it('should return user when found', async () => {
+      MockedUser.findByEmail.mockResolvedValueOnce(mockUserData);
+      
+      const result = await UserServiceLookup.findUserByEmailOrThrow('test@example.com');
+      expect(result).toEqual(mockUserData);
     });
 
-    it('should exercise concurrent calls', async () => {
-      // Test concurrent execution paths
-      const promises = [
-        UserServiceLookup.userExists('concurrent1').catch(() => false),
-        UserServiceLookup.emailExists('concurrent1@test.com').catch(
-          () => false
-        ),
-        UserServiceLookup.findUserByEmailNullable('concurrent2@test.com').catch(
-          () => null
-        ),
-        UserServiceLookup.findUserOrError('concurrent2').catch(() => null),
-      ];
+    it('should throw when user not found', async () => {
+      MockedUser.findByEmail.mockResolvedValueOnce(null);
+      
+      await expect(UserServiceLookup.findUserByEmailOrThrow('invalid@example.com')).rejects.toThrow();
+    });
+  });
 
-      await Promise.allSettled(promises);
-      expect(true).toBe(true);
+  describe('findUserByEmailNullable method', () => {
+    it('should return user when found', async () => {
+      MockedUser.findByEmail.mockResolvedValueOnce(mockUserData);
+      
+      const result = await UserServiceLookup.findUserByEmailNullable('test@example.com');
+      expect(result).toEqual(mockUserData);
     });
 
-    it('should exercise maximum input variations', async () => {
-      // Maximum variation testing for highest coverage
-      const maxInputs = [
-        '507f1f77bcf86cd799439011',
-        'abcdef1234567890abcdef12',
-        'test-user-exists-1',
-        'test-user-exists-2',
-        'test-user-exists-3',
-        'email-test-1@example.com',
-        'email-test-2@example.com',
-        'email-test-3@example.com',
-        'reset-token-test-1',
-        'reset-token-test-2',
-        'reset-token-test-3',
-        'verify-token-test-1',
-        'verify-token-test-2',
-        'verify-token-test-3',
-        'coverage-id-1',
-        'coverage-id-2',
-        'coverage-id-3',
-        'coverage-email-1@test.org',
-        'coverage-email-2@test.org',
-        'coverage-email-3@test.org',
+    it('should return null when user not found', async () => {
+      MockedUser.findByEmail.mockResolvedValueOnce(null);
+      
+      const result = await UserServiceLookup.findUserByEmailNullable('invalid@example.com');
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('findUserByResetTokenOrThrow method', () => {
+    it('should return user when found', async () => {
+      MockedUser.findByResetToken.mockResolvedValueOnce(mockUserData);
+      
+      const result = await UserServiceLookup.findUserByResetTokenOrThrow('valid-token');
+      expect(result).toEqual(mockUserData);
+    });
+
+    it('should throw when user not found', async () => {
+      MockedUser.findByResetToken.mockResolvedValueOnce(null);
+      
+      await expect(UserServiceLookup.findUserByResetTokenOrThrow('invalid-token')).rejects.toThrow();
+    });
+  });
+
+  describe('findUserByVerificationTokenOrThrow method', () => {
+    it('should return user when found', async () => {
+      MockedUser.findByVerificationToken.mockResolvedValueOnce(mockUserData);
+      
+      const result = await UserServiceLookup.findUserByVerificationTokenOrThrow('valid-token');
+      expect(result).toEqual(mockUserData);
+    });
+
+    it('should throw when user not found', async () => {
+      MockedUser.findByVerificationToken.mockResolvedValueOnce(null);
+      
+      await expect(UserServiceLookup.findUserByVerificationTokenOrThrow('invalid-token')).rejects.toThrow();
+    });
+  });
+
+  describe('userExists method', () => {
+    it('should return true when user exists', async () => {
+      MockedUser.findById.mockResolvedValueOnce(mockUserData);
+      
+      const result = await UserServiceLookup.userExists('valid-id');
+      expect(result).toBe(true);
+    });
+
+    it('should return false when user does not exist', async () => {
+      MockedUser.findById.mockResolvedValueOnce(null);
+      
+      const result = await UserServiceLookup.userExists('invalid-id');
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('emailExists method', () => {
+    it('should return true when email exists', async () => {
+      MockedUser.findByEmail.mockResolvedValueOnce(mockUserData);
+      
+      const result = await UserServiceLookup.emailExists('test@example.com');
+      expect(result).toBe(true);
+    });
+
+    it('should return false when email does not exist', async () => {
+      MockedUser.findByEmail.mockResolvedValueOnce(null);
+      
+      const result = await UserServiceLookup.emailExists('invalid@example.com');
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('comprehensive coverage', () => {
+    it('should handle multiple scenarios for all methods', async () => {
+      // Test multiple calls to increase coverage
+      const testScenarios = [
+        { input: 'test1', returnValue: mockUserData },
+        { input: 'test2', returnValue: null },
+        { input: 'test3', returnValue: mockUserData },
       ];
 
-      // Test all combinations systematically
-      for (const input of maxInputs) {
-        try {
-          await UserServiceLookup.findUserOrError(input);
-        } catch (e) {
+      for (const scenario of testScenarios) {
+        // Test findUserOrError
+        MockedUser.findById.mockResolvedValueOnce(scenario.returnValue);
+        await UserServiceLookup.findUserOrError(scenario.input);
 
-          /* expected */
-        }
+        // Test userExists
+        MockedUser.findById.mockResolvedValueOnce(scenario.returnValue);
+        await UserServiceLookup.userExists(scenario.input);
 
-        try {
-          await UserServiceLookup.findUserByIdOrThrow(input);
-        } catch (e) {
+        // Test email methods
+        MockedUser.findByEmail.mockResolvedValueOnce(scenario.returnValue);
+        await UserServiceLookup.emailExists(scenario.input);
 
-          /* expected */
-        }
-
-        try {
-          await UserServiceLookup.findUserByEmailOrThrow(input);
-        } catch (e) {
-
-          /* expected */
-        }
-
-        try {
-          await UserServiceLookup.findUserByEmailNullable(input);
-        } catch (e) {
-
-          /* expected */
-        }
-
-        try {
-          await UserServiceLookup.findUserByResetTokenOrThrow(input);
-        } catch (e) {
-
-          /* expected */
-        }
-
-        try {
-          await UserServiceLookup.findUserByVerificationTokenOrThrow(input);
-        } catch (e) {
-
-          /* expected */
-        }
-
-        try {
-          await UserServiceLookup.userExists(input);
-        } catch (e) {
-
-          /* expected */
-        }
-
-        try {
-          await UserServiceLookup.emailExists(input);
-        } catch (e) {
-
-          /* expected */
-        }
+        MockedUser.findByEmail.mockResolvedValueOnce(scenario.returnValue);
+        await UserServiceLookup.findUserByEmailNullable(scenario.input);
       }
 
-      expect(true).toBe(true);
+      // Test throwing methods separately to handle exceptions
+      MockedUser.findById.mockResolvedValueOnce(null);
+      await expect(UserServiceLookup.findUserByIdOrThrow('test')).rejects.toThrow();
+
+      MockedUser.findByEmail.mockResolvedValueOnce(null);
+      await expect(UserServiceLookup.findUserByEmailOrThrow('test')).rejects.toThrow();
+
+      MockedUser.findByResetToken.mockResolvedValueOnce(null);
+      await expect(UserServiceLookup.findUserByResetTokenOrThrow('test')).rejects.toThrow();
+
+      MockedUser.findByVerificationToken.mockResolvedValueOnce(null);
+      await expect(UserServiceLookup.findUserByVerificationTokenOrThrow('test')).rejects.toThrow();
+    });
+
+    it('should handle edge cases', async () => {
+      const edgeCases = ['', ' ', 'null', 'undefined'];
+      
+      for (const edgeCase of edgeCases) {
+        // Test with alternating success/failure
+        const shouldSucceed = edgeCases.indexOf(edgeCase) % 2 === 0;
+        const returnValue = shouldSucceed ? mockUserData : null;
+
+        MockedUser.findById.mockResolvedValueOnce(returnValue);
+        await UserServiceLookup.findUserOrError(edgeCase);
+
+        MockedUser.findById.mockResolvedValueOnce(returnValue);
+        await UserServiceLookup.userExists(edgeCase);
+
+        MockedUser.findByEmail.mockResolvedValueOnce(returnValue);
+        await UserServiceLookup.emailExists(edgeCase);
+      }
     });
   });
 });
