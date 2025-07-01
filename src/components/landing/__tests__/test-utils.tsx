@@ -59,7 +59,9 @@ export const getSection = (screen: any, headingLevel: number = 2) => {
 };
 
 export const expectResponsiveLayout = (section: Element | null) => {
-  expect(section).toHaveClass('container', 'mx-auto', 'px-4');
+  expect(section).toHaveClass('container');
+  expect(section).toHaveClass('mx-auto');
+  expect(section).toHaveClass('px-4');
 };
 
 export const expectSemanticStructure = (section: Element | null) => {

@@ -47,7 +47,8 @@ describe('LandingPage Component', () => {
     const { container } = render(<LandingPage />);
     const mainElement = container.querySelector('main');
 
-    expect(mainElement).toHaveClass('min-h-screen', 'bg-background');
+    expect(mainElement).toHaveClass('min-h-screen');
+    expect(mainElement).toHaveClass('bg-background');
   });
 
   it('renders sections in the correct order for optimal conversion flow', () => {
