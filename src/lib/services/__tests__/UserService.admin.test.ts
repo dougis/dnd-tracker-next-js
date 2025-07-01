@@ -7,12 +7,30 @@ import { UserService } from '../UserService';
 import { UserServiceAuth } from '../UserServiceAuth';
 import { UserServiceProfile } from '../UserServiceProfile';
 import { UserServiceStats } from '../UserServiceStats';
-import { ServiceResult } from '../UserServiceErrors';
 import type {
   UserRegistration,
   PublicUser,
 } from '../../validations/user';
 import type { QueryFilters, UserStats, PaginatedResult } from '../UserServiceStats';
+import {
+  createMockPublicUser,
+  createMockUserRegistration,
+  createMockQueryFilters,
+  createMockUserStats,
+  createMockPaginatedResult,
+  createSuccessResult,
+  createDatabaseError,
+  createValidationError,
+  setupMockClearance,
+  expectDelegationCall,
+  expectErrorThrown,
+  createMockImplementation,
+  createMockRejection,
+  createTimingTest,
+  createConcurrentTest,
+  TEST_USER_ID,
+  TEST_USER_ID_2,
+} from './UserService.test-helpers';
 
 // Mock all sub-modules for integration tests
 jest.mock('../UserServiceAuth');
@@ -24,130 +42,97 @@ const mockUserServiceProfile = UserServiceProfile as jest.Mocked<typeof UserServ
 const mockUserServiceStats = UserServiceStats as jest.Mocked<typeof UserServiceStats>;
 
 describe('UserService Administrative Operations', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  setupMockClearance();
 
   describe('getUsers', () => {
     it('should delegate to UserServiceStats.getUsers with default parameters', async () => {
-      const expectedResult: ServiceResult<PaginatedResult<PublicUser>> = {
-        success: true,
-        data: {
-          users: [
-            {
-              _id: '507f1f77bcf86cd799439011',
-              email: 'user1@example.com',
-              username: 'user1',
-              subscriptionTier: 'free',
-              isEmailVerified: true,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            },
-          ],
-          pagination: {
-            currentPage: 1,
-            totalPages: 1,
-            pageSize: 20,
-            total: 1,
-          },
-        },
-      };
+      const mockUsers = [createMockPublicUser()];
+      const expectedResult = createSuccessResult(createMockPaginatedResult(mockUsers));
 
       mockUserServiceStats.getUsers.mockResolvedValue(expectedResult);
 
       const result = await UserService.getUsers();
 
-      expect(mockUserServiceStats.getUsers).toHaveBeenCalledWith(1, 20, undefined);
-      expect(result).toEqual(expectedResult);
+      expectDelegationCall(
+        mockUserServiceStats.getUsers,
+        [1, 20, undefined],
+        expectedResult,
+        result
+      );
     });
 
     it('should delegate to UserServiceStats.getUsers with custom parameters', async () => {
       const page = 2;
       const limit = 10;
-      const filters: QueryFilters = {
-        subscriptionTier: 'pro',
-        isEmailVerified: true,
-      };
-
-      const expectedResult: ServiceResult<PaginatedResult<PublicUser>> = {
-        success: true,
-        data: {
-          users: [],
-          pagination: {
-            currentPage: 2,
-            totalPages: 1,
-            pageSize: 10,
-            total: 0,
-          },
+      const filters = createMockQueryFilters();
+      const expectedResult = createSuccessResult(createMockPaginatedResult([], {
+        pagination: {
+          currentPage: 2,
+          totalPages: 1,
+          pageSize: 10,
+          total: 0,
         },
-      };
+      }));
 
       mockUserServiceStats.getUsers.mockResolvedValue(expectedResult);
 
       const result = await UserService.getUsers(page, limit, filters);
 
-      expect(mockUserServiceStats.getUsers).toHaveBeenCalledWith(page, limit, filters);
-      expect(result).toEqual(expectedResult);
+      expectDelegationCall(
+        mockUserServiceStats.getUsers,
+        [page, limit, filters],
+        expectedResult,
+        result
+      );
     });
 
     it('should handle database errors', async () => {
-      const expectedError: ServiceResult<PaginatedResult<PublicUser>> = {
-        success: false,
-        error: {
-          type: 'DATABASE_ERROR',
-          message: 'Database connection failed',
-        },
-      };
+      const expectedError = createDatabaseError<PaginatedResult<PublicUser>>();
 
       mockUserServiceStats.getUsers.mockResolvedValue(expectedError);
 
       const result = await UserService.getUsers();
 
-      expect(mockUserServiceStats.getUsers).toHaveBeenCalledWith(1, 20, undefined);
-      expect(result).toEqual(expectedError);
+      expectDelegationCall(
+        mockUserServiceStats.getUsers,
+        [1, 20, undefined],
+        expectedError,
+        result
+      );
     });
   });
 
   describe('getUserStats', () => {
     it('should delegate to UserServiceStats.getUserStats', async () => {
-      const expectedResult: ServiceResult<UserStats> = {
-        success: true,
-        data: {
-          totalUsers: 100,
-          verifiedUsers: 80,
-          subscriptionBreakdown: {
-            free: 70,
-            pro: 20,
-            premium: 10,
-          },
-          newUsersThisMonth: 15,
-          activeUsersThisMonth: 60,
-        },
-      };
+      const mockStats = createMockUserStats();
+      const expectedResult = createSuccessResult(mockStats);
 
       mockUserServiceStats.getUserStats.mockResolvedValue(expectedResult);
 
       const result = await UserService.getUserStats();
 
-      expect(mockUserServiceStats.getUserStats).toHaveBeenCalledWith();
-      expect(result).toEqual(expectedResult);
+      expectDelegationCall(
+        mockUserServiceStats.getUserStats,
+        [],
+        expectedResult,
+        result
+      );
     });
 
     it('should handle stats calculation errors', async () => {
-      const expectedError: ServiceResult<UserStats> = {
-        success: false,
-        error: {
-          type: 'DATABASE_ERROR',
-          message: 'Unable to calculate user statistics',
-        },
-      };
+      const expectedError = createDatabaseError<UserStats>();
+      expectedError.error!.message = 'Unable to calculate user statistics';
 
       mockUserServiceStats.getUserStats.mockResolvedValue(expectedError);
 
       const result = await UserService.getUserStats();
 
-      expect(mockUserServiceStats.getUserStats).toHaveBeenCalledWith();
-      expect(result).toEqual(expectedError);
+      expectDelegationCall(
+        mockUserServiceStats.getUserStats,
+        [],
+        expectedError,
+        result
+      );
     });
   });
 
@@ -157,103 +142,78 @@ describe('UserService Administrative Operations', () => {
 
   describe('Integration and Error Handling', () => {
     it('should handle errors thrown by sub-modules', async () => {
-      const userData: UserRegistration = {
-        email: 'test@example.com',
-        username: 'testuser',
-        password: 'Password123!',
-        confirmPassword: 'Password123!',
-      };
+      const userData = createMockUserRegistration();
+      const error = new Error('Database connection failed');
 
-      mockUserServiceAuth.createUser.mockRejectedValue(new Error('Database connection failed'));
+      mockUserServiceAuth.createUser.mockImplementation(createMockRejection(error));
 
-      await expect(UserService.createUser(userData)).rejects.toThrow('Database connection failed');
+      await expectErrorThrown(UserService.createUser(userData), 'Database connection failed');
       expect(mockUserServiceAuth.createUser).toHaveBeenCalledWith(userData);
     });
 
     it('should preserve async nature of operations', async () => {
-      const userId = '507f1f77bcf86cd799439011';
+      const userId = TEST_USER_ID;
+      const mockUser = createMockPublicUser({ _id: userId });
+      const delayedResult = createSuccessResult(mockUser);
 
-      // Create a promise that resolves after a delay to test async behavior
-      const delayedResult: ServiceResult<PublicUser> = {
-        success: true,
-        data: {
-          _id: userId,
-          email: 'test@example.com',
-          username: 'testuser',
-          subscriptionTier: 'free',
-          isEmailVerified: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
-
-      mockUserServiceProfile.getUserById.mockImplementation(() =>
-        new Promise((resolve) => setTimeout(() => resolve(delayedResult), 10))
+      mockUserServiceProfile.getUserById.mockImplementation(
+        createMockImplementation(delayedResult, 10)
       );
 
-      const start = Date.now();
-      const result = await UserService.getUserById(userId);
-      const duration = Date.now() - start;
+      const { result, duration } = await createTimingTest(
+        () => UserService.getUserById(userId),
+        10,
+        delayedResult
+      );
 
-      expect(duration).toBeGreaterThanOrEqual(10);
-      expect(result).toEqual(delayedResult);
+      expect(mockUserServiceProfile.getUserById).toHaveBeenCalledWith(userId);
     });
 
     it('should handle undefined and null parameters gracefully', async () => {
-      // Test with undefined parameters - these should still delegate properly
-      mockUserServiceAuth.createUser.mockResolvedValue({
-        success: false,
-        error: { type: 'VALIDATION_ERROR', message: 'Invalid input' },
-      });
+      const expectedResult = createValidationError<PublicUser>();
 
-      // This would normally fail validation at the sub-module level
+      mockUserServiceAuth.createUser.mockResolvedValue(expectedResult);
+
       const result = await UserService.createUser(undefined as any);
 
-      expect(mockUserServiceAuth.createUser).toHaveBeenCalledWith(undefined);
-      expect(result.success).toBe(false);
+      expectDelegationCall(
+        mockUserServiceAuth.createUser,
+        [undefined],
+        expectedResult,
+        result
+      );
     });
 
     it('should handle concurrent operations correctly', async () => {
-      const userId1 = '507f1f77bcf86cd799439011';
-      const userId2 = '507f1f77bcf86cd799439012';
+      const user1 = createMockPublicUser({
+        _id: TEST_USER_ID,
+        email: 'user1@example.com',
+        username: 'user1',
+        subscriptionTier: 'free',
+      });
 
-      const user1: ServiceResult<PublicUser> = {
-        success: true,
-        data: {
-          _id: userId1,
-          email: 'user1@example.com',
-          username: 'user1',
-          subscriptionTier: 'free',
-          isEmailVerified: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+      const user2 = createMockPublicUser({
+        _id: TEST_USER_ID_2,
+        email: 'user2@example.com',
+        username: 'user2',
+        subscriptionTier: 'pro',
+      });
 
-      const user2: ServiceResult<PublicUser> = {
-        success: true,
-        data: {
-          _id: userId2,
-          email: 'user2@example.com',
-          username: 'user2',
-          subscriptionTier: 'pro',
-          isEmailVerified: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+      const result1 = createSuccessResult(user1);
+      const result2 = createSuccessResult(user2);
 
       mockUserServiceProfile.getUserById
-        .mockResolvedValueOnce(user1)
-        .mockResolvedValueOnce(user2);
+        .mockResolvedValueOnce(result1)
+        .mockResolvedValueOnce(result2);
 
-      const [result1, result2] = await Promise.all([
-        UserService.getUserById(userId1),
-        UserService.getUserById(userId2),
-      ]);
+      await createConcurrentTest(
+        [
+          () => UserService.getUserById(TEST_USER_ID),
+          () => UserService.getUserById(TEST_USER_ID_2),
+        ],
+        [result1, result2]
+      );
 
-      expect(result1).toEqual(user1);
-      expect(result2).toEqual(user2);
       expect(mockUserServiceProfile.getUserById).toHaveBeenCalledTimes(2);
     });
   });

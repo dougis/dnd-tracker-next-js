@@ -5,7 +5,6 @@
 
 import { UserService } from '../UserService';
 import { UserServiceAuth } from '../UserServiceAuth';
-import { ServiceResult } from '../UserServiceErrors';
 import type {
   UserRegistration,
   UserLogin,
@@ -15,6 +14,23 @@ import type {
   EmailVerification,
   PublicUser,
 } from '../../validations/user';
+import {
+  createMockPublicUser,
+  createMockUserRegistration,
+  createMockUserLogin,
+  createMockChangePassword,
+  createMockPasswordResetRequest,
+  createMockPasswordReset,
+  createMockEmailVerification,
+  createSuccessResult,
+  createUserAlreadyExistsError,
+  createInvalidCredentialsError,
+  createInvalidTokenError,
+  createUserNotFoundError,
+  setupMockClearance,
+  expectDelegationCall,
+  TEST_EMAIL,
+} from './UserService.test-helpers';
 
 // Mock UserServiceAuth
 jest.mock('../UserServiceAuth');
@@ -22,338 +38,256 @@ jest.mock('../UserServiceAuth');
 const mockUserServiceAuth = UserServiceAuth as jest.Mocked<typeof UserServiceAuth>;
 
 describe('UserService Authentication Operations', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  setupMockClearance();
 
   describe('createUser', () => {
     it('should delegate to UserServiceAuth.createUser', async () => {
-      const userData: UserRegistration = {
-        email: 'test@example.com',
-        username: 'testuser',
-        password: 'Password123!',
-        confirmPassword: 'Password123!',
-      };
-
-      const expectedResult: ServiceResult<PublicUser> = {
-        success: true,
-        data: {
-          _id: '507f1f77bcf86cd799439011',
-          email: 'test@example.com',
-          username: 'testuser',
-          subscriptionTier: 'free',
-          isEmailVerified: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+      const userData = createMockUserRegistration();
+      const mockUser = createMockPublicUser({ isEmailVerified: false });
+      const expectedResult = createSuccessResult(mockUser);
 
       mockUserServiceAuth.createUser.mockResolvedValue(expectedResult);
 
       const result = await UserService.createUser(userData);
 
-      expect(mockUserServiceAuth.createUser).toHaveBeenCalledWith(userData);
-      expect(result).toEqual(expectedResult);
+      expectDelegationCall(
+        mockUserServiceAuth.createUser,
+        [userData],
+        expectedResult,
+        result
+      );
     });
 
     it('should handle errors from UserServiceAuth.createUser', async () => {
-      const userData: UserRegistration = {
-        email: 'test@example.com',
-        username: 'testuser',
-        password: 'Password123!',
-        confirmPassword: 'Password123!',
-      };
-
-      const expectedError: ServiceResult<PublicUser> = {
-        success: false,
-        error: {
-          type: 'USER_ALREADY_EXISTS',
-          message: 'User with this email already exists',
-          field: 'email',
-        },
-      };
+      const userData = createMockUserRegistration();
+      const expectedError = createUserAlreadyExistsError<PublicUser>();
 
       mockUserServiceAuth.createUser.mockResolvedValue(expectedError);
 
       const result = await UserService.createUser(userData);
 
-      expect(mockUserServiceAuth.createUser).toHaveBeenCalledWith(userData);
-      expect(result).toEqual(expectedError);
+      expectDelegationCall(
+        mockUserServiceAuth.createUser,
+        [userData],
+        expectedError,
+        result
+      );
     });
   });
 
   describe('authenticateUser', () => {
     it('should delegate to UserServiceAuth.authenticateUser', async () => {
-      const loginData: UserLogin = {
-        email: 'test@example.com',
-        password: 'Password123!',
-      };
-
-      const expectedResult: ServiceResult<{ user: PublicUser; requiresVerification: boolean }> = {
-        success: true,
-        data: {
-          user: {
-            _id: '507f1f77bcf86cd799439011',
-            email: 'test@example.com',
-            username: 'testuser',
-            subscriptionTier: 'free',
-            isEmailVerified: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          requiresVerification: false,
-        },
-      };
+      const loginData = createMockUserLogin();
+      const mockUser = createMockPublicUser();
+      const expectedResult = createSuccessResult({
+        user: mockUser,
+        requiresVerification: false,
+      });
 
       mockUserServiceAuth.authenticateUser.mockResolvedValue(expectedResult);
 
       const result = await UserService.authenticateUser(loginData);
 
-      expect(mockUserServiceAuth.authenticateUser).toHaveBeenCalledWith(loginData);
-      expect(result).toEqual(expectedResult);
+      expectDelegationCall(
+        mockUserServiceAuth.authenticateUser,
+        [loginData],
+        expectedResult,
+        result
+      );
     });
 
     it('should handle authentication failures', async () => {
-      const loginData: UserLogin = {
-        email: 'test@example.com',
-        password: 'wrongpassword',
-      };
-
-      const expectedError: ServiceResult<{ user: PublicUser; requiresVerification: boolean }> = {
-        success: false,
-        error: {
-          type: 'INVALID_CREDENTIALS',
-          message: 'Invalid email or password',
-          field: 'password',
-        },
-      };
+      const loginData = createMockUserLogin({ password: 'wrongpassword' });
+      const expectedError = createInvalidCredentialsError<{ user: PublicUser; requiresVerification: boolean }>();
 
       mockUserServiceAuth.authenticateUser.mockResolvedValue(expectedError);
 
       const result = await UserService.authenticateUser(loginData);
 
-      expect(mockUserServiceAuth.authenticateUser).toHaveBeenCalledWith(loginData);
-      expect(result).toEqual(expectedError);
+      expectDelegationCall(
+        mockUserServiceAuth.authenticateUser,
+        [loginData],
+        expectedError,
+        result
+      );
     });
   });
 
   describe('changePassword', () => {
     it('should delegate to UserServiceAuth.changePassword', async () => {
       const userId = '507f1f77bcf86cd799439011';
-      const passwordData: ChangePassword = {
-        currentPassword: 'OldPassword123!',
-        newPassword: 'NewPassword123!',
-        confirmPassword: 'NewPassword123!',
-      };
-
-      const expectedResult: ServiceResult<void> = {
-        success: true,
-        data: undefined,
-      };
+      const passwordData = createMockChangePassword();
+      const expectedResult = createSuccessResult<void>(undefined);
 
       mockUserServiceAuth.changePassword.mockResolvedValue(expectedResult);
 
       const result = await UserService.changePassword(userId, passwordData);
 
-      expect(mockUserServiceAuth.changePassword).toHaveBeenCalledWith(userId, passwordData);
-      expect(result).toEqual(expectedResult);
+      expectDelegationCall(
+        mockUserServiceAuth.changePassword,
+        [userId, passwordData],
+        expectedResult,
+        result
+      );
     });
 
     it('should handle password change failures', async () => {
       const userId = '507f1f77bcf86cd799439011';
-      const passwordData: ChangePassword = {
-        currentPassword: 'wrongpassword',
-        newPassword: 'NewPassword123!',
-        confirmPassword: 'NewPassword123!',
-      };
-
-      const expectedError: ServiceResult<void> = {
-        success: false,
-        error: {
-          type: 'INVALID_CREDENTIALS',
-          message: 'Current password is incorrect',
-          field: 'currentPassword',
-        },
-      };
+      const passwordData = createMockChangePassword({ currentPassword: 'wrongpassword' });
+      const expectedError = createInvalidCredentialsError<void>();
+      expectedError.error!.message = 'Current password is incorrect';
+      expectedError.error!.field = 'currentPassword';
 
       mockUserServiceAuth.changePassword.mockResolvedValue(expectedError);
 
       const result = await UserService.changePassword(userId, passwordData);
 
-      expect(mockUserServiceAuth.changePassword).toHaveBeenCalledWith(userId, passwordData);
-      expect(result).toEqual(expectedError);
+      expectDelegationCall(
+        mockUserServiceAuth.changePassword,
+        [userId, passwordData],
+        expectedError,
+        result
+      );
     });
   });
 
   describe('requestPasswordReset', () => {
     it('should delegate to UserServiceAuth.requestPasswordReset', async () => {
-      const resetData: PasswordResetRequest = {
-        email: 'test@example.com',
-      };
-
-      const expectedResult: ServiceResult<{ token: string }> = {
-        success: true,
-        data: { token: 'reset-token-123' },
-      };
+      const resetData = createMockPasswordResetRequest();
+      const expectedResult = createSuccessResult({ token: 'reset-token-123' });
 
       mockUserServiceAuth.requestPasswordReset.mockResolvedValue(expectedResult);
 
       const result = await UserService.requestPasswordReset(resetData);
 
-      expect(mockUserServiceAuth.requestPasswordReset).toHaveBeenCalledWith(resetData);
-      expect(result).toEqual(expectedResult);
+      expectDelegationCall(
+        mockUserServiceAuth.requestPasswordReset,
+        [resetData],
+        expectedResult,
+        result
+      );
     });
 
     it('should handle password reset request for non-existent user', async () => {
-      const resetData: PasswordResetRequest = {
-        email: 'nonexistent@example.com',
-      };
-
-      const expectedResult: ServiceResult<{ token: string }> = {
-        success: true,
-        data: { token: 'dummy-token' },
-      };
+      const resetData = createMockPasswordResetRequest({ email: 'nonexistent@example.com' });
+      const expectedResult = createSuccessResult({ token: 'dummy-token' });
 
       mockUserServiceAuth.requestPasswordReset.mockResolvedValue(expectedResult);
 
       const result = await UserService.requestPasswordReset(resetData);
 
-      expect(mockUserServiceAuth.requestPasswordReset).toHaveBeenCalledWith(resetData);
-      expect(result).toEqual(expectedResult);
+      expectDelegationCall(
+        mockUserServiceAuth.requestPasswordReset,
+        [resetData],
+        expectedResult,
+        result
+      );
     });
   });
 
   describe('resetPassword', () => {
     it('should delegate to UserServiceAuth.resetPassword', async () => {
-      const resetData: PasswordReset = {
-        token: 'reset-token-123',
-        newPassword: 'NewPassword123!',
-        confirmPassword: 'NewPassword123!',
-      };
-
-      const expectedResult: ServiceResult<void> = {
-        success: true,
-        data: undefined,
-      };
+      const resetData = createMockPasswordReset();
+      const expectedResult = createSuccessResult<void>(undefined);
 
       mockUserServiceAuth.resetPassword.mockResolvedValue(expectedResult);
 
       const result = await UserService.resetPassword(resetData);
 
-      expect(mockUserServiceAuth.resetPassword).toHaveBeenCalledWith(resetData);
-      expect(result).toEqual(expectedResult);
+      expectDelegationCall(
+        mockUserServiceAuth.resetPassword,
+        [resetData],
+        expectedResult,
+        result
+      );
     });
 
     it('should handle invalid reset token', async () => {
-      const resetData: PasswordReset = {
-        token: 'invalid-token',
-        newPassword: 'NewPassword123!',
-        confirmPassword: 'NewPassword123!',
-      };
-
-      const expectedError: ServiceResult<void> = {
-        success: false,
-        error: {
-          type: 'INVALID_TOKEN',
-          message: 'Invalid or expired reset token',
-          field: 'token',
-        },
-      };
+      const resetData = createMockPasswordReset({ token: 'invalid-token' });
+      const expectedError = createInvalidTokenError<void>();
+      expectedError.error!.message = 'Invalid or expired reset token';
 
       mockUserServiceAuth.resetPassword.mockResolvedValue(expectedError);
 
       const result = await UserService.resetPassword(resetData);
 
-      expect(mockUserServiceAuth.resetPassword).toHaveBeenCalledWith(resetData);
-      expect(result).toEqual(expectedError);
+      expectDelegationCall(
+        mockUserServiceAuth.resetPassword,
+        [resetData],
+        expectedError,
+        result
+      );
     });
   });
 
   describe('verifyEmail', () => {
     it('should delegate to UserServiceAuth.verifyEmail', async () => {
-      const verificationData: EmailVerification = {
-        token: 'verification-token-123',
-      };
-
-      const expectedResult: ServiceResult<PublicUser> = {
-        success: true,
-        data: {
-          _id: '507f1f77bcf86cd799439011',
-          email: 'test@example.com',
-          username: 'testuser',
-          subscriptionTier: 'free',
-          isEmailVerified: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+      const verificationData = createMockEmailVerification();
+      const mockUser = createMockPublicUser({ isEmailVerified: true });
+      const expectedResult = createSuccessResult(mockUser);
 
       mockUserServiceAuth.verifyEmail.mockResolvedValue(expectedResult);
 
       const result = await UserService.verifyEmail(verificationData);
 
-      expect(mockUserServiceAuth.verifyEmail).toHaveBeenCalledWith(verificationData);
-      expect(result).toEqual(expectedResult);
+      expectDelegationCall(
+        mockUserServiceAuth.verifyEmail,
+        [verificationData],
+        expectedResult,
+        result
+      );
     });
 
     it('should handle invalid verification token', async () => {
-      const verificationData: EmailVerification = {
-        token: 'invalid-token',
-      };
-
-      const expectedError: ServiceResult<PublicUser> = {
-        success: false,
-        error: {
-          type: 'INVALID_TOKEN',
-          message: 'Invalid or expired verification token',
-          field: 'token',
-        },
-      };
+      const verificationData = createMockEmailVerification({ token: 'invalid-token' });
+      const expectedError = createInvalidTokenError<PublicUser>();
+      expectedError.error!.message = 'Invalid or expired verification token';
 
       mockUserServiceAuth.verifyEmail.mockResolvedValue(expectedError);
 
       const result = await UserService.verifyEmail(verificationData);
 
-      expect(mockUserServiceAuth.verifyEmail).toHaveBeenCalledWith(verificationData);
-      expect(result).toEqual(expectedError);
+      expectDelegationCall(
+        mockUserServiceAuth.verifyEmail,
+        [verificationData],
+        expectedError,
+        result
+      );
     });
   });
 
   describe('resendVerificationEmail', () => {
     it('should delegate to UserServiceAuth.resendVerificationEmail', async () => {
-      const email = 'test@example.com';
-
-      const expectedResult: ServiceResult<void> = {
-        success: true,
-        data: undefined,
-      };
+      const email = TEST_EMAIL;
+      const expectedResult = createSuccessResult<void>(undefined);
 
       mockUserServiceAuth.resendVerificationEmail.mockResolvedValue(expectedResult);
 
       const result = await UserService.resendVerificationEmail(email);
 
-      expect(mockUserServiceAuth.resendVerificationEmail).toHaveBeenCalledWith(email);
-      expect(result).toEqual(expectedResult);
+      expectDelegationCall(
+        mockUserServiceAuth.resendVerificationEmail,
+        [email],
+        expectedResult,
+        result
+      );
     });
 
     it('should handle resend verification for non-existent user', async () => {
       const email = 'nonexistent@example.com';
-
-      const expectedError: ServiceResult<void> = {
-        success: false,
-        error: {
-          type: 'USER_NOT_FOUND',
-          message: 'User not found',
-          field: 'email',
-        },
-      };
+      const expectedError = createUserNotFoundError<void>();
+      expectedError.error!.field = 'email';
 
       mockUserServiceAuth.resendVerificationEmail.mockResolvedValue(expectedError);
 
       const result = await UserService.resendVerificationEmail(email);
 
-      expect(mockUserServiceAuth.resendVerificationEmail).toHaveBeenCalledWith(email);
-      expect(result).toEqual(expectedError);
+      expectDelegationCall(
+        mockUserServiceAuth.resendVerificationEmail,
+        [email],
+        expectedError,
+        result
+      );
     });
   });
 });

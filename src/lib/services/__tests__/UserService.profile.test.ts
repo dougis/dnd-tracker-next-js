@@ -5,12 +5,22 @@
 
 import { UserService } from '../UserService';
 import { UserServiceProfile } from '../UserServiceProfile';
-import { ServiceResult } from '../UserServiceErrors';
 import type {
   UserProfileUpdate,
   PublicUser,
   SubscriptionTier,
 } from '../../validations/user';
+import {
+  createMockPublicUser,
+  createMockUserProfileUpdate,
+  createSuccessResult,
+  createUserNotFoundError,
+  createUserAlreadyExistsError,
+  setupMockClearance,
+  expectDelegationCall,
+  TEST_USER_ID,
+  TEST_EMAIL,
+} from './UserService.test-helpers';
 
 // Mock UserServiceProfile
 jest.mock('../UserServiceProfile');
@@ -18,241 +28,192 @@ jest.mock('../UserServiceProfile');
 const mockUserServiceProfile = UserServiceProfile as jest.Mocked<typeof UserServiceProfile>;
 
 describe('UserService Profile Management Operations', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  setupMockClearance();
 
   describe('getUserById', () => {
     it('should delegate to UserServiceProfile.getUserById', async () => {
-      const userId = '507f1f77bcf86cd799439011';
-
-      const expectedResult: ServiceResult<PublicUser> = {
-        success: true,
-        data: {
-          _id: userId,
-          email: 'test@example.com',
-          username: 'testuser',
-          subscriptionTier: 'free',
-          isEmailVerified: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+      const userId = TEST_USER_ID;
+      const mockUser = createMockPublicUser({ _id: userId });
+      const expectedResult = createSuccessResult(mockUser);
 
       mockUserServiceProfile.getUserById.mockResolvedValue(expectedResult);
 
       const result = await UserService.getUserById(userId);
 
-      expect(mockUserServiceProfile.getUserById).toHaveBeenCalledWith(userId);
-      expect(result).toEqual(expectedResult);
+      expectDelegationCall(
+        mockUserServiceProfile.getUserById,
+        [userId],
+        expectedResult,
+        result
+      );
     });
 
     it('should handle user not found', async () => {
-      const userId = '507f1f77bcf86cd799439011';
-
-      const expectedError: ServiceResult<PublicUser> = {
-        success: false,
-        error: {
-          type: 'USER_NOT_FOUND',
-          message: 'User not found',
-          field: 'userId',
-        },
-      };
+      const userId = TEST_USER_ID;
+      const expectedError = createUserNotFoundError<PublicUser>();
 
       mockUserServiceProfile.getUserById.mockResolvedValue(expectedError);
 
       const result = await UserService.getUserById(userId);
 
-      expect(mockUserServiceProfile.getUserById).toHaveBeenCalledWith(userId);
-      expect(result).toEqual(expectedError);
+      expectDelegationCall(
+        mockUserServiceProfile.getUserById,
+        [userId],
+        expectedError,
+        result
+      );
     });
   });
 
   describe('getUserByEmail', () => {
     it('should delegate to UserServiceProfile.getUserByEmail', async () => {
-      const email = 'test@example.com';
-
-      const expectedResult: ServiceResult<PublicUser> = {
-        success: true,
-        data: {
-          _id: '507f1f77bcf86cd799439011',
-          email: email,
-          username: 'testuser',
-          subscriptionTier: 'free',
-          isEmailVerified: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+      const email = TEST_EMAIL;
+      const mockUser = createMockPublicUser({ email });
+      const expectedResult = createSuccessResult(mockUser);
 
       mockUserServiceProfile.getUserByEmail.mockResolvedValue(expectedResult);
 
       const result = await UserService.getUserByEmail(email);
 
-      expect(mockUserServiceProfile.getUserByEmail).toHaveBeenCalledWith(email);
-      expect(result).toEqual(expectedResult);
+      expectDelegationCall(
+        mockUserServiceProfile.getUserByEmail,
+        [email],
+        expectedResult,
+        result
+      );
     });
 
     it('should handle user not found by email', async () => {
       const email = 'nonexistent@example.com';
-
-      const expectedError: ServiceResult<PublicUser> = {
-        success: false,
-        error: {
-          type: 'USER_NOT_FOUND',
-          message: 'User not found',
-          field: 'email',
-        },
-      };
+      const expectedError = createUserNotFoundError<PublicUser>();
+      expectedError.error!.field = 'email';
 
       mockUserServiceProfile.getUserByEmail.mockResolvedValue(expectedError);
 
       const result = await UserService.getUserByEmail(email);
 
-      expect(mockUserServiceProfile.getUserByEmail).toHaveBeenCalledWith(email);
-      expect(result).toEqual(expectedError);
+      expectDelegationCall(
+        mockUserServiceProfile.getUserByEmail,
+        [email],
+        expectedError,
+        result
+      );
     });
   });
 
   describe('updateUserProfile', () => {
     it('should delegate to UserServiceProfile.updateUserProfile', async () => {
-      const userId = '507f1f77bcf86cd799439011';
-      const updateData: UserProfileUpdate = {
-        username: 'newusername',
-        firstName: 'John',
-        lastName: 'Doe',
-      };
-
-      const expectedResult: ServiceResult<PublicUser> = {
-        success: true,
-        data: {
-          _id: userId,
-          email: 'test@example.com',
-          username: 'newusername',
-          firstName: 'John',
-          lastName: 'Doe',
-          subscriptionTier: 'free',
-          isEmailVerified: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+      const userId = TEST_USER_ID;
+      const updateData = createMockUserProfileUpdate();
+      const mockUser = createMockPublicUser({
+        _id: userId,
+        username: updateData.username,
+        firstName: updateData.firstName,
+        lastName: updateData.lastName,
+      });
+      const expectedResult = createSuccessResult(mockUser);
 
       mockUserServiceProfile.updateUserProfile.mockResolvedValue(expectedResult);
 
       const result = await UserService.updateUserProfile(userId, updateData);
 
-      expect(mockUserServiceProfile.updateUserProfile).toHaveBeenCalledWith(userId, updateData);
-      expect(result).toEqual(expectedResult);
+      expectDelegationCall(
+        mockUserServiceProfile.updateUserProfile,
+        [userId, updateData],
+        expectedResult,
+        result
+      );
     });
 
     it('should handle update conflicts', async () => {
-      const userId = '507f1f77bcf86cd799439011';
-      const updateData: UserProfileUpdate = {
-        email: 'existing@example.com',
-      };
-
-      const expectedError: ServiceResult<PublicUser> = {
-        success: false,
-        error: {
-          type: 'USER_ALREADY_EXISTS',
-          message: 'User with this email already exists',
-          field: 'email',
-        },
-      };
+      const userId = TEST_USER_ID;
+      const updateData = createMockUserProfileUpdate({ email: 'existing@example.com' });
+      const expectedError = createUserAlreadyExistsError<PublicUser>();
 
       mockUserServiceProfile.updateUserProfile.mockResolvedValue(expectedError);
 
       const result = await UserService.updateUserProfile(userId, updateData);
 
-      expect(mockUserServiceProfile.updateUserProfile).toHaveBeenCalledWith(userId, updateData);
-      expect(result).toEqual(expectedError);
+      expectDelegationCall(
+        mockUserServiceProfile.updateUserProfile,
+        [userId, updateData],
+        expectedError,
+        result
+      );
     });
   });
 
   describe('updateSubscription', () => {
     it('should delegate to UserServiceProfile.updateSubscription', async () => {
-      const userId = '507f1f77bcf86cd799439011';
+      const userId = TEST_USER_ID;
       const newTier: SubscriptionTier = 'pro';
-
-      const expectedResult: ServiceResult<PublicUser> = {
-        success: true,
-        data: {
-          _id: userId,
-          email: 'test@example.com',
-          username: 'testuser',
-          subscriptionTier: 'pro',
-          isEmailVerified: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+      const mockUser = createMockPublicUser({
+        _id: userId,
+        subscriptionTier: newTier,
+      });
+      const expectedResult = createSuccessResult(mockUser);
 
       mockUserServiceProfile.updateSubscription.mockResolvedValue(expectedResult);
 
       const result = await UserService.updateSubscription(userId, newTier);
 
-      expect(mockUserServiceProfile.updateSubscription).toHaveBeenCalledWith(userId, newTier);
-      expect(result).toEqual(expectedResult);
+      expectDelegationCall(
+        mockUserServiceProfile.updateSubscription,
+        [userId, newTier],
+        expectedResult,
+        result
+      );
     });
 
     it('should handle subscription update for non-existent user', async () => {
-      const userId = '507f1f77bcf86cd799439011';
+      const userId = TEST_USER_ID;
       const newTier: SubscriptionTier = 'pro';
-
-      const expectedError: ServiceResult<PublicUser> = {
-        success: false,
-        error: {
-          type: 'USER_NOT_FOUND',
-          message: 'User not found',
-          field: 'userId',
-        },
-      };
+      const expectedError = createUserNotFoundError<PublicUser>();
 
       mockUserServiceProfile.updateSubscription.mockResolvedValue(expectedError);
 
       const result = await UserService.updateSubscription(userId, newTier);
 
-      expect(mockUserServiceProfile.updateSubscription).toHaveBeenCalledWith(userId, newTier);
-      expect(result).toEqual(expectedError);
+      expectDelegationCall(
+        mockUserServiceProfile.updateSubscription,
+        [userId, newTier],
+        expectedError,
+        result
+      );
     });
   });
 
   describe('deleteUser', () => {
     it('should delegate to UserServiceProfile.deleteUser', async () => {
-      const userId = '507f1f77bcf86cd799439011';
-
-      const expectedResult: ServiceResult<void> = {
-        success: true,
-        data: undefined,
-      };
+      const userId = TEST_USER_ID;
+      const expectedResult = createSuccessResult<void>(undefined);
 
       mockUserServiceProfile.deleteUser.mockResolvedValue(expectedResult);
 
       const result = await UserService.deleteUser(userId);
 
-      expect(mockUserServiceProfile.deleteUser).toHaveBeenCalledWith(userId);
-      expect(result).toEqual(expectedResult);
+      expectDelegationCall(
+        mockUserServiceProfile.deleteUser,
+        [userId],
+        expectedResult,
+        result
+      );
     });
 
     it('should handle delete user not found', async () => {
-      const userId = '507f1f77bcf86cd799439011';
-
-      const expectedError: ServiceResult<void> = {
-        success: false,
-        error: {
-          type: 'USER_NOT_FOUND',
-          message: 'User not found',
-          field: 'userId',
-        },
-      };
+      const userId = TEST_USER_ID;
+      const expectedError = createUserNotFoundError<void>();
 
       mockUserServiceProfile.deleteUser.mockResolvedValue(expectedError);
 
       const result = await UserService.deleteUser(userId);
 
-      expect(mockUserServiceProfile.deleteUser).toHaveBeenCalledWith(userId);
-      expect(result).toEqual(expectedError);
+      expectDelegationCall(
+        mockUserServiceProfile.deleteUser,
+        [userId],
+        expectedError,
+        result
+      );
     });
   });
 });
