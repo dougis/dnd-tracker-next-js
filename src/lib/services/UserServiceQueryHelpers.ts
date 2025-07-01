@@ -55,10 +55,7 @@ export async function executeFullQuery(
     .limit(limit)
     .lean();
 
-  const [users, total] = await Promise.all([
-    usersQuery,
-    getUserCount(query),
-  ]);
+  const [users, total] = await Promise.all([usersQuery, getUserCount(query)]);
 
   return { users, total };
 }

@@ -41,11 +41,7 @@ jest.mock('../Modal', () => ({
 // Mock Badge component
 jest.mock('@/components/ui/badge', () => ({
   Badge: ({ children, variant, className }: any) => (
-    <span
-      data-testid="badge"
-      data-variant={variant}
-      data-classname={className}
-    >
+    <span data-testid="badge" data-variant={variant} data-classname={className}>
       {children}
     </span>
   ),
@@ -345,9 +341,7 @@ describe('InfoModal', () => {
 
       render(<InfoModal {...defaultProps} data={data} />);
 
-      const gridContainer = screen
-        .getByText('Name:')
-        .closest('div');
+      const gridContainer = screen.getByText('Name:').closest('div');
       expect(gridContainer).toBeInTheDocument();
     });
 
@@ -436,9 +430,7 @@ describe('InfoField Component', () => {
     render(<InfoField label="Test" value="Value" />);
 
     const field = screen.getByText('Test:').closest('div');
-    expect(field).toHaveClass(
-      'flex justify-between items-center py-1'
-    );
+    expect(field).toHaveClass('flex justify-between items-center py-1');
   });
 });
 
@@ -512,11 +504,7 @@ describe('Convenience Components', () => {
     it('accepts all InfoModal props except type', () => {
       const data = { round: 3, initiative: 18 };
       render(
-        <CombatInfoModal
-          {...baseProps}
-          subtitle="Combat status"
-          data={data}
-        />
+        <CombatInfoModal {...baseProps} subtitle="Combat status" data={data} />
       );
 
       expect(screen.getByText('Combat status')).toBeInTheDocument();

@@ -17,7 +17,7 @@ import {
   UserServiceStats,
   type PaginatedResult,
   type QueryFilters,
-  type UserStats
+  type UserStats,
 } from './UserServiceStats';
 
 /**
@@ -49,7 +49,9 @@ export class UserService {
    */
   static async authenticateUser(
     loginData: UserLogin
-  ): Promise<ServiceResult<{ user: PublicUser; requiresVerification: boolean }>> {
+  ): Promise<
+    ServiceResult<{ user: PublicUser; requiresVerification: boolean }>
+  > {
     return UserServiceAuth.authenticateUser(loginData);
   }
 
@@ -113,7 +115,9 @@ export class UserService {
   /**
    * Get user by email
    */
-  static async getUserByEmail(email: string): Promise<ServiceResult<PublicUser>> {
+  static async getUserByEmail(
+    email: string
+  ): Promise<ServiceResult<PublicUser>> {
     return UserServiceProfile.getUserByEmail(email);
   }
 

@@ -130,15 +130,17 @@ export const userSchema = z.object({
 });
 
 // Public user schema (for API responses)
-export const publicUserSchema = userSchema.omit({
-  passwordHash: true,
-  emailVerificationToken: true,
-  passwordResetToken: true,
-  passwordResetExpires: true,
-  _id: true,
-}).extend({
-  id: objectIdSchema,
-});
+export const publicUserSchema = userSchema
+  .omit({
+    passwordHash: true,
+    emailVerificationToken: true,
+    passwordResetToken: true,
+    passwordResetExpires: true,
+    _id: true,
+  })
+  .extend({
+    id: objectIdSchema,
+  });
 
 // User session schema
 export const userSessionSchema = z.object({

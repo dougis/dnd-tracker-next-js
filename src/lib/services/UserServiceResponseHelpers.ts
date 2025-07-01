@@ -41,7 +41,9 @@ export class UserServiceResponseHelpers {
   /**
    * Create a security-safe response (used for password reset requests)
    */
-  static createSecurityResponse(token: string): ServiceResult<{ token: string }> {
+  static createSecurityResponse(
+    token: string
+  ): ServiceResult<{ token: string }> {
     return {
       success: true,
       data: { token },

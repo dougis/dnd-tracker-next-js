@@ -20,13 +20,17 @@ export const createMockUser = (overrides: Partial<any> = {}) => ({
 });
 
 export const createMockUsers = (count: number = 2) =>
-  Array.from({ length: count }, (_, i) => createMockUser({
-    _id: `user${i + 1}`,
-    email: `user${i + 1}@example.com`,
-    username: `user${i + 1}`,
-  }));
+  Array.from({ length: count }, (_, i) =>
+    createMockUser({
+      _id: `user${i + 1}`,
+      email: `user${i + 1}@example.com`,
+      username: `user${i + 1}`,
+    })
+  );
 
-export const createPublicUser = (overrides: Partial<PublicUser> = {}): PublicUser => ({
+export const createPublicUser = (
+  overrides: Partial<PublicUser> = {}
+): PublicUser => ({
   id: 'user1',
   email: 'user1@example.com',
   username: 'user1',
@@ -53,23 +57,28 @@ export const createPublicUser = (overrides: Partial<PublicUser> = {}): PublicUse
 export const createExistingUserWithEmail = (email: string, userId?: string) =>
   createMockUser({
     _id: userId || 'existing-user-id',
-    email
+    email,
   });
 
-export const createExistingUserWithUsername = (username: string, userId?: string) =>
+export const createExistingUserWithUsername = (
+  username: string,
+  userId?: string
+) =>
   createMockUser({
     _id: userId || 'existing-user-id',
-    username
+    username,
   });
 
 export const createUserWithObjectId = (userId: string, overrides: any = {}) =>
   createMockUser({
     _id: { toString: () => userId },
-    ...overrides
+    ...overrides,
   });
 
 // Test data for UserServiceResponseHelpers
-export const createTestToken = (type: 'normal' | 'empty' | 'long' = 'normal') => {
+export const createTestToken = (
+  type: 'normal' | 'empty' | 'long' = 'normal'
+) => {
   const tokenMap = {
     normal: 'secure-token-123',
     empty: '',
@@ -78,7 +87,9 @@ export const createTestToken = (type: 'normal' | 'empty' | 'long' = 'normal') =>
   return tokenMap[type];
 };
 
-export const createTestData = (type: 'simple' | 'array' | 'typed' = 'simple') => {
+export const createTestData = (
+  type: 'simple' | 'array' | 'typed' = 'simple'
+) => {
   const dataMap = {
     simple: { id: '123', name: 'Test' },
     array: [1, 2, 3],

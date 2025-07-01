@@ -87,7 +87,9 @@ describe('ThemeProvider', () => {
         </ThemeProvider>
       );
 
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith('dnd-tracker-theme');
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith(
+        'dnd-tracker-theme'
+      );
       expect(screen.getByTestId('current-theme')).toHaveTextContent('dark');
     });
 
@@ -114,7 +116,10 @@ describe('ThemeProvider', () => {
 
       await user.click(screen.getByTestId('set-dark'));
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('dnd-tracker-theme', 'dark');
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'dnd-tracker-theme',
+        'dark'
+      );
       expect(screen.getByTestId('current-theme')).toHaveTextContent('dark');
     });
 
@@ -351,7 +356,10 @@ describe('ThemeProvider', () => {
 
       await user.click(screen.getByTestId('set-light'));
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('my-custom-theme', 'light');
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'my-custom-theme',
+        'light'
+      );
     });
 
     it('passes through additional props to context provider', () => {

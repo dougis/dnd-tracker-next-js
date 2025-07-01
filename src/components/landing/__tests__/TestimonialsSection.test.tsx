@@ -1,11 +1,19 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
 import { TestimonialsSection } from '../TestimonialsSection';
-import { renderComponent, getSection, expectResponsiveLayout, expectSemanticStructure } from './test-utils';
+import {
+  renderComponent,
+  getSection,
+  expectResponsiveLayout,
+  expectSemanticStructure,
+} from './test-utils';
 
 // Mock the TestimonialCard component
 jest.mock('../TestimonialCard', () => ({
-  TestimonialCard: ({ quote, author }: {
+  TestimonialCard: ({
+    quote,
+    author,
+  }: {
     quote: string;
     author: { name: string; title: string };
   }) => (
@@ -39,7 +47,11 @@ describe('TestimonialsSection Component', () => {
     const roleTexts = roles.map(role => role.textContent?.toLowerCase() || '');
 
     // Should have diverse user types
-    expect(roleTexts.some(role => role.includes('dm') || role.includes('dungeon master'))).toBe(true);
+    expect(
+      roleTexts.some(
+        role => role.includes('dm') || role.includes('dungeon master')
+      )
+    ).toBe(true);
     expect(roleTexts.some(role => role.includes('player'))).toBe(true);
   });
 
@@ -52,8 +64,13 @@ describe('TestimonialsSection Component', () => {
     });
 
     // Should mention key app benefits
-    const allText = testimonialContents.map(content => content.textContent).join(' ').toLowerCase();
-    expect(allText).toMatch(/encounter|combat|initiative|character|easy|simple|streamline|manage/);
+    const allText = testimonialContents
+      .map(content => content.textContent)
+      .join(' ')
+      .toLowerCase();
+    expect(allText).toMatch(
+      /encounter|combat|initiative|character|easy|simple|streamline|manage/
+    );
   });
 
   it('displays customer names and roles for authenticity', () => {
@@ -94,7 +111,9 @@ describe('TestimonialsSection Component', () => {
       .toLowerCase();
 
     // Should contain positive emotional words
-    expect(allTestimonialText).toMatch(/love|amazing|great|fantastic|perfect|excellent|wonderful|game.*changer|transform/);
+    expect(allTestimonialText).toMatch(
+      /love|amazing|great|fantastic|perfect|excellent|wonderful|game.*changer|transform/
+    );
   });
 
   it('highlights specific feature benefits mentioned by users', () => {
@@ -105,7 +124,9 @@ describe('TestimonialsSection Component', () => {
       .toLowerCase();
 
     // Should mention specific app features
-    expect(allTestimonialText).toMatch(/initiative|hp.*tracking|encounter.*building|lair.*action|mobile|tablet/);
+    expect(allTestimonialText).toMatch(
+      /initiative|hp.*tracking|encounter.*building|lair.*action|mobile|tablet/
+    );
   });
 
   it('shows variety in user experience levels', () => {
@@ -113,8 +134,14 @@ describe('TestimonialsSection Component', () => {
     const roleTexts = roles.map(role => role.textContent?.toLowerCase() || '');
 
     // Should have mix of experience levels
-    expect(roleTexts.some(role => role.includes('new') || role.includes('beginner'))).toBe(true);
-    expect(roleTexts.some(role => role.includes('veteran') || role.includes('experienced'))).toBe(true);
+    expect(
+      roleTexts.some(role => role.includes('new') || role.includes('beginner'))
+    ).toBe(true);
+    expect(
+      roleTexts.some(
+        role => role.includes('veteran') || role.includes('experienced')
+      )
+    ).toBe(true);
   });
 
   it('has proper semantic structure for accessibility', () => {

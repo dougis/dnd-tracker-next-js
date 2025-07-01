@@ -88,12 +88,7 @@ describe('ConfirmationDialog', () => {
 
   it('shows loading state correctly', () => {
     const loadingConfig = createLoadingConfig(true);
-    render(
-      <ConfirmationDialog
-        {...defaultProps}
-        config={loadingConfig}
-      />
-    );
+    render(<ConfirmationDialog {...defaultProps} config={loadingConfig} />);
 
     testLoadingButtons();
   });
@@ -128,9 +123,8 @@ describe('ConfirmationDialog', () => {
 
   it('renders custom children', () => {
     const customContent = <div>Additional warning text</div>;
-    const renderCustomDialog = (config: any) => render(
-      <ConfirmationDialog {...defaultProps} config={config} />
-    );
+    const renderCustomDialog = (config: any) =>
+      render(<ConfirmationDialog {...defaultProps} config={config} />);
 
     renderCustomDialog({ ...defaultProps.config, children: customContent });
     expect(screen.getByText('Additional warning text')).toBeInTheDocument();
@@ -138,9 +132,8 @@ describe('ConfirmationDialog', () => {
 
   it('prevents interaction when loading', async () => {
     const loadingConfig = createLoadingConfig(true);
-    const renderCustomDialog = (config: any) => render(
-      <ConfirmationDialog {...defaultProps} config={config} />
-    );
+    const renderCustomDialog = (config: any) =>
+      render(<ConfirmationDialog {...defaultProps} config={config} />);
 
     renderCustomDialog(loadingConfig);
     testLoadingButtons();
@@ -249,12 +242,7 @@ describe('ConfirmationDialog Extended Coverage', () => {
         description: 'Basic description',
       };
 
-      render(
-        <ConfirmationDialog
-          {...defaultProps}
-          config={minimalConfig}
-        />
-      );
+      render(<ConfirmationDialog {...defaultProps} config={minimalConfig} />);
 
       expect(screen.getByText('Confirm')).toBeInTheDocument();
       expect(screen.getByText('Cancel')).toBeInTheDocument();
@@ -269,10 +257,7 @@ describe('ConfirmationDialog Extended Coverage', () => {
       };
 
       render(
-        <ConfirmationDialog
-          {...defaultProps}
-          config={configWithEmptyStrings}
-        />
+        <ConfirmationDialog {...defaultProps} config={configWithEmptyStrings} />
       );
 
       // Should render without errors even with empty strings
@@ -334,9 +319,7 @@ describe('ConfirmationDialog Extended Coverage', () => {
       const user = userEvent.setup();
       const onConfirm = jest.fn().mockResolvedValue(undefined);
 
-      render(
-        <ConfirmationDialog {...defaultProps} onConfirm={onConfirm} />
-      );
+      render(<ConfirmationDialog {...defaultProps} onConfirm={onConfirm} />);
 
       const confirmButton = screen.getByText('Confirm');
       await user.click(confirmButton);
@@ -348,9 +331,7 @@ describe('ConfirmationDialog Extended Coverage', () => {
       const user = userEvent.setup();
       const onConfirm = jest.fn();
 
-      render(
-        <ConfirmationDialog {...defaultProps} onConfirm={onConfirm} />
-      );
+      render(<ConfirmationDialog {...defaultProps} onConfirm={onConfirm} />);
 
       const confirmButton = screen.getByText('Confirm');
       await user.click(confirmButton);
@@ -374,9 +355,7 @@ describe('ConfirmationDialog Extended Coverage', () => {
       const user = userEvent.setup();
       const onCancel = jest.fn();
 
-      render(
-        <ConfirmationDialog {...defaultProps} onCancel={onCancel} />
-      );
+      render(<ConfirmationDialog {...defaultProps} onCancel={onCancel} />);
 
       const cancelButton = screen.getByText('Cancel');
       await user.click(cancelButton);
@@ -410,7 +389,9 @@ describe('ConfirmationDialog Extended Coverage', () => {
       );
 
       expect(screen.getByText('Additional warning:')).toBeInTheDocument();
-      expect(screen.getByText('This action cannot be undone')).toBeInTheDocument();
+      expect(
+        screen.getByText('This action cannot be undone')
+      ).toBeInTheDocument();
       expect(screen.getByText('All data will be lost')).toBeInTheDocument();
       expect(screen.getByText('Are you absolutely sure?')).toBeInTheDocument();
     });
@@ -428,7 +409,9 @@ describe('ConfirmationDialog Extended Coverage', () => {
         />
       );
 
-      expect(screen.getByText('Dynamically rendered content')).toBeInTheDocument();
+      expect(
+        screen.getByText('Dynamically rendered content')
+      ).toBeInTheDocument();
     });
   });
 

@@ -7,14 +7,20 @@ import { type ValidationRule, type FieldValidator } from '../form-utils';
 /**
  * Helper to create a validation rule for testing
  */
-export function createTestRule(test: (_value: any) => boolean, message = 'Test message'): ValidationRule {
+export function createTestRule(
+  test: (_value: any) => boolean,
+  message = 'Test message'
+): ValidationRule {
   return { test, message };
 }
 
 /**
  * Helper to create a field validator for testing
  */
-export function createFieldValidator(field: string, rules: ValidationRule[]): FieldValidator {
+export function createFieldValidator(
+  field: string,
+  rules: ValidationRule[]
+): FieldValidator {
   return { field, rules };
 }
 
@@ -84,7 +90,11 @@ export const commonAssertions = {
     expect(rule.test(undefined)).toBe(true);
   },
 
-  expectBasicValidation(rule: ValidationRule, validValue: any, invalidValue: any): void {
+  expectBasicValidation(
+    rule: ValidationRule,
+    validValue: any,
+    invalidValue: any
+  ): void {
     expect(rule.test(validValue)).toBe(true);
     expect(rule.test(invalidValue)).toBe(false);
   },
@@ -100,8 +110,8 @@ export const dndTestData = {
     messages: [
       'Character name is required',
       'Character name must be at least 2 characters',
-      'Character name must be no more than 50 characters'
-    ]
+      'Character name must be no more than 50 characters',
+    ],
   },
   abilityScore: {
     valid: [1, 15, 30],
@@ -110,8 +120,8 @@ export const dndTestData = {
       'Ability score is required',
       'Ability score must be a number',
       'Ability score must be at least 1',
-      'Ability score cannot exceed 30'
-    ]
+      'Ability score cannot exceed 30',
+    ],
   },
   hitPoints: {
     valid: [0, 50, 9999],
@@ -120,8 +130,8 @@ export const dndTestData = {
       'Hit points are required',
       'Hit points must be a number',
       'Hit points cannot be negative',
-      'Hit points cannot exceed 9999'
-    ]
+      'Hit points cannot exceed 9999',
+    ],
   },
   armorClass: {
     valid: [1, 15, 30],
@@ -130,8 +140,8 @@ export const dndTestData = {
       'Armor class is required',
       'Armor class must be a number',
       'Armor class must be at least 1',
-      'Armor class cannot exceed 30'
-    ]
+      'Armor class cannot exceed 30',
+    ],
   },
   initiative: {
     valid: [-10, 5, 20],
@@ -139,8 +149,8 @@ export const dndTestData = {
     messages: [
       'Initiative must be a number',
       'Initiative modifier cannot be less than -10',
-      'Initiative modifier cannot exceed +20'
-    ]
+      'Initiative modifier cannot exceed +20',
+    ],
   },
   level: {
     valid: [1, 10, 20],
@@ -149,15 +159,18 @@ export const dndTestData = {
       'Level is required',
       'Level must be a number',
       'Level must be at least 1',
-      'Level cannot exceed 20'
-    ]
-  }
+      'Level cannot exceed 20',
+    ],
+  },
 };
 
 /**
  * Helper to test D&D validator structure
  */
-export function testDndValidatorStructure(validators: ValidationRule[], expectedMessages: string[]): void {
+export function testDndValidatorStructure(
+  validators: ValidationRule[],
+  expectedMessages: string[]
+): void {
   expect(validators).toHaveLength(expectedMessages.length);
   expectedMessages.forEach((message, index) => {
     expect(validators[index].message).toBe(message);
@@ -167,7 +180,11 @@ export function testDndValidatorStructure(validators: ValidationRule[], expected
 /**
  * Helper to test D&D validator values - simplified approach
  */
-export function testDndValidatorValues(validators: ValidationRule[], validValues: any[], invalidValues: any[]): void {
+export function testDndValidatorValues(
+  validators: ValidationRule[],
+  validValues: any[],
+  invalidValues: any[]
+): void {
   // Test each valid value against appropriate validators
   validValues.forEach(value => {
     // For most validators, skip the first (required) rule when testing with actual values
@@ -201,7 +218,7 @@ export function createDndCharacterData(overrides: any = {}): any {
     intelligence: 25,
     wisdom: 15,
     charisma: 16,
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -232,7 +249,10 @@ export function testValidationWorkflow(
 /**
  * Helper to test FormData extraction with mocking
  */
-export function testFormDataExtraction(entries: [string, string][], expectedResult: any): void {
+export function testFormDataExtraction(
+  entries: [string, string][],
+  expectedResult: any
+): void {
   const { extractFormData } = require('../form-utils');
   const formElement = document.createElement('form');
 

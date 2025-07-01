@@ -6,9 +6,10 @@ export const testSizeVariants = (
   sizes: readonly string[],
   renderWithSize: (_size: string) => React.ReactElement
 ) => {
-  sizes.forEach((size) => {
+  sizes.forEach(size => {
     const { rerender } = render(renderWithSize(size));
-    const content = screen.getByTestId('dialog-content') || screen.getByTestId('modal');
+    const content =
+      screen.getByTestId('dialog-content') || screen.getByTestId('modal');
 
     if (size === 'full') {
       expect(content.className).toContain('max-w-[95vw]');
@@ -24,9 +25,10 @@ export const testTypeVariants = (
   types: readonly string[],
   renderWithType: (_type: string) => React.ReactElement
 ) => {
-  types.forEach((type) => {
+  types.forEach(type => {
     const { rerender } = render(renderWithType(type));
-    const content = screen.getByTestId('dialog-content') || screen.getByTestId('modal');
+    const content =
+      screen.getByTestId('dialog-content') || screen.getByTestId('modal');
 
     if (type === 'info') {
       expect(content.className).toContain('border-blue-200');

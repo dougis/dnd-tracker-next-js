@@ -60,7 +60,9 @@ export function createMockUser(overrides: Partial<any> = {}): any {
 /**
  * Helper to setup and restore console spy
  */
-export function withConsoleSpy(callback: (_spy: jest.SpyInstance) => void): void {
+export function withConsoleSpy(
+  callback: (_spy: jest.SpyInstance) => void
+): void {
   const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
   try {
     callback(consoleSpy);

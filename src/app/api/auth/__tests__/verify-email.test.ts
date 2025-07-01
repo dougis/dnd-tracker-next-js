@@ -58,7 +58,9 @@ describe('POST /api/auth/verify-email', () => {
         message: 'Email verified successfully',
         user: mockUser,
       });
-      expect(UserService.verifyEmail).toHaveBeenCalledWith(mockVerificationData);
+      expect(UserService.verifyEmail).toHaveBeenCalledWith(
+        mockVerificationData
+      );
     });
   });
 
@@ -135,7 +137,9 @@ describe('POST /api/auth/verify-email', () => {
         success: false,
         message: 'Invalid or expired verification token',
       });
-      expect(UserService.verifyEmail).toHaveBeenCalledWith(mockVerificationData);
+      expect(UserService.verifyEmail).toHaveBeenCalledWith(
+        mockVerificationData
+      );
     });
 
     it('handles user not found error', async () => {
@@ -158,7 +162,9 @@ describe('POST /api/auth/verify-email', () => {
         success: false,
         message: 'User not found',
       });
-      expect(UserService.verifyEmail).toHaveBeenCalledWith(mockVerificationData);
+      expect(UserService.verifyEmail).toHaveBeenCalledWith(
+        mockVerificationData
+      );
     });
 
     it('handles already verified email error', async () => {
@@ -181,7 +187,9 @@ describe('POST /api/auth/verify-email', () => {
         success: false,
         message: 'Email is already verified',
       });
-      expect(UserService.verifyEmail).toHaveBeenCalledWith(mockVerificationData);
+      expect(UserService.verifyEmail).toHaveBeenCalledWith(
+        mockVerificationData
+      );
     });
 
     it('handles service error without status code', async () => {
@@ -203,7 +211,9 @@ describe('POST /api/auth/verify-email', () => {
         success: false,
         message: 'Service error',
       });
-      expect(UserService.verifyEmail).toHaveBeenCalledWith(mockVerificationData);
+      expect(UserService.verifyEmail).toHaveBeenCalledWith(
+        mockVerificationData
+      );
     });
 
     it('handles service error without message', async () => {
@@ -225,7 +235,9 @@ describe('POST /api/auth/verify-email', () => {
         success: false,
         message: 'Unknown error',
       });
-      expect(UserService.verifyEmail).toHaveBeenCalledWith(mockVerificationData);
+      expect(UserService.verifyEmail).toHaveBeenCalledWith(
+        mockVerificationData
+      );
     });
   });
 
@@ -244,7 +256,9 @@ describe('POST /api/auth/verify-email', () => {
         success: false,
         message: 'An unexpected error occurred',
       });
-      expect(UserService.verifyEmail).toHaveBeenCalledWith(mockVerificationData);
+      expect(UserService.verifyEmail).toHaveBeenCalledWith(
+        mockVerificationData
+      );
     });
 
     it('handles malformed JSON request', async () => {
@@ -305,7 +319,9 @@ describe('POST /api/auth/verify-email', () => {
       expect(response.status).toBe(200);
       expect(responseData.success).toBe(true);
       // Should only pass validated data to service
-      expect(UserService.verifyEmail).toHaveBeenCalledWith(mockVerificationData);
+      expect(UserService.verifyEmail).toHaveBeenCalledWith(
+        mockVerificationData
+      );
     });
   });
 });

@@ -8,7 +8,7 @@ export const expectSensitiveFieldsRemoved = (user: any) => {
     'passwordHash',
     'emailVerificationToken',
     'passwordResetToken',
-    'passwordResetExpires'
+    'passwordResetExpires',
   ];
 
   sensitiveFields.forEach(field => {
@@ -63,14 +63,24 @@ export const expectQueryChainCalls = (
   expect(mockUser.countDocuments).toHaveBeenCalledWith(query);
 };
 
-export const expectPaginatedResult = (result: any, expectedUsers: any[], expectedTotal: number) => {
+export const expectPaginatedResult = (
+  result: any,
+  expectedUsers: any[],
+  expectedTotal: number
+) => {
   expect(result).toEqual({
     users: expectedUsers,
     total: expectedTotal,
   });
 };
 
-export const expectPaginationValues = (pagination: any, page: number, limit: number, total: number, totalPages: number) => {
+export const expectPaginationValues = (
+  pagination: any,
+  page: number,
+  limit: number,
+  total: number,
+  totalPages: number
+) => {
   expect(pagination).toEqual({
     page,
     limit,
@@ -104,7 +114,11 @@ export const expectErrorResponse = (result: any, error: any) => {
   });
 };
 
-export const expectErrorResponseFields = (result: any, expectedCode: string, expectedStatus: number) => {
+export const expectErrorResponseFields = (
+  result: any,
+  expectedCode: string,
+  expectedStatus: number
+) => {
   expect(result.success).toBe(false);
   expect(result.error?.code).toBe(expectedCode);
   expect(result.error?.statusCode).toBe(expectedStatus);
@@ -133,6 +147,12 @@ export const expectDefaultUserValues = (result: any) => {
   });
 };
 
-export const expectMockHandleServiceErrorCall = (mockFn: jest.Mock, error: any, message: string, code: string, statusCode: number = 500) => {
+export const expectMockHandleServiceErrorCall = (
+  mockFn: jest.Mock,
+  error: any,
+  message: string,
+  code: string,
+  statusCode: number = 500
+) => {
   expect(mockFn).toHaveBeenCalledWith(error, message, code, statusCode);
 };

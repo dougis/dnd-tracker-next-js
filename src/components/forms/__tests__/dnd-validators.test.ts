@@ -1,10 +1,17 @@
 import { dndValidators } from '../form-utils';
-import { dndTestData, testDndValidatorStructure, testDndValidatorValues } from './test-utils';
+import {
+  dndTestData,
+  testDndValidatorStructure,
+  testDndValidatorValues,
+} from './test-utils';
 
 describe('D&D Validators', () => {
   describe('characterName', () => {
     it('should have correct validation rules', () => {
-      testDndValidatorStructure(dndValidators.characterName, dndTestData.characterName.messages);
+      testDndValidatorStructure(
+        dndValidators.characterName,
+        dndTestData.characterName.messages
+      );
     });
 
     it('should validate character names correctly', () => {
@@ -18,7 +25,10 @@ describe('D&D Validators', () => {
 
   describe('abilityScore', () => {
     it('should have correct validation rules', () => {
-      testDndValidatorStructure(dndValidators.abilityScore, dndTestData.abilityScore.messages);
+      testDndValidatorStructure(
+        dndValidators.abilityScore,
+        dndTestData.abilityScore.messages
+      );
     });
 
     it('should validate ability scores correctly', () => {
@@ -32,7 +42,10 @@ describe('D&D Validators', () => {
 
   describe('hitPoints', () => {
     it('should have correct validation rules', () => {
-      testDndValidatorStructure(dndValidators.hitPoints, dndTestData.hitPoints.messages);
+      testDndValidatorStructure(
+        dndValidators.hitPoints,
+        dndTestData.hitPoints.messages
+      );
     });
 
     it('should validate hit points correctly', () => {
@@ -46,7 +59,10 @@ describe('D&D Validators', () => {
 
   describe('armorClass', () => {
     it('should have correct validation rules', () => {
-      testDndValidatorStructure(dndValidators.armorClass, dndTestData.armorClass.messages);
+      testDndValidatorStructure(
+        dndValidators.armorClass,
+        dndTestData.armorClass.messages
+      );
     });
 
     it('should validate armor class correctly', () => {
@@ -60,7 +76,10 @@ describe('D&D Validators', () => {
 
   describe('initiative', () => {
     it('should have correct validation rules', () => {
-      testDndValidatorStructure(dndValidators.initiative, dndTestData.initiative.messages);
+      testDndValidatorStructure(
+        dndValidators.initiative,
+        dndTestData.initiative.messages
+      );
     });
 
     it('should validate initiative correctly', () => {
@@ -74,7 +93,10 @@ describe('D&D Validators', () => {
 
   describe('level', () => {
     it('should have correct validation rules', () => {
-      testDndValidatorStructure(dndValidators.level, dndTestData.level.messages);
+      testDndValidatorStructure(
+        dndValidators.level,
+        dndTestData.level.messages
+      );
     });
 
     it('should validate level correctly', () => {

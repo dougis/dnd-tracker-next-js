@@ -11,7 +11,13 @@ jest.mock('../Sidebar', () => ({
 }));
 
 jest.mock('../MobileMenu', () => ({
-  MobileMenu: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
+  MobileMenu: ({
+    isOpen,
+    onClose,
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+  }) => (
     <div data-testid="mobile-menu" data-open={isOpen}>
       {isOpen && (
         <button data-testid="mobile-menu-close" onClick={onClose}>
@@ -82,7 +88,10 @@ describe('AppLayout', () => {
       mockWindowInnerWidth(1024);
       render(<AppLayout>{mockChildren}</AppLayout>);
 
-      expect(screen.getByTestId('sidebar')).toHaveAttribute('data-open', 'true');
+      expect(screen.getByTestId('sidebar')).toHaveAttribute(
+        'data-open',
+        'true'
+      );
     });
 
     test('hides mobile menu button on desktop', () => {
@@ -97,7 +106,10 @@ describe('AppLayout', () => {
       mockWindowInnerWidth(1024);
       render(<AppLayout>{mockChildren}</AppLayout>);
 
-      expect(screen.getByTestId('mobile-menu')).toHaveAttribute('data-open', 'false');
+      expect(screen.getByTestId('mobile-menu')).toHaveAttribute(
+        'data-open',
+        'false'
+      );
     });
   });
 
@@ -111,7 +123,10 @@ describe('AppLayout', () => {
         fireEvent(window, new Event('resize'));
       });
 
-      expect(screen.getByTestId('sidebar')).toHaveAttribute('data-open', 'false');
+      expect(screen.getByTestId('sidebar')).toHaveAttribute(
+        'data-open',
+        'false'
+      );
     });
 
     test('shows mobile menu button on mobile', () => {
@@ -141,7 +156,10 @@ describe('AppLayout', () => {
         fireEvent.click(mobileMenuButton);
       });
 
-      expect(screen.getByTestId('mobile-menu')).toHaveAttribute('data-open', 'true');
+      expect(screen.getByTestId('mobile-menu')).toHaveAttribute(
+        'data-open',
+        'true'
+      );
     });
 
     test('mobile menu can be closed', () => {
@@ -164,7 +182,10 @@ describe('AppLayout', () => {
         fireEvent.click(closeButton);
       });
 
-      expect(screen.getByTestId('mobile-menu')).toHaveAttribute('data-open', 'false');
+      expect(screen.getByTestId('mobile-menu')).toHaveAttribute(
+        'data-open',
+        'false'
+      );
     });
   });
 
@@ -178,7 +199,10 @@ describe('AppLayout', () => {
       });
 
       // Verify mobile state
-      expect(screen.getByTestId('sidebar')).toHaveAttribute('data-open', 'false');
+      expect(screen.getByTestId('sidebar')).toHaveAttribute(
+        'data-open',
+        'false'
+      );
       expect(screen.getByLabelText('Open menu')).toBeInTheDocument();
 
       // Resize to desktop
@@ -188,7 +212,10 @@ describe('AppLayout', () => {
       });
 
       // Verify desktop state
-      expect(screen.getByTestId('sidebar')).toHaveAttribute('data-open', 'true');
+      expect(screen.getByTestId('sidebar')).toHaveAttribute(
+        'data-open',
+        'true'
+      );
       expect(screen.queryByLabelText('Open menu')).not.toBeInTheDocument();
     });
 
@@ -206,7 +233,10 @@ describe('AppLayout', () => {
         fireEvent.click(mobileMenuButton);
       });
 
-      expect(screen.getByTestId('mobile-menu')).toHaveAttribute('data-open', 'true');
+      expect(screen.getByTestId('mobile-menu')).toHaveAttribute(
+        'data-open',
+        'true'
+      );
 
       // Resize to desktop
       act(() => {
@@ -214,7 +244,10 @@ describe('AppLayout', () => {
         fireEvent(window, new Event('resize'));
       });
 
-      expect(screen.getByTestId('mobile-menu')).toHaveAttribute('data-open', 'false');
+      expect(screen.getByTestId('mobile-menu')).toHaveAttribute(
+        'data-open',
+        'false'
+      );
     });
 
     test('cleans up resize event listener on unmount', () => {
@@ -224,7 +257,10 @@ describe('AppLayout', () => {
 
       unmount();
 
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function));
+      expect(removeEventListenerSpy).toHaveBeenCalledWith(
+        'resize',
+        expect.any(Function)
+      );
 
       removeEventListenerSpy.mockRestore();
     });
@@ -236,13 +272,16 @@ describe('AppLayout', () => {
 
       const header = screen.getByRole('banner');
       expect(header).toBeInTheDocument();
-      expect(header).toHaveClass('sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur-sm');
+      expect(header).toHaveClass(
+        'sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur-sm'
+      );
     });
 
     test('header contains breadcrumbs in flex-1 container', () => {
       render(<AppLayout>{mockChildren}</AppLayout>);
 
-      const breadcrumbsContainer = screen.getByTestId('breadcrumbs').parentElement;
+      const breadcrumbsContainer =
+        screen.getByTestId('breadcrumbs').parentElement;
       expect(breadcrumbsContainer).toHaveClass('flex-1');
     });
 
@@ -256,7 +295,9 @@ describe('AppLayout', () => {
       render(<AppLayout>{mockChildren}</AppLayout>);
 
       const userButton = screen.getByRole('button', { name: '' }); // SVG button
-      expect(userButton).toHaveClass('rounded-full bg-primary p-2 text-primary-foreground');
+      expect(userButton).toHaveClass(
+        'rounded-full bg-primary p-2 text-primary-foreground'
+      );
     });
   });
 
@@ -317,8 +358,14 @@ describe('AppLayout', () => {
       });
 
       // Initially: sidebar closed, mobile menu closed
-      expect(screen.getByTestId('sidebar')).toHaveAttribute('data-open', 'false');
-      expect(screen.getByTestId('mobile-menu')).toHaveAttribute('data-open', 'false');
+      expect(screen.getByTestId('sidebar')).toHaveAttribute(
+        'data-open',
+        'false'
+      );
+      expect(screen.getByTestId('mobile-menu')).toHaveAttribute(
+        'data-open',
+        'false'
+      );
 
       // Open mobile menu
       const mobileMenuButton = screen.getByLabelText('Open menu');
@@ -327,8 +374,14 @@ describe('AppLayout', () => {
       });
 
       // Now: sidebar still closed, mobile menu open
-      expect(screen.getByTestId('sidebar')).toHaveAttribute('data-open', 'false');
-      expect(screen.getByTestId('mobile-menu')).toHaveAttribute('data-open', 'true');
+      expect(screen.getByTestId('sidebar')).toHaveAttribute(
+        'data-open',
+        'false'
+      );
+      expect(screen.getByTestId('mobile-menu')).toHaveAttribute(
+        'data-open',
+        'true'
+      );
     });
   });
 });

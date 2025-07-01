@@ -41,7 +41,10 @@ export class UserServiceDatabase {
   /**
    * Clear specified tokens and save user
    */
-  static async clearTokensAndSave(user: any, tokenTypes: string[]): Promise<void> {
+  static async clearTokensAndSave(
+    user: any,
+    tokenTypes: string[]
+  ): Promise<void> {
     for (const tokenType of tokenTypes) {
       switch (tokenType) {
         case 'passwordReset':
@@ -60,7 +63,10 @@ export class UserServiceDatabase {
   /**
    * Update user fields and save
    */
-  static async updateUserFieldsAndSave(user: any, updateData: any): Promise<void> {
+  static async updateUserFieldsAndSave(
+    user: any,
+    updateData: any
+  ): Promise<void> {
     Object.assign(user, updateData);
     await this.saveUserSafely(user);
   }
@@ -85,7 +91,10 @@ export class UserServiceDatabase {
   /**
    * Update user password and clear reset tokens
    */
-  static async updatePasswordAndClearTokens(user: any, newPassword: string): Promise<void> {
+  static async updatePasswordAndClearTokens(
+    user: any,
+    newPassword: string
+  ): Promise<void> {
     user.passwordHash = newPassword; // Will be hashed by middleware
     await this.clearTokensAndSave(user, ['passwordReset']);
   }

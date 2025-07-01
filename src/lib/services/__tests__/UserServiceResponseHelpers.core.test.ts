@@ -6,7 +6,7 @@ import {
   expectErrorResponse,
   expectErrorResponseFields,
   createTestData,
-  createTestToken
+  createTestToken,
 } from './testUtils';
 
 describe('UserServiceResponseHelpers - Core Tests', () => {
@@ -23,7 +23,8 @@ describe('UserServiceResponseHelpers - Core Tests', () => {
     });
 
     it('should handle undefined data explicitly', () => {
-      const result = UserServiceResponseHelpers.createSuccessResponse(undefined);
+      const result =
+        UserServiceResponseHelpers.createSuccessResponse(undefined);
       expectSuccessResponse(result);
     });
 
@@ -39,12 +40,14 @@ describe('UserServiceResponseHelpers - Core Tests', () => {
 
     it('should handle array data', () => {
       const testArray = createTestData('array');
-      const result = UserServiceResponseHelpers.createSuccessResponse(testArray);
+      const result =
+        UserServiceResponseHelpers.createSuccessResponse(testArray);
       expectSuccessResponse(result, testArray);
     });
 
     it('should handle string data', () => {
-      const result = UserServiceResponseHelpers.createSuccessResponse('test string');
+      const result =
+        UserServiceResponseHelpers.createSuccessResponse('test string');
       expectSuccessResponse(result, 'test string');
     });
 
@@ -61,26 +64,35 @@ describe('UserServiceResponseHelpers - Core Tests', () => {
 
   describe('createErrorResponse', () => {
     it('should create error response from UserServiceError', () => {
-      const error = createMockUserServiceError('USER_ALREADY_EXISTS') as UserServiceError;
+      const error = createMockUserServiceError(
+        'USER_ALREADY_EXISTS'
+      ) as UserServiceError;
       const result = UserServiceResponseHelpers.createErrorResponse(error);
       expectErrorResponse(result, error);
     });
 
     it('should handle UserNotFoundError', () => {
-      const error = createMockUserServiceError('USER_NOT_FOUND') as UserServiceError;
+      const error = createMockUserServiceError(
+        'USER_NOT_FOUND'
+      ) as UserServiceError;
       const result = UserServiceResponseHelpers.createErrorResponse(error);
       expectErrorResponseFields(result, 'USER_NOT_FOUND', 404);
     });
 
     it('should handle InvalidCredentialsError', () => {
-      const error = createMockUserServiceError('INVALID_CREDENTIALS') as UserServiceError;
+      const error = createMockUserServiceError(
+        'INVALID_CREDENTIALS'
+      ) as UserServiceError;
       const result = UserServiceResponseHelpers.createErrorResponse(error);
       expectErrorResponseFields(result, 'INVALID_CREDENTIALS', 401);
     });
 
     it('should preserve all error properties', () => {
-      const customError = createMockUserServiceError('CUSTOM') as UserServiceError;
-      const result = UserServiceResponseHelpers.createErrorResponse(customError);
+      const customError = createMockUserServiceError(
+        'CUSTOM'
+      ) as UserServiceError;
+      const result =
+        UserServiceResponseHelpers.createErrorResponse(customError);
       expectErrorResponse(result, customError);
     });
   });

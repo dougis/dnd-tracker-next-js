@@ -102,12 +102,16 @@ console.error = (...args) => {
 
 // Mock Mongoose and BSON globally to prevent import issues
 jest.mock('bson', () => ({
-  ObjectId: jest.fn().mockImplementation((id) => ({ toString: () => id || 'mock-object-id' })),
+  ObjectId: jest
+    .fn()
+    .mockImplementation(id => ({ toString: () => id || 'mock-object-id' })),
 }));
 
 jest.mock('mongodb', () => ({
   MongoClient: jest.fn(),
-  ObjectId: jest.fn().mockImplementation((id) => ({ toString: () => id || 'mock-object-id' })),
+  ObjectId: jest
+    .fn()
+    .mockImplementation(id => ({ toString: () => id || 'mock-object-id' })),
 }));
 
 jest.mock('mongoose', () => ({
@@ -117,7 +121,7 @@ jest.mock('mongoose', () => ({
     on: jest.fn(),
     once: jest.fn(),
   },
-  Schema: jest.fn().mockImplementation(function(_definition) {
+  Schema: jest.fn().mockImplementation(function (_definition) {
     return {
       pre: jest.fn(),
       post: jest.fn(),
@@ -134,6 +138,8 @@ jest.mock('mongoose', () => ({
   model: jest.fn(),
   models: {},
   Types: {
-    ObjectId: jest.fn().mockImplementation((id) => ({ toString: () => id || 'mock-object-id' })),
+    ObjectId: jest
+      .fn()
+      .mockImplementation(id => ({ toString: () => id || 'mock-object-id' })),
   },
 }));

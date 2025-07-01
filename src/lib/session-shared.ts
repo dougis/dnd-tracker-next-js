@@ -5,12 +5,21 @@
 /**
  * Subscription tier hierarchy for access control
  */
-export const SUBSCRIPTION_TIERS = ['free', 'basic', 'premium', 'pro', 'enterprise'];
+export const SUBSCRIPTION_TIERS = [
+  'free',
+  'basic',
+  'premium',
+  'pro',
+  'enterprise',
+];
 
 /**
  * Check if user has required subscription tier
  */
-export function hasRequiredTier(userTier: string, requiredTier: string): boolean {
+export function hasRequiredTier(
+  userTier: string,
+  requiredTier: string
+): boolean {
   const userTierIndex = SUBSCRIPTION_TIERS.indexOf(userTier);
   const requiredTierIndex = SUBSCRIPTION_TIERS.indexOf(requiredTier);
   return userTierIndex >= requiredTierIndex;

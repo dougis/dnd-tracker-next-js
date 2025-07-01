@@ -94,9 +94,12 @@ describe('Sidebar', () => {
       const logoContainer = screen.getByText('D&D Tracker').parentElement;
       expect(logoContainer).toBeInTheDocument();
 
-      const iconContainer = logoContainer?.parentElement?.querySelector('.flex.h-8.w-8');
+      const iconContainer =
+        logoContainer?.parentElement?.querySelector('.flex.h-8.w-8');
       expect(iconContainer).toBeInTheDocument();
-      expect(iconContainer).toHaveClass('bg-primary text-primary-foreground rounded-lg');
+      expect(iconContainer).toHaveClass(
+        'bg-primary text-primary-foreground rounded-lg'
+      );
     });
 
     test('brand header has correct height and styling', () => {
@@ -111,7 +114,9 @@ describe('Sidebar', () => {
       render(<Sidebar isOpen={true} />);
 
       const brandTitle = screen.getByText('D&D Tracker');
-      expect(brandTitle).toHaveClass('text-lg font-fantasy font-bold text-foreground');
+      expect(brandTitle).toHaveClass(
+        'text-lg font-fantasy font-bold text-foreground'
+      );
     });
   });
 
@@ -136,13 +141,34 @@ describe('Sidebar', () => {
     test('navigation items have correct href attributes', () => {
       render(<Sidebar isOpen={true} />);
 
-      expect(screen.getByText('Dashboard').closest('a')).toHaveAttribute('href', '/');
-      expect(screen.getByText('Characters').closest('a')).toHaveAttribute('href', '/characters');
-      expect(screen.getByText('Parties').closest('a')).toHaveAttribute('href', '/parties');
-      expect(screen.getByText('Encounters').closest('a')).toHaveAttribute('href', '/encounters');
-      expect(screen.getByText('Combat').closest('a')).toHaveAttribute('href', '/combat');
-      expect(screen.getByText('Settings').closest('a')).toHaveAttribute('href', '/settings');
-      expect(screen.getByText('Help').closest('a')).toHaveAttribute('href', '/help');
+      expect(screen.getByText('Dashboard').closest('a')).toHaveAttribute(
+        'href',
+        '/'
+      );
+      expect(screen.getByText('Characters').closest('a')).toHaveAttribute(
+        'href',
+        '/characters'
+      );
+      expect(screen.getByText('Parties').closest('a')).toHaveAttribute(
+        'href',
+        '/parties'
+      );
+      expect(screen.getByText('Encounters').closest('a')).toHaveAttribute(
+        'href',
+        '/encounters'
+      );
+      expect(screen.getByText('Combat').closest('a')).toHaveAttribute(
+        'href',
+        '/combat'
+      );
+      expect(screen.getByText('Settings').closest('a')).toHaveAttribute(
+        'href',
+        '/settings'
+      );
+      expect(screen.getByText('Help').closest('a')).toHaveAttribute(
+        'href',
+        '/help'
+      );
     });
 
     test('navigation items have icons', () => {
@@ -159,7 +185,9 @@ describe('Sidebar', () => {
     test('has visual separator between primary and secondary navigation', () => {
       render(<Sidebar isOpen={true} />);
 
-      const separator = screen.getByRole('navigation').querySelector('.border-t.border-border');
+      const separator = screen
+        .getByRole('navigation')
+        .querySelector('.border-t.border-border');
       expect(separator).toBeInTheDocument();
       expect(separator).toHaveClass('my-4');
     });
@@ -224,14 +252,20 @@ describe('Sidebar', () => {
     test('user profile has correct styling', () => {
       render(<Sidebar isOpen={true} />);
 
-      const userSection = screen.getByText('Demo User').closest('.border-t.border-border.p-4');
+      const userSection = screen
+        .getByText('Demo User')
+        .closest('.border-t.border-border.p-4');
       expect(userSection).toBeInTheDocument();
     });
 
     test('user avatar placeholder exists', () => {
       render(<Sidebar isOpen={true} />);
 
-      const avatar = screen.getByText('Demo User').parentElement?.parentElement?.querySelector('.h-8.w-8.rounded-full.bg-muted');
+      const avatar = screen
+        .getByText('Demo User')
+        .parentElement?.parentElement?.querySelector(
+          '.h-8.w-8.rounded-full.bg-muted'
+        );
       expect(avatar).toBeInTheDocument();
     });
 
@@ -241,7 +275,9 @@ describe('Sidebar', () => {
       const userName = screen.getByText('Demo User');
       const userEmail = screen.getByText('demo@example.com');
 
-      expect(userName).toHaveClass('text-sm font-medium text-foreground truncate');
+      expect(userName).toHaveClass(
+        'text-sm font-medium text-foreground truncate'
+      );
       expect(userEmail).toHaveClass('text-xs text-muted-foreground truncate');
     });
   });

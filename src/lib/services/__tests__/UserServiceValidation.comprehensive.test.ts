@@ -41,9 +41,13 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
       const expectedResult = { ...validRegistrationData };
       mockUserRegistrationSchema.parse.mockReturnValue(expectedResult);
 
-      const result = UserServiceValidation.validateAndParseRegistration(validRegistrationData);
+      const result = UserServiceValidation.validateAndParseRegistration(
+        validRegistrationData
+      );
 
-      expect(mockUserRegistrationSchema.parse).toHaveBeenCalledWith(validRegistrationData);
+      expect(mockUserRegistrationSchema.parse).toHaveBeenCalledWith(
+        validRegistrationData
+      );
       expect(result).toEqual(expectedResult);
     });
 
@@ -53,7 +57,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
         throw new Error('Invalid email format');
       });
 
-      expect(() => UserServiceValidation.validateAndParseRegistration(invalidData)).toThrow('Invalid email format');
+      expect(() =>
+        UserServiceValidation.validateAndParseRegistration(invalidData)
+      ).toThrow('Invalid email format');
     });
 
     it('should handle undefined input', () => {
@@ -61,7 +67,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
         throw new Error('Required field missing');
       });
 
-      expect(() => UserServiceValidation.validateAndParseRegistration(undefined)).toThrow('Required field missing');
+      expect(() =>
+        UserServiceValidation.validateAndParseRegistration(undefined)
+      ).toThrow('Required field missing');
     });
 
     it('should handle null input', () => {
@@ -69,7 +77,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
         throw new Error('Input cannot be null');
       });
 
-      expect(() => UserServiceValidation.validateAndParseRegistration(null)).toThrow('Input cannot be null');
+      expect(() =>
+        UserServiceValidation.validateAndParseRegistration(null)
+      ).toThrow('Input cannot be null');
     });
   });
 
@@ -84,7 +94,8 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
       const expectedResult = { ...validLoginData };
       mockUserLoginSchema.parse.mockReturnValue(expectedResult);
 
-      const result = UserServiceValidation.validateAndParseLogin(validLoginData);
+      const result =
+        UserServiceValidation.validateAndParseLogin(validLoginData);
 
       expect(mockUserLoginSchema.parse).toHaveBeenCalledWith(validLoginData);
       expect(result).toEqual(expectedResult);
@@ -96,7 +107,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
         throw new Error('Password is required');
       });
 
-      expect(() => UserServiceValidation.validateAndParseLogin(invalidData)).toThrow('Password is required');
+      expect(() =>
+        UserServiceValidation.validateAndParseLogin(invalidData)
+      ).toThrow('Password is required');
     });
 
     it('should throw validation error for invalid email format', () => {
@@ -105,7 +118,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
         throw new Error('Invalid email format');
       });
 
-      expect(() => UserServiceValidation.validateAndParseLogin(invalidData)).toThrow('Invalid email format');
+      expect(() =>
+        UserServiceValidation.validateAndParseLogin(invalidData)
+      ).toThrow('Invalid email format');
     });
   });
 
@@ -121,9 +136,12 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
       const expectedResult = { ...validUpdateData };
       mockUserProfileUpdateSchema.parse.mockReturnValue(expectedResult);
 
-      const result = UserServiceValidation.validateAndParseProfileUpdate(validUpdateData);
+      const result =
+        UserServiceValidation.validateAndParseProfileUpdate(validUpdateData);
 
-      expect(mockUserProfileUpdateSchema.parse).toHaveBeenCalledWith(validUpdateData);
+      expect(mockUserProfileUpdateSchema.parse).toHaveBeenCalledWith(
+        validUpdateData
+      );
       expect(result).toEqual(expectedResult);
     });
 
@@ -131,7 +149,8 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
       const partialData = { firstName: 'Updated' };
       mockUserProfileUpdateSchema.parse.mockReturnValue(partialData);
 
-      const result = UserServiceValidation.validateAndParseProfileUpdate(partialData);
+      const result =
+        UserServiceValidation.validateAndParseProfileUpdate(partialData);
 
       expect(result).toEqual(partialData);
     });
@@ -142,7 +161,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
         throw new Error('Invalid email format');
       });
 
-      expect(() => UserServiceValidation.validateAndParseProfileUpdate(invalidData)).toThrow('Invalid email format');
+      expect(() =>
+        UserServiceValidation.validateAndParseProfileUpdate(invalidData)
+      ).toThrow('Invalid email format');
     });
   });
 
@@ -157,9 +178,12 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
       const expectedResult = { ...validPasswordData };
       mockChangePasswordSchema.parse.mockReturnValue(expectedResult);
 
-      const result = UserServiceValidation.validateAndParsePasswordChange(validPasswordData);
+      const result =
+        UserServiceValidation.validateAndParsePasswordChange(validPasswordData);
 
-      expect(mockChangePasswordSchema.parse).toHaveBeenCalledWith(validPasswordData);
+      expect(mockChangePasswordSchema.parse).toHaveBeenCalledWith(
+        validPasswordData
+      );
       expect(result).toEqual(expectedResult);
     });
 
@@ -173,7 +197,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
         throw new Error('Passwords do not match');
       });
 
-      expect(() => UserServiceValidation.validateAndParsePasswordChange(invalidData)).toThrow('Passwords do not match');
+      expect(() =>
+        UserServiceValidation.validateAndParsePasswordChange(invalidData)
+      ).toThrow('Passwords do not match');
     });
 
     it('should throw validation error for weak new password', () => {
@@ -186,7 +212,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
         throw new Error('Password too weak');
       });
 
-      expect(() => UserServiceValidation.validateAndParsePasswordChange(invalidData)).toThrow('Password too weak');
+      expect(() =>
+        UserServiceValidation.validateAndParsePasswordChange(invalidData)
+      ).toThrow('Password too weak');
     });
   });
 
@@ -199,9 +227,13 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
       const expectedResult = { ...validResetRequestData };
       mockPasswordResetRequestSchema.parse.mockReturnValue(expectedResult);
 
-      const result = UserServiceValidation.validateAndParsePasswordResetRequest(validResetRequestData);
+      const result = UserServiceValidation.validateAndParsePasswordResetRequest(
+        validResetRequestData
+      );
 
-      expect(mockPasswordResetRequestSchema.parse).toHaveBeenCalledWith(validResetRequestData);
+      expect(mockPasswordResetRequestSchema.parse).toHaveBeenCalledWith(
+        validResetRequestData
+      );
       expect(result).toEqual(expectedResult);
     });
 
@@ -211,7 +243,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
         throw new Error('Invalid email format');
       });
 
-      expect(() => UserServiceValidation.validateAndParsePasswordResetRequest(invalidData)).toThrow('Invalid email format');
+      expect(() =>
+        UserServiceValidation.validateAndParsePasswordResetRequest(invalidData)
+      ).toThrow('Invalid email format');
     });
   });
 
@@ -226,19 +260,28 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
       const expectedResult = { ...validResetData };
       mockPasswordResetSchema.parse.mockReturnValue(expectedResult);
 
-      const result = UserServiceValidation.validateAndParsePasswordReset(validResetData);
+      const result =
+        UserServiceValidation.validateAndParsePasswordReset(validResetData);
 
-      expect(mockPasswordResetSchema.parse).toHaveBeenCalledWith(validResetData);
+      expect(mockPasswordResetSchema.parse).toHaveBeenCalledWith(
+        validResetData
+      );
       expect(result).toEqual(expectedResult);
     });
 
     it('should throw validation error for invalid token', () => {
-      const invalidData = { token: '', password: 'NewPassword123!', confirmPassword: 'NewPassword123!' };
+      const invalidData = {
+        token: '',
+        password: 'NewPassword123!',
+        confirmPassword: 'NewPassword123!',
+      };
       mockPasswordResetSchema.parse.mockImplementation(() => {
         throw new Error('Token is required');
       });
 
-      expect(() => UserServiceValidation.validateAndParsePasswordReset(invalidData)).toThrow('Token is required');
+      expect(() =>
+        UserServiceValidation.validateAndParsePasswordReset(invalidData)
+      ).toThrow('Token is required');
     });
 
     it('should throw validation error for mismatched passwords', () => {
@@ -251,7 +294,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
         throw new Error('Passwords do not match');
       });
 
-      expect(() => UserServiceValidation.validateAndParsePasswordReset(invalidData)).toThrow('Passwords do not match');
+      expect(() =>
+        UserServiceValidation.validateAndParsePasswordReset(invalidData)
+      ).toThrow('Passwords do not match');
     });
   });
 
@@ -264,9 +309,13 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
       const expectedResult = { ...validVerificationData };
       mockEmailVerificationSchema.parse.mockReturnValue(expectedResult);
 
-      const result = UserServiceValidation.validateAndParseEmailVerification(validVerificationData);
+      const result = UserServiceValidation.validateAndParseEmailVerification(
+        validVerificationData
+      );
 
-      expect(mockEmailVerificationSchema.parse).toHaveBeenCalledWith(validVerificationData);
+      expect(mockEmailVerificationSchema.parse).toHaveBeenCalledWith(
+        validVerificationData
+      );
       expect(result).toEqual(expectedResult);
     });
 
@@ -276,7 +325,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
         throw new Error('Token is required');
       });
 
-      expect(() => UserServiceValidation.validateAndParseEmailVerification(invalidData)).toThrow('Token is required');
+      expect(() =>
+        UserServiceValidation.validateAndParseEmailVerification(invalidData)
+      ).toThrow('Token is required');
     });
 
     it('should throw validation error for invalid token format', () => {
@@ -285,28 +336,42 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
         throw new Error('Token must be a string');
       });
 
-      expect(() => UserServiceValidation.validateAndParseEmailVerification(invalidData)).toThrow('Token must be a string');
+      expect(() =>
+        UserServiceValidation.validateAndParseEmailVerification(invalidData)
+      ).toThrow('Token must be a string');
     });
   });
 
   describe('hasChanged', () => {
     it('should return true when new value is different from current value', () => {
-      const result = UserServiceValidation.hasChanged('old@example.com', 'new@example.com');
+      const result = UserServiceValidation.hasChanged(
+        'old@example.com',
+        'new@example.com'
+      );
       expect(result).toBe(true);
     });
 
     it('should return false when new value is same as current value', () => {
-      const result = UserServiceValidation.hasChanged('same@example.com', 'same@example.com');
+      const result = UserServiceValidation.hasChanged(
+        'same@example.com',
+        'same@example.com'
+      );
       expect(result).toBe(false);
     });
 
     it('should return false when new value is undefined', () => {
-      const result = UserServiceValidation.hasChanged('current@example.com', undefined);
+      const result = UserServiceValidation.hasChanged(
+        'current@example.com',
+        undefined
+      );
       expect(result).toBe(false);
     });
 
     it('should return true when current value is undefined and new value is provided', () => {
-      const result = UserServiceValidation.hasChanged(undefined, 'new@example.com');
+      const result = UserServiceValidation.hasChanged(
+        undefined,
+        'new@example.com'
+      );
       expect(result).toBe(true);
     });
 
@@ -334,7 +399,10 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
 
     it('should identify email change', () => {
       const validatedData = { email: 'new@example.com' };
-      const result = UserServiceValidation.prepareConflictCheckParams(mockUser, validatedData);
+      const result = UserServiceValidation.prepareConflictCheckParams(
+        mockUser,
+        validatedData
+      );
 
       expect(result.emailToCheck).toBe('new@example.com');
       expect(result.usernameToCheck).toBeUndefined();
@@ -342,7 +410,10 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
 
     it('should identify username change', () => {
       const validatedData = { username: 'newuser' };
-      const result = UserServiceValidation.prepareConflictCheckParams(mockUser, validatedData);
+      const result = UserServiceValidation.prepareConflictCheckParams(
+        mockUser,
+        validatedData
+      );
 
       expect(result.emailToCheck).toBeUndefined();
       expect(result.usernameToCheck).toBe('newuser');
@@ -350,15 +421,24 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
 
     it('should identify both email and username changes', () => {
       const validatedData = { email: 'new@example.com', username: 'newuser' };
-      const result = UserServiceValidation.prepareConflictCheckParams(mockUser, validatedData);
+      const result = UserServiceValidation.prepareConflictCheckParams(
+        mockUser,
+        validatedData
+      );
 
       expect(result.emailToCheck).toBe('new@example.com');
       expect(result.usernameToCheck).toBe('newuser');
     });
 
     it('should return no conflicts when values are unchanged', () => {
-      const validatedData = { email: 'current@example.com', username: 'currentuser' };
-      const result = UserServiceValidation.prepareConflictCheckParams(mockUser, validatedData);
+      const validatedData = {
+        email: 'current@example.com',
+        username: 'currentuser',
+      };
+      const result = UserServiceValidation.prepareConflictCheckParams(
+        mockUser,
+        validatedData
+      );
 
       expect(result.emailToCheck).toBeUndefined();
       expect(result.usernameToCheck).toBeUndefined();
@@ -366,7 +446,10 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
 
     it('should return no conflicts when no email or username in update', () => {
       const validatedData = { firstName: 'Updated' };
-      const result = UserServiceValidation.prepareConflictCheckParams(mockUser, validatedData);
+      const result = UserServiceValidation.prepareConflictCheckParams(
+        mockUser,
+        validatedData
+      );
 
       expect(result.emailToCheck).toBeUndefined();
       expect(result.usernameToCheck).toBeUndefined();
@@ -375,7 +458,10 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
     it('should handle user with undefined email/username', () => {
       const userWithUndefined = { email: undefined, username: undefined };
       const validatedData = { email: 'new@example.com', username: 'newuser' };
-      const result = UserServiceValidation.prepareConflictCheckParams(userWithUndefined, validatedData);
+      const result = UserServiceValidation.prepareConflictCheckParams(
+        userWithUndefined,
+        validatedData
+      );
 
       expect(result.emailToCheck).toBe('new@example.com');
       expect(result.usernameToCheck).toBe('newuser');
@@ -384,7 +470,10 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
     it('should handle user with null email/username', () => {
       const userWithNull = { email: null, username: null };
       const validatedData = { email: 'new@example.com', username: 'newuser' };
-      const result = UserServiceValidation.prepareConflictCheckParams(userWithNull, validatedData);
+      const result = UserServiceValidation.prepareConflictCheckParams(
+        userWithNull,
+        validatedData
+      );
 
       expect(result.emailToCheck).toBe('new@example.com');
       expect(result.usernameToCheck).toBe('newuser');
@@ -428,19 +517,25 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
     it('should throw error when user has no _id', () => {
       const user = {};
 
-      expect(() => UserServiceValidation.extractUserIdString(user)).toThrow('User ID not found');
+      expect(() => UserServiceValidation.extractUserIdString(user)).toThrow(
+        'User ID not found'
+      );
     });
 
     it('should throw error when user _id is null', () => {
       const user = { _id: null };
 
-      expect(() => UserServiceValidation.extractUserIdString(user)).toThrow('User ID not found');
+      expect(() => UserServiceValidation.extractUserIdString(user)).toThrow(
+        'User ID not found'
+      );
     });
 
     it('should throw error when user _id is undefined', () => {
       const user = { _id: undefined };
 
-      expect(() => UserServiceValidation.extractUserIdString(user)).toThrow('User ID not found');
+      expect(() => UserServiceValidation.extractUserIdString(user)).toThrow(
+        'User ID not found'
+      );
     });
 
     it('should handle ObjectId-like objects', () => {
@@ -464,7 +559,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
         throw new Error('Malformed data');
       });
 
-      expect(() => UserServiceValidation.validateAndParseRegistration('malformed')).toThrow('Malformed data');
+      expect(() =>
+        UserServiceValidation.validateAndParseRegistration('malformed')
+      ).toThrow('Malformed data');
     });
 
     it('should handle schema validation throwing non-Error objects', () => {
@@ -472,7 +569,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
         throw 'String error';
       });
 
-      expect(() => UserServiceValidation.validateAndParseLogin({})).toThrow('String error');
+      expect(() => UserServiceValidation.validateAndParseLogin({})).toThrow(
+        'String error'
+      );
     });
 
     it('should handle circular reference objects', () => {
@@ -483,7 +582,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
         throw new Error('Circular reference detected');
       });
 
-      expect(() => UserServiceValidation.validateAndParseProfileUpdate(circularObj)).toThrow('Circular reference detected');
+      expect(() =>
+        UserServiceValidation.validateAndParseProfileUpdate(circularObj)
+      ).toThrow('Circular reference detected');
     });
 
     it('should handle very large input objects', () => {
@@ -495,7 +596,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
         throw new Error('Input too large');
       });
 
-      expect(() => UserServiceValidation.validateAndParseRegistration(largeObj)).toThrow('Input too large');
+      expect(() =>
+        UserServiceValidation.validateAndParseRegistration(largeObj)
+      ).toThrow('Input too large');
     });
   });
 });

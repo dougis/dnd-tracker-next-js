@@ -1,7 +1,13 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { HeroSection } from '../HeroSection';
-import { mockNextLink, mockButton, mockCTAButtons, getSection, expectSemanticStructure } from './test-utils';
+import {
+  mockNextLink,
+  mockButton,
+  mockCTAButtons,
+  getSection,
+  expectSemanticStructure,
+} from './test-utils';
 
 mockNextLink();
 mockButton();
@@ -12,13 +18,17 @@ describe('HeroSection Component', () => {
     render(<HeroSection />);
 
     expect(screen.getByText('Master Your D&D Encounters')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Master Your D&D Encounters');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Master Your D&D Encounters'
+    );
   });
 
   it('displays clear value proposition describing app benefits', () => {
     render(<HeroSection />);
 
-    const valueProposition = screen.getByText(/The ultimate D&D Encounter Tracker for Dungeon Masters/);
+    const valueProposition = screen.getByText(
+      /The ultimate D&D Encounter Tracker for Dungeon Masters/
+    );
     expect(valueProposition).toBeInTheDocument();
     expect(valueProposition).toHaveTextContent(
       'The ultimate D&D Encounter Tracker for Dungeon Masters. Streamline combat, manage characters, and create epic adventures with ease.'
@@ -45,9 +55,16 @@ describe('HeroSection Component', () => {
     render(<HeroSection />);
 
     const headline = screen.getByRole('heading', { level: 1 });
-    expect(headline).toHaveClass('text-4xl', 'md:text-6xl', 'font-fantasy', 'font-bold');
+    expect(headline).toHaveClass(
+      'text-4xl',
+      'md:text-6xl',
+      'font-fantasy',
+      'font-bold'
+    );
 
-    const valueProposition = screen.getByText(/The ultimate D&D Encounter Tracker/);
+    const valueProposition = screen.getByText(
+      /The ultimate D&D Encounter Tracker/
+    );
     expect(valueProposition).toHaveClass('text-xl', 'text-muted-foreground');
   });
 
@@ -55,7 +72,9 @@ describe('HeroSection Component', () => {
     render(<HeroSection />);
 
     // Check container responsive classes
-    const container = screen.getByRole('heading', { level: 1 }).closest('section');
+    const container = screen
+      .getByRole('heading', { level: 1 })
+      .closest('section');
     expect(container).toHaveClass('container', 'mx-auto', 'px-4', 'py-16');
 
     // Check button container responsive layout - CTA buttons should be present
@@ -79,14 +98,18 @@ describe('HeroSection Component', () => {
     const headline = screen.getByRole('heading', { level: 1 });
     expect(headline).toHaveClass('mb-6');
 
-    const valueProposition = screen.getByText(/The ultimate D&D Encounter Tracker/);
+    const valueProposition = screen.getByText(
+      /The ultimate D&D Encounter Tracker/
+    );
     expect(valueProposition).toHaveClass('mb-8');
   });
 
   it('centers content for optimal focus and conversion', () => {
     render(<HeroSection />);
 
-    const section = screen.getByRole('heading', { level: 1 }).closest('section');
+    const section = screen
+      .getByRole('heading', { level: 1 })
+      .closest('section');
     expect(section).toHaveClass('text-center');
 
     const maxWidthContainer = section?.querySelector('.max-w-4xl');

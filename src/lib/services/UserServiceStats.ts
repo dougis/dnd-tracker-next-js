@@ -1,9 +1,7 @@
 import User from '../models/User';
 import { convertLeansUsersToPublic } from './UserServiceHelpers';
 import { UserServiceResponseHelpers } from './UserServiceResponseHelpers';
-import {
-  ServiceResult,
-} from './UserServiceErrors';
+import { ServiceResult } from './UserServiceErrors';
 import type { PublicUser, SubscriptionTier } from '../validations/user';
 
 const UserModel = User;
@@ -138,7 +136,12 @@ export class UserServiceStats {
       const skip = (page - 1) * limit;
       const query = this.buildQuery(filters);
       const { users, total } = await this.executeUserQuery(query, skip, limit);
-      const paginatedResult = this.formatPaginatedResult(users, total, page, limit);
+      const paginatedResult = this.formatPaginatedResult(
+        users,
+        total,
+        page,
+        limit
+      );
 
       return UserServiceResponseHelpers.createSuccessResponse(paginatedResult);
     } catch (error) {

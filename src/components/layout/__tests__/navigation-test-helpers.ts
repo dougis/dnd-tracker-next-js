@@ -6,7 +6,11 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import { mockUsePathname } from './test-utils';
-import { assertNavigationLink, assertActiveNavigation, assertInactiveNavigation } from './shared-assertions';
+import {
+  assertNavigationLink,
+  assertActiveNavigation,
+  assertInactiveNavigation,
+} from './shared-assertions';
 
 /**
  * Standard navigation items used across components
@@ -17,7 +21,7 @@ export const NAVIGATION_ITEMS = [
   { text: 'Parties', href: '/parties' },
   { text: 'Encounters', href: '/encounters' },
   { text: 'Combat', href: '/combat' },
-  { text: 'Settings', href: '/settings' }
+  { text: 'Settings', href: '/settings' },
 ];
 
 /**
@@ -32,7 +36,11 @@ export const testNavigationLinks = () => {
 /**
  * Test active navigation state for a given path
  */
-export const testActiveNavigationState = (Component: React.ComponentType<any>, path: string, props = {}) => {
+export const testActiveNavigationState = (
+  Component: React.ComponentType<any>,
+  path: string,
+  props = {}
+) => {
   mockUsePathname.mockReturnValue(path);
   render(React.createElement(Component, props));
 
@@ -50,7 +58,10 @@ export const testActiveNavigationState = (Component: React.ComponentType<any>, p
 /**
  * Test that clicking navigation link calls expected callback
  */
-export const testNavigationLinkClick = (linkText: string, expectedCallback: jest.Mock) => {
+export const testNavigationLinkClick = (
+  linkText: string,
+  expectedCallback: jest.Mock
+) => {
   const link = assertNavigationLink(linkText, '#'); // href doesn't matter for click test
   if (link) {
     fireEvent.click(link);
@@ -61,7 +72,10 @@ export const testNavigationLinkClick = (linkText: string, expectedCallback: jest
 /**
  * Test root path special case (Dashboard active for '/')
  */
-export const testRootPathActiveState = (Component: React.ComponentType<any>, props = {}) => {
+export const testRootPathActiveState = (
+  Component: React.ComponentType<any>,
+  props = {}
+) => {
   testActiveNavigationState(Component, '/', props);
 };
 

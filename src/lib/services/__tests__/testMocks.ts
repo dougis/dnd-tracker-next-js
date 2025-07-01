@@ -6,7 +6,14 @@ import { expectPaginationValues } from './testAssertions';
  */
 
 // UserServiceError factory functions to eliminate duplication
-export const createMockUserServiceError = (type: 'USER_ALREADY_EXISTS' | 'USER_NOT_FOUND' | 'INVALID_CREDENTIALS' | 'CUSTOM', customData?: { message?: string; code?: string; statusCode?: number }) => {
+export const createMockUserServiceError = (
+  type:
+    | 'USER_ALREADY_EXISTS'
+    | 'USER_NOT_FOUND'
+    | 'INVALID_CREDENTIALS'
+    | 'CUSTOM',
+  customData?: { message?: string; code?: string; statusCode?: number }
+) => {
   const errorMap = {
     USER_ALREADY_EXISTS: {
       message: 'User already exists with email: test@example.com',
@@ -34,13 +41,23 @@ export const createMockUserServiceError = (type: 'USER_ALREADY_EXISTS' | 'USER_N
 };
 
 // Mock response factory
-export const createMockErrorResponse = (message: string, code: string, statusCode: number) => ({
+export const createMockErrorResponse = (
+  message: string,
+  code: string,
+  statusCode: number
+) => ({
   success: false,
-  error: { message, code, statusCode }
+  error: { message, code, statusCode },
 });
 
 // Mock setup helpers for UserServiceError testing
-export const createUserServiceErrorInstance = (type: 'USER_ALREADY_EXISTS' | 'USER_NOT_FOUND' | 'INVALID_CREDENTIALS' | 'CUSTOM') => {
+export const createUserServiceErrorInstance = (
+  type:
+    | 'USER_ALREADY_EXISTS'
+    | 'USER_NOT_FOUND'
+    | 'INVALID_CREDENTIALS'
+    | 'CUSTOM'
+) => {
   const errorData = createMockUserServiceError(type);
   // Import UserServiceError at runtime to avoid circular deps
   const { UserServiceError } = require('../UserServiceErrors');
@@ -52,13 +69,28 @@ export const createUserServiceErrorInstance = (type: 'USER_ALREADY_EXISTS' | 'US
   return userServiceError;
 };
 
-export const setupMockHandleServiceError = (mockFn: jest.Mock, response: any) => {
+export const setupMockHandleServiceError = (
+  mockFn: jest.Mock,
+  response: any
+) => {
   mockFn.mockReturnValue(response);
   return response;
 };
 
 // User serialization test utilities
-export const createMockUserForSerialization = (type: 'withMethod' | 'withoutMethod' | 'withStringId' | 'minimal' | 'withNulls' | 'withObjectId' | 'withPartialPrefs' | 'circular' | 'large', overrides: any = {}) => {
+export const createMockUserForSerialization = (
+  type:
+    | 'withMethod'
+    | 'withoutMethod'
+    | 'withStringId'
+    | 'minimal'
+    | 'withNulls'
+    | 'withObjectId'
+    | 'withPartialPrefs'
+    | 'circular'
+    | 'large',
+  overrides: any = {}
+) => {
   const mockUserId = '507f1f77bcf86cd799439011';
   const mockDate = new Date('2024-01-01T00:00:00.000Z');
 
@@ -177,7 +209,9 @@ export const setupFormatPaginatedResultTest = (
   userCount: number = 1
 ) => {
   const users = createMockUsers(userCount);
-  const publicUsers = users.map((_, i) => createPublicUser({ id: `user${i + 1}` }));
+  const publicUsers = users.map((_, i) =>
+    createPublicUser({ id: `user${i + 1}` })
+  );
 
   mockConverter.mockReturnValue(publicUsers);
 
@@ -190,8 +224,14 @@ export const setupFormatPaginatedResultTest = (
     expectedTotalPages,
     executeTest: (formatFunction: any) => {
       const result = formatFunction(users, total, page, limit);
-      expectPaginationValues(result.pagination, page, limit, total, expectedTotalPages);
+      expectPaginationValues(
+        result.pagination,
+        page,
+        limit,
+        total,
+        expectedTotalPages
+      );
       return result;
-    }
+    },
   };
 };
