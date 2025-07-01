@@ -3,8 +3,6 @@
  * Tests core functionality without MongoDB integration
  */
 
-import mongoose from 'mongoose';
-
 // Mock mongoose completely for unit testing
 jest.mock('mongoose', () => {
   const mockObjectId = jest.fn().mockImplementation((id) => ({
