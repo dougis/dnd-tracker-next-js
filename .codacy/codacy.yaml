@@ -8,3 +8,12 @@ tools:
     - pmd@6.55.0
     - semgrep@1.78.0
     - trivy@0.59.1
+exclude_paths:
+    - "**/__tests__/**"
+    - "**/*.test.ts"
+    - "**/*.test.tsx"
+duplication:
+  exclude_paths:
+    - "**/__tests__/**"
+    - "**/*.test.ts"
+    - "**/*.test.tsx"
