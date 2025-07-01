@@ -82,11 +82,10 @@ describe('AbilityScoresSection', () => {
     });
 
     it('calls onChange when ability scores are modified', async () => {
-      const user = userEvent.setup();
       render(<AbilityScoresSection {...defaultProps} />);
 
       const strengthField = screen.getByLabelText(/strength/i);
-      
+
       // Use fireEvent.change for number inputs to avoid concatenation issues
       fireEvent.change(strengthField, { target: { value: '18' } });
 
@@ -123,7 +122,7 @@ describe('AbilityScoresSection', () => {
       render(<AbilityScoresSection {...defaultProps} />);
 
       const strengthField = screen.getByLabelText(/strength/i);
-      
+
       // Use fireEvent.change for number inputs
       fireEvent.change(strengthField, { target: { value: '20' } });
 

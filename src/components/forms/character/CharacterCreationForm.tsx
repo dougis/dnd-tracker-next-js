@@ -16,7 +16,7 @@ import { AlertCircle } from 'lucide-react';
 
 interface CharacterCreationFormProps {
   ownerId: string;
-  onSuccess?: (character: any) => void;
+  onSuccess?: (_character: any) => void;
   onCancel?: () => void;
   isOpen: boolean;
 }

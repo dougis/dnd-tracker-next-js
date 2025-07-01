@@ -133,12 +133,12 @@ export const createInvalidTestCharacter = (): Partial<TestCharacterData> => ({
 });
 
 export interface FormTestHelpers {
-  fillBasicInfo: (character: TestCharacterData) => Promise<void>;
-  fillAbilityScores: (scores: TestCharacterData['abilityScores']) => Promise<void>;
-  fillClasses: (classes: TestCharacterData['classes']) => Promise<void>;
-  fillCombatStats: (hitPoints: TestCharacterData['hitPoints'], armorClass: number) => Promise<void>;
+  fillBasicInfo: (_character: TestCharacterData) => Promise<void>;
+  fillAbilityScores: (_scores: TestCharacterData['abilityScores']) => Promise<void>;
+  fillClasses: (_classes: TestCharacterData['classes']) => Promise<void>;
+  fillCombatStats: (_hitPoints: TestCharacterData['hitPoints'], _armorClass: number) => Promise<void>;
   submitForm: () => Promise<void>;
-  expectValidationError: (fieldName: string, errorMessage: string) => void;
+  expectValidationError: (_fieldName: string, _errorMessage: string) => void;
 }
 
 export const createFormTestHelpers = (
