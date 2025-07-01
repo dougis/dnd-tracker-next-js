@@ -25,8 +25,11 @@ console.log(
 // Set up missing browser APIs
 global.MutationObserver = class {
   constructor(_callback) {}
+
   disconnect() {}
+
   observe(_element, _initObject) {}
+
   takeRecords() {
     return [];
   }
@@ -35,16 +38,22 @@ global.MutationObserver = class {
 // Mock IntersectionObserver which is not available in test environment
 global.IntersectionObserver = class IntersectionObserver {
   constructor() {}
+
   disconnect() {}
+
   observe() {}
+
   unobserve() {}
 };
 
 // Mock ResizeObserver which is not available in test environment
 global.ResizeObserver = class ResizeObserver {
   constructor() {}
+
   disconnect() {}
+
   observe() {}
+
   unobserve() {}
 };
 
@@ -100,4 +109,3 @@ console.error = (...args) => {
   originalConsoleError(...args);
 };
 
-// Don't globally mock mongoose - let tests handle their own mocking

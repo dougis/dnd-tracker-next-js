@@ -11,11 +11,7 @@ const customJestConfig = {
   globalSetup: '<rootDir>/jest.global-setup.js', // Added global setup for MongoDB
   globalTeardown: '<rootDir>/jest.global-teardown.js', // Added global teardown for MongoDB
   testEnvironment: 'jest-environment-jsdom',
-  testPathIgnorePatterns: [
-    '<rootDir>/.next/', 
-    '<rootDir>/node_modules/',
-    '<rootDir>/src/lib/models/__tests__/Character.test.ts'
-  ],
+  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
   testMatch: ['<rootDir>/src/**/*.test.{js,jsx,ts,tsx}'],
   collectCoverage: true,
   collectCoverageFrom: [
@@ -50,7 +46,7 @@ const customJestConfig = {
     '^next-auth/jwt$': '<rootDir>/src/__mocks__/next-auth/jwt.js',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(bson|mongodb|mongoose|next-auth|@auth)/)',
+    'node_modules/(?!(next-auth|@auth)/)',
   ],
 };
 
