@@ -1,0 +1,367 @@
+/**
+ * Character Service Statistics and Calculations Tests
+ *
+ * Tests for character stat calculations, modifiers, and combat-related calculations.
+ */
+
+// Mock the Character model before any imports
+jest.mock('../../models/Character', () => ({
+  Character: {
+    find: jest.fn(),
+    findById: jest.fn(),
+    findByIdAndUpdate: jest.fn(),
+    findByIdAndDelete: jest.fn(),
+    countDocuments: jest.fn(),
+    create: jest.fn(),
+    save: jest.fn(),
+  },
+}));
+
+import { CharacterService } from '../CharacterService';
+import { CHARACTER_ERROR_CODES } from '../CharacterServiceErrors';
+import {
+  createMockCharacter,
+  createValidObjectId,
+  expectSuccess,
+  expectError,
+  multiclassCharacterData,
+} from './CharacterService.test-helpers';
+
+describe('CharacterService - Statistics and Calculations', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('Ability Score Calculations', () => {
+    it('should calculate ability modifiers correctly', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+
+      const result = await CharacterService.calculateCharacterStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.abilityModifiers.strength).toBe(3); // 16 -> +3
+      expect(stats.abilityModifiers.dexterity).toBe(2); // 14 -> +2
+      expect(stats.abilityModifiers.constitution).toBe(2); // 15 -> +2
+      expect(stats.abilityModifiers.intelligence).toBe(0); // 10 -> +0
+      expect(stats.abilityModifiers.wisdom).toBe(1); // 12 -> +1
+      expect(stats.abilityModifiers.charisma).toBe(-1); // 8 -> -1
+    });
+
+    it('should handle extreme ability scores', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+      // Mock character with extreme scores
+
+      const result = await CharacterService.calculateCharacterStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.abilityModifiers.strength).toBe(10); // 30 -> +10
+      expect(stats.abilityModifiers.dexterity).toBe(-5); // 1 -> -5
+    });
+
+    it('should calculate saving throw bonuses', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+
+      const result = await CharacterService.calculateCharacterStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.savingThrows.strength).toBe(5); // +3 (STR) + 2 (prof) = +5
+      expect(stats.savingThrows.constitution).toBe(4); // +2 (CON) + 2 (prof) = +4
+      expect(stats.savingThrows.dexterity).toBe(2); // +2 (DEX), no proficiency
+    });
+
+    it('should calculate skill bonuses with proficiencies', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+
+      const result = await CharacterService.calculateCharacterStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.skills.athletics).toBe(5); // +3 (STR) + 2 (prof) = +5
+      expect(stats.skills.intimidation).toBe(1); // -1 (CHA) + 2 (prof) = +1
+      expect(stats.skills.acrobatics).toBe(2); // +2 (DEX), no proficiency
+    });
+  });
+
+  describe('Level and Progression Calculations', () => {
+    it('should calculate total character level', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+
+      const result = await CharacterService.calculateCharacterStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.totalLevel).toBe(1);
+    });
+
+    it('should calculate multiclass character level correctly', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+      // Mock multiclass character (Fighter 3/Wizard 2)
+
+      const result = await CharacterService.calculateCharacterStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.totalLevel).toBe(5); // 3 + 2
+      expect(stats.classLevels.fighter).toBe(3);
+      expect(stats.classLevels.wizard).toBe(2);
+    });
+
+    it('should calculate proficiency bonus by level', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+
+      const result = await CharacterService.calculateCharacterStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.proficiencyBonus).toBe(2); // Level 1-4: +2
+    });
+
+    it('should handle high-level proficiency bonus', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+      // Mock level 20 character
+
+      const result = await CharacterService.calculateCharacterStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.proficiencyBonus).toBe(6); // Level 17-20: +6
+    });
+  });
+
+  describe('Combat Statistics', () => {
+    it('should calculate initiative modifier', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+
+      const result = await CharacterService.calculateCharacterStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.initiativeModifier).toBe(2); // Dexterity modifier
+    });
+
+    it('should calculate armor class', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+
+      const result = await CharacterService.calculateCharacterStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.armorClass).toBe(16);
+    });
+
+    it('should calculate effective hit points', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+
+      const result = await CharacterService.calculateCharacterStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.effectiveHitPoints).toBe(12); // current + temporary
+    });
+
+    it('should determine character status (alive/unconscious/dead)', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+
+      const result = await CharacterService.calculateCharacterStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.status).toBe('alive');
+      expect(stats.isAlive).toBe(true);
+      expect(stats.isUnconscious).toBe(false);
+    });
+
+    it('should handle unconscious character', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+      // Mock character with 0 HP
+
+      const result = await CharacterService.calculateCharacterStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.status).toBe('unconscious');
+      expect(stats.isAlive).toBe(false);
+      expect(stats.isUnconscious).toBe(true);
+    });
+  });
+
+  describe('Spellcasting Calculations', () => {
+    it('should calculate spell slots for single-class caster', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+      // Mock wizard character
+
+      const result = await CharacterService.calculateSpellcastingStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.spellSlots).toBeDefined();
+      expect(stats.spellSlots[1]).toBeGreaterThan(0); // Should have 1st level slots
+    });
+
+    it('should calculate multiclass spellcasting correctly', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+      // Mock multiclass caster (Paladin/Sorcerer)
+
+      const result = await CharacterService.calculateSpellcastingStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.casterLevel).toBeGreaterThan(0);
+      expect(stats.spellSlots).toBeDefined();
+    });
+
+    it('should handle non-casters', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+      // Mock fighter character (non-caster)
+
+      const result = await CharacterService.calculateSpellcastingStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.casterLevel).toBe(0);
+      expect(stats.spellSlots).toEqual({});
+    });
+
+    it('should calculate spell attack bonus', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+      // Mock wizard character
+
+      const result = await CharacterService.calculateSpellcastingStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.spellAttackBonus).toBe(2); // INT modifier + prof bonus
+    });
+
+    it('should calculate spell save DC', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+      // Mock wizard character
+
+      const result = await CharacterService.calculateSpellcastingStats(characterId, userId);
+
+      const stats = expectSuccess(result);
+      expect(stats.spellSaveDC).toBe(10); // 8 + INT modifier + prof bonus
+    });
+  });
+
+  describe('Equipment and Encumbrance', () => {
+    it('should calculate carrying capacity', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+
+      const result = await CharacterService.calculateCarryingCapacity(characterId, userId);
+
+      const capacity = expectSuccess(result);
+      expect(capacity.maximum).toBe(240); // 15 * STR score (16)
+      expect(capacity.current).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should determine encumbrance level', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+
+      const result = await CharacterService.calculateCarryingCapacity(characterId, userId);
+
+      const capacity = expectSuccess(result);
+      expect(capacity.encumbranceLevel).toMatch(/none|light|heavy|overloaded/);
+    });
+
+    it('should calculate total equipment weight', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+
+      const result = await CharacterService.calculateEquipmentWeight(characterId, userId);
+
+      const weight = expectSuccess(result);
+      expect(weight.total).toBeGreaterThanOrEqual(0);
+      expect(weight.equipped).toBeGreaterThanOrEqual(0);
+      expect(weight.carried).toBeGreaterThanOrEqual(0);
+    });
+  });
+
+  describe('Experience and Advancement', () => {
+    it('should calculate experience points needed for next level', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+
+      const result = await CharacterService.calculateExperienceInfo(characterId, userId);
+
+      const xpInfo = expectSuccess(result);
+      expect(xpInfo.currentXP).toBeGreaterThanOrEqual(0);
+      expect(xpInfo.nextLevelXP).toBeGreaterThan(xpInfo.currentXP);
+      expect(xpInfo.xpToNextLevel).toBeGreaterThan(0);
+    });
+
+    it('should handle max level characters', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+      // Mock level 20 character
+
+      const result = await CharacterService.calculateExperienceInfo(characterId, userId);
+
+      const xpInfo = expectSuccess(result);
+      expect(xpInfo.currentLevel).toBe(20);
+      expect(xpInfo.isMaxLevel).toBe(true);
+      expect(xpInfo.xpToNextLevel).toBe(0);
+    });
+  });
+
+  describe('Performance and Caching', () => {
+    it('should cache calculated stats for performance', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+
+      // First calculation
+      const result1 = await CharacterService.calculateCharacterStats(characterId, userId);
+      expectSuccess(result1);
+
+      // Second calculation should use cache
+      const result2 = await CharacterService.calculateCharacterStats(characterId, userId);
+      expectSuccess(result2);
+
+      // Should be same object (from cache)
+      expect(result1.data).toEqual(result2.data);
+    });
+
+    it('should invalidate cache when character is updated', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+
+      // Calculate stats
+      await CharacterService.calculateCharacterStats(characterId, userId);
+
+      // Update character
+      await CharacterService.updateCharacter(characterId, userId, { armorClass: 18 });
+
+      // Stats should be recalculated
+      const result = await CharacterService.calculateCharacterStats(characterId, userId);
+      const stats = expectSuccess(result);
+      expect(stats.armorClass).toBe(18);
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should handle missing character gracefully', async () => {
+      const nonExistentId = createValidObjectId();
+      const userId = createValidObjectId();
+
+      const result = await CharacterService.calculateCharacterStats(nonExistentId, userId);
+
+      expectError(result, CHARACTER_ERROR_CODES.CHARACTER_NOT_FOUND);
+    });
+
+    it('should handle corrupted character data', async () => {
+      const characterId = createValidObjectId();
+      const userId = createValidObjectId();
+      // Mock character with corrupted data
+
+      const result = await CharacterService.calculateCharacterStats(characterId, userId);
+
+      expectError(result, CHARACTER_ERROR_CODES.INVALID_CHARACTER_DATA);
+    });
+  });
+});
