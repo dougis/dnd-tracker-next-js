@@ -14,6 +14,26 @@ import { CharacterCreation } from '@/lib/validations/character';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
+// Helper function to get hit die for each class
+const getHitDieForClass = (className: string): number => {
+  const hitDieMap: Record<string, number> = {
+    'barbarian': 12,
+    'fighter': 10,
+    'paladin': 10,
+    'ranger': 10,
+    'bard': 8,
+    'cleric': 8,
+    'druid': 8,
+    'monk': 8,
+    'rogue': 8,
+    'warlock': 8,
+    'artificer': 8,
+    'sorcerer': 6,
+    'wizard': 6,
+  };
+  return hitDieMap[className] || 8;
+};
+
 interface CharacterCreationFormProps {
   ownerId: string;
   onSuccess?: (_character: any) => void;
@@ -47,7 +67,7 @@ export function CharacterCreationForm({
     ownerId,
     onSuccess: (_character) => {
       onSuccess?.(_character);
-      router.push(`/characters/${_character.id}`);
+      router.push(`/characters/${_character.id}` as any);
     },
   });
 
@@ -59,11 +79,13 @@ export function CharacterCreationForm({
     const characterData: CharacterCreation = {
       name: formData.basicInfo.name,
       type: formData.basicInfo.type,
-      race: formData.basicInfo.race === 'custom' ? 'custom' : formData.basicInfo.race,
+      race: formData.basicInfo.race === 'custom' ? 'human' : (formData.basicInfo.race as any),
       customRace: formData.basicInfo.race === 'custom' ? formData.basicInfo.customRace : undefined,
+      size: 'medium',
       classes: formData.classes.map(cls => ({
-        className: cls.className,
+        class: cls.className,
         level: cls.level,
+        hitDie: getHitDieForClass(cls.className),
       })),
       abilityScores: formData.abilityScores,
       hitPoints: {
@@ -74,6 +96,17 @@ export function CharacterCreationForm({
       armorClass: formData.combatStats.armorClass,
       speed: formData.combatStats.speed || 30,
       proficiencyBonus: formData.combatStats.proficiencyBonus || 2,
+      savingThrows: {
+        strength: false,
+        dexterity: false,
+        constitution: false,
+        intelligence: false,
+        wisdom: false,
+        charisma: false,
+      },
+      skills: {},
+      equipment: [],
+      spells: [],
     };
 
     await submitCharacter(characterData);
@@ -81,16 +114,18 @@ export function CharacterCreationForm({
 
   return (
     <FormModal
-      isOpen={isOpen}
-      onClose={onCancel}
-      title="Create Character"
-      description="Build your character for your next adventure"
-      size="4xl"
-      submitText={isSubmitting ? 'Creating Character...' : 'Create Character'}
-      cancelText="Cancel"
+      open={isOpen}
+      onOpenChange={(open) => { if (!open) onCancel?.(); }}
       onSubmit={handleSubmit}
       onCancel={onCancel}
-      canSubmit={isFormValid && !isSubmitting}
+      isSubmitting={isSubmitting}
+      config={{
+        title: "Create Character",
+        description: "Build your character for your next adventure",
+        size: "4xl",
+        submitText: isSubmitting ? 'Creating Character...' : 'Create Character',
+        cancelText: "Cancel",
+      }}
     >
       <div className="space-y-8">
         {submitError && (
