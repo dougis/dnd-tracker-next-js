@@ -25,7 +25,7 @@ describe('UserServiceAuth - Edge Coverage Tests', () => {
       const edgeCases = [
         createValidUserData({ email: 'edge@example.com', username: 'edgeuser' }),
         createInvalidUserData(),
-        createValidUserData({ 
+        createValidUserData({
           email: 'special+chars@test.com',
           password: 'SpecialPass123!@#',
           confirmPassword: 'SpecialPass123!@#',
@@ -60,7 +60,7 @@ describe('UserServiceAuth - Edge Coverage Tests', () => {
         createValidPasswordChangeData(),
         createValidPasswordChangeData({ newPassword: 'Different456!' }),
         { currentPassword: '', newPassword: '', confirmNewPassword: '' },
-        createValidPasswordChangeData({ 
+        createValidPasswordChangeData({
           newPassword: 'VeryLongPassword123!',
           confirmNewPassword: 'VeryLongPassword123!'
         }),
@@ -97,11 +97,11 @@ describe('UserServiceAuth - Edge Coverage Tests', () => {
         createValidPasswordResetData(),
         createValidPasswordResetData({ token: 'different-token' }),
         { token: '', password: '', confirmPassword: '' },
-        createValidPasswordResetData({ 
-          password: 'weak', 
-          confirmPassword: 'mismatch' 
+        createValidPasswordResetData({
+          password: 'weak',
+          confirmPassword: 'mismatch'
         }),
-        createValidPasswordResetData({ 
+        createValidPasswordResetData({
           token: 'very-long-token-for-edge-case-testing'
         }),
       ];
@@ -132,7 +132,7 @@ describe('UserServiceAuth - Edge Coverage Tests', () => {
     it('should exercise resendVerificationEmail with various emails', async () => {
       const emailCases = [
         'resend@example.com',
-        'verified@example.com', 
+        'verified@example.com',
         'nonexistent@example.com',
         'invalid-email',
         '',

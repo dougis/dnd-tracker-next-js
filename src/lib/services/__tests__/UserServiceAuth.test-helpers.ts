@@ -73,7 +73,7 @@ export const exerciseCreateUserVariations = async () => {
     createValidUserData(),
     createValidUserData({ email: 'different@test.com', username: 'different' }),
     createInvalidUserData(),
-    createValidUserData({ 
+    createValidUserData({
       email: 'special+chars@test.com',
       password: 'SpecialPass123!@#',
       confirmPassword: 'SpecialPass123!@#',
@@ -176,16 +176,16 @@ export const exerciseErrorScenarios = async () => {
   // Test all methods with invalid data to exercise error paths
   await UserServiceAuth.createUser(createInvalidUserData());
   await UserServiceAuth.authenticateUser(createInvalidLoginData());
-  await UserServiceAuth.changePassword('', { 
-    currentPassword: '', 
-    newPassword: '', 
-    confirmNewPassword: '' 
+  await UserServiceAuth.changePassword('', {
+    currentPassword: '',
+    newPassword: '',
+    confirmNewPassword: ''
   });
   await UserServiceAuth.requestPasswordReset({ email: '' });
-  await UserServiceAuth.resetPassword({ 
-    token: '', 
-    password: '', 
-    confirmPassword: '' 
+  await UserServiceAuth.resetPassword({
+    token: '',
+    password: '',
+    confirmPassword: ''
   });
   await UserServiceAuth.verifyEmail({ token: '' });
   await UserServiceAuth.resendVerificationEmail('');

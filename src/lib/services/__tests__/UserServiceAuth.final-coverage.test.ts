@@ -1,5 +1,4 @@
 import '../__test-helpers__/test-setup';
-import { UserServiceAuth } from '../UserServiceAuth';
 import {
   exerciseCreateUserVariations,
   exerciseAuthenticateUserVariations,

@@ -1,16 +1,10 @@
 import '../__test-helpers__/test-setup';
 import { UserServiceAuth } from '../UserServiceAuth';
-import User from '../../models/User';
-import {
-  createMockUser
-} from './testUtils';
-import { mockUserData } from '../__test-helpers__/test-setup';
 import {
   createValidUserData,
   createValidLoginData,
   createValidPasswordChangeData,
   createValidPasswordResetData,
-  createValidVerificationData,
   createInvalidUserData,
   createInvalidLoginData
 } from './UserServiceAuth.test-helpers';
@@ -38,7 +32,7 @@ describe('UserServiceAuth - Comprehensive Tests', () => {
         const validCases = [
           validUserData,
           createValidUserData({ email: 'success@test.com', username: 'success' }),
-          createValidUserData({ 
+          createValidUserData({
             email: 'another@example.com',
             subscribeToNewsletter: true
           }),
@@ -62,7 +56,7 @@ describe('UserServiceAuth - Comprehensive Tests', () => {
       });
 
       it('should return validation error for weak password', async () => {
-        const invalidData = createValidUserData({ 
+        const invalidData = createValidUserData({
           password: '123',
           confirmPassword: '123',
         });
