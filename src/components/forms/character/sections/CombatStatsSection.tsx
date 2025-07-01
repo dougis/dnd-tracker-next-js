@@ -170,12 +170,7 @@ export function CombatStatsSection({
             type="number"
             min={2}
             max={6}
-            helperText={
-              <div className="flex items-center space-x-2">
-                <span>Suggested based on level:</span>
-                <Badge variant="outline">+{suggestedProficiencyBonus}</Badge>
-              </div>
-            }
+            helperText={`Suggested based on level: +${suggestedProficiencyBonus}`}
           />
         </div>
 

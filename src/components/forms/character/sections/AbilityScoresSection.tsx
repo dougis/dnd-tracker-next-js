@@ -125,7 +125,7 @@ export function AbilityScoresSection({
           <Checkbox
             id="use-point-buy"
             checked={usePointBuy}
-            onCheckedChange={setUsePointBuy}
+            onCheckedChange={(checked) => setUsePointBuy(checked === true)}
           />
           <label htmlFor="use-point-buy" className="text-sm font-medium">
             Use Point Buy System

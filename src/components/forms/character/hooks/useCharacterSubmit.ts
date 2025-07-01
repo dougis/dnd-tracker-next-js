@@ -33,7 +33,7 @@ export function useCharacterSubmit({ ownerId, onSuccess, onError }: UseCharacter
         const error: SubmitError = {
           code: result.error.code,
           message: result.error.message,
-          details: result.error.details,
+          details: typeof result.error.details === 'string' ? result.error.details : undefined,
         };
         setSubmitError(error);
         onError?.(error);

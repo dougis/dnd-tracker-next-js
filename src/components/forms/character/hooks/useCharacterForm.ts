@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { characterCreationSchema, CharacterType, CharacterClass } from '@/lib/validations/character';
+import { characterCreationSchema, CharacterType, CharacterClass, CharacterRace } from '@/lib/validations/character';
 import { ZodError } from 'zod';
 
 interface BasicInfoData {
   name: string;
   type: CharacterType;
-  race: string;
+  race: CharacterRace | 'custom';
   customRace: string;
 }
 
@@ -190,8 +190,8 @@ export function useCharacterForm() {
   const isFormValid = useCallback((): boolean => {
     // Check if all required fields are filled
     const hasBasicInfo = formData.basicInfo.name.trim() !== '' &&
-                        formData.basicInfo.type !== '' &&
-                        formData.basicInfo.race !== '';
+                        formData.basicInfo.type !== undefined &&
+                        formData.basicInfo.race.length > 0;
 
     const hasCustomRace = formData.basicInfo.race !== 'custom' ||
                          formData.basicInfo.customRace.trim() !== '';

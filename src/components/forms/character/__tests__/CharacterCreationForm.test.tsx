@@ -312,7 +312,7 @@ describe('CharacterCreationForm', () => {
         error: {
           code: 'VALIDATION_ERROR',
           message: 'Invalid character data',
-          details: 'Character name is too long',
+          details: { field: 'name', message: 'Character name is too long' },
         },
       });
 
