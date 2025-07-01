@@ -52,7 +52,9 @@ export class UserServiceValidation {
   /**
    * Validate and parse password reset request data
    */
-  static validateAndParsePasswordResetRequest(data: unknown): PasswordResetRequest {
+  static validateAndParsePasswordResetRequest(
+    data: unknown
+  ): PasswordResetRequest {
     return passwordResetRequestSchema.parse(data);
   }
 
@@ -73,7 +75,10 @@ export class UserServiceValidation {
   /**
    * Check if two values are different (for profile update conflict detection)
    */
-  static hasChanged(currentValue: string | undefined, newValue: string | undefined): boolean {
+  static hasChanged(
+    currentValue: string | undefined,
+    newValue: string | undefined
+  ): boolean {
     return newValue !== undefined && newValue !== currentValue;
   }
 
@@ -91,7 +96,10 @@ export class UserServiceValidation {
       ? validatedData.email
       : undefined;
 
-    const usernameToCheck = this.hasChanged(userUsername, validatedData.username)
+    const usernameToCheck = this.hasChanged(
+      userUsername,
+      validatedData.username
+    )
       ? validatedData.username
       : undefined;
 

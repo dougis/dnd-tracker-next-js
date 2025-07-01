@@ -182,7 +182,9 @@ describe('ModalManager', () => {
         </ModalManager>
       );
 
-      expect(screen.getByText('Error component that works')).toBeInTheDocument();
+      expect(
+        screen.getByText('Error component that works')
+      ).toBeInTheDocument();
     });
 
     it('handles null children', () => {

@@ -8,7 +8,9 @@ import { render } from '@testing-library/react';
 import { usePathname } from 'next/navigation';
 
 // Mock functions type
-export const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>;
+export const mockUsePathname = usePathname as jest.MockedFunction<
+  typeof usePathname
+>;
 
 /**
  * Standard test setup that most layout tests need
@@ -33,7 +35,7 @@ export const setupLayoutTest = () => {
 
       // Clear all mocks
       jest.clearAllMocks();
-    }
+    },
   };
 };
 
@@ -58,6 +60,9 @@ export const setupNavigationTest = (defaultPath = '/') => {
 /**
  * Common component rendering with standard props
  */
-export const renderWithDefaults = (Component: React.ComponentType<any>, props = {}) => {
+export const renderWithDefaults = (
+  Component: React.ComponentType<any>,
+  props = {}
+) => {
   return render(React.createElement(Component, props));
 };

@@ -8,19 +8,27 @@ jest.mock('../HeroSection', () => ({
 }));
 
 jest.mock('../FeaturesSection', () => ({
-  FeaturesSection: () => <div data-testid="features-section">Features Section</div>,
+  FeaturesSection: () => (
+    <div data-testid="features-section">Features Section</div>
+  ),
 }));
 
 jest.mock('../PricingSection', () => ({
-  PricingSection: () => <div data-testid="pricing-section">Pricing Section</div>,
+  PricingSection: () => (
+    <div data-testid="pricing-section">Pricing Section</div>
+  ),
 }));
 
 jest.mock('../TestimonialsSection', () => ({
-  TestimonialsSection: () => <div data-testid="testimonials-section">Testimonials Section</div>,
+  TestimonialsSection: () => (
+    <div data-testid="testimonials-section">Testimonials Section</div>
+  ),
 }));
 
 jest.mock('../CallToActionSection', () => ({
-  CallToActionSection: () => <div data-testid="cta-section">Call To Action Section</div>,
+  CallToActionSection: () => (
+    <div data-testid="cta-section">Call To Action Section</div>
+  ),
 }));
 
 describe('LandingPage Component', () => {

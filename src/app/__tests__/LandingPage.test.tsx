@@ -16,7 +16,9 @@ describe('Landing Page', () => {
       render(<Home />);
 
       // Should have prominent CTA links for registration
-      const ctaLinks = screen.getAllByRole('link', { name: /get started|sign up|start free/i });
+      const ctaLinks = screen.getAllByRole('link', {
+        name: /get started|sign up|start free/i,
+      });
       expect(ctaLinks.length).toBeGreaterThan(0);
     });
   });
@@ -26,8 +28,12 @@ describe('Landing Page', () => {
       render(<Home />);
 
       // Should showcase D&D Encounter Tracker features
-      expect(screen.getByText(/everything you need for epic d&d encounters/i)).toBeInTheDocument();
-      expect(screen.getByRole('heading', { name: /initiative tracking/i })).toBeInTheDocument();
+      expect(
+        screen.getByText(/everything you need for epic d&d encounters/i)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: /initiative tracking/i })
+      ).toBeInTheDocument();
     });
 
     it('should include screenshots or visual demonstrations', () => {
@@ -44,7 +50,9 @@ describe('Landing Page', () => {
       render(<Home />);
 
       // Should show pricing/subscription information
-      expect(screen.getByText(/choose your subscription tier/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/choose your subscription tier/i)
+      ).toBeInTheDocument();
     });
 
     it('should make pricing compelling and clear', () => {
@@ -61,7 +69,9 @@ describe('Landing Page', () => {
       render(<Home />);
 
       // Should have testimonials or social proof
-      expect(screen.getByText(/testimonial|review|feedback/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/testimonial|review|feedback/i)
+      ).toBeInTheDocument();
     });
   });
 

@@ -1,6 +1,13 @@
 import { screen } from '@testing-library/react';
 import { CallToActionSection } from '../CallToActionSection';
-import { mockNextLink, mockButton, mockCTAButtons, renderComponent, expectResponsiveLayout, expectSemanticStructure } from './test-utils';
+import {
+  mockNextLink,
+  mockButton,
+  mockCTAButtons,
+  renderComponent,
+  expectResponsiveLayout,
+  expectSemanticStructure,
+} from './test-utils';
 
 mockNextLink();
 mockButton('cta-button');
@@ -19,15 +26,21 @@ describe('CallToActionSection Component', () => {
   it('renders compelling final call-to-action heading', () => {
     const heading = screen.getByRole('heading', { level: 2 });
     expect(heading).toBeInTheDocument();
-    expect(heading.textContent).toMatch(/ready|start|begin|join|get.*started|try.*free/i);
+    expect(heading.textContent).toMatch(
+      /ready|start|begin|join|get.*started|try.*free/i
+    );
   });
 
   it('includes persuasive copy that summarizes key benefits', () => {
-    expect(sectionText.toLowerCase()).toMatch(/encounter|combat|character|manage|track|streamline/);
+    expect(sectionText.toLowerCase()).toMatch(
+      /encounter|combat|character|manage|track|streamline/
+    );
   });
 
   it('provides primary registration call-to-action button', () => {
-    const primaryCTA = screen.getByText(/get.*started|sign.*up|try.*free|start.*free/i);
+    const primaryCTA = screen.getByText(
+      /get.*started|sign.*up|try.*free|start.*free/i
+    );
     expect(primaryCTA).toBeInTheDocument();
     expect(primaryCTA.closest('a')).toHaveAttribute('href', '/signup');
   });
@@ -43,7 +56,9 @@ describe('CallToActionSection Component', () => {
   });
 
   it('uses urgency or scarcity language to encourage action', () => {
-    expect(sectionText.toLowerCase()).toMatch(/today|now|start.*today|don't.*wait|join.*thousands/);
+    expect(sectionText.toLowerCase()).toMatch(
+      /today|now|start.*today|don't.*wait|join.*thousands/
+    );
   });
 
   it('has prominent visual styling to draw attention', () => {
@@ -63,7 +78,9 @@ describe('CallToActionSection Component', () => {
   });
 
   it('includes benefit-focused copy to reinforce value proposition', () => {
-    expect(sectionText.toLowerCase()).toMatch(/save.*time|easier|streamline|perfect.*for.*dm|enhance.*game/);
+    expect(sectionText.toLowerCase()).toMatch(
+      /save.*time|easier|streamline|perfect.*for.*dm|enhance.*game/
+    );
   });
 
   it('uses centered layout for maximum impact', () => {
@@ -71,7 +88,9 @@ describe('CallToActionSection Component', () => {
   });
 
   it('includes social proof elements to build trust', () => {
-    expect(sectionText.toLowerCase()).toMatch(/thousands|join.*community|trusted.*by|users.*love/);
+    expect(sectionText.toLowerCase()).toMatch(
+      /thousands|join.*community|trusted.*by|users.*love/
+    );
   });
 
   it('has proper semantic structure for accessibility', () => {

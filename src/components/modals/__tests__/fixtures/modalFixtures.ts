@@ -39,7 +39,7 @@ export const createLoadingConfig = (loading = true) => ({
 
 export const createVariantConfigs = () => {
   const variants = ['default', 'destructive', 'warning'] as const;
-  return variants.map((variant) => ({
+  return variants.map(variant => ({
     title: `${variant} Variant`,
     description: `Testing ${variant} variant`,
     variant,

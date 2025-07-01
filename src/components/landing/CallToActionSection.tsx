@@ -8,8 +8,10 @@ export function CallToActionSection() {
           Ready to Start Your Epic Encounters Today?
         </h2>
         <p className="text-xl text-muted-foreground mb-8">
-          Join thousands of Dungeon Masters who trust our encounter tracker to streamline combat and enhance their games.
-          Save time, manage characters effortlessly, and perfect your DM sessions with our trusted community.
+          Join thousands of Dungeon Masters who trust our encounter tracker to
+          streamline combat and enhance their games. Save time, manage
+          characters effortlessly, and perfect your DM sessions with our trusted
+          community.
         </p>
         <CTAButtons />
       </div>

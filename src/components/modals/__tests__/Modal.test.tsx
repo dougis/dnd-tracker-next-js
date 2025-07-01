@@ -150,15 +150,24 @@ describe('Modal', () => {
     });
 
     it('renders with all size variants', () => {
-      const sizes = ['sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', 'full'] as const;
+      const sizes = [
+        'sm',
+        'md',
+        'lg',
+        'xl',
+        '2xl',
+        '3xl',
+        '4xl',
+        'full',
+      ] as const;
 
-      testSizeVariants(sizes, (size) => <Modal {...defaultProps} size={size} />);
+      testSizeVariants(sizes, size => <Modal {...defaultProps} size={size} />);
     });
 
     it('renders with all type variants', () => {
       const types = ['default', 'info', 'warning', 'error'] as const;
 
-      testTypeVariants(types, (type) => <Modal {...defaultProps} type={type} />);
+      testTypeVariants(types, type => <Modal {...defaultProps} type={type} />);
     });
 
     it('handles empty children gracefully', () => {
@@ -191,7 +200,9 @@ describe('Modal', () => {
         />
       );
 
-      expect(screen.getByTestId('dialog-title')).toHaveTextContent('Accessible Modal');
+      expect(screen.getByTestId('dialog-title')).toHaveTextContent(
+        'Accessible Modal'
+      );
       expect(screen.getByTestId('dialog-description')).toHaveTextContent(
         'Modal description for screen readers'
       );
@@ -242,7 +253,9 @@ describe('Modal', () => {
       expect(screen.getByTestId('dialog-header')).toBeInTheDocument();
 
       // Without title or description
-      rerender(<Modal {...defaultProps} title={undefined} description={undefined} />);
+      rerender(
+        <Modal {...defaultProps} title={undefined} description={undefined} />
+      );
 
       expect(screen.queryByTestId('dialog-header')).not.toBeInTheDocument();
     });
@@ -278,9 +291,15 @@ describe('Modal', () => {
       );
 
       // Simulate rapid state changes
-      rerender(<Modal {...defaultProps} onOpenChange={onOpenChange} open={false} />);
-      rerender(<Modal {...defaultProps} onOpenChange={onOpenChange} open={true} />);
-      rerender(<Modal {...defaultProps} onOpenChange={onOpenChange} open={false} />);
+      rerender(
+        <Modal {...defaultProps} onOpenChange={onOpenChange} open={false} />
+      );
+      rerender(
+        <Modal {...defaultProps} onOpenChange={onOpenChange} open={true} />
+      );
+      rerender(
+        <Modal {...defaultProps} onOpenChange={onOpenChange} open={false} />
+      );
 
       // Should handle without errors
       expect(screen.getByTestId('dialog')).toBeInTheDocument();
@@ -410,20 +429,30 @@ describe('Modal', () => {
   });
 
   it('does not render header when no title or description provided', () => {
-    render(<Modal {...defaultProps} title={undefined} description={undefined} />);
+    render(
+      <Modal {...defaultProps} title={undefined} description={undefined} />
+    );
 
     expect(screen.queryByTestId('dialog-header')).not.toBeInTheDocument();
   });
 
   it('renders only title when description is not provided', () => {
-    render(<Modal {...defaultProps} title="Test Title" description={undefined} />);
+    render(
+      <Modal {...defaultProps} title="Test Title" description={undefined} />
+    );
 
     expect(screen.getByText('Test Title')).toBeInTheDocument();
     expect(screen.queryByTestId('dialog-description')).not.toBeInTheDocument();
   });
 
   it('renders only description when title is not provided', () => {
-    render(<Modal {...defaultProps} title={undefined} description="Test Description" />);
+    render(
+      <Modal
+        {...defaultProps}
+        title={undefined}
+        description="Test Description"
+      />
+    );
 
     expect(screen.getByText('Test Description')).toBeInTheDocument();
     expect(screen.queryByTestId('dialog-title')).not.toBeInTheDocument();
@@ -454,9 +483,14 @@ describe('Modal', () => {
   it('cleans up event listeners on unmount', () => {
     const testEventListenerCleanup = () => {
       const addEventListenerSpy = jest.spyOn(document, 'addEventListener');
-      const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener');
+      const removeEventListenerSpy = jest.spyOn(
+        document,
+        'removeEventListener'
+      );
 
-      const { unmount } = render(<Modal {...defaultProps} closeOnEscapeKey={false} />);
+      const { unmount } = render(
+        <Modal {...defaultProps} closeOnEscapeKey={false} />
+      );
 
       expect(addEventListenerSpy).toHaveBeenCalledWith(
         'keydown',

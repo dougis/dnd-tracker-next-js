@@ -22,7 +22,11 @@ export const createMockLink = () => {
     className?: string;
     onClick?: () => void;
   }) {
-    return React.createElement('a', { href, className, onClick, ...props }, children);
+    return React.createElement(
+      'a',
+      { href, className, onClick, ...props },
+      children
+    );
   };
 };
 

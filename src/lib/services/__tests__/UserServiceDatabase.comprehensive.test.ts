@@ -18,7 +18,9 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
       emailVerificationToken: 'verification-token',
       save: jest.fn().mockResolvedValue(undefined),
       generateEmailVerificationToken: jest.fn(),
-      generatePasswordResetToken: jest.fn().mockResolvedValue('new-reset-token'),
+      generatePasswordResetToken: jest
+        .fn()
+        .mockResolvedValue('new-reset-token'),
       updateLastLogin: jest.fn().mockResolvedValue(undefined),
     };
   });
@@ -34,17 +36,23 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
       const userWithoutSave = { ...mockUser };
       delete userWithoutSave.save;
 
-      await expect(UserServiceDatabase.saveUserSafely(userWithoutSave)).resolves.not.toThrow();
+      await expect(
+        UserServiceDatabase.saveUserSafely(userWithoutSave)
+      ).resolves.not.toThrow();
     });
 
     it('should not throw error when user is null', async () => {
       // This should handle null gracefully by checking for save method
-      await expect(UserServiceDatabase.saveUserSafely(null)).resolves.toBeUndefined();
+      await expect(
+        UserServiceDatabase.saveUserSafely(null)
+      ).resolves.toBeUndefined();
     });
 
     it('should not throw error when user is undefined', async () => {
       // This should handle undefined gracefully by checking for save method
-      await expect(UserServiceDatabase.saveUserSafely(undefined)).resolves.toBeUndefined();
+      await expect(
+        UserServiceDatabase.saveUserSafely(undefined)
+      ).resolves.toBeUndefined();
     });
 
     it('should handle save method that returns a promise', async () => {
@@ -58,13 +66,17 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
     it('should handle save method that throws an error', async () => {
       mockUser.save.mockRejectedValue(new Error('Save failed'));
 
-      await expect(UserServiceDatabase.saveUserSafely(mockUser)).rejects.toThrow('Save failed');
+      await expect(
+        UserServiceDatabase.saveUserSafely(mockUser)
+      ).rejects.toThrow('Save failed');
     });
 
     it('should handle non-function save property', async () => {
       mockUser.save = 'not-a-function';
 
-      await expect(UserServiceDatabase.saveUserSafely(mockUser)).resolves.not.toThrow();
+      await expect(
+        UserServiceDatabase.saveUserSafely(mockUser)
+      ).resolves.not.toThrow();
     });
   });
 
@@ -98,20 +110,25 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
         throw new Error('Token generation failed');
       });
 
-      await expect(UserServiceDatabase.generateAndSaveEmailToken(mockUser)).rejects.toThrow('Token generation failed');
+      await expect(
+        UserServiceDatabase.generateAndSaveEmailToken(mockUser)
+      ).rejects.toThrow('Token generation failed');
     });
 
     it('should handle save failure after token generation', async () => {
       mockUser.save.mockRejectedValue(new Error('Save failed'));
 
-      await expect(UserServiceDatabase.generateAndSaveEmailToken(mockUser)).rejects.toThrow('Save failed');
+      await expect(
+        UserServiceDatabase.generateAndSaveEmailToken(mockUser)
+      ).rejects.toThrow('Save failed');
       expect(mockUser.generateEmailVerificationToken).toHaveBeenCalled();
     });
   });
 
   describe('generateAndSaveResetToken', () => {
     it('should generate password reset token and save user', async () => {
-      const result = await UserServiceDatabase.generateAndSaveResetToken(mockUser);
+      const result =
+        await UserServiceDatabase.generateAndSaveResetToken(mockUser);
 
       expect(mockUser.generatePasswordResetToken).toHaveBeenCalledTimes(1);
       expect(mockUser.save).toHaveBeenCalledTimes(1);
@@ -122,7 +139,8 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
       const userWithoutMethod = { ...mockUser };
       delete userWithoutMethod.generatePasswordResetToken;
 
-      const result = await UserServiceDatabase.generateAndSaveResetToken(userWithoutMethod);
+      const result =
+        await UserServiceDatabase.generateAndSaveResetToken(userWithoutMethod);
 
       expect(userWithoutMethod.save).toHaveBeenCalledTimes(1);
       expect(result).toBe('dummy-token');
@@ -131,7 +149,8 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
     it('should handle non-function generatePasswordResetToken property', async () => {
       mockUser.generatePasswordResetToken = 'not-a-function';
 
-      const result = await UserServiceDatabase.generateAndSaveResetToken(mockUser);
+      const result =
+        await UserServiceDatabase.generateAndSaveResetToken(mockUser);
 
       expect(mockUser.save).toHaveBeenCalledTimes(1);
       expect(result).toBe('dummy-token');
@@ -140,21 +159,28 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
     it('should handle generatePasswordResetToken that returns a promise', async () => {
       mockUser.generatePasswordResetToken.mockResolvedValue('async-token');
 
-      const result = await UserServiceDatabase.generateAndSaveResetToken(mockUser);
+      const result =
+        await UserServiceDatabase.generateAndSaveResetToken(mockUser);
 
       expect(result).toBe('async-token');
     });
 
     it('should handle generatePasswordResetToken that throws an error', async () => {
-      mockUser.generatePasswordResetToken.mockRejectedValue(new Error('Token generation failed'));
+      mockUser.generatePasswordResetToken.mockRejectedValue(
+        new Error('Token generation failed')
+      );
 
-      await expect(UserServiceDatabase.generateAndSaveResetToken(mockUser)).rejects.toThrow('Token generation failed');
+      await expect(
+        UserServiceDatabase.generateAndSaveResetToken(mockUser)
+      ).rejects.toThrow('Token generation failed');
     });
 
     it('should handle save failure after token generation', async () => {
       mockUser.save.mockRejectedValue(new Error('Save failed'));
 
-      await expect(UserServiceDatabase.generateAndSaveResetToken(mockUser)).rejects.toThrow('Save failed');
+      await expect(
+        UserServiceDatabase.generateAndSaveResetToken(mockUser)
+      ).rejects.toThrow('Save failed');
       expect(mockUser.generatePasswordResetToken).toHaveBeenCalled();
     });
   });
@@ -169,14 +195,19 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
     });
 
     it('should clear email verification token and save user', async () => {
-      await UserServiceDatabase.clearTokensAndSave(mockUser, ['emailVerification']);
+      await UserServiceDatabase.clearTokensAndSave(mockUser, [
+        'emailVerification',
+      ]);
 
       expect(mockUser.emailVerificationToken).toBeUndefined();
       expect(mockUser.save).toHaveBeenCalledTimes(1);
     });
 
     it('should clear multiple token types', async () => {
-      await UserServiceDatabase.clearTokensAndSave(mockUser, ['passwordReset', 'emailVerification']);
+      await UserServiceDatabase.clearTokensAndSave(mockUser, [
+        'passwordReset',
+        'emailVerification',
+      ]);
 
       expect(mockUser.passwordResetToken).toBeUndefined();
       expect(mockUser.passwordResetExpires).toBeUndefined();
@@ -193,14 +224,23 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
 
       await UserServiceDatabase.clearTokensAndSave(mockUser, []);
 
-      expect(mockUser.passwordResetToken).toBe(originalTokens.passwordResetToken);
-      expect(mockUser.passwordResetExpires).toBe(originalTokens.passwordResetExpires);
-      expect(mockUser.emailVerificationToken).toBe(originalTokens.emailVerificationToken);
+      expect(mockUser.passwordResetToken).toBe(
+        originalTokens.passwordResetToken
+      );
+      expect(mockUser.passwordResetExpires).toBe(
+        originalTokens.passwordResetExpires
+      );
+      expect(mockUser.emailVerificationToken).toBe(
+        originalTokens.emailVerificationToken
+      );
       expect(mockUser.save).toHaveBeenCalledTimes(1);
     });
 
     it('should handle unknown token types gracefully', async () => {
-      await UserServiceDatabase.clearTokensAndSave(mockUser, ['unknownToken', 'anotherUnknown']);
+      await UserServiceDatabase.clearTokensAndSave(mockUser, [
+        'unknownToken',
+        'anotherUnknown',
+      ]);
 
       // Should not clear known tokens
       expect(mockUser.passwordResetToken).toBe('reset-token');
@@ -209,7 +249,11 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
     });
 
     it('should handle mixed known and unknown token types', async () => {
-      await UserServiceDatabase.clearTokensAndSave(mockUser, ['passwordReset', 'unknownToken', 'emailVerification']);
+      await UserServiceDatabase.clearTokensAndSave(mockUser, [
+        'passwordReset',
+        'unknownToken',
+        'emailVerification',
+      ]);
 
       expect(mockUser.passwordResetToken).toBeUndefined();
       expect(mockUser.passwordResetExpires).toBeUndefined();
@@ -220,15 +264,21 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
     it('should handle save failure', async () => {
       mockUser.save.mockRejectedValue(new Error('Save failed'));
 
-      await expect(UserServiceDatabase.clearTokensAndSave(mockUser, ['passwordReset'])).rejects.toThrow('Save failed');
+      await expect(
+        UserServiceDatabase.clearTokensAndSave(mockUser, ['passwordReset'])
+      ).rejects.toThrow('Save failed');
     });
 
     it('should handle null user', async () => {
-      await expect(UserServiceDatabase.clearTokensAndSave(null, ['passwordReset'])).rejects.toThrow(TypeError);
+      await expect(
+        UserServiceDatabase.clearTokensAndSave(null, ['passwordReset'])
+      ).rejects.toThrow(TypeError);
     });
 
     it('should handle undefined user', async () => {
-      await expect(UserServiceDatabase.clearTokensAndSave(undefined, ['passwordReset'])).rejects.toThrow(TypeError);
+      await expect(
+        UserServiceDatabase.clearTokensAndSave(undefined, ['passwordReset'])
+      ).rejects.toThrow(TypeError);
     });
   });
 
@@ -258,12 +308,16 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
     });
 
     it('should handle null update data', async () => {
-      await expect(UserServiceDatabase.updateUserFieldsAndSave(mockUser, null)).resolves.not.toThrow();
+      await expect(
+        UserServiceDatabase.updateUserFieldsAndSave(mockUser, null)
+      ).resolves.not.toThrow();
       expect(mockUser.save).toHaveBeenCalledTimes(1);
     });
 
     it('should handle undefined update data', async () => {
-      await expect(UserServiceDatabase.updateUserFieldsAndSave(mockUser, undefined)).resolves.not.toThrow();
+      await expect(
+        UserServiceDatabase.updateUserFieldsAndSave(mockUser, undefined)
+      ).resolves.not.toThrow();
       expect(mockUser.save).toHaveBeenCalledTimes(1);
     });
 
@@ -306,7 +360,11 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
     it('should handle save failure', async () => {
       mockUser.save.mockRejectedValue(new Error('Save failed'));
 
-      await expect(UserServiceDatabase.updateUserFieldsAndSave(mockUser, { field: 'value' })).rejects.toThrow('Save failed');
+      await expect(
+        UserServiceDatabase.updateUserFieldsAndSave(mockUser, {
+          field: 'value',
+        })
+      ).rejects.toThrow('Save failed');
     });
   });
 
@@ -321,29 +379,39 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
       const userWithoutMethod = { ...mockUser };
       delete userWithoutMethod.updateLastLogin;
 
-      await expect(UserServiceDatabase.updateLastLogin(userWithoutMethod)).resolves.not.toThrow();
+      await expect(
+        UserServiceDatabase.updateLastLogin(userWithoutMethod)
+      ).resolves.not.toThrow();
     });
 
     it('should handle non-function updateLastLogin property', async () => {
       mockUser.updateLastLogin = 'not-a-function';
 
-      await expect(UserServiceDatabase.updateLastLogin(mockUser)).resolves.not.toThrow();
+      await expect(
+        UserServiceDatabase.updateLastLogin(mockUser)
+      ).resolves.not.toThrow();
     });
 
     it('should handle updateLastLogin that throws an error', async () => {
       mockUser.updateLastLogin.mockRejectedValue(new Error('Update failed'));
 
-      await expect(UserServiceDatabase.updateLastLogin(mockUser)).rejects.toThrow('Update failed');
+      await expect(
+        UserServiceDatabase.updateLastLogin(mockUser)
+      ).rejects.toThrow('Update failed');
     });
 
     it('should handle null user', async () => {
       // Should handle null gracefully by checking for updateLastLogin method
-      await expect(UserServiceDatabase.updateLastLogin(null)).resolves.toBeUndefined();
+      await expect(
+        UserServiceDatabase.updateLastLogin(null)
+      ).resolves.toBeUndefined();
     });
 
     it('should handle undefined user', async () => {
       // Should handle undefined gracefully by checking for updateLastLogin method
-      await expect(UserServiceDatabase.updateLastLogin(undefined)).resolves.toBeUndefined();
+      await expect(
+        UserServiceDatabase.updateLastLogin(undefined)
+      ).resolves.toBeUndefined();
     });
   });
 
@@ -369,7 +437,9 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
     it('should handle save failure', async () => {
       mockUser.save.mockRejectedValue(new Error('Save failed'));
 
-      await expect(UserServiceDatabase.markEmailVerified(mockUser)).rejects.toThrow('Save failed');
+      await expect(
+        UserServiceDatabase.markEmailVerified(mockUser)
+      ).rejects.toThrow('Save failed');
       expect(mockUser.isEmailVerified).toBe(true); // Should still be set
     });
   });
@@ -378,7 +448,10 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
     it('should update password hash and clear reset tokens', async () => {
       const newPassword = 'NewPassword123!';
 
-      await UserServiceDatabase.updatePasswordAndClearTokens(mockUser, newPassword);
+      await UserServiceDatabase.updatePasswordAndClearTokens(
+        mockUser,
+        newPassword
+      );
 
       expect(mockUser.passwordHash).toBe(newPassword);
       expect(mockUser.passwordResetToken).toBeUndefined();
@@ -396,7 +469,10 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
     });
 
     it('should handle null password', async () => {
-      await UserServiceDatabase.updatePasswordAndClearTokens(mockUser, null as any);
+      await UserServiceDatabase.updatePasswordAndClearTokens(
+        mockUser,
+        null as any
+      );
 
       expect(mockUser.passwordHash).toBeNull();
       expect(mockUser.passwordResetToken).toBeUndefined();
@@ -407,7 +483,9 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
     it('should handle save failure', async () => {
       mockUser.save.mockRejectedValue(new Error('Save failed'));
 
-      await expect(UserServiceDatabase.updatePasswordAndClearTokens(mockUser, 'newpass')).rejects.toThrow('Save failed');
+      await expect(
+        UserServiceDatabase.updatePasswordAndClearTokens(mockUser, 'newpass')
+      ).rejects.toThrow('Save failed');
       expect(mockUser.passwordHash).toBe('newpass'); // Should still be set
     });
   });
@@ -420,7 +498,9 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
       expect(mockUser.save).toHaveBeenCalledTimes(1);
 
       // Update fields
-      await UserServiceDatabase.updateUserFieldsAndSave(mockUser, { firstName: 'Test' });
+      await UserServiceDatabase.updateUserFieldsAndSave(mockUser, {
+        firstName: 'Test',
+      });
       expect(mockUser.firstName).toBe('Test');
       expect(mockUser.save).toHaveBeenCalledTimes(2);
 
@@ -432,12 +512,16 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
 
     it('should handle error in one operation without affecting others', async () => {
       // First operation succeeds
-      await UserServiceDatabase.updateUserFieldsAndSave(mockUser, { firstName: 'Test' });
+      await UserServiceDatabase.updateUserFieldsAndSave(mockUser, {
+        firstName: 'Test',
+      });
       expect(mockUser.firstName).toBe('Test');
 
       // Second operation fails
       mockUser.save.mockRejectedValue(new Error('Save failed'));
-      await expect(UserServiceDatabase.markEmailVerified(mockUser)).rejects.toThrow('Save failed');
+      await expect(
+        UserServiceDatabase.markEmailVerified(mockUser)
+      ).rejects.toThrow('Save failed');
 
       // User state should still be partially updated
       expect(mockUser.firstName).toBe('Test');
@@ -455,7 +539,9 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
       expect(mockUser.customToken).toBe('custom-value'); // Should remain
 
       // Clear remaining tokens
-      await UserServiceDatabase.clearTokensAndSave(mockUser, ['emailVerification']);
+      await UserServiceDatabase.clearTokensAndSave(mockUser, [
+        'emailVerification',
+      ]);
       expect(mockUser.emailVerificationToken).toBeUndefined();
       expect(mockUser.customToken).toBe('custom-value'); // Should still remain
     });

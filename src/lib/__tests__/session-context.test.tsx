@@ -1,10 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { useSession } from 'next-auth/react';
-import {
-  SessionContextProvider,
-  useSessionContext,
-} from '../session-context';
+import { SessionContextProvider, useSessionContext } from '../session-context';
 
 // Mock next-auth/react
 jest.mock('next-auth/react');
@@ -16,12 +13,18 @@ const TestComponent = () => {
 
   return (
     <div>
-      <div data-testid="loading">{context.isLoading ? 'loading' : 'not-loading'}</div>
-      <div data-testid="authenticated">{context.isAuthenticated ? 'authenticated' : 'not-authenticated'}</div>
+      <div data-testid="loading">
+        {context.isLoading ? 'loading' : 'not-loading'}
+      </div>
+      <div data-testid="authenticated">
+        {context.isAuthenticated ? 'authenticated' : 'not-authenticated'}
+      </div>
       <div data-testid="user-id">{context.userId || 'no-user'}</div>
       <div data-testid="user-email">{context.userEmail || 'no-email'}</div>
       <div data-testid="subscription-tier">{context.subscriptionTier}</div>
-      <div data-testid="has-premium">{context.hasMinimumTier('premium') ? 'has-premium' : 'no-premium'}</div>
+      <div data-testid="has-premium">
+        {context.hasMinimumTier('premium') ? 'has-premium' : 'no-premium'}
+      </div>
     </div>
   );
 };
@@ -131,7 +134,9 @@ describe('SessionContextProvider', () => {
 
     expect(() => {
       render(<TestComponent />);
-    }).toThrow('useSessionContext must be used within a SessionContextProvider');
+    }).toThrow(
+      'useSessionContext must be used within a SessionContextProvider'
+    );
 
     console.error = originalError;
   });
@@ -142,11 +147,21 @@ describe('SessionContextProvider', () => {
 
       return (
         <div>
-          <div data-testid="has-free">{context.hasMinimumTier('free') ? 'yes' : 'no'}</div>
-          <div data-testid="has-basic">{context.hasMinimumTier('basic') ? 'yes' : 'no'}</div>
-          <div data-testid="has-premium">{context.hasMinimumTier('premium') ? 'yes' : 'no'}</div>
-          <div data-testid="has-pro">{context.hasMinimumTier('pro') ? 'yes' : 'no'}</div>
-          <div data-testid="has-enterprise">{context.hasMinimumTier('enterprise') ? 'yes' : 'no'}</div>
+          <div data-testid="has-free">
+            {context.hasMinimumTier('free') ? 'yes' : 'no'}
+          </div>
+          <div data-testid="has-basic">
+            {context.hasMinimumTier('basic') ? 'yes' : 'no'}
+          </div>
+          <div data-testid="has-premium">
+            {context.hasMinimumTier('premium') ? 'yes' : 'no'}
+          </div>
+          <div data-testid="has-pro">
+            {context.hasMinimumTier('pro') ? 'yes' : 'no'}
+          </div>
+          <div data-testid="has-enterprise">
+            {context.hasMinimumTier('enterprise') ? 'yes' : 'no'}
+          </div>
         </div>
       );
     };

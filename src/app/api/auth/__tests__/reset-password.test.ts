@@ -46,7 +46,9 @@ describe('POST /api/auth/reset-password', () => {
         success: true,
         message: 'Password reset successfully',
       });
-      expect(UserService.resetPassword).toHaveBeenCalledWith(mockResetPasswordData);
+      expect(UserService.resetPassword).toHaveBeenCalledWith(
+        mockResetPasswordData
+      );
     });
   });
 
@@ -236,7 +238,9 @@ describe('POST /api/auth/reset-password', () => {
         success: false,
         message: 'Invalid or expired reset token',
       });
-      expect(UserService.resetPassword).toHaveBeenCalledWith(mockResetPasswordData);
+      expect(UserService.resetPassword).toHaveBeenCalledWith(
+        mockResetPasswordData
+      );
     });
 
     it('handles user not found error', async () => {
@@ -259,7 +263,9 @@ describe('POST /api/auth/reset-password', () => {
         success: false,
         message: 'User not found',
       });
-      expect(UserService.resetPassword).toHaveBeenCalledWith(mockResetPasswordData);
+      expect(UserService.resetPassword).toHaveBeenCalledWith(
+        mockResetPasswordData
+      );
     });
 
     it('handles password policy violation error', async () => {
@@ -282,7 +288,9 @@ describe('POST /api/auth/reset-password', () => {
         success: false,
         message: 'Password does not meet security requirements',
       });
-      expect(UserService.resetPassword).toHaveBeenCalledWith(mockResetPasswordData);
+      expect(UserService.resetPassword).toHaveBeenCalledWith(
+        mockResetPasswordData
+      );
     });
 
     it('handles database error', async () => {
@@ -305,7 +313,9 @@ describe('POST /api/auth/reset-password', () => {
         success: false,
         message: 'Database connection failed',
       });
-      expect(UserService.resetPassword).toHaveBeenCalledWith(mockResetPasswordData);
+      expect(UserService.resetPassword).toHaveBeenCalledWith(
+        mockResetPasswordData
+      );
     });
 
     it('handles service error without status code', async () => {
@@ -327,7 +337,9 @@ describe('POST /api/auth/reset-password', () => {
         success: false,
         message: 'Service error',
       });
-      expect(UserService.resetPassword).toHaveBeenCalledWith(mockResetPasswordData);
+      expect(UserService.resetPassword).toHaveBeenCalledWith(
+        mockResetPasswordData
+      );
     });
 
     it('handles service error without message', async () => {
@@ -349,7 +361,9 @@ describe('POST /api/auth/reset-password', () => {
         success: false,
         message: 'Unknown error',
       });
-      expect(UserService.resetPassword).toHaveBeenCalledWith(mockResetPasswordData);
+      expect(UserService.resetPassword).toHaveBeenCalledWith(
+        mockResetPasswordData
+      );
     });
   });
 
@@ -368,7 +382,9 @@ describe('POST /api/auth/reset-password', () => {
         success: false,
         message: 'An unexpected error occurred',
       });
-      expect(UserService.resetPassword).toHaveBeenCalledWith(mockResetPasswordData);
+      expect(UserService.resetPassword).toHaveBeenCalledWith(
+        mockResetPasswordData
+      );
     });
 
     it('handles malformed JSON request', async () => {
@@ -443,7 +459,9 @@ describe('POST /api/auth/reset-password', () => {
       expect(response.status).toBe(200);
       expect(responseData.success).toBe(true);
       // Should only pass validated data to service
-      expect(UserService.resetPassword).toHaveBeenCalledWith(mockResetPasswordData);
+      expect(UserService.resetPassword).toHaveBeenCalledWith(
+        mockResetPasswordData
+      );
     });
 
     it('handles very long token', async () => {
@@ -484,7 +502,9 @@ describe('POST /api/auth/reset-password', () => {
 
       expect(response.status).toBe(200);
       expect(responseData.success).toBe(true);
-      expect(UserService.resetPassword).toHaveBeenCalledWith(specialPasswordData);
+      expect(UserService.resetPassword).toHaveBeenCalledWith(
+        specialPasswordData
+      );
     });
   });
 });

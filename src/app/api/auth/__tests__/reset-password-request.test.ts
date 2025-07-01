@@ -44,7 +44,9 @@ describe('POST /api/auth/reset-password-request', () => {
         success: true,
         message: 'Password reset email sent successfully',
       });
-      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(mockResetRequestData);
+      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(
+        mockResetRequestData
+      );
     });
 
     it('successfully handles request for non-existent email (security)', async () => {
@@ -64,7 +66,9 @@ describe('POST /api/auth/reset-password-request', () => {
         success: true,
         message: 'Password reset email sent successfully',
       });
-      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(nonExistentEmail);
+      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(
+        nonExistentEmail
+      );
     });
   });
 
@@ -177,7 +181,9 @@ describe('POST /api/auth/reset-password-request', () => {
         success: false,
         message: 'Too many password reset requests. Please try again later.',
       });
-      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(mockResetRequestData);
+      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(
+        mockResetRequestData
+      );
     });
 
     it('handles email service failure error', async () => {
@@ -200,7 +206,9 @@ describe('POST /api/auth/reset-password-request', () => {
         success: false,
         message: 'Failed to send email',
       });
-      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(mockResetRequestData);
+      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(
+        mockResetRequestData
+      );
     });
 
     it('handles database error', async () => {
@@ -223,7 +231,9 @@ describe('POST /api/auth/reset-password-request', () => {
         success: false,
         message: 'Database connection failed',
       });
-      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(mockResetRequestData);
+      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(
+        mockResetRequestData
+      );
     });
 
     it('handles service error without status code', async () => {
@@ -245,7 +255,9 @@ describe('POST /api/auth/reset-password-request', () => {
         success: false,
         message: 'Service error',
       });
-      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(mockResetRequestData);
+      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(
+        mockResetRequestData
+      );
     });
 
     it('handles service error without message', async () => {
@@ -267,7 +279,9 @@ describe('POST /api/auth/reset-password-request', () => {
         success: false,
         message: 'Unknown error',
       });
-      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(mockResetRequestData);
+      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(
+        mockResetRequestData
+      );
     });
   });
 
@@ -286,7 +300,9 @@ describe('POST /api/auth/reset-password-request', () => {
         success: false,
         message: 'An unexpected error occurred',
       });
-      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(mockResetRequestData);
+      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(
+        mockResetRequestData
+      );
     });
 
     it('handles malformed JSON request', async () => {
@@ -361,7 +377,9 @@ describe('POST /api/auth/reset-password-request', () => {
       expect(response.status).toBe(200);
       expect(responseData.success).toBe(true);
       // Should only pass validated data to service
-      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(mockResetRequestData);
+      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(
+        mockResetRequestData
+      );
     });
 
     it('handles very long email address', async () => {
@@ -379,7 +397,9 @@ describe('POST /api/auth/reset-password-request', () => {
 
       expect(response.status).toBe(200);
       expect(responseData.success).toBe(true);
-      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(dataWithLongEmail);
+      expect(UserService.requestPasswordReset).toHaveBeenCalledWith(
+        dataWithLongEmail
+      );
     });
   });
 });
