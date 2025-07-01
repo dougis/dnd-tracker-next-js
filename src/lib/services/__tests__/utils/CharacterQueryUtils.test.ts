@@ -68,7 +68,7 @@ describe('CharacterQueryUtils', () => {
     it('should return paginated results', async () => {
       const { Character } = require('../../../models/Character');
       Character.countDocuments.mockResolvedValue(25);
-      
+
       const mockQuery = {
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
@@ -109,7 +109,7 @@ describe('CharacterQueryUtils', () => {
     it('should apply field selection', async () => {
       const { Character } = require('../../../models/Character');
       Character.countDocuments.mockResolvedValue(1);
-      
+
       const mockQuery = {
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
@@ -127,7 +127,7 @@ describe('CharacterQueryUtils', () => {
     it('should apply field exclusion', async () => {
       const { Character } = require('../../../models/Character');
       Character.countDocuments.mockResolvedValue(1);
-      
+
       const mockQuery = {
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
@@ -182,7 +182,7 @@ describe('CharacterQueryUtils', () => {
     it('should find characters by owner with pagination', async () => {
       const { Character } = require('../../../models/Character');
       Character.countDocuments.mockResolvedValue(5);
-      
+
       const mockQuery = {
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),

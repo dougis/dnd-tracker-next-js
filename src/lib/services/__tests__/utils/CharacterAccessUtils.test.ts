@@ -220,7 +220,7 @@ describe('CharacterAccessUtils', () => {
 
       const filter = CharacterAccessUtils.createUserAccessFilter(validUserId);
       expect(filter).toHaveProperty('$or');
-      
+
       // Restore original
       require('mongoose').Types.ObjectId = originalObjectId;
     });
@@ -241,7 +241,7 @@ describe('CharacterAccessUtils', () => {
 
       const filter = CharacterAccessUtils.createOwnershipFilter(validUserId);
       expect(filter).toEqual({ ownerId: validUserId });
-      
+
       // Restore original
       require('mongoose').Types.ObjectId = originalObjectId;
     });
