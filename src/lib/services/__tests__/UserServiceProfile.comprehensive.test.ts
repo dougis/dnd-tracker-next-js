@@ -130,7 +130,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
       // Setup
       const mockLookup = require('../UserServiceLookup').UserServiceLookup;
       const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
-      
+
       mockLookup.findUserOrError.mockResolvedValue({
         success: true,
         data: mockUser,
@@ -173,7 +173,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
       const mockLookup = require('../UserServiceLookup').UserServiceLookup;
       const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
       const validationError = new Error('Validation failed');
-      
+
       mockLookup.findUserOrError.mockRejectedValue(validationError);
       mockResponseHelpers.handleValidationError.mockReturnValue({
         success: false,
@@ -193,7 +193,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
       const mockLookup = require('../UserServiceLookup').UserServiceLookup;
       const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
       const customError = new Error('Database error');
-      
+
       mockLookup.findUserOrError.mockRejectedValue(customError);
       mockResponseHelpers.handleValidationError.mockImplementation(() => {
         throw new Error('Not a validation error');
@@ -222,7 +222,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
       // Setup
       const mockLookup = require('../UserServiceLookup').UserServiceLookup;
       const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
-      
+
       mockLookup.findUserByEmailOrThrow.mockResolvedValue(mockUser);
       mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
       mockResponseHelpers.createSuccessResponse.mockReturnValue({
@@ -244,7 +244,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
       const mockLookup = require('../UserServiceLookup').UserServiceLookup;
       const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
       const lookupError = new UserNotFoundError(mockEmail);
-      
+
       mockLookup.findUserByEmailOrThrow.mockRejectedValue(lookupError);
       mockResponseHelpers.handleCustomError.mockReturnValue({
         success: false,
@@ -284,7 +284,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
       const mockValidation = require('../UserServiceValidation').UserServiceValidation;
       const mockDatabase = require('../UserServiceDatabase').UserServiceDatabase;
       const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
-      
+
       MockedUser.findById.mockResolvedValue(mockUser);
       mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
       mockValidation.prepareConflictCheckParams.mockReturnValue({
@@ -336,7 +336,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
       const mockValidation = require('../UserServiceValidation').UserServiceValidation;
       const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
       const conflictError = new UserAlreadyExistsError('email', 'existing@example.com');
-      
+
       MockedUser.findById.mockResolvedValue(mockUser);
       mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
       mockValidation.prepareConflictCheckParams.mockReturnValue({
@@ -368,7 +368,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
       const mockValidation = require('../UserServiceValidation').UserServiceValidation;
       const mockDatabase = require('../UserServiceDatabase').UserServiceDatabase;
       const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
-      
+
       MockedUser.findById.mockResolvedValue(mockUser);
       mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
       mockValidation.prepareConflictCheckParams.mockReturnValue({
@@ -394,11 +394,11 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
       // Setup
       const userWithoutId = { ...mockUser };
       delete (userWithoutId as any)._id;
-      
+
       const mockValidation = require('../UserServiceValidation').UserServiceValidation;
       const mockDatabase = require('../UserServiceDatabase').UserServiceDatabase;
       const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
-      
+
       MockedUser.findById.mockResolvedValue(userWithoutId);
       mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
       mockValidation.prepareConflictCheckParams.mockReturnValue({
@@ -425,7 +425,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
       const mockValidation = require('../UserServiceValidation').UserServiceValidation;
       const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
       const databaseError = new Error('Database connection failed');
-      
+
       MockedUser.findById.mockResolvedValue(mockUser);
       mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
       mockValidation.prepareConflictCheckParams.mockReturnValue({
@@ -456,7 +456,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
       const mockValidation = require('../UserServiceValidation').UserServiceValidation;
       const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
       const validationError = new Error('Invalid data');
-      
+
       mockValidation.validateAndParseProfileUpdate.mockImplementation(() => {
         throw validationError;
       });
@@ -483,7 +483,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
       const mockDatabase = require('../UserServiceDatabase').UserServiceDatabase;
       const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
       const conflictError = new UserAlreadyExistsError('email', 'test@example.com');
-      
+
       MockedUser.findById.mockResolvedValue(mockUser);
       mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
       mockValidation.prepareConflictCheckParams.mockReturnValue({
@@ -514,7 +514,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
         const mockLookup = require('../UserServiceLookup').UserServiceLookup;
         const mockDatabase = require('../UserServiceDatabase').UserServiceDatabase;
         const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
-        
+
         mockLookup.findUserOrError.mockResolvedValue({
           success: true,
           data: mockUser,
@@ -560,7 +560,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
       const mockLookup = require('../UserServiceLookup').UserServiceLookup;
       const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
       const databaseError = new Error('Database connection failed');
-      
+
       mockLookup.findUserOrError.mockRejectedValue(databaseError);
       mockResponseHelpers.handleCustomError.mockReturnValue({
         success: false,
@@ -585,7 +585,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
       // Setup
       const mockLookup = require('../UserServiceLookup').UserServiceLookup;
       const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
-      
+
       mockLookup.findUserOrError.mockResolvedValue({
         success: true,
         data: mockUser,
@@ -628,7 +628,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
       const mockLookup = require('../UserServiceLookup').UserServiceLookup;
       const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
       const databaseError = new Error('Database connection failed');
-      
+
       mockLookup.findUserOrError.mockResolvedValue({
         success: true,
         data: mockUser,
@@ -715,7 +715,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
         const mockValidation = require('../UserServiceValidation').UserServiceValidation;
         const mockResponseHelpers = require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
         const conflictError = new UserAlreadyExistsError('email', 'test@example.com');
-        
+
         mockValidation.prepareConflictCheckParams.mockReturnValue({
           emailToCheck: 'test@example.com',
           usernameToCheck: undefined,
@@ -743,7 +743,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
         // Setup
         const mockValidation = require('../UserServiceValidation').UserServiceValidation;
         const databaseError = new Error('Database error');
-        
+
         mockValidation.prepareConflictCheckParams.mockReturnValue({
           emailToCheck: 'test@example.com',
           usernameToCheck: undefined,
@@ -764,7 +764,7 @@ describe('UserServiceProfile - Comprehensive Coverage Tests', () => {
       it('should return null when no conflicts are found', async () => {
         // Setup
         const mockValidation = require('../UserServiceValidation').UserServiceValidation;
-        
+
         mockValidation.prepareConflictCheckParams.mockReturnValue({
           emailToCheck: 'new@example.com',
           usernameToCheck: undefined,
