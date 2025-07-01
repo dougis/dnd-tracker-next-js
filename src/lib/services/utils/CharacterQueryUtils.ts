@@ -283,51 +283,97 @@ export class CharacterQueryUtils {
     options: QueryOptions = {}
   ): Promise<ServiceResult<ICharacter[]>> {
     try {
-      const queryFilter: any = {};
-
-      // Build filter conditions
-      if (filter.classes && filter.classes.length > 0) {
-        queryFilter['classes.class'] = { $in: filter.classes };
+      // Build query filter using helper methods
+      const queryFilter = this.buildAdvancedFilterQuery(filter);
+      
+      // Handle search criteria separately due to validation needs
+      const searchResult = this.handleSearchFilter(filter.search, options);
+      if (!searchResult.success) {
+        return createErrorResult(searchResult.error);
       }
+      
+      // Merge search filter and options
+      const finalFilter = { ...queryFilter, ...searchResult.data.filter };
+      const finalOptions = searchResult.data.options;
 
-      if (filter.races && filter.races.length > 0) {
-        queryFilter.race = { $in: filter.races };
-      }
-
-      if (filter.types && filter.types.length > 0) {
-        queryFilter.type = { $in: filter.types };
-      }
-
-      if (filter.levelRange) {
-        const levelConditions: any = {};
-        if (filter.levelRange.min !== undefined) {
-          levelConditions.$gte = filter.levelRange.min;
-        }
-        if (filter.levelRange.max !== undefined) {
-          levelConditions.$lte = filter.levelRange.max;
-        }
-        if (Object.keys(levelConditions).length > 0) {
-          queryFilter.level = levelConditions;
-        }
-      }
-
-      if (filter.search) {
-        const searchValidation = CharacterValidationUtils.validateSearchCriteria(filter.search);
-        if (!searchValidation.success) {
-          return createErrorResult(searchValidation.error);
-        }
-        queryFilter.$text = { $search: searchValidation.data };
-
-        // Override sort for text search
-        options = {
-          ...options,
-          sort: { score: { $meta: 'textScore' } },
-        };
-      }
-
-      return this.findWithUserAccess(queryFilter, userId, options);
+      return this.findWithUserAccess(finalFilter, userId, finalOptions);
     } catch (error) {
       return createErrorResult(CharacterServiceErrors.databaseError('advanced filter query', error));
     }
+  }
+
+  /**
+   * Build the basic query filter from provided criteria
+   */
+  private static buildAdvancedFilterQuery(filter: {
+    classes?: string[];
+    races?: string[];
+    types?: string[];
+    levelRange?: { min?: number; max?: number };
+  }): object {
+    const queryFilter: any = {};
+
+    // Add array-based filters
+    this.addArrayFilter(queryFilter, 'classes.class', filter.classes);
+    this.addArrayFilter(queryFilter, 'race', filter.races);
+    this.addArrayFilter(queryFilter, 'type', filter.types);
+
+    // Add level range filter
+    this.addLevelRangeFilter(queryFilter, filter.levelRange);
+
+    return queryFilter;
+  }
+
+  /**
+   * Add array-based filter if values exist
+   */
+  private static addArrayFilter(queryFilter: any, field: string, values?: string[]): void {
+    if (values && values.length > 0) {
+      queryFilter[field] = { $in: values };
+    }
+  }
+
+  /**
+   * Add level range filter if range is specified
+   */
+  private static addLevelRangeFilter(queryFilter: any, levelRange?: { min?: number; max?: number }): void {
+    if (!levelRange) return;
+
+    const levelConditions: any = {};
+    if (levelRange.min !== undefined) {
+      levelConditions.$gte = levelRange.min;
+    }
+    if (levelRange.max !== undefined) {
+      levelConditions.$lte = levelRange.max;
+    }
+    
+    if (Object.keys(levelConditions).length > 0) {
+      queryFilter.level = levelConditions;
+    }
+  }
+
+  /**
+   * Handle search filter and options modifications
+   */
+  private static handleSearchFilter(
+    search?: string, 
+    options: QueryOptions = {}
+  ): ServiceResult<{ filter: object; options: QueryOptions }> {
+    if (!search) {
+      return createSuccessResult({ filter: {}, options });
+    }
+
+    const searchValidation = CharacterValidationUtils.validateSearchCriteria(search);
+    if (!searchValidation.success) {
+      return createErrorResult(searchValidation.error);
+    }
+
+    const searchFilter = { $text: { $search: searchValidation.data } };
+    const searchOptions = {
+      ...options,
+      sort: { score: { $meta: 'textScore' } },
+    };
+
+    return createSuccessResult({ filter: searchFilter, options: searchOptions });
   }
 }
