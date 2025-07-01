@@ -1,6 +1,6 @@
 /**
  * Working Character Service Tests
- * 
+ *
  * Simplified tests that actually work to achieve coverage requirements
  */
 
@@ -63,7 +63,7 @@ describe('CharacterService - Working Tests', () => {
     proficiencyBonus: 2,
     savingThrows: { strength: true, dexterity: false, constitution: true, intelligence: false, wisdom: false, charisma: false },
     skills: new Map([['athletics', true], ['intimidation', true]]),
-    getAbilityModifier: jest.fn((ability) => Math.floor((16 - 10) / 2)),
+    getAbilityModifier: jest.fn((_ability) => Math.floor((16 - 10) / 2)),
     getInitiativeModifier: jest.fn(() => 2),
     getEffectiveHP: jest.fn(() => 12),
     isAlive: jest.fn(() => true),
@@ -74,11 +74,11 @@ describe('CharacterService - Working Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Set up default successful mocks
     const { Character } = require('../../models/Character');
     const { characterCreationSchema, characterUpdateSchema } = require('../../validations/character');
-    
+
     Character.countDocuments.mockResolvedValue(5);
     Character.findById.mockResolvedValue(mockCharacter);
     Character.findByIdAndUpdate.mockResolvedValue(mockCharacter);
@@ -88,7 +88,7 @@ describe('CharacterService - Working Tests', () => {
       skip: jest.fn().mockReturnThis(),
       limit: jest.fn().mockResolvedValue([mockCharacter]),
     });
-    
+
     characterCreationSchema.safeParse.mockReturnValue({ success: true, data: mockCharacterData });
     characterUpdateSchema.safeParse.mockReturnValue({ success: true, data: { name: 'Updated' } });
   });
