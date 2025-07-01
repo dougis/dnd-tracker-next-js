@@ -4,7 +4,7 @@
 
 import User from './User';
 import { Character } from './Character';
-import { Encounter } from './Encounter';
+import { Encounter } from './encounter';
 
 // Export models
 export { User, Character, Encounter };
@@ -36,7 +36,7 @@ export type {
   IEncounterSettings,
   ICombatState,
   IPosition,
-} from './Encounter';
+} from './encounter';
 
 // Export subscription limits
 export { SUBSCRIPTION_LIMITS } from './User';
