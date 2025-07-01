@@ -8,6 +8,9 @@ import {
   IEncounter,
   EncounterModel,
 } from './interfaces';
+import {
+  getStandardSchemaOptions
+} from '../shared/schema-utils';
 
 /**
  * Position schema for grid-based movement
@@ -310,24 +313,7 @@ export const encounterSchema = new Schema<IEncounter, EncounterModel>(
       min: 1,
     },
   },
-  {
-    timestamps: true,
-    toJSON: {
-      transform: (_, ret) => {
-        ret.id = ret._id;
-        delete ret._id;
-        delete ret.__v;
-        return ret;
-      },
-    },
-    toObject: {
-      transform: (_, ret) => {
-        ret.id = ret._id;
-        delete ret.__v;
-        return ret;
-      },
-    },
-  }
+  getStandardSchemaOptions()
 );
 
 // Add indexes for performance optimization

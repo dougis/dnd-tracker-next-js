@@ -3,67 +3,32 @@
  * Tests subscription limits without MongoDB integration
  */
 
-describe('User Model Constants', () => {
-  // Constants to avoid duplication (copied from original test)
-  const TIER_NAMES = ['free', 'seasoned', 'expert', 'master', 'guild'] as const;
-  const FEATURE_NAMES = ['parties', 'encounters', 'characters'] as const;
+import {
+  TIER_NAMES,
+  FEATURE_NAMES,
+  MOCK_SUBSCRIPTION_LIMITS,
+  checkLimit,
+  calculateUpgradeBenefit,
+  validationHelpers,
+} from './shared/validation-utils';
 
-  // Mock the expected subscription limits structure (without importing User.ts)
-  const MOCK_SUBSCRIPTION_LIMITS = {
-    free: { parties: 1, encounters: 3, characters: 10 },
-    seasoned: { parties: 3, encounters: 15, characters: 50 },
-    expert: { parties: 10, encounters: 50, characters: 200 },
-    master: { parties: 25, encounters: 100, characters: 500 },
-    guild: { parties: -1, encounters: -1, characters: -1 }, // -1 = unlimited
-  };
+describe('User Model Constants', () => {
 
   describe('SUBSCRIPTION_LIMITS Constant', () => {
     it('should define limits for all subscription tiers', () => {
-      TIER_NAMES.forEach(tier => {
-        expect(MOCK_SUBSCRIPTION_LIMITS).toHaveProperty(tier);
-        expect(MOCK_SUBSCRIPTION_LIMITS[tier]).toEqual(
-          expect.objectContaining({
-            parties: expect.any(Number),
-            encounters: expect.any(Number),
-            characters: expect.any(Number),
-          })
-        );
-      });
+      validationHelpers.validateTierStructure(MOCK_SUBSCRIPTION_LIMITS);
     });
 
     it('should define limits for all features', () => {
-      FEATURE_NAMES.forEach(feature => {
-        TIER_NAMES.forEach(tier => {
-          expect(MOCK_SUBSCRIPTION_LIMITS[tier]).toHaveProperty(feature);
-          expect(typeof MOCK_SUBSCRIPTION_LIMITS[tier][feature]).toBe('number');
-        });
-      });
+      validationHelpers.validateFeatureStructure(MOCK_SUBSCRIPTION_LIMITS);
     });
 
     it('should have progressive limits (free < seasoned < expert < master)', () => {
-      const progressiveTiers = [
-        'free',
-        'seasoned',
-        'expert',
-        'master',
-      ] as const;
-
-      FEATURE_NAMES.forEach(feature => {
-        for (let i = 0; i < progressiveTiers.length - 1; i++) {
-          const currentTier = progressiveTiers[i];
-          const nextTier = progressiveTiers[i + 1];
-
-          expect(MOCK_SUBSCRIPTION_LIMITS[currentTier][feature]).toBeLessThan(
-            MOCK_SUBSCRIPTION_LIMITS[nextTier][feature]
-          );
-        }
-      });
+      validationHelpers.validateProgressiveLimits(MOCK_SUBSCRIPTION_LIMITS);
     });
 
     it('should have guild tier with unlimited access', () => {
-      FEATURE_NAMES.forEach(feature => {
-        expect(MOCK_SUBSCRIPTION_LIMITS.guild[feature]).toBe(-1);
-      });
+      validationHelpers.validateUnlimitedGuild(MOCK_SUBSCRIPTION_LIMITS);
     });
 
     it('should provide appropriate limits for free tier', () => {
@@ -131,15 +96,6 @@ describe('User Model Constants', () => {
 
   describe('Limit Validation Logic', () => {
     it('should support limit checking logic', () => {
-      const checkLimit = (
-        tier: keyof typeof MOCK_SUBSCRIPTION_LIMITS,
-        feature: keyof (typeof MOCK_SUBSCRIPTION_LIMITS)[typeof tier],
-        currentCount: number
-      ): boolean => {
-        const limit = MOCK_SUBSCRIPTION_LIMITS[tier][feature];
-        return limit === -1 || currentCount < limit;
-      };
-
       // Test free tier limits
       expect(checkLimit('free', 'parties', 0)).toBe(true);
       expect(checkLimit('free', 'parties', 1)).toBe(false);
@@ -153,19 +109,6 @@ describe('User Model Constants', () => {
     });
 
     it('should support upgrade benefit calculation', () => {
-      const calculateUpgradeBenefit = (
-        fromTier: keyof typeof MOCK_SUBSCRIPTION_LIMITS,
-        toTier: keyof typeof MOCK_SUBSCRIPTION_LIMITS,
-        feature: keyof (typeof MOCK_SUBSCRIPTION_LIMITS)[typeof fromTier]
-      ) => {
-        const fromLimit = MOCK_SUBSCRIPTION_LIMITS[fromTier][feature];
-        const toLimit = MOCK_SUBSCRIPTION_LIMITS[toTier][feature];
-
-        if (toLimit === -1) return 'unlimited';
-        if (fromLimit === -1) return 0;
-        return toLimit - fromLimit;
-      };
-
       expect(calculateUpgradeBenefit('free', 'seasoned', 'parties')).toBe(2);
       expect(calculateUpgradeBenefit('free', 'seasoned', 'encounters')).toBe(
         12
@@ -239,39 +182,15 @@ describe('User Model Constants', () => {
 
   describe('Constant Structure Validation', () => {
     it('should maintain consistent object structure across all tiers', () => {
-      TIER_NAMES.forEach(tier => {
-        const tierLimits = MOCK_SUBSCRIPTION_LIMITS[tier];
-
-        expect(tierLimits).toEqual(
-          expect.objectContaining({
-            parties: expect.any(Number),
-            encounters: expect.any(Number),
-            characters: expect.any(Number),
-          })
-        );
-
-        // Should have exactly these three properties
-        expect(Object.keys(tierLimits)).toHaveLength(3);
-      });
+      validationHelpers.validateConsistentStructure(MOCK_SUBSCRIPTION_LIMITS);
     });
 
     it('should use consistent data types', () => {
-      TIER_NAMES.forEach(tier => {
-        FEATURE_NAMES.forEach(feature => {
-          const limit = MOCK_SUBSCRIPTION_LIMITS[tier][feature];
-          expect(typeof limit).toBe('number');
-          expect(Number.isInteger(limit)).toBe(true);
-        });
-      });
+      validationHelpers.validateDataTypes(MOCK_SUBSCRIPTION_LIMITS);
     });
 
     it('should not have negative limits except for unlimited (-1)', () => {
-      TIER_NAMES.forEach(tier => {
-        FEATURE_NAMES.forEach(feature => {
-          const limit = MOCK_SUBSCRIPTION_LIMITS[tier][feature];
-          expect(limit === -1 || limit > 0).toBe(true);
-        });
-      });
+      validationHelpers.validatePositiveLimits(MOCK_SUBSCRIPTION_LIMITS);
     });
   });
 });

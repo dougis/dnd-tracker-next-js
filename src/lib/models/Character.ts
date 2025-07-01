@@ -1,4 +1,10 @@
 import mongoose, { Document, Model, Schema, Types } from 'mongoose';
+import {
+  abilityScoreField,
+  savingThrowField,
+  hitPointsSchema,
+  getStandardSchemaOptions,
+} from './shared/schema-utils';
 
 // Ability name type for calculations
 type AbilityName =
@@ -186,60 +192,14 @@ const characterSchema = new Schema<ICharacter, CharacterModel>(
       },
     ],
     abilityScores: {
-      strength: {
-        type: Number,
-        required: true,
-        min: 1,
-        max: 30,
-      },
-      dexterity: {
-        type: Number,
-        required: true,
-        min: 1,
-        max: 30,
-      },
-      constitution: {
-        type: Number,
-        required: true,
-        min: 1,
-        max: 30,
-      },
-      intelligence: {
-        type: Number,
-        required: true,
-        min: 1,
-        max: 30,
-      },
-      wisdom: {
-        type: Number,
-        required: true,
-        min: 1,
-        max: 30,
-      },
-      charisma: {
-        type: Number,
-        required: true,
-        min: 1,
-        max: 30,
-      },
+      strength: abilityScoreField,
+      dexterity: abilityScoreField,
+      constitution: abilityScoreField,
+      intelligence: abilityScoreField,
+      wisdom: abilityScoreField,
+      charisma: abilityScoreField,
     },
-    hitPoints: {
-      maximum: {
-        type: Number,
-        required: true,
-        min: 1,
-      },
-      current: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-      temporary: {
-        type: Number,
-        default: 0,
-        min: 0,
-      },
-    },
+    hitPoints: hitPointsSchema,
     armorClass: {
       type: Number,
       required: true,
@@ -259,30 +219,12 @@ const characterSchema = new Schema<ICharacter, CharacterModel>(
       max: 6,
     },
     savingThrows: {
-      strength: {
-        type: Boolean,
-        default: false,
-      },
-      dexterity: {
-        type: Boolean,
-        default: false,
-      },
-      constitution: {
-        type: Boolean,
-        default: false,
-      },
-      intelligence: {
-        type: Boolean,
-        default: false,
-      },
-      wisdom: {
-        type: Boolean,
-        default: false,
-      },
-      charisma: {
-        type: Boolean,
-        default: false,
-      },
+      strength: savingThrowField,
+      dexterity: savingThrowField,
+      constitution: savingThrowField,
+      intelligence: savingThrowField,
+      wisdom: savingThrowField,
+      charisma: savingThrowField,
     },
     skills: {
       type: Map,
@@ -400,16 +342,7 @@ const characterSchema = new Schema<ICharacter, CharacterModel>(
       index: true,
     },
   },
-  {
-    timestamps: true,
-    toJSON: {
-      transform: function (doc, ret) {
-        ret.id = ret._id;
-        delete ret.__v;
-        return ret;
-      },
-    },
-  }
+  getStandardSchemaOptions()
 );
 
 // Virtual for total character level
