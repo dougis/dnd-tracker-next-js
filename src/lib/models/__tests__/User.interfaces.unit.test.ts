@@ -6,7 +6,7 @@
 describe('User Model Types and Interfaces', () => {
   // Constants to avoid duplication (copied from original test to maintain coverage)
   const VALID_FEATURES = ['parties', 'encounters', 'characters'] as const;
-  
+
   // Mock the expected interfaces structure (without importing User.ts)
   type MockCreateUserInput = {
     email: string;
@@ -134,7 +134,7 @@ describe('User Model Types and Interfaces', () => {
 
     it('should support all subscription tiers', () => {
       const subscriptionTiers = ['free', 'seasoned', 'expert', 'master', 'guild'];
-      
+
       subscriptionTiers.forEach(tier => {
         const user: MockPublicUser = {
           _id: '507f1f77bcf86cd799439011',
@@ -154,7 +154,7 @@ describe('User Model Types and Interfaces', () => {
 
     it('should support all user roles', () => {
       const roles = ['user', 'admin'];
-      
+
       roles.forEach(role => {
         const user: MockPublicUser = {
           _id: '507f1f77bcf86cd799439011',
@@ -176,7 +176,7 @@ describe('User Model Types and Interfaces', () => {
   describe('SubscriptionFeature Type', () => {
     it('should include all valid subscription features', () => {
       const features: MockSubscriptionFeature[] = ['parties', 'encounters', 'characters'];
-      
+
       expect(features).toHaveLength(3);
       expect(features).toContain('parties');
       expect(features).toContain('encounters');
@@ -220,7 +220,7 @@ describe('User Model Types and Interfaces', () => {
           firstName: 'Test',
           lastName: 'User',
         };
-        
+
         expect(userInput.email).toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
       });
     });
@@ -247,7 +247,7 @@ describe('User Model Types and Interfaces', () => {
 
     it('should validate subscription feature consistency', () => {
       const featureList: MockSubscriptionFeature[] = ['parties', 'encounters', 'characters'];
-      
+
       // Each feature should be a string
       featureList.forEach(feature => {
         expect(typeof feature).toBe('string');
@@ -296,16 +296,16 @@ describe('User Model Types and Interfaces', () => {
       // Identity fields
       expect(completePublicUser._id).toBeDefined();
       expect(completePublicUser.email).toBeDefined();
-      
+
       // Personal information
       expect(completePublicUser.firstName).toBeDefined();
       expect(completePublicUser.lastName).toBeDefined();
-      
+
       // Account status
       expect(completePublicUser.role).toBeDefined();
       expect(completePublicUser.subscriptionTier).toBeDefined();
       expect(typeof completePublicUser.isEmailVerified).toBe('boolean');
-      
+
       // Timestamps
       expect(completePublicUser.createdAt).toBeInstanceOf(Date);
       expect(completePublicUser.updatedAt).toBeInstanceOf(Date);

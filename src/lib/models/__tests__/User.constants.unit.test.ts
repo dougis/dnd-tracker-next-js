@@ -42,12 +42,12 @@ describe('User Model Constants', () => {
 
     it('should have progressive limits (free < seasoned < expert < master)', () => {
       const progressiveTiers = ['free', 'seasoned', 'expert', 'master'] as const;
-      
+
       FEATURE_NAMES.forEach(feature => {
         for (let i = 0; i < progressiveTiers.length - 1; i++) {
           const currentTier = progressiveTiers[i];
           const nextTier = progressiveTiers[i + 1];
-          
+
           expect(MOCK_SUBSCRIPTION_LIMITS[currentTier][feature]).toBeLessThan(
             MOCK_SUBSCRIPTION_LIMITS[nextTier][feature]
           );
@@ -63,7 +63,7 @@ describe('User Model Constants', () => {
 
     it('should provide appropriate limits for free tier', () => {
       const freeLimits = MOCK_SUBSCRIPTION_LIMITS.free;
-      
+
       expect(freeLimits.parties).toBe(1);
       expect(freeLimits.encounters).toBe(3);
       expect(freeLimits.characters).toBe(10);
@@ -71,7 +71,7 @@ describe('User Model Constants', () => {
 
     it('should provide reasonable limits for seasoned tier', () => {
       const seasonedLimits = MOCK_SUBSCRIPTION_LIMITS.seasoned;
-      
+
       expect(seasonedLimits.parties).toBe(3);
       expect(seasonedLimits.encounters).toBe(15);
       expect(seasonedLimits.characters).toBe(50);
@@ -79,7 +79,7 @@ describe('User Model Constants', () => {
 
     it('should provide substantial limits for expert tier', () => {
       const expertLimits = MOCK_SUBSCRIPTION_LIMITS.expert;
-      
+
       expect(expertLimits.parties).toBe(10);
       expect(expertLimits.encounters).toBe(50);
       expect(expertLimits.characters).toBe(200);
@@ -87,7 +87,7 @@ describe('User Model Constants', () => {
 
     it('should provide high limits for master tier', () => {
       const masterLimits = MOCK_SUBSCRIPTION_LIMITS.master;
-      
+
       expect(masterLimits.parties).toBe(25);
       expect(masterLimits.encounters).toBe(100);
       expect(masterLimits.characters).toBe(500);
@@ -155,7 +155,7 @@ describe('User Model Constants', () => {
       ) => {
         const fromLimit = MOCK_SUBSCRIPTION_LIMITS[fromTier][feature];
         const toLimit = MOCK_SUBSCRIPTION_LIMITS[toTier][feature];
-        
+
         if (toLimit === -1) return 'unlimited';
         if (fromLimit === -1) return 0;
         return toLimit - fromLimit;
@@ -184,7 +184,7 @@ describe('User Model Constants', () => {
 
     it('should have reasonable starting limits for free users', () => {
       const { parties, encounters, characters } = MOCK_SUBSCRIPTION_LIMITS.free;
-      
+
       // Free tier should allow users to try the service meaningfully
       expect(parties).toBeGreaterThanOrEqual(1);
       expect(encounters).toBeGreaterThanOrEqual(3);
@@ -193,10 +193,10 @@ describe('User Model Constants', () => {
 
     it('should have substantial limits for paid tiers', () => {
       const paidTiers = ['seasoned', 'expert', 'master'] as const;
-      
+
       paidTiers.forEach(tier => {
         const limits = MOCK_SUBSCRIPTION_LIMITS[tier];
-        
+
         // Paid tiers should offer significantly more than free
         expect(limits.parties).toBeGreaterThan(MOCK_SUBSCRIPTION_LIMITS.free.parties);
         expect(limits.encounters).toBeGreaterThan(MOCK_SUBSCRIPTION_LIMITS.free.encounters);
@@ -224,7 +224,7 @@ describe('User Model Constants', () => {
     it('should maintain consistent object structure across all tiers', () => {
       TIER_NAMES.forEach(tier => {
         const tierLimits = MOCK_SUBSCRIPTION_LIMITS[tier];
-        
+
         expect(tierLimits).toEqual(
           expect.objectContaining({
             parties: expect.any(Number),
