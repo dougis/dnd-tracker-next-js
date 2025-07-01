@@ -10,7 +10,10 @@ import {
   createEncounter,
 } from '../statics';
 import { CreateEncounterInput } from '../interfaces';
-import { createTestParticipant, createMockConstructorSetup } from './test-helpers';
+import {
+  createTestParticipant,
+  createMockConstructorSetup,
+} from './test-helpers';
 
 // Mock model context
 const mockModel = {
@@ -18,7 +21,6 @@ const mockModel = {
   sort: jest.fn().mockReturnThis(),
   save: jest.fn(),
 };
-
 
 describe('Encounter Static Methods', () => {
   beforeEach(() => {
@@ -41,7 +43,7 @@ describe('Encounter Static Methods', () => {
       await findByOwnerId.call(mockModel, ownerId, true);
 
       expect(mockModel.find).toHaveBeenCalledWith({
-        $or: [{ ownerId }, { sharedWith: ownerId }]
+        $or: [{ ownerId }, { sharedWith: ownerId }],
       });
       expect(mockModel.sort).toHaveBeenCalledWith({ updatedAt: -1 });
     });
@@ -70,9 +72,11 @@ describe('Encounter Static Methods', () => {
       await searchByName.call(mockModel, 'dragon');
 
       expect(mockModel.find).toHaveBeenCalledWith({
-        $text: { $search: 'dragon' }
+        $text: { $search: 'dragon' },
       });
-      expect(mockModel.sort).toHaveBeenCalledWith({ score: { $meta: 'textScore' } });
+      expect(mockModel.sort).toHaveBeenCalledWith({
+        score: { $meta: 'textScore' },
+      });
     });
   });
 
@@ -98,8 +102,12 @@ describe('Encounter Static Methods', () => {
     it('should find active encounters', async () => {
       await findActive.call(mockModel);
 
-      expect(mockModel.find).toHaveBeenCalledWith({ 'combatState.isActive': true });
-      expect(mockModel.sort).toHaveBeenCalledWith({ 'combatState.startedAt': -1 });
+      expect(mockModel.find).toHaveBeenCalledWith({
+        'combatState.isActive': true,
+      });
+      expect(mockModel.sort).toHaveBeenCalledWith({
+        'combatState.startedAt': -1,
+      });
     });
   });
 
@@ -112,7 +120,8 @@ describe('Encounter Static Methods', () => {
         participants: [createTestParticipant()],
       };
 
-      const { mockInstance: mockEncounter, MockConstructor } = createMockConstructorSetup();
+      const { mockInstance: mockEncounter, MockConstructor } =
+        createMockConstructorSetup();
 
       await createEncounter.call(MockConstructor, encounterData);
 
@@ -144,7 +153,8 @@ describe('Encounter Static Methods', () => {
         isPublic: true,
       };
 
-      const { mockInstance: mockEncounter, MockConstructor } = createMockConstructorSetup();
+      const { mockInstance: mockEncounter, MockConstructor } =
+        createMockConstructorSetup();
 
       await createEncounter.call(MockConstructor, encounterData);
 

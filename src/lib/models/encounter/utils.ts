@@ -10,7 +10,9 @@ import { IInitiativeEntry, IParticipantReference } from './interfaces';
 /**
  * Sorts initiative order by initiative value, then by dexterity
  */
-export function sortInitiativeOrder(entries: IInitiativeEntry[]): IInitiativeEntry[] {
+export function sortInitiativeOrder(
+  entries: IInitiativeEntry[]
+): IInitiativeEntry[] {
   return entries.sort((a: IInitiativeEntry, b: IInitiativeEntry) => {
     if (a.initiative !== b.initiative) {
       return b.initiative - a.initiative;
@@ -50,9 +52,11 @@ export function findParticipantById(
   participants: IParticipantReference[],
   participantId: string
 ): IParticipantReference | null {
-  return participants.find((p: IParticipantReference) =>
-    p.characterId.toString() === participantId
-  ) || null;
+  return (
+    participants.find(
+      (p: IParticipantReference) => p.characterId.toString() === participantId
+    ) || null
+  );
 }
 
 /**
@@ -62,9 +66,12 @@ export function findInitiativeEntryById(
   initiativeOrder: IInitiativeEntry[],
   participantId: string
 ): IInitiativeEntry | null {
-  return initiativeOrder.find((entry: IInitiativeEntry) =>
-    entry.participantId.toString() === participantId
-  ) || null;
+  return (
+    initiativeOrder.find(
+      (entry: IInitiativeEntry) =>
+        entry.participantId.toString() === participantId
+    ) || null
+  );
 }
 
 /**
@@ -85,7 +92,10 @@ export function applyDamageToParticipant(
 
   // Apply remaining damage to current HP
   if (damage > 0) {
-    participant.currentHitPoints = Math.max(0, participant.currentHitPoints - damage);
+    participant.currentHitPoints = Math.max(
+      0,
+      participant.currentHitPoints - damage
+    );
   }
 
   return true;
@@ -147,7 +157,7 @@ export function calculateCombatDuration(
 ): number {
   const endTimestamp = endTime.getTime();
   const startTimestamp = startTime.getTime();
-  const pauseDuration = pauseTime ? (pauseTime.getTime() - startTimestamp) : 0;
+  const pauseDuration = pauseTime ? pauseTime.getTime() - startTimestamp : 0;
 
   return Math.max(0, endTimestamp - startTimestamp - pauseDuration);
 }
@@ -182,7 +192,9 @@ export function createDefaultCombatState() {
 /**
  * Validates participant HP bounds
  */
-export function validateParticipantHP(participant: IParticipantReference): void {
+export function validateParticipantHP(
+  participant: IParticipantReference
+): void {
   if (participant.currentHitPoints > participant.maxHitPoints) {
     participant.currentHitPoints = participant.maxHitPoints;
   }

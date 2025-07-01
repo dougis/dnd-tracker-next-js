@@ -103,15 +103,26 @@ export interface IEncounter extends Document {
   readonly currentParticipant: IParticipantReference | null;
 
   // Instance methods
-  addParticipant(_participant: Omit<IParticipantReference, 'characterId'> & { characterId: string }): void;
+  addParticipant(
+    _participant: Omit<IParticipantReference, 'characterId'> & {
+      characterId: string;
+    }
+  ): void;
   removeParticipant(_participantId: string): boolean;
-  updateParticipant(_participantId: string, _updates: Partial<IParticipantReference>): boolean;
+  updateParticipant(
+    _participantId: string,
+    _updates: Partial<IParticipantReference>
+  ): boolean;
   getParticipant(_participantId: string): IParticipantReference | null;
   startCombat(_autoRollInitiative?: boolean): void;
   endCombat(): void;
   nextTurn(): boolean;
   previousTurn(): boolean;
-  setInitiative(_participantId: string, _initiative: number, _dexterity: number): boolean;
+  setInitiative(
+    _participantId: string,
+    _initiative: number,
+    _dexterity: number
+  ): boolean;
   applyDamage(_participantId: string, _damage: number): boolean;
   applyHealing(_participantId: string, _healing: number): boolean;
   addCondition(_participantId: string, _condition: string): boolean;
@@ -126,11 +137,18 @@ export interface IEncounter extends Document {
  * Encounter model interface with static methods
  */
 export interface EncounterModel extends Model<IEncounter> {
-  findByOwnerId(_ownerId: Types.ObjectId, _includeShared?: boolean): Promise<IEncounter[]>;
-  findByStatus(_status: z.infer<typeof encounterStatusSchema>): Promise<IEncounter[]>;
+  findByOwnerId(
+    _ownerId: Types.ObjectId,
+    _includeShared?: boolean
+  ): Promise<IEncounter[]>;
+  findByStatus(
+    _status: z.infer<typeof encounterStatusSchema>
+  ): Promise<IEncounter[]>;
   findPublic(): Promise<IEncounter[]>;
   searchByName(_searchTerm: string): Promise<IEncounter[]>;
-  findByDifficulty(_difficulty: z.infer<typeof encounterDifficultySchema>): Promise<IEncounter[]>;
+  findByDifficulty(
+    _difficulty: z.infer<typeof encounterDifficultySchema>
+  ): Promise<IEncounter[]>;
   findByTargetLevel(_level: number): Promise<IEncounter[]>;
   findActive(): Promise<IEncounter[]>;
   createEncounter(_encounterData: CreateEncounterInput): Promise<IEncounter>;

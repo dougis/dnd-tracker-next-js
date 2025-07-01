@@ -51,7 +51,11 @@ describe('API Middleware', () => {
     });
 
     it('should return null when token is valid', async () => {
-      const mockToken = { email: 'test@example.com', sub: '123', subscriptionTier: 'free' };
+      const mockToken = {
+        email: 'test@example.com',
+        sub: '123',
+        subscriptionTier: 'free',
+      };
       mockGetToken.mockResolvedValue(mockToken);
 
       const result = await requireAuthentication(mockRequest as NextRequest);
@@ -79,7 +83,11 @@ describe('API Middleware', () => {
     });
 
     it('should call handler when authentication passes', async () => {
-      const mockToken = { email: 'test@example.com', sub: '123', subscriptionTier: 'free' };
+      const mockToken = {
+        email: 'test@example.com',
+        sub: '123',
+        subscriptionTier: 'free',
+      };
       mockGetToken.mockResolvedValue(mockToken);
       mockHandler.mockResolvedValue(NextResponse.json({ success: true }));
 
@@ -104,7 +112,11 @@ describe('API Middleware', () => {
     });
 
     it('should handle handler errors gracefully', async () => {
-      const mockToken = { email: 'test@example.com', sub: '123', subscriptionTier: 'free' };
+      const mockToken = {
+        email: 'test@example.com',
+        sub: '123',
+        subscriptionTier: 'free',
+      };
       mockGetToken.mockResolvedValue(mockToken);
       mockHandler.mockRejectedValue(new Error('Handler error'));
 

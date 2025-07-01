@@ -3,7 +3,7 @@
  * Provides reusable mock data, test utilities, and assertion helpers
  */
 
-import { ServiceResult } from '../UserServiceErrors';
+// ServiceResult is used in re-exported functions from shared utilities
 import type {
   UserRegistration,
   UserLogin,
@@ -14,209 +14,155 @@ import type {
   EmailVerification,
   PublicUser,
 } from '../../validations/user';
-import type { QueryFilters, UserStats, PaginatedResult } from '../UserServiceStats';
+import type {
+  QueryFilters,
+  UserStats,
+  PaginatedResult,
+} from '../UserServiceStats';
+import {
+  createFactory,
+  errorFactories,
+  testUtils,
+  assertionHelpers,
+  testConstants,
+  mockDataTemplates,
+} from './shared/test-factory-utils';
 
 // ================================
 // Mock Data Factories
 // ================================
 
-export const createMockPublicUser = (overrides: Partial<PublicUser> = {}): PublicUser => ({
-  _id: '507f1f77bcf86cd799439011',
-  email: 'test@example.com',
-  username: 'testuser',
+// Using the shared factory utility to eliminate duplication
+export const createMockPublicUser = createFactory<PublicUser>({
+  id: testConstants.TEST_USER_ID,
+  ...mockDataTemplates.userBase,
+  role: 'user',
   subscriptionTier: 'free',
+  preferences: mockDataTemplates.userPreferences,
   isEmailVerified: true,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  ...overrides,
+  ...mockDataTemplates.timestamps,
 });
 
-export const createMockUserRegistration = (overrides: Partial<UserRegistration> = {}): UserRegistration => ({
-  email: 'test@example.com',
-  username: 'testuser',
-  password: 'Password123!',
-  confirmPassword: 'Password123!',
-  ...overrides,
+export const createMockUserRegistration = createFactory<UserRegistration>({
+  ...mockDataTemplates.userBase,
+  ...mockDataTemplates.passwordFields,
+  agreeToTerms: true,
+  subscribeToNewsletter: false,
 });
 
-export const createMockUserLogin = (overrides: Partial<UserLogin> = {}): UserLogin => ({
-  email: 'test@example.com',
-  password: 'Password123!',
-  ...overrides,
+export const createMockUserLogin = createFactory<UserLogin>({
+  email: mockDataTemplates.userBase.email,
+  password: mockDataTemplates.passwordFields.password,
+  rememberMe: false,
 });
 
-export const createMockUserProfileUpdate = (overrides: Partial<UserProfileUpdate> = {}): UserProfileUpdate => ({
+export const createMockUserProfileUpdate = createFactory<UserProfileUpdate>({
   username: 'newusername',
   firstName: 'John',
   lastName: 'Doe',
-  ...overrides,
 });
 
-export const createMockChangePassword = (overrides: Partial<ChangePassword> = {}): ChangePassword => ({
+export const createMockChangePassword = createFactory<ChangePassword>({
   currentPassword: 'OldPassword123!',
   newPassword: 'NewPassword123!',
-  confirmPassword: 'NewPassword123!',
-  ...overrides,
+  confirmNewPassword: 'NewPassword123!',
 });
 
-export const createMockPasswordResetRequest = (overrides: Partial<PasswordResetRequest> = {}): PasswordResetRequest => ({
-  email: 'test@example.com',
-  ...overrides,
+export const createMockPasswordResetRequest = createFactory<PasswordResetRequest>({
+  email: testConstants.TEST_EMAIL,
 });
 
-export const createMockPasswordReset = (overrides: Partial<PasswordReset> = {}): PasswordReset => ({
+export const createMockPasswordReset = createFactory<PasswordReset>({
   token: 'reset-token-123',
-  newPassword: 'NewPassword123!',
+  password: 'NewPassword123!',
   confirmPassword: 'NewPassword123!',
-  ...overrides,
 });
 
-export const createMockEmailVerification = (overrides: Partial<EmailVerification> = {}): EmailVerification => ({
+export const createMockEmailVerification = createFactory<EmailVerification>({
   token: 'verification-token-123',
-  ...overrides,
 });
 
-export const createMockQueryFilters = (overrides: Partial<QueryFilters> = {}): QueryFilters => ({
-  subscriptionTier: 'pro',
+export const createMockQueryFilters = createFactory<QueryFilters>({
+  subscriptionTier: 'expert',
   isEmailVerified: true,
-  ...overrides,
 });
 
-export const createMockUserStats = (overrides: Partial<UserStats> = {}): UserStats => ({
+export const createMockUserStats = createFactory<UserStats>({
   totalUsers: 100,
   verifiedUsers: 80,
+  activeUsers: 60,
   subscriptionBreakdown: {
     free: 70,
-    pro: 20,
-    premium: 10,
+    seasoned: 15,
+    expert: 10,
+    master: 4,
+    guild: 1,
   },
-  newUsersThisMonth: 15,
-  activeUsersThisMonth: 60,
-  ...overrides,
 });
 
 export const createMockPaginatedResult = <T>(
   items: T[],
   overrides: Partial<PaginatedResult<T>> = {}
 ): PaginatedResult<T> => ({
-  users: items,
+  data: items,
   pagination: {
-    currentPage: 1,
-    totalPages: 1,
-    pageSize: 20,
+    page: 1,
+    limit: 20,
     total: items.length,
+    totalPages: 1,
   },
   ...overrides,
 });
 
 // ================================
-// ServiceResult Factories
+// ServiceResult Factories (using shared utilities)
 // ================================
 
-export const createSuccessResult = <T>(data: T): ServiceResult<T> => ({
-  success: true,
-  data,
-});
+// Re-export from shared utilities to maintain backward compatibility
+export {
+  createSuccessResult,
+  createErrorResult
+} from './shared/test-factory-utils';
 
-export const createErrorResult = <T>(
-  type: string,
-  message: string,
-  field?: string
-): ServiceResult<T> => ({
-  success: false,
-  error: {
-    type,
-    message,
-    ...(field && { field }),
-  },
-});
-
-// Common error results
-export const createUserNotFoundError = <T>(): ServiceResult<T> =>
-  createErrorResult('USER_NOT_FOUND', 'User not found', 'userId');
-
-export const createUserAlreadyExistsError = <T>(field: string = 'email'): ServiceResult<T> =>
-  createErrorResult('USER_ALREADY_EXISTS', `User with this ${field} already exists`, field);
-
-export const createInvalidCredentialsError = <T>(): ServiceResult<T> =>
-  createErrorResult('INVALID_CREDENTIALS', 'Invalid email or password', 'password');
-
-export const createInvalidTokenError = <T>(): ServiceResult<T> =>
-  createErrorResult('INVALID_TOKEN', 'Invalid or expired token', 'token');
-
-export const createDatabaseError = <T>(): ServiceResult<T> =>
-  createErrorResult('DATABASE_ERROR', 'Database connection failed');
-
-export const createValidationError = <T>(): ServiceResult<T> =>
-  createErrorResult('VALIDATION_ERROR', 'Invalid input');
+// Use shared error factories
+export const createUserNotFoundError = errorFactories.userNotFound;
+export const createUserAlreadyExistsError = errorFactories.userAlreadyExists;
+export const createInvalidCredentialsError = errorFactories.invalidCredentials;
+export const createInvalidTokenError = errorFactories.invalidToken;
+export const createDatabaseError = errorFactories.databaseError;
+export const createValidationError = errorFactories.validationError;
 
 // ================================
-// Test Utilities
+// Test Utilities (using shared utilities)
 // ================================
 
-export const setupMockClearance = () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-};
-
-export const createMockImplementation = <T>(result: T, delay: number = 0) => {
-  if (delay > 0) {
-    return () => new Promise<T>((resolve) => setTimeout(() => resolve(result), delay));
-  }
-  return () => Promise.resolve(result);
-};
-
-export const createMockRejection = (error: Error) => {
-  return () => Promise.reject(error);
-};
+// Re-export from shared utilities to maintain backward compatibility
+export const setupMockClearance = testUtils.setupMockClearance;
+export const createMockImplementation = testUtils.createMockImplementation;
+export const createMockRejection = testUtils.createMockRejection;
 
 // ================================
-// Assertion Helpers
+// Assertion Helpers (using shared utilities)
 // ================================
 
-export const expectDelegationCall = (
-  mockFn: jest.MockedFunction<any>,
-  expectedArgs: any[],
-  expectedResult: any,
-  actualResult: any
-) => {
-  expect(mockFn).toHaveBeenCalledWith(...expectedArgs);
-  expect(actualResult).toEqual(expectedResult);
-};
-
-export const expectSingleCall = (mockFn: jest.MockedFunction<any>, ...expectedArgs: any[]) => {
-  expect(mockFn).toHaveBeenCalledTimes(1);
-  expect(mockFn).toHaveBeenCalledWith(...expectedArgs);
-};
-
-export const expectMultipleCalls = (mockFn: jest.MockedFunction<any>, expectedCallCount: number) => {
-  expect(mockFn).toHaveBeenCalledTimes(expectedCallCount);
-};
-
-export const expectErrorThrown = async (promise: Promise<any>, expectedError: string) => {
-  await expect(promise).rejects.toThrow(expectedError);
-};
-
-export const expectSuccessResult = <T>(result: ServiceResult<T>, expectedData: T) => {
-  expect(result.success).toBe(true);
-  expect(result.data).toEqual(expectedData);
-};
-
-export const expectErrorResult = <T>(result: ServiceResult<T>, expectedErrorType: string) => {
-  expect(result.success).toBe(false);
-  expect(result.error?.type).toBe(expectedErrorType);
-};
+// Re-export from shared utilities to maintain backward compatibility
+export const expectDelegationCall = assertionHelpers.expectDelegationCall;
+export const expectSingleCall = assertionHelpers.expectSingleCall;
+export const expectMultipleCalls = assertionHelpers.expectMultipleCalls;
+export const expectErrorThrown = assertionHelpers.expectErrorThrown;
+export const expectSuccessResult = assertionHelpers.expectSuccessResult;
+export const expectErrorResult = assertionHelpers.expectErrorResult;
 
 // ================================
-// Common Test Data
+// Common Test Data (using shared constants)
 // ================================
 
-export const TEST_USER_ID = '507f1f77bcf86cd799439011';
-export const TEST_USER_ID_2 = '507f1f77bcf86cd799439012';
-export const TEST_EMAIL = 'test@example.com';
-export const TEST_USERNAME = 'testuser';
-export const TEST_PASSWORD = 'Password123!';
+// Re-export from shared constants to maintain backward compatibility
+export const TEST_USER_ID = testConstants.TEST_USER_ID;
+export const TEST_USER_ID_2 = testConstants.TEST_USER_ID_2;
+export const TEST_EMAIL = testConstants.TEST_EMAIL;
+export const TEST_USERNAME = testConstants.TEST_USERNAME;
+export const TEST_PASSWORD = testConstants.TEST_PASSWORD;
 
 // ================================
 // Integration Test Helpers

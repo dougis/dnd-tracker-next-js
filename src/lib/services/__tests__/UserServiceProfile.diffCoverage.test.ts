@@ -1,6 +1,6 @@
 import '../__test-helpers__/test-setup';
 import { UserServiceProfile } from '../UserServiceProfile';
-import { UserUpdate, UserSubscriptionData } from '@/types/user';
+import { UserProfileUpdate, SubscriptionTier } from '@/lib/validations/user';
 import { exerciseMethodForCoverage } from './diffCoverageTestUtils';
 
 /**
@@ -12,32 +12,39 @@ describe('UserServiceProfile Diff Coverage', () => {
 
   it('should exercise getUserById method to cover formatted lines', async () => {
     // This targets lines that were formatted
-    await exerciseMethodForCoverage(() => UserServiceProfile.getUserById(mockUserId));
+    await exerciseMethodForCoverage(() =>
+      UserServiceProfile.getUserById(mockUserId)
+    );
   });
 
-  it('should exercise updateUser method to cover formatted lines', async () => {
-    const updateData: UserUpdate = {
+  it('should exercise updateUserProfile method to cover formatted lines', async () => {
+    const updateData: UserProfileUpdate = {
       firstName: 'Updated',
       lastName: 'Name',
     };
 
-    await exerciseMethodForCoverage(() => UserServiceProfile.updateUser(mockUserId, updateData));
+    await exerciseMethodForCoverage(() =>
+      UserServiceProfile.updateUserProfile(mockUserId, updateData)
+    );
   });
 
   it('should exercise updateSubscription method to cover formatted lines', async () => {
-    const subscriptionData: UserSubscriptionData = {
-      tier: 'pro',
-      status: 'active',
-    };
+    const newTier: SubscriptionTier = 'expert';
 
-    await exerciseMethodForCoverage(() => UserServiceProfile.updateSubscription(mockUserId, subscriptionData));
+    await exerciseMethodForCoverage(() =>
+      UserServiceProfile.updateSubscription(mockUserId, newTier)
+    );
   });
 
   it('should exercise deleteUser method to cover formatted lines', async () => {
-    await exerciseMethodForCoverage(() => UserServiceProfile.deleteUser(mockUserId));
+    await exerciseMethodForCoverage(() =>
+      UserServiceProfile.deleteUser(mockUserId)
+    );
   });
 
-  it('should exercise getUserStats method to cover formatted lines', async () => {
-    await exerciseMethodForCoverage(() => UserServiceProfile.getUserStats(mockUserId));
+  it('should exercise getUserByEmail method to cover formatted lines', async () => {
+    await exerciseMethodForCoverage(() =>
+      UserServiceProfile.getUserByEmail('test@example.com')
+    );
   });
 });

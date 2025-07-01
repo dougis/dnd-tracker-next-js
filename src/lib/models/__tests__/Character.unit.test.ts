@@ -5,7 +5,7 @@
 
 // Mock mongoose completely for unit testing
 jest.mock('mongoose', () => {
-  const mockObjectId = jest.fn().mockImplementation((id) => ({
+  const mockObjectId = jest.fn().mockImplementation(id => ({
     _id: id || '64d9c3e8f1b2c3d4e5f6g7h8',
     toString: () => id || '64d9c3e8f1b2c3d4e5f6g7h8',
     toHexString: () => id || '64d9c3e8f1b2c3d4e5f6g7h8',
@@ -44,8 +44,8 @@ describe('Character Model Unit Tests', () => {
       {
         class: 'fighter',
         level: 1,
-        hitDie: 10
-      }
+        hitDie: 10,
+      },
     ],
     abilityScores: {
       strength: 10,
@@ -53,12 +53,12 @@ describe('Character Model Unit Tests', () => {
       constitution: 10,
       intelligence: 10,
       wisdom: 10,
-      charisma: 10
+      charisma: 10,
     },
     hitPoints: {
       maximum: 10,
       current: 10,
-      temporary: 0
+      temporary: 0,
     },
     armorClass: 10,
     speed: 30,
@@ -69,7 +69,7 @@ describe('Character Model Unit Tests', () => {
       constitution: false,
       intelligence: false,
       wisdom: false,
-      charisma: false
+      charisma: false,
     },
     skills: new Map(),
     equipment: [],
@@ -77,44 +77,45 @@ describe('Character Model Unit Tests', () => {
     backstory: '',
     notes: '',
     isPublic: false,
-    ...overrides
+    ...overrides,
   });
 
-  const createWizardData = (overrides: Partial<any> = {}) => createBaseCharacterData({
-    name: 'Gandalf',
-    classes: [
-      {
-        class: 'wizard',
-        level: 5,
-        subclass: 'evocation',
-        hitDie: 6
-      }
-    ],
-    abilityScores: {
-      strength: 10,
-      dexterity: 14,
-      constitution: 12,
-      intelligence: 18,
-      wisdom: 16,
-      charisma: 13
-    },
-    hitPoints: {
-      maximum: 28,
-      current: 28,
-      temporary: 0
-    },
-    armorClass: 12,
-    proficiencyBonus: 3,
-    savingThrows: {
-      strength: false,
-      dexterity: false,
-      constitution: false,
-      intelligence: true,
-      wisdom: true,
-      charisma: false
-    },
-    ...overrides
-  });
+  const createWizardData = (overrides: Partial<any> = {}) =>
+    createBaseCharacterData({
+      name: 'Gandalf',
+      classes: [
+        {
+          class: 'wizard',
+          level: 5,
+          subclass: 'evocation',
+          hitDie: 6,
+        },
+      ],
+      abilityScores: {
+        strength: 10,
+        dexterity: 14,
+        constitution: 12,
+        intelligence: 18,
+        wisdom: 16,
+        charisma: 13,
+      },
+      hitPoints: {
+        maximum: 28,
+        current: 28,
+        temporary: 0,
+      },
+      armorClass: 12,
+      proficiencyBonus: 3,
+      savingThrows: {
+        strength: false,
+        dexterity: false,
+        constitution: false,
+        intelligence: true,
+        wisdom: true,
+        charisma: false,
+      },
+      ...overrides,
+    });
 
   // Mock Character business logic functions
   const getAbilityModifier = (score: number): number => {
@@ -174,8 +175,8 @@ describe('Character Model Unit Tests', () => {
           constitution: 13,
           intelligence: 12,
           wisdom: 11,
-          charisma: 10
-        }
+          charisma: 10,
+        },
       });
 
       expect(customCharacter.name).toBe('Custom Character');
@@ -188,12 +189,12 @@ describe('Character Model Unit Tests', () => {
 
   describe('Character Business Logic', () => {
     it('should calculate ability modifiers correctly', () => {
-      expect(getAbilityModifier(8)).toBe(-1);   // 8 -> -1
-      expect(getAbilityModifier(10)).toBe(0);   // 10 -> 0
-      expect(getAbilityModifier(12)).toBe(1);   // 12 -> +1
-      expect(getAbilityModifier(14)).toBe(2);   // 14 -> +2
-      expect(getAbilityModifier(16)).toBe(3);   // 16 -> +3
-      expect(getAbilityModifier(18)).toBe(4);   // 18 -> +4
+      expect(getAbilityModifier(8)).toBe(-1); // 8 -> -1
+      expect(getAbilityModifier(10)).toBe(0); // 10 -> 0
+      expect(getAbilityModifier(12)).toBe(1); // 12 -> +1
+      expect(getAbilityModifier(14)).toBe(2); // 14 -> +2
+      expect(getAbilityModifier(16)).toBe(3); // 16 -> +3
+      expect(getAbilityModifier(18)).toBe(4); // 18 -> +4
     });
 
     it('should calculate initiative modifier from dexterity', () => {
@@ -206,7 +207,7 @@ describe('Character Model Unit Tests', () => {
       const singleClass = [{ class: 'fighter', level: 5, hitDie: 10 }];
       const multiClass = [
         { class: 'paladin', level: 3, hitDie: 10 },
-        { class: 'sorcerer', level: 2, hitDie: 6 }
+        { class: 'sorcerer', level: 2, hitDie: 6 },
       ];
 
       expect(getLevel(singleClass)).toBe(5);
@@ -236,7 +237,16 @@ describe('Character Model Unit Tests', () => {
 
   describe('Data Validation Logic', () => {
     it('should validate required character fields', () => {
-      const requiredFields = ['ownerId', 'name', 'race', 'type', 'classes', 'abilityScores', 'hitPoints', 'armorClass'];
+      const requiredFields = [
+        'ownerId',
+        'name',
+        'race',
+        'type',
+        'classes',
+        'abilityScores',
+        'hitPoints',
+        'armorClass',
+      ];
       const characterData = createBaseCharacterData();
 
       requiredFields.forEach(field => {
@@ -255,7 +265,14 @@ describe('Character Model Unit Tests', () => {
 
     it('should validate ability score structure', () => {
       const characterData = createBaseCharacterData();
-      const abilities = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
+      const abilities = [
+        'strength',
+        'dexterity',
+        'constitution',
+        'intelligence',
+        'wisdom',
+        'charisma',
+      ];
 
       abilities.forEach(ability => {
         expect(characterData.abilityScores).toHaveProperty(ability);
@@ -303,7 +320,7 @@ describe('Character Model Unit Tests', () => {
         classes: characterData.classes,
         hitPoints: characterData.hitPoints,
         armorClass: characterData.armorClass,
-        isPublic: characterData.isPublic
+        isPublic: characterData.isPublic,
       };
 
       expect(summary.name).toBe('Gandalf');
@@ -342,7 +359,7 @@ describe('Character Model Unit Tests', () => {
         createBaseCharacterData({ name: 'Fighter 1' }),
         createBaseCharacterData({ name: 'Fighter 2' }),
         createWizardData({ name: 'Wizard 1' }),
-        createWizardData({ name: 'Wizard 2' })
+        createWizardData({ name: 'Wizard 2' }),
       ];
 
       expect(characters).toHaveLength(4);

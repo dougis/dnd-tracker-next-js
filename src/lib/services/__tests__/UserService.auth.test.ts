@@ -5,9 +5,7 @@
 
 import { UserService } from '../UserService';
 import { UserServiceAuth } from '../UserServiceAuth';
-import type {
-  PublicUser,
-} from '../../validations/user';
+import type { PublicUser } from '../../validations/user';
 import {
   createMockPublicUser,
   createMockUserRegistration,
@@ -29,7 +27,9 @@ import {
 // Mock UserServiceAuth
 jest.mock('../UserServiceAuth');
 
-const mockUserServiceAuth = UserServiceAuth as jest.Mocked<typeof UserServiceAuth>;
+const mockUserServiceAuth = UserServiceAuth as jest.Mocked<
+  typeof UserServiceAuth
+>;
 
 describe('UserService Authentication Operations', () => {
   setupMockClearance();
@@ -92,7 +92,10 @@ describe('UserService Authentication Operations', () => {
 
     it('should handle authentication failures', async () => {
       const loginData = createMockUserLogin({ password: 'wrongpassword' });
-      const expectedError = createInvalidCredentialsError<{ user: PublicUser; requiresVerification: boolean }>();
+      const expectedError = createInvalidCredentialsError<{
+        user: PublicUser;
+        requiresVerification: boolean;
+      }>();
 
       mockUserServiceAuth.authenticateUser.mockResolvedValue(expectedError);
 
@@ -127,7 +130,9 @@ describe('UserService Authentication Operations', () => {
 
     it('should handle password change failures', async () => {
       const userId = '507f1f77bcf86cd799439011';
-      const passwordData = createMockChangePassword({ currentPassword: 'wrongpassword' });
+      const passwordData = createMockChangePassword({
+        currentPassword: 'wrongpassword',
+      });
       const expectedError = createInvalidCredentialsError<void>();
       expectedError.error!.message = 'Current password is incorrect';
       expectedError.error!.field = 'currentPassword';
@@ -150,7 +155,9 @@ describe('UserService Authentication Operations', () => {
       const resetData = createMockPasswordResetRequest();
       const expectedResult = createSuccessResult({ token: 'reset-token-123' });
 
-      mockUserServiceAuth.requestPasswordReset.mockResolvedValue(expectedResult);
+      mockUserServiceAuth.requestPasswordReset.mockResolvedValue(
+        expectedResult
+      );
 
       const result = await UserService.requestPasswordReset(resetData);
 
@@ -163,10 +170,14 @@ describe('UserService Authentication Operations', () => {
     });
 
     it('should handle password reset request for non-existent user', async () => {
-      const resetData = createMockPasswordResetRequest({ email: 'nonexistent@example.com' });
+      const resetData = createMockPasswordResetRequest({
+        email: 'nonexistent@example.com',
+      });
       const expectedResult = createSuccessResult({ token: 'dummy-token' });
 
-      mockUserServiceAuth.requestPasswordReset.mockResolvedValue(expectedResult);
+      mockUserServiceAuth.requestPasswordReset.mockResolvedValue(
+        expectedResult
+      );
 
       const result = await UserService.requestPasswordReset(resetData);
 
@@ -233,7 +244,9 @@ describe('UserService Authentication Operations', () => {
     });
 
     it('should handle invalid verification token', async () => {
-      const verificationData = createMockEmailVerification({ token: 'invalid-token' });
+      const verificationData = createMockEmailVerification({
+        token: 'invalid-token',
+      });
       const expectedError = createInvalidTokenError<PublicUser>();
       expectedError.error!.message = 'Invalid or expired verification token';
 
@@ -255,7 +268,9 @@ describe('UserService Authentication Operations', () => {
       const email = TEST_EMAIL;
       const expectedResult = createSuccessResult<void>(undefined);
 
-      mockUserServiceAuth.resendVerificationEmail.mockResolvedValue(expectedResult);
+      mockUserServiceAuth.resendVerificationEmail.mockResolvedValue(
+        expectedResult
+      );
 
       const result = await UserService.resendVerificationEmail(email);
 
@@ -272,7 +287,9 @@ describe('UserService Authentication Operations', () => {
       const expectedError = createUserNotFoundError<void>();
       expectedError.error!.field = 'email';
 
-      mockUserServiceAuth.resendVerificationEmail.mockResolvedValue(expectedError);
+      mockUserServiceAuth.resendVerificationEmail.mockResolvedValue(
+        expectedError
+      );
 
       const result = await UserService.resendVerificationEmail(email);
 

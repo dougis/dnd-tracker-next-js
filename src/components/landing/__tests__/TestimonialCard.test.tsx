@@ -23,7 +23,7 @@ jest.mock('../TestimonialAvatar', () => ({
 
 const mockProps = {
   rating: 5,
-  quote: "This tool has revolutionized how I run my D&D campaigns!",
+  quote: 'This tool has revolutionized how I run my D&D campaigns!',
   author: {
     name: 'Sarah Johnson',
     title: 'Experienced DM',
@@ -49,7 +49,9 @@ describe('TestimonialCard Component', () => {
   it('displays the testimonial quote with proper formatting', () => {
     const quote = screen.getByTestId('testimonial-content');
     expect(quote).toBeInTheDocument();
-    expect(quote).toHaveTextContent('"This tool has revolutionized how I run my D&D campaigns!"');
+    expect(quote).toHaveTextContent(
+      '"This tool has revolutionized how I run my D&D campaigns!"'
+    );
     expect(quote).toHaveClass('text-muted-foreground', 'mb-4');
   });
 
@@ -77,7 +79,8 @@ describe('TestimonialCard Component', () => {
   });
 
   it('applies proper card styling', () => {
-    const cardContent = screen.getByText('★★★★★').closest('div')?.parentElement?.parentElement;
+    const cardContent = screen.getByText('★★★★★').closest('div')
+      ?.parentElement?.parentElement;
     expect(cardContent).toHaveClass('pt-6');
   });
 });
@@ -124,5 +127,4 @@ describe('TestimonialCard Component - Different Props', () => {
     expect(authorName).toHaveTextContent('Mike Chen');
     expect(authorRole).toHaveTextContent('New DM');
   });
-
 });

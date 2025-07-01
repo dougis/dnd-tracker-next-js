@@ -19,11 +19,7 @@ export type {
 } from './User';
 
 // Export Character interfaces
-export type {
-  ICharacter,
-  CharacterModel,
-  CharacterSummary,
-} from './Character';
+export type { ICharacter, CharacterModel, CharacterSummary } from './Character';
 
 // Export Encounter interfaces
 export type {

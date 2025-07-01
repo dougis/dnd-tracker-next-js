@@ -78,7 +78,10 @@ export const getCreateUserTestCases = () => [
     confirmPassword: 'SpecialPass123!@#',
   }),
   createValidUserData({ email: 'success@test.com', username: 'success' }),
-  createValidUserData({ email: 'another@example.com', subscribeToNewsletter: true }),
+  createValidUserData({
+    email: 'another@example.com',
+    subscribeToNewsletter: true,
+  }),
 ];
 
 export const getAuthenticationTestCases = () => [
@@ -92,10 +95,21 @@ export const getAuthenticationTestCases = () => [
 
 export const getPasswordChangeTestCases = () => [
   { userId: 'user1', data: createValidPasswordChangeData() },
-  { userId: 'user2', data: createValidPasswordChangeData({ newPassword: 'NewPass789!' }) },
+  {
+    userId: 'user2',
+    data: createValidPasswordChangeData({ newPassword: 'NewPass789!' }),
+  },
   { userId: '', data: createValidPasswordChangeData() },
-  { userId: 'invalid', data: { currentPassword: '', newPassword: '', confirmNewPassword: '' } },
-  { userId: 'test-user', data: createValidPasswordChangeData({ currentPassword: 'WrongCurrentPass123!' }) },
+  {
+    userId: 'invalid',
+    data: { currentPassword: '', newPassword: '', confirmNewPassword: '' },
+  },
+  {
+    userId: 'test-user',
+    data: createValidPasswordChangeData({
+      currentPassword: 'WrongCurrentPass123!',
+    }),
+  },
 ];
 
 // Consolidated exercise functions
@@ -122,9 +136,15 @@ export const exerciseAuthenticateUserVariations = async () => {
 export const exerciseChangePasswordVariations = async () => {
   const variations = [
     { userId: 'user1', data: createValidPasswordChangeData() },
-    { userId: 'user2', data: createValidPasswordChangeData({ newPassword: 'NewPass789!' }) },
+    {
+      userId: 'user2',
+      data: createValidPasswordChangeData({ newPassword: 'NewPass789!' }),
+    },
     { userId: '', data: createValidPasswordChangeData() },
-    { userId: 'invalid', data: { currentPassword: '', newPassword: '', confirmNewPassword: '' } },
+    {
+      userId: 'invalid',
+      data: { currentPassword: '', newPassword: '', confirmNewPassword: '' },
+    },
   ];
 
   for (const { userId, data } of variations) {
@@ -149,7 +169,10 @@ export const exercisePasswordResetVariations = async () => {
     createValidPasswordResetData(),
     createValidPasswordResetData({ token: 'different-token' }),
     { token: '', password: '', confirmPassword: '' },
-    createValidPasswordResetData({ password: 'weak', confirmPassword: 'mismatch' }),
+    createValidPasswordResetData({
+      password: 'weak',
+      confirmPassword: 'mismatch',
+    }),
   ];
 
   for (const resetData of resetVariations) {
@@ -200,13 +223,13 @@ export const exerciseErrorScenarios = async () => {
   await UserServiceAuth.changePassword('', {
     currentPassword: '',
     newPassword: '',
-    confirmNewPassword: ''
+    confirmNewPassword: '',
   });
   await UserServiceAuth.requestPasswordReset({ email: '' });
   await UserServiceAuth.resetPassword({
     token: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
   await UserServiceAuth.verifyEmail({ token: '' });
   await UserServiceAuth.resendVerificationEmail('');

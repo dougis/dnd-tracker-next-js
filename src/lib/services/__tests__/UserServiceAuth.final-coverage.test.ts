@@ -6,7 +6,7 @@ import {
   exercisePasswordResetVariations,
   exerciseEmailVerificationVariations,
   exerciseAllUserServiceAuthMethods,
-  exerciseErrorScenarios
+  exerciseErrorScenarios,
 } from './UserServiceAuth.test-helpers';
 
 /**

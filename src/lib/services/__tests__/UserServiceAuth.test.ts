@@ -3,7 +3,7 @@ import { UserService } from '../UserService';
 import {
   createValidUserData,
   createValidLoginData,
-  createInvalidUserData
+  createInvalidUserData,
 } from './UserServiceAuth.test-helpers';
 
 /**
@@ -19,7 +19,10 @@ describe('UserService Authentication', () => {
     it('should exercise createUser with various data', async () => {
       const testCases = [
         createValidUserData(),
-        createValidUserData({ email: 'different@test.com', username: 'different' }),
+        createValidUserData({
+          email: 'different@test.com',
+          username: 'different',
+        }),
         createInvalidUserData(),
       ];
 

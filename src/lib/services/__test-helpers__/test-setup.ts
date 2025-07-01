@@ -71,6 +71,22 @@ jest.mock('bcryptjs', () => ({
 // Export mocked user for tests
 export const mockUser = UserMock;
 
+// Export individual mock functions for direct access
+export {
+  findByIdMock,
+  findByEmailMock,
+  findByResetTokenMock,
+  findByVerificationTokenMock,
+  findMock,
+  findOneMock,
+  createMock,
+  findByIdAndUpdateMock,
+  findByUsernameMock,
+  countDocumentsMock,
+  aggregateMock,
+  findByIdAndDeleteMock,
+};
+
 // Mock user data
 export const mockUserData = {
   _id: '507f1f77bcf86cd799439011',

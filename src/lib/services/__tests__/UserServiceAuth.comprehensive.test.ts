@@ -4,7 +4,7 @@ import {
   getCreateUserTestCases,
   getAuthenticationTestCases,
   getPasswordChangeTestCases,
-  exerciseAllUserServiceAuthMethods
+  exerciseAllUserServiceAuthMethods,
 } from './UserServiceAuth.test-helpers';
 
 /**

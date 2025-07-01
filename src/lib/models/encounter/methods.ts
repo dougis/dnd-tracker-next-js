@@ -26,7 +26,9 @@ import {
  */
 export function addParticipant(
   this: IEncounter,
-  participant: Omit<IParticipantReference, 'characterId'> & { characterId: string }
+  participant: Omit<IParticipantReference, 'characterId'> & {
+    characterId: string;
+  }
 ): void {
   this.participants.push({
     ...participant,
@@ -34,9 +36,12 @@ export function addParticipant(
   });
 }
 
-export function removeParticipant(this: IEncounter, participantId: string): boolean {
-  const index = this.participants.findIndex((p: IParticipantReference) =>
-    p.characterId.toString() === participantId
+export function removeParticipant(
+  this: IEncounter,
+  participantId: string
+): boolean {
+  const index = this.participants.findIndex(
+    (p: IParticipantReference) => p.characterId.toString() === participantId
   );
 
   if (index === -1) return false;
@@ -44,15 +49,19 @@ export function removeParticipant(this: IEncounter, participantId: string): bool
   this.participants.splice(index, 1);
 
   // Remove from initiative order if present
-  const initIndex = this.combatState.initiativeOrder.findIndex((entry: IInitiativeEntry) =>
-    entry.participantId.toString() === participantId
+  const initIndex = this.combatState.initiativeOrder.findIndex(
+    (entry: IInitiativeEntry) =>
+      entry.participantId.toString() === participantId
   );
 
   if (initIndex !== -1) {
     this.combatState.initiativeOrder.splice(initIndex, 1);
 
     // Adjust current turn if necessary
-    if (this.combatState.currentTurn >= initIndex && this.combatState.currentTurn > 0) {
+    if (
+      this.combatState.currentTurn >= initIndex &&
+      this.combatState.currentTurn > 0
+    ) {
       this.combatState.currentTurn--;
     }
   }
@@ -72,14 +81,20 @@ export function updateParticipant(
   return true;
 }
 
-export function getParticipant(this: IEncounter, participantId: string): IParticipantReference | null {
+export function getParticipant(
+  this: IEncounter,
+  participantId: string
+): IParticipantReference | null {
   return findParticipantById(this.participants, participantId);
 }
 
 /**
  * Combat management methods
  */
-export function startCombat(this: IEncounter, autoRollInitiative = false): void {
+export function startCombat(
+  this: IEncounter,
+  autoRollInitiative = false
+): void {
   this.combatState.isActive = true;
   this.combatState.currentRound = 1;
   this.combatState.currentTurn = 0;
@@ -89,16 +104,22 @@ export function startCombat(this: IEncounter, autoRollInitiative = false): void 
   this.status = 'active';
 
   // Initialize initiative order
-  this.combatState.initiativeOrder = this.participants.map((participant: IParticipantReference) => ({
-    participantId: participant.characterId,
-    initiative: autoRollInitiative ? rollInitiative() : participant.initiative || 0,
-    dexterity: 10, // Default dexterity, should be updated with actual character data
-    isActive: false,
-    hasActed: false,
-  }));
+  this.combatState.initiativeOrder = this.participants.map(
+    (participant: IParticipantReference) => ({
+      participantId: participant.characterId,
+      initiative: autoRollInitiative
+        ? rollInitiative()
+        : participant.initiative || 0,
+      dexterity: 10, // Default dexterity, should be updated with actual character data
+      isActive: false,
+      hasActed: false,
+    })
+  );
 
   // Sort initiative order
-  this.combatState.initiativeOrder = sortInitiativeOrder(this.combatState.initiativeOrder);
+  this.combatState.initiativeOrder = sortInitiativeOrder(
+    this.combatState.initiativeOrder
+  );
 
   // Set first participant as active
   if (this.combatState.initiativeOrder.length > 0) {
@@ -130,12 +151,16 @@ export function endCombat(this: IEncounter): void {
 
 // eslint-disable-next-line no-unused-vars
 export function nextTurn(this: IEncounter): boolean {
-  if (!this.combatState.isActive || this.combatState.initiativeOrder.length === 0) {
+  if (
+    !this.combatState.isActive ||
+    this.combatState.initiativeOrder.length === 0
+  ) {
     return false;
   }
 
   // Mark current participant as having acted
-  const currentEntry = this.combatState.initiativeOrder[this.combatState.currentTurn];
+  const currentEntry =
+    this.combatState.initiativeOrder[this.combatState.currentTurn];
   if (currentEntry) {
     currentEntry.hasActed = true;
     currentEntry.isActive = false;
@@ -156,7 +181,8 @@ export function nextTurn(this: IEncounter): boolean {
   }
 
   // Set next participant as active
-  const nextEntry = this.combatState.initiativeOrder[this.combatState.currentTurn];
+  const nextEntry =
+    this.combatState.initiativeOrder[this.combatState.currentTurn];
   if (nextEntry) {
     nextEntry.isActive = true;
   }
@@ -166,12 +192,16 @@ export function nextTurn(this: IEncounter): boolean {
 
 // eslint-disable-next-line no-unused-vars
 export function previousTurn(this: IEncounter): boolean {
-  if (!this.combatState.isActive || this.combatState.initiativeOrder.length === 0) {
+  if (
+    !this.combatState.isActive ||
+    this.combatState.initiativeOrder.length === 0
+  ) {
     return false;
   }
 
   // Mark current participant as inactive
-  const currentEntry = this.combatState.initiativeOrder[this.combatState.currentTurn];
+  const currentEntry =
+    this.combatState.initiativeOrder[this.combatState.currentTurn];
   if (currentEntry) {
     currentEntry.isActive = false;
   }
@@ -182,11 +212,15 @@ export function previousTurn(this: IEncounter): boolean {
   // Check if we need to go to previous round
   if (this.combatState.currentTurn < 0) {
     this.combatState.currentTurn = this.combatState.initiativeOrder.length - 1;
-    this.combatState.currentRound = Math.max(1, this.combatState.currentRound - 1);
+    this.combatState.currentRound = Math.max(
+      1,
+      this.combatState.currentRound - 1
+    );
   }
 
   // Set previous participant as active
-  const prevEntry = this.combatState.initiativeOrder[this.combatState.currentTurn];
+  const prevEntry =
+    this.combatState.initiativeOrder[this.combatState.currentTurn];
   if (prevEntry) {
     prevEntry.isActive = true;
     prevEntry.hasActed = false;
@@ -204,48 +238,72 @@ export function setInitiative(
   initiative: number,
   dexterity: number
 ): boolean {
-  const entry = findInitiativeEntryById(this.combatState.initiativeOrder, participantId);
+  const entry = findInitiativeEntryById(
+    this.combatState.initiativeOrder,
+    participantId
+  );
   if (!entry) return false;
 
   entry.initiative = initiative;
   entry.dexterity = dexterity;
 
   // Re-sort initiative order
-  this.combatState.initiativeOrder = sortInitiativeOrder(this.combatState.initiativeOrder);
+  this.combatState.initiativeOrder = sortInitiativeOrder(
+    this.combatState.initiativeOrder
+  );
 
   // Update current turn index
-  const activeEntry = this.combatState.initiativeOrder.find((e: IInitiativeEntry) => e.isActive);
+  const activeEntry = this.combatState.initiativeOrder.find(
+    (e: IInitiativeEntry) => e.isActive
+  );
   if (activeEntry) {
-    this.combatState.currentTurn = this.combatState.initiativeOrder.findIndex((e: IInitiativeEntry) =>
-      e.participantId.toString() === activeEntry.participantId.toString()
+    this.combatState.currentTurn = this.combatState.initiativeOrder.findIndex(
+      (e: IInitiativeEntry) =>
+        e.participantId.toString() === activeEntry.participantId.toString()
     );
   }
 
   return true;
 }
 
-export function applyDamage(this: IEncounter, participantId: string, damage: number): boolean {
+export function applyDamage(
+  this: IEncounter,
+  participantId: string,
+  damage: number
+): boolean {
   const participant = this.getParticipant(participantId);
   if (!participant) return false;
 
   return applyDamageToParticipant(participant, damage);
 }
 
-export function applyHealing(this: IEncounter, participantId: string, healing: number): boolean {
+export function applyHealing(
+  this: IEncounter,
+  participantId: string,
+  healing: number
+): boolean {
   const participant = this.getParticipant(participantId);
   if (!participant) return false;
 
   return healParticipant(participant, healing);
 }
 
-export function addCondition(this: IEncounter, participantId: string, condition: string): boolean {
+export function addCondition(
+  this: IEncounter,
+  participantId: string,
+  condition: string
+): boolean {
   const participant = this.getParticipant(participantId);
   if (!participant) return false;
 
   return addConditionToParticipant(participant, condition);
 }
 
-export function removeCondition(this: IEncounter, participantId: string, condition: string): boolean {
+export function removeCondition(
+  this: IEncounter,
+  participantId: string,
+  condition: string
+): boolean {
   const participant = this.getParticipant(participantId);
   if (!participant) return false;
 
@@ -260,12 +318,19 @@ export function getInitiativeOrder(this: IEncounter): IInitiativeEntry[] {
   return [...this.combatState.initiativeOrder];
 }
 
-// eslint-disable-next-line no-unused-vars
-export function calculateDifficulty(this: IEncounter): z.infer<typeof encounterDifficultySchema> {
-  return calculateEncounterDifficulty(this.playerCount, this.participants.length);
+export function calculateDifficulty(
+  this: IEncounter // eslint-disable-line no-unused-vars
+): z.infer<typeof encounterDifficultySchema> {
+  return calculateEncounterDifficulty(
+    this.playerCount,
+    this.participants.length
+  );
 }
 
-export function duplicateEncounter(this: IEncounter, newName?: string): IEncounter {
+export function duplicateEncounter(
+  this: IEncounter,
+  newName?: string
+): IEncounter {
   const duplicateData = this.toObject();
   delete duplicateData._id;
   delete duplicateData.createdAt;

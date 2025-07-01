@@ -133,7 +133,13 @@ describe('User Model Types and Interfaces', () => {
     });
 
     it('should support all subscription tiers', () => {
-      const subscriptionTiers = ['free', 'seasoned', 'expert', 'master', 'guild'];
+      const subscriptionTiers = [
+        'free',
+        'seasoned',
+        'expert',
+        'master',
+        'guild',
+      ];
 
       subscriptionTiers.forEach(tier => {
         const user: MockPublicUser = {
@@ -175,7 +181,11 @@ describe('User Model Types and Interfaces', () => {
 
   describe('SubscriptionFeature Type', () => {
     it('should include all valid subscription features', () => {
-      const features: MockSubscriptionFeature[] = ['parties', 'encounters', 'characters'];
+      const features: MockSubscriptionFeature[] = [
+        'parties',
+        'encounters',
+        'characters',
+      ];
 
       expect(features).toHaveLength(3);
       expect(features).toContain('parties');
@@ -193,7 +203,7 @@ describe('User Model Types and Interfaces', () => {
       // Mock subscription limits structure
       const mockLimits = {
         free: { parties: 1, encounters: 3, characters: 10 },
-        seasoned: { parties: 3, encounters: 15, characters: 50 }
+        seasoned: { parties: 3, encounters: 15, characters: 50 },
       };
 
       VALID_FEATURES.forEach(feature => {
@@ -210,7 +220,7 @@ describe('User Model Types and Interfaces', () => {
       const validEmails = [
         'user@example.com',
         'test.email+tag@domain.co.uk',
-        'user123@subdomain.example.org'
+        'user123@subdomain.example.org',
       ];
 
       validEmails.forEach(email => {
@@ -246,7 +256,11 @@ describe('User Model Types and Interfaces', () => {
     });
 
     it('should validate subscription feature consistency', () => {
-      const featureList: MockSubscriptionFeature[] = ['parties', 'encounters', 'characters'];
+      const featureList: MockSubscriptionFeature[] = [
+        'parties',
+        'encounters',
+        'characters',
+      ];
 
       // Each feature should be a string
       featureList.forEach(feature => {

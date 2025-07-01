@@ -1,6 +1,13 @@
 import '../__test-helpers__/test-setup';
 import { UserServiceAuth } from '../UserServiceAuth';
-import { UserRegistration, UserLogin, PasswordChange, PasswordResetRequest, PasswordReset, EmailVerification } from '@/types/user';
+import {
+  UserRegistration,
+  UserLogin,
+  PasswordChange,
+  PasswordResetRequest,
+  PasswordReset,
+  EmailVerification,
+} from '@/lib/validations/user';
 import { exerciseMethodForCoverage } from './diffCoverageTestUtils';
 
 /**
@@ -26,12 +33,16 @@ describe('UserServiceAuth Diff Coverage', () => {
 
   it('should exercise createUser method to cover formatted lines', async () => {
     // This test targets lines 37-38, 95, 98, 106 etc.
-    await exerciseMethodForCoverage(() => UserServiceAuth.createUser(mockUserData));
+    await exerciseMethodForCoverage(() =>
+      UserServiceAuth.createUser(mockUserData)
+    );
   });
 
   it('should exercise authenticateUser method to cover formatted lines', async () => {
     // This test targets lines 147, 165, 193, 196, 206 etc.
-    await exerciseMethodForCoverage(() => UserServiceAuth.authenticateUser(mockLoginData));
+    await exerciseMethodForCoverage(() =>
+      UserServiceAuth.authenticateUser(mockLoginData)
+    );
   });
 
   it('should exercise changePassword method to cover formatted lines', async () => {
@@ -41,7 +52,9 @@ describe('UserServiceAuth Diff Coverage', () => {
       confirmPassword: 'newpass123',
     };
 
-    await exerciseMethodForCoverage(() => UserServiceAuth.changePassword('test-user-id', passwordData));
+    await exerciseMethodForCoverage(() =>
+      UserServiceAuth.changePassword('test-user-id', passwordData)
+    );
   });
 
   it('should exercise requestPasswordReset method to cover formatted lines', async () => {
@@ -49,7 +62,9 @@ describe('UserServiceAuth Diff Coverage', () => {
       email: 'difftest@example.com',
     };
 
-    await exerciseMethodForCoverage(() => UserServiceAuth.requestPasswordReset(resetData));
+    await exerciseMethodForCoverage(() =>
+      UserServiceAuth.requestPasswordReset(resetData)
+    );
   });
 
   it('should exercise resetPassword method to cover formatted lines', async () => {
@@ -59,7 +74,9 @@ describe('UserServiceAuth Diff Coverage', () => {
       confirmPassword: 'newpass123',
     };
 
-    await exerciseMethodForCoverage(() => UserServiceAuth.resetPassword(resetData));
+    await exerciseMethodForCoverage(() =>
+      UserServiceAuth.resetPassword(resetData)
+    );
   });
 
   it('should exercise verifyEmail method to cover formatted lines', async () => {
@@ -67,10 +84,14 @@ describe('UserServiceAuth Diff Coverage', () => {
       token: 'test-verification-token',
     };
 
-    await exerciseMethodForCoverage(() => UserServiceAuth.verifyEmail(verificationData));
+    await exerciseMethodForCoverage(() =>
+      UserServiceAuth.verifyEmail(verificationData)
+    );
   });
 
   it('should exercise resendVerificationEmail method to cover formatted lines', async () => {
-    await exerciseMethodForCoverage(() => UserServiceAuth.resendVerificationEmail('difftest@example.com'));
+    await exerciseMethodForCoverage(() =>
+      UserServiceAuth.resendVerificationEmail('difftest@example.com')
+    );
   });
 });

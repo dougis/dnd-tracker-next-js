@@ -48,8 +48,16 @@ describe('CTAButtons Component', () => {
   });
 
   it('applies correct styling classes for responsive layout', () => {
-    const container = screen.getByText('Get Started Free').closest('div')?.parentElement;
-    expect(container).toHaveClass('flex', 'flex-col', 'sm:flex-row', 'gap-4', 'justify-center');
+    const container = screen
+      .getByText('Get Started Free')
+      .closest('div')?.parentElement;
+    expect(container).toHaveClass(
+      'flex',
+      'flex-col',
+      'sm:flex-row',
+      'gap-4',
+      'justify-center'
+    );
   });
 
   it('distinguishes primary and secondary buttons', () => {
