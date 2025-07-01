@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { Types } from 'mongoose';
 import { z } from 'zod';
 import { encounterDifficultySchema } from '../../validations/encounter';
@@ -107,6 +106,7 @@ export function startCombat(this: IEncounter, autoRollInitiative = false): void 
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 export function endCombat(this: IEncounter): void {
   this.combatState.isActive = false;
   this.combatState.endedAt = new Date();
@@ -128,6 +128,7 @@ export function endCombat(this: IEncounter): void {
   });
 }
 
+// eslint-disable-next-line no-unused-vars
 export function nextTurn(this: IEncounter): boolean {
   if (!this.combatState.isActive || this.combatState.initiativeOrder.length === 0) {
     return false;
@@ -163,6 +164,7 @@ export function nextTurn(this: IEncounter): boolean {
   return true;
 }
 
+// eslint-disable-next-line no-unused-vars
 export function previousTurn(this: IEncounter): boolean {
   if (!this.combatState.isActive || this.combatState.initiativeOrder.length === 0) {
     return false;
@@ -253,10 +255,12 @@ export function removeCondition(this: IEncounter, participantId: string, conditi
 /**
  * Utility methods
  */
+// eslint-disable-next-line no-unused-vars
 export function getInitiativeOrder(this: IEncounter): IInitiativeEntry[] {
   return [...this.combatState.initiativeOrder];
 }
 
+// eslint-disable-next-line no-unused-vars
 export function calculateDifficulty(this: IEncounter): z.infer<typeof encounterDifficultySchema> {
   return calculateEncounterDifficulty(this.playerCount, this.participants.length);
 }
@@ -281,6 +285,7 @@ export function duplicateEncounter(this: IEncounter, newName?: string): IEncount
   return new (this.constructor as EncounterModel)(duplicateData);
 }
 
+// eslint-disable-next-line no-unused-vars
 export function toSummary(this: IEncounter): EncounterSummary {
   return {
     _id: this._id,
