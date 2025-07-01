@@ -63,7 +63,7 @@ export function BasicInfoSection({ value, onChange, errors }: BasicInfoSectionPr
           Basic Information
         </h3>
         <p className="text-sm text-muted-foreground mb-4">
-          Enter your character's fundamental details
+          Enter your character&apos;s fundamental details
         </p>
       </div>
 

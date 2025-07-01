@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { FormModal } from '@/components/modals/FormModal';
 import { BasicInfoSection } from './sections/BasicInfoSection';
@@ -45,9 +45,9 @@ export function CharacterCreationForm({
     submitError,
   } = useCharacterSubmit({
     ownerId,
-    onSuccess: (character) => {
-      onSuccess?.(character);
-      router.push(`/characters/${character.id}`);
+    onSuccess: (_character) => {
+      onSuccess?.(_character);
+      router.push(`/characters/${_character.id}`);
     },
   });
 

@@ -194,7 +194,7 @@ export function CharacterPreview({
               </div>
             ))}
           </div>
-          
+
           <div className="mt-3 p-2 bg-muted rounded text-xs text-center">
             {isValid ? (
               <span className="text-green-600 font-medium">

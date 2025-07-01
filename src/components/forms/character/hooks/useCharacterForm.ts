@@ -93,7 +93,7 @@ export function useCharacterForm() {
 
   const updateBasicInfo = useCallback((basicInfo: BasicInfoData) => {
     setFormData(prev => ({ ...prev, basicInfo }));
-    
+
     // Clear related errors
     setErrors(prev => ({
       ...prev,
@@ -103,7 +103,7 @@ export function useCharacterForm() {
 
   const updateAbilityScores = useCallback((abilityScores: AbilityScores) => {
     setFormData(prev => ({ ...prev, abilityScores }));
-    
+
     // Clear related errors
     setErrors(prev => ({
       ...prev,
@@ -113,7 +113,7 @@ export function useCharacterForm() {
 
   const updateClasses = useCallback((classes: ClassData[]) => {
     setFormData(prev => ({ ...prev, classes }));
-    
+
     // Clear related errors
     setErrors(prev => ({
       ...prev,
@@ -123,7 +123,7 @@ export function useCharacterForm() {
 
   const updateCombatStats = useCallback((combatStats: CombatStatsData) => {
     setFormData(prev => ({ ...prev, combatStats }));
-    
+
     // Clear related errors
     setErrors(prev => ({
       ...prev,
@@ -168,7 +168,7 @@ export function useCharacterForm() {
 
         error.errors.forEach((err) => {
           const path = err.path.join('.');
-          
+
           if (path.startsWith('name') || path.startsWith('type') || path.startsWith('race') || path.startsWith('customRace')) {
             newErrors.basicInfo[path] = err.message;
           } else if (path.startsWith('abilityScores')) {
@@ -189,29 +189,29 @@ export function useCharacterForm() {
 
   const isFormValid = useCallback((): boolean => {
     // Check if all required fields are filled
-    const hasBasicInfo = formData.basicInfo.name.trim() !== '' && 
-                        formData.basicInfo.type !== '' && 
+    const hasBasicInfo = formData.basicInfo.name.trim() !== '' &&
+                        formData.basicInfo.type !== '' &&
                         formData.basicInfo.race !== '';
-    
-    const hasCustomRace = formData.basicInfo.race !== 'custom' || 
+
+    const hasCustomRace = formData.basicInfo.race !== 'custom' ||
                          formData.basicInfo.customRace.trim() !== '';
-    
+
     const hasValidAbilityScores = Object.values(formData.abilityScores).every(
       score => score >= 1 && score <= 30
     );
-    
-    const hasValidClasses = formData.classes.length > 0 && 
+
+    const hasValidClasses = formData.classes.length > 0 &&
                            formData.classes.every(cls => cls.level >= 1 && cls.level <= 20);
-    
-    const hasValidCombatStats = formData.combatStats.hitPoints.maximum > 0 && 
+
+    const hasValidCombatStats = formData.combatStats.hitPoints.maximum > 0 &&
                                formData.combatStats.armorClass > 0;
-    
+
     // Check if there are no validation errors
-    const hasNoErrors = Object.values(errors).every(errorSection => 
+    const hasNoErrors = Object.values(errors).every(errorSection =>
       Object.keys(errorSection).length === 0
     );
 
-    return hasBasicInfo && hasCustomRace && hasValidAbilityScores && 
+    return hasBasicInfo && hasCustomRace && hasValidAbilityScores &&
            hasValidClasses && hasValidCombatStats && hasNoErrors;
   }, [formData, errors]);
 

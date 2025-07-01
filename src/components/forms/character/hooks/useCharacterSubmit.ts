@@ -6,8 +6,8 @@ import { CharacterCreation } from '@/lib/validations/character';
 
 interface UseCharacterSubmitProps {
   ownerId: string;
-  onSuccess?: (character: any) => void;
-  onError?: (error: any) => void;
+  onSuccess?: (_character: any) => void;
+  onError?: (_error: any) => void;
 }
 
 interface SubmitError {

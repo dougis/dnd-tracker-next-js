@@ -4,7 +4,6 @@ import React from 'react';
 import { FormInput } from '@/components/forms/FormInput';
 import { FormGroup } from '@/components/forms/FormGroup';
 import { Badge } from '@/components/ui/badge';
-import { AbilityScores } from '@/lib/validations/character';
 
 interface CombatStatsData {
   hitPoints: {
@@ -37,12 +36,12 @@ interface CombatStatsSectionProps {
   classes: ClassData[];
 }
 
-export function CombatStatsSection({ 
-  value, 
-  onChange, 
-  errors, 
+export function CombatStatsSection({
+  value,
+  onChange,
+  errors,
   abilityScores,
-  classes 
+  classes
 }: CombatStatsSectionProps) {
   const calculateModifier = (score: number): number => {
     return Math.floor((score - 10) / 2);
@@ -82,7 +81,7 @@ export function CombatStatsSection({
           Combat Statistics
         </h3>
         <p className="text-sm text-muted-foreground mb-4">
-          Set your character's combat-related statistics
+          Set your character&apos;s combat-related statistics
         </p>
       </div>
 
@@ -90,7 +89,7 @@ export function CombatStatsSection({
         {/* Hit Points Section */}
         <div className="space-y-4">
           <h4 className="text-md font-medium">Hit Points</h4>
-          
+
           <FormGroup direction="row" spacing="md">
             <div className="flex-1">
               <FormInput
@@ -193,9 +192,9 @@ export function CombatStatsSection({
             <div>
               <div className="text-muted-foreground">Hit Die</div>
               <div className="font-mono">
-                {classes.length > 0 ? `d${classes[0]?.className === 'barbarian' ? '12' : 
+                {classes.length > 0 ? `d${classes[0]?.className === 'barbarian' ? '12' :
                   classes[0]?.className === 'fighter' || classes[0]?.className === 'paladin' || classes[0]?.className === 'ranger' ? '10' :
-                  classes[0]?.className === 'bard' || classes[0]?.className === 'cleric' || classes[0]?.className === 'druid' || 
+                  classes[0]?.className === 'bard' || classes[0]?.className === 'cleric' || classes[0]?.className === 'druid' ||
                   classes[0]?.className === 'monk' || classes[0]?.className === 'rogue' || classes[0]?.className === 'warlock' ? '8' : '6'}` : 'd8'}
               </div>
             </div>

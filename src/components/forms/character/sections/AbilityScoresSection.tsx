@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { FormInput } from '@/components/forms/FormInput';
-import { FormGroup } from '@/components/forms/FormGroup';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -39,11 +38,11 @@ const POINT_BUY_COSTS: Record<number, number> = {
   8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9,
 };
 
-export function AbilityScoresSection({ 
-  value, 
-  onChange, 
-  errors, 
-  showPointBuy = false 
+export function AbilityScoresSection({
+  value,
+  onChange,
+  errors,
+  showPointBuy = false
 }: AbilityScoresSectionProps) {
   const [usePointBuy, setUsePointBuy] = useState(showPointBuy);
   const [isRolling, setIsRolling] = useState(false);
@@ -63,7 +62,7 @@ export function AbilityScoresSection({
     const numValue = parseInt(newValue) || 0;
     onChange({
       ...value,
-      [ability]: Math.max(1, Math.min(30, numValue)),
+      [ability]: numValue,
     });
   };
 
@@ -77,7 +76,7 @@ export function AbilityScoresSection({
 
   const rollDice = async () => {
     setIsRolling(true);
-    
+
     // Simulate dice rolling animation
     const rollPromise = new Promise<AbilityScores>((resolve) => {
       setTimeout(() => {
@@ -117,7 +116,7 @@ export function AbilityScoresSection({
           Ability Scores
         </h3>
         <p className="text-sm text-muted-foreground mb-4">
-          Set your character's fundamental attributes
+          Set your character&apos;s fundamental attributes
         </p>
       </div>
 

@@ -291,7 +291,7 @@ export const expectCharacterPreviewToShow = (screen: any, character: TestCharact
   expect(screen.getByText('Character Preview')).toBeInTheDocument();
   expect(screen.getByText(character.name)).toBeInTheDocument();
   expect(screen.getByText(new RegExp(character.race as string, 'i'))).toBeInTheDocument();
-  
+
   // Check ability scores in preview
   Object.entries(character.abilityScores).forEach(([ability, score]) => {
     expect(screen.getByText(score.toString())).toBeInTheDocument();

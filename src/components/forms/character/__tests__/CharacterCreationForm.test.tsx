@@ -44,7 +44,7 @@ describe('CharacterCreationForm', () => {
 
       expect(screen.getByRole('dialog')).toBeInTheDocument();
       expect(screen.getByText('Create Character')).toBeInTheDocument();
-      
+
       // Check for form sections
       expect(screen.getByLabelText(/character name/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/character type/i)).toBeInTheDocument();
@@ -154,12 +154,12 @@ describe('CharacterCreationForm', () => {
       render(<CharacterCreationForm {...defaultProps} />);
 
       const addClassButton = screen.getByRole('button', { name: /add class/i });
-      
+
       // Add second class
       await user.click(addClassButton);
       // Add third class
       await user.click(addClassButton);
-      
+
       // Button should be disabled now
       expect(addClassButton).toBeDisabled();
       expect(screen.getAllByLabelText(/character class/i)).toHaveLength(3);
@@ -288,7 +288,7 @@ describe('CharacterCreationForm', () => {
 
     it('shows loading state during submission', async () => {
       const user = userEvent.setup();
-      mockCharacterService.createCharacter.mockImplementation(() => 
+      mockCharacterService.createCharacter.mockImplementation(() =>
         new Promise(resolve => setTimeout(() => resolve({ success: true, data: {} as any }), 100))
       );
 

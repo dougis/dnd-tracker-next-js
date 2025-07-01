@@ -70,7 +70,7 @@ export function ClassesSection({ value, onChange, errors }: ClassesSectionProps)
           Character Classes
         </h3>
         <p className="text-sm text-muted-foreground mb-4">
-          Choose your character's class(es) and levels
+          Choose your character&apos;s class(es) and levels
         </p>
       </div>
 
@@ -104,7 +104,7 @@ export function ClassesSection({ value, onChange, errors }: ClassesSectionProps)
                 <FormSelect
                   label="Character Class"
                   value={classData.className}
-                  onValueChange={(newValue) => 
+                  onValueChange={(newValue) =>
                     updateClass(index, 'className', newValue as CharacterClass)
                   }
                   options={CHARACTER_CLASS_OPTIONS}
@@ -117,7 +117,7 @@ export function ClassesSection({ value, onChange, errors }: ClassesSectionProps)
                 <FormInput
                   label="Level"
                   value={classData.level.toString()}
-                  onChange={(e) => 
+                  onChange={(e) =>
                     updateClass(index, 'level', parseInt(e.target.value) || 1)
                   }
                   error={errors[`level-${index}`]}

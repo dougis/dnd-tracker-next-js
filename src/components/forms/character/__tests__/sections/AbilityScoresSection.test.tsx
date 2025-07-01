@@ -210,7 +210,7 @@ describe('AbilityScoresSection', () => {
       // Standard array: 15, 14, 13, 12, 10, 8
       const expectedValues = [15, 14, 13, 12, 10, 8];
       const fields = screen.getAllByRole('spinbutton');
-      
+
       expectedValues.forEach((value, index) => {
         expect(fields[index]).toHaveValue(value);
       });
@@ -243,7 +243,7 @@ describe('AbilityScoresSection', () => {
       // Should call onChange with new random values
       expect(mockOnChange).toHaveBeenCalled();
       const calledWith = mockOnChange.mock.calls[0][0];
-      
+
       // All values should be between 3 and 18 (4d6 drop lowest range)
       Object.values(calledWith).forEach(value => {
         expect(value).toBeGreaterThanOrEqual(3);
@@ -294,21 +294,21 @@ describe('AbilityScoresSection', () => {
   describe('Section Layout', () => {
     it('renders section header with proper title', () => {
       render(<AbilityScoresSection {...defaultProps} />);
-      
+
       expect(screen.getByText('Ability Scores')).toBeInTheDocument();
       expect(screen.getByText(/fundamental attributes/i)).toBeInTheDocument();
     });
 
     it('arranges ability scores in a responsive grid', () => {
       render(<AbilityScoresSection {...defaultProps} />);
-      
+
       const section = screen.getByTestId('ability-scores-grid');
       expect(section).toHaveClass('grid', 'grid-cols-2', 'md:grid-cols-3', 'gap-4');
     });
 
     it('groups generation tools together', () => {
       render(<AbilityScoresSection {...defaultProps} />);
-      
+
       const toolsContainer = screen.getByTestId('generation-tools');
       expect(toolsContainer).toContainElement(screen.getByRole('button', { name: /use standard array/i }));
       expect(toolsContainer).toContainElement(screen.getByRole('button', { name: /roll dice/i }));
@@ -318,17 +318,17 @@ describe('AbilityScoresSection', () => {
   describe('Accessibility', () => {
     it('has proper section heading structure', () => {
       render(<AbilityScoresSection {...defaultProps} />);
-      
+
       const heading = screen.getByRole('heading', { name: /ability scores/i });
       expect(heading).toHaveAttribute('aria-level', '3');
     });
 
     it('associates ability modifiers with their scores', () => {
       render(<AbilityScoresSection {...defaultProps} />);
-      
+
       const strengthField = screen.getByLabelText(/strength/i);
       const strengthModifier = screen.getByTestId('strength-modifier');
-      
+
       expect(strengthField).toHaveAttribute('aria-describedby');
       expect(strengthModifier).toHaveAttribute('id', strengthField.getAttribute('aria-describedby')?.split(' ')[0]);
     });

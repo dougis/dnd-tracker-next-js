@@ -22,7 +22,7 @@ describe('BasicInfoSection', () => {
   describe('Character Name Field', () => {
     it('renders character name input with proper label', () => {
       render(<BasicInfoSection {...defaultProps} />);
-      
+
       const nameField = screen.getByLabelText(/character name/i);
       expect(nameField).toBeInTheDocument();
       expect(nameField).toHaveAttribute('type', 'text');
@@ -66,7 +66,7 @@ describe('BasicInfoSection', () => {
   describe('Character Type Selection', () => {
     it('renders character type select with PC and NPC options', () => {
       render(<BasicInfoSection {...defaultProps} />);
-      
+
       const typeField = screen.getByLabelText(/character type/i);
       expect(typeField).toBeInTheDocument();
       expect(typeField).toHaveAttribute('aria-required', 'true');
@@ -111,7 +111,7 @@ describe('BasicInfoSection', () => {
     it('renders race select with all D&D races', async () => {
       const user = userEvent.setup();
       render(<BasicInfoSection {...defaultProps} />);
-      
+
       const raceField = screen.getByLabelText(/race/i);
       expect(raceField).toBeInTheDocument();
       expect(raceField).toHaveAttribute('aria-required', 'true');
@@ -213,27 +213,27 @@ describe('BasicInfoSection', () => {
   describe('Section Layout', () => {
     it('renders section header with proper title', () => {
       render(<BasicInfoSection {...defaultProps} />);
-      
+
       expect(screen.getByText('Basic Information')).toBeInTheDocument();
       expect(screen.getByText(/character's fundamental details/i)).toBeInTheDocument();
     });
 
     it('applies proper responsive layout classes', () => {
       render(<BasicInfoSection {...defaultProps} />);
-      
+
       const section = screen.getByTestId('basic-info-section');
       expect(section).toHaveClass('space-y-4');
     });
 
     it('groups name and type fields together', () => {
       render(<BasicInfoSection {...defaultProps} />);
-      
+
       const nameField = screen.getByLabelText(/character name/i);
       const typeField = screen.getByLabelText(/character type/i);
-      
+
       const nameContainer = nameField.closest('[data-testid="name-type-group"]');
       const typeContainer = typeField.closest('[data-testid="name-type-group"]');
-      
+
       expect(nameContainer).toBe(typeContainer);
     });
   });
@@ -241,17 +241,17 @@ describe('BasicInfoSection', () => {
   describe('Accessibility', () => {
     it('has proper section heading structure', () => {
       render(<BasicInfoSection {...defaultProps} />);
-      
+
       const heading = screen.getByRole('heading', { name: /basic information/i });
       expect(heading).toHaveAttribute('aria-level', '3');
     });
 
     it('associates helper text with form fields', () => {
       render(<BasicInfoSection {...defaultProps} />);
-      
+
       const nameField = screen.getByLabelText(/character name/i);
       const helperText = screen.getByText(/choose a memorable name/i);
-      
+
       expect(nameField).toHaveAttribute('aria-describedby');
       expect(helperText).toHaveAttribute('id', nameField.getAttribute('aria-describedby'));
     });
