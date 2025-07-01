@@ -18,7 +18,7 @@ FROM base AS build
 
 # Install packages needed to build node modules
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential=12.9 node-gyp=9.3.1 pkg-config=0.29.2-1 python-is-python3=3.10.0-1
+    apt-get install --no-install-recommends -y build-essential pkg-config python3 
 
 # Install node modules
 COPY package-lock.json package.json ./
