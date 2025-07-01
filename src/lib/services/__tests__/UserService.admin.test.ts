@@ -172,7 +172,7 @@ describe('UserService Administrative Operations', () => {
 
     it('should preserve async nature of operations', async () => {
       const userId = '507f1f77bcf86cd799439011';
-      
+
       // Create a promise that resolves after a delay to test async behavior
       const delayedResult: ServiceResult<PublicUser> = {
         success: true,
@@ -187,7 +187,7 @@ describe('UserService Administrative Operations', () => {
         },
       };
 
-      mockUserServiceProfile.getUserById.mockImplementation(() => 
+      mockUserServiceProfile.getUserById.mockImplementation(() =>
         new Promise((resolve) => setTimeout(() => resolve(delayedResult), 10))
       );
 
