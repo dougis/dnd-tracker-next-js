@@ -14,32 +14,15 @@ import {
 } from '../utils';
 import { IInitiativeEntry, IParticipantReference } from '../interfaces';
 import { Types } from 'mongoose';
+import { createTestParticipant, createTestInitiativeEntry } from './test-helpers';
 
 describe('Encounter Utils', () => {
   describe('sortInitiativeOrder', () => {
     it('should sort by initiative descending', () => {
       const entries: IInitiativeEntry[] = [
-        {
-          participantId: new Types.ObjectId(),
-          initiative: 10,
-          dexterity: 15,
-          isActive: false,
-          hasActed: false,
-        },
-        {
-          participantId: new Types.ObjectId(),
-          initiative: 20,
-          dexterity: 12,
-          isActive: false,
-          hasActed: false,
-        },
-        {
-          participantId: new Types.ObjectId(),
-          initiative: 15,
-          dexterity: 18,
-          isActive: false,
-          hasActed: false,
-        },
+        createTestInitiativeEntry({ initiative: 10, dexterity: 15 }),
+        createTestInitiativeEntry({ initiative: 20, dexterity: 12 }),
+        createTestInitiativeEntry({ initiative: 15, dexterity: 18 }),
       ];
 
       const sorted = sortInitiativeOrder(entries);
@@ -50,20 +33,8 @@ describe('Encounter Utils', () => {
 
     it('should use dexterity as tiebreaker', () => {
       const entries: IInitiativeEntry[] = [
-        {
-          participantId: new Types.ObjectId(),
-          initiative: 15,
-          dexterity: 12,
-          isActive: false,
-          hasActed: false,
-        },
-        {
-          participantId: new Types.ObjectId(),
-          initiative: 15,
-          dexterity: 18,
-          isActive: false,
-          hasActed: false,
-        },
+        createTestInitiativeEntry({ initiative: 15, dexterity: 12 }),
+        createTestInitiativeEntry({ initiative: 15, dexterity: 18 }),
       ];
 
       const sorted = sortInitiativeOrder(entries);
@@ -108,19 +79,7 @@ describe('Encounter Utils', () => {
     it('should find participant by ID', () => {
       const characterId = new Types.ObjectId();
       const participants: IParticipantReference[] = [
-        {
-          characterId,
-          name: 'Test Character',
-          type: 'pc',
-          maxHitPoints: 100,
-          currentHitPoints: 80,
-          temporaryHitPoints: 0,
-          armorClass: 15,
-          isPlayer: true,
-          isVisible: true,
-          notes: '',
-          conditions: [],
-        },
+        createTestParticipant({ characterId }),
       ];
 
       const found = findParticipantById(participants, characterId.toString());
@@ -140,19 +99,7 @@ describe('Encounter Utils', () => {
     let participant: IParticipantReference;
 
     beforeEach(() => {
-      participant = {
-        characterId: new Types.ObjectId(),
-        name: 'Test Character',
-        type: 'pc',
-        maxHitPoints: 100,
-        currentHitPoints: 80,
-        temporaryHitPoints: 20,
-        armorClass: 15,
-        isPlayer: true,
-        isVisible: true,
-        notes: '',
-        conditions: [],
-      };
+      participant = createTestParticipant({ temporaryHitPoints: 20 });
     });
 
     it('should apply damage to temporary HP first', () => {
@@ -185,19 +132,7 @@ describe('Encounter Utils', () => {
     let participant: IParticipantReference;
 
     beforeEach(() => {
-      participant = {
-        characterId: new Types.ObjectId(),
-        name: 'Test Character',
-        type: 'pc',
-        maxHitPoints: 100,
-        currentHitPoints: 50,
-        temporaryHitPoints: 0,
-        armorClass: 15,
-        isPlayer: true,
-        isVisible: true,
-        notes: '',
-        conditions: [],
-      };
+      participant = createTestParticipant({ currentHitPoints: 50 });
     });
 
     it('should heal participant up to max HP', () => {
@@ -222,19 +157,10 @@ describe('Encounter Utils', () => {
     let participant: IParticipantReference;
 
     beforeEach(() => {
-      participant = {
-        characterId: new Types.ObjectId(),
-        name: 'Test Character',
-        type: 'pc',
-        maxHitPoints: 100,
+      participant = createTestParticipant({
         currentHitPoints: 100,
-        temporaryHitPoints: 0,
-        armorClass: 15,
-        isPlayer: true,
-        isVisible: true,
-        notes: '',
-        conditions: ['poisoned'],
-      };
+        conditions: ['poisoned']
+      });
     });
 
     describe('addConditionToParticipant', () => {
@@ -317,38 +243,19 @@ describe('Encounter Utils', () => {
 
   describe('validateParticipantHP', () => {
     it('should cap current HP at maximum', () => {
-      const participant: IParticipantReference = {
-        characterId: new Types.ObjectId(),
-        name: 'Test Character',
-        type: 'pc',
-        maxHitPoints: 100,
-        currentHitPoints: 150,
-        temporaryHitPoints: 0,
-        armorClass: 15,
-        isPlayer: true,
-        isVisible: true,
-        notes: '',
-        conditions: [],
-      };
+      const participant: IParticipantReference = createTestParticipant({
+        currentHitPoints: 150
+      });
 
       validateParticipantHP(participant);
       expect(participant.currentHitPoints).toBe(100);
     });
 
     it('should ensure temporary HP is not negative', () => {
-      const participant: IParticipantReference = {
-        characterId: new Types.ObjectId(),
-        name: 'Test Character',
-        type: 'pc',
-        maxHitPoints: 100,
+      const participant: IParticipantReference = createTestParticipant({
         currentHitPoints: 100,
-        temporaryHitPoints: -10,
-        armorClass: 15,
-        isPlayer: true,
-        isVisible: true,
-        notes: '',
-        conditions: [],
-      };
+        temporaryHitPoints: -10
+      });
 
       validateParticipantHP(participant);
       expect(participant.temporaryHitPoints).toBe(0);

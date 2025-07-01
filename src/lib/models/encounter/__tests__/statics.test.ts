@@ -10,6 +10,7 @@ import {
   createEncounter,
 } from '../statics';
 import { CreateEncounterInput } from '../interfaces';
+import { createTestParticipant, createMockConstructorSetup } from './test-helpers';
 
 // Mock model context
 const mockModel = {
@@ -17,6 +18,7 @@ const mockModel = {
   sort: jest.fn().mockReturnThis(),
   save: jest.fn(),
 };
+
 
 describe('Encounter Static Methods', () => {
   beforeEach(() => {
@@ -107,26 +109,10 @@ describe('Encounter Static Methods', () => {
         ownerId: new Types.ObjectId().toString(),
         name: 'Test Encounter',
         description: 'Test description',
-        participants: [{
-          characterId: new Types.ObjectId(),
-          name: 'Test Character',
-          type: 'pc',
-          maxHitPoints: 100,
-          currentHitPoints: 100,
-          temporaryHitPoints: 0,
-          armorClass: 15,
-          isPlayer: true,
-          isVisible: true,
-          notes: '',
-          conditions: [],
-        }],
+        participants: [createTestParticipant()],
       };
 
-      const mockEncounter = {
-        save: jest.fn().mockResolvedValue(true),
-      };
-
-      const MockConstructor = jest.fn().mockReturnValue(mockEncounter);
+      const { mockInstance: mockEncounter, MockConstructor } = createMockConstructorSetup();
 
       await createEncounter.call(MockConstructor, encounterData);
 
@@ -145,19 +131,7 @@ describe('Encounter Static Methods', () => {
       const encounterData: CreateEncounterInput = {
         ownerId: new Types.ObjectId().toString(),
         name: 'Test Encounter',
-        participants: [{
-          characterId: new Types.ObjectId(),
-          name: 'Test Character',
-          type: 'pc',
-          maxHitPoints: 100,
-          currentHitPoints: 100,
-          temporaryHitPoints: 0,
-          armorClass: 15,
-          isPlayer: true,
-          isVisible: true,
-          notes: '',
-          conditions: [],
-        }],
+        participants: [createTestParticipant()],
         difficulty: 'hard',
         estimatedDuration: 90,
         targetLevel: 8,
@@ -170,11 +144,7 @@ describe('Encounter Static Methods', () => {
         isPublic: true,
       };
 
-      const mockEncounter = {
-        save: jest.fn().mockResolvedValue(true),
-      };
-
-      const MockConstructor = jest.fn().mockReturnValue(mockEncounter);
+      const { mockInstance: mockEncounter, MockConstructor } = createMockConstructorSetup();
 
       await createEncounter.call(MockConstructor, encounterData);
 
