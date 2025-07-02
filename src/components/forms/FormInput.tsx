@@ -48,6 +48,7 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
             className
           )}
           aria-invalid={error ? 'true' : 'false'}
+          aria-required={required ? 'true' : undefined}
           aria-describedby={
             error
               ? `${inputId}-error`
@@ -55,6 +56,7 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
                 ? `${inputId}-helper`
                 : undefined
           }
+          required={required}
           {...props}
         />
         {error && (

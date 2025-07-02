@@ -77,6 +77,35 @@ if (typeof window !== 'undefined') {
 // Mock scrollTo
 global.scrollTo = jest.fn();
 
+// Mock missing JSDOM functions needed for Radix UI
+if (typeof window !== 'undefined') {
+  // Add hasPointerCapture to Element prototype
+  Element.prototype.hasPointerCapture = jest.fn(() => false);
+  Element.prototype.setPointerCapture = jest.fn();
+  Element.prototype.releasePointerCapture = jest.fn();
+  // Add getBoundingClientRect if not present
+  if (!Element.prototype.getBoundingClientRect) {
+    Element.prototype.getBoundingClientRect = jest.fn(() => ({
+      width: 0,
+      height: 0,
+      top: 0,
+      left: 0,
+      bottom: 0,
+      right: 0,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
+    }));
+  }
+
+  // Mock getComputedStyle
+  if (!window.getComputedStyle) {
+    window.getComputedStyle = jest.fn(() => ({
+      getPropertyValue: jest.fn(() => ''),
+    }));
+  }
+}
+
 // Mock requestAnimationFrame
 global.requestAnimationFrame = function (callback) {
   return setTimeout(callback, 0);
@@ -123,14 +152,21 @@ jest.mock('mongodb', () => ({
     .mockImplementation(id => ({ toString: () => id || 'mock-object-id' })),
 }));
 
-jest.mock('mongoose', () => ({
-  connect: jest.fn().mockResolvedValue({}),
-  connection: {
-    readyState: 1,
-    on: jest.fn(),
-    once: jest.fn(),
-  },
-  Schema: jest.fn().mockImplementation(function (_definition) {
+jest.mock('mongoose', () => {
+  const mockObjectId = jest
+    .fn()
+    .mockImplementation(id => ({ toString: () => id || 'mock-object-id' }));
+
+  const SchemaTypes = {
+    ObjectId: mockObjectId,
+    String: String,
+    Number: Number,
+    Boolean: Boolean,
+    Array: Array,
+    Date: Date,
+  };
+
+  const MockSchema = jest.fn().mockImplementation(function (_definition) {
     return {
       pre: jest.fn(),
       post: jest.fn(),
@@ -143,12 +179,23 @@ jest.mock('mongoose', () => ({
       plugin: jest.fn(),
       index: jest.fn(),
     };
-  }),
-  model: jest.fn(),
-  models: {},
-  Types: {
-    ObjectId: jest
-      .fn()
-      .mockImplementation(id => ({ toString: () => id || 'mock-object-id' })),
-  },
-}));
+  });
+
+  // Add Schema.Types static property
+  MockSchema.Types = SchemaTypes;
+
+  return {
+    connect: jest.fn().mockResolvedValue({}),
+    connection: {
+      readyState: 1,
+      on: jest.fn(),
+      once: jest.fn(),
+    },
+    Schema: MockSchema,
+    model: jest.fn(),
+    models: {},
+    Types: {
+      ObjectId: mockObjectId,
+    },
+  };
+});
