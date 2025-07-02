@@ -3,6 +3,14 @@
 import React from 'react';
 import { FormInput } from '@/components/forms/FormInput';
 import { FormGroup } from '@/components/forms/FormGroup';
+import {
+  calculateModifier,
+  calculateProficiencyBonus,
+  getPrimaryHitDie,
+  getTotalLevel,
+  formatModifier,
+  parseNumberInput
+} from './combat-stats-utils';
 
 interface CombatStatsData {
   hitPoints: {
@@ -42,36 +50,35 @@ export function CombatStatsSection({
   abilityScores,
   classes
 }: CombatStatsSectionProps) {
-  const calculateModifier = (score: number): number => {
-    return Math.floor((score - 10) / 2);
+  const updateHitPointField = (field: string, newValue: string) => {
+    onChange({
+      ...value,
+      hitPoints: {
+        ...value.hitPoints,
+        [field]: parseNumberInput(newValue),
+      },
+    });
   };
 
-  const calculateProficiencyBonus = (): number => {
-    const totalLevel = classes.reduce((sum, cls) => sum + cls.level, 0);
-    return Math.ceil(totalLevel / 4) + 1;
+  const updateGeneralField = (field: string, newValue: string) => {
+    onChange({
+      ...value,
+      [field]: parseNumberInput(newValue),
+    });
   };
 
-  const updateField = (field: string, newValue: string | number) => {
+  const updateField = (field: string, newValue: string) => {
     if (field.startsWith('hitPoints.')) {
       const hpField = field.split('.')[1];
-      onChange({
-        ...value,
-        hitPoints: {
-          ...value.hitPoints,
-          [hpField]: typeof newValue === 'string' ? parseInt(newValue) || 0 : newValue,
-        },
-      });
+      updateHitPointField(hpField, newValue);
     } else {
-      onChange({
-        ...value,
-        [field]: typeof newValue === 'string' ? parseInt(newValue) || 0 : newValue,
-      });
+      updateGeneralField(field, newValue);
     }
   };
 
   const constitutionModifier = calculateModifier(abilityScores.constitution);
   const dexterityModifier = calculateModifier(abilityScores.dexterity);
-  const suggestedProficiencyBonus = calculateProficiencyBonus();
+  const suggestedProficiencyBonus = calculateProficiencyBonus(classes);
 
   return (
     <div className="space-y-6">
@@ -100,7 +107,7 @@ export function CombatStatsSection({
                 min={1}
                 max={9999}
                 required
-                helperText={`CON modifier: ${constitutionModifier >= 0 ? '+' : ''}${constitutionModifier}`}
+                helperText={`CON modifier: ${formatModifier(constitutionModifier)}`}
               />
             </div>
             <div className="flex-1">
@@ -142,7 +149,7 @@ export function CombatStatsSection({
               min={1}
               max={30}
               required
-              helperText={`DEX modifier: ${dexterityModifier >= 0 ? '+' : ''}${dexterityModifier}`}
+              helperText={`DEX modifier: ${formatModifier(dexterityModifier)}`}
             />
           </div>
           <div className="flex-1">
@@ -180,22 +187,19 @@ export function CombatStatsSection({
             <div>
               <div className="text-muted-foreground">Initiative</div>
               <div className="font-mono">
-                {dexterityModifier >= 0 ? '+' : ''}{dexterityModifier}
+                {formatModifier(dexterityModifier)}
               </div>
             </div>
             <div>
               <div className="text-muted-foreground">Hit Die</div>
               <div className="font-mono">
-                {classes.length > 0 ? `d${classes[0]?.className === 'barbarian' ? '12' :
-                  classes[0]?.className === 'fighter' || classes[0]?.className === 'paladin' || classes[0]?.className === 'ranger' ? '10' :
-                  classes[0]?.className === 'bard' || classes[0]?.className === 'cleric' || classes[0]?.className === 'druid' ||
-                  classes[0]?.className === 'monk' || classes[0]?.className === 'rogue' || classes[0]?.className === 'warlock' ? '8' : '6'}` : 'd8'}
+                {getPrimaryHitDie(classes)}
               </div>
             </div>
             <div>
               <div className="text-muted-foreground">Total Level</div>
               <div className="font-mono">
-                {classes.reduce((sum, cls) => sum + cls.level, 0)}
+                {getTotalLevel(classes)}
               </div>
             </div>
             <div>

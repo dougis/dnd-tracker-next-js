@@ -4,6 +4,14 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertCircle } from 'lucide-react';
+import {
+  calculateModifier,
+  formatRace,
+  formatClassName,
+  calculateTotalLevel,
+  formatHitPoints,
+  getCompletionSections
+} from './character-preview-utils';
 
 interface BasicInfoData {
   name: string;
@@ -52,35 +60,8 @@ export function CharacterPreview({
   combatStats,
   isValid,
 }: CharacterPreviewProps) {
-  const calculateModifier = (score: number): string => {
-    const modifier = Math.floor((score - 10) / 2);
-    return modifier >= 0 ? `+${modifier}` : `${modifier}`;
-  };
-
-  const formatRace = (race: string, customRace?: string): string => {
-    if (race === 'custom' && customRace) {
-      return customRace;
-    }
-    return race.charAt(0).toUpperCase() + race.slice(1).replace('-', ' ');
-  };
-
-  const formatClassName = (className: string): string => {
-    return className.charAt(0).toUpperCase() + className.slice(1);
-  };
-
-  const totalLevel = classes.reduce((sum, cls) => sum + cls.level, 0);
-
-  const hasBasicInfo = basicInfo.name && basicInfo.type && basicInfo.race;
-  const hasValidAbilityScores = Object.values(abilityScores).every(score => score >= 1 && score <= 30);
-  const hasValidClasses = classes.length > 0 && classes.every(cls => cls.level >= 1);
-  const hasValidCombatStats = combatStats.hitPoints.maximum > 0 && combatStats.armorClass > 0;
-
-  const completionSections = [
-    { name: 'Basic Info', completed: hasBasicInfo },
-    { name: 'Ability Scores', completed: hasValidAbilityScores },
-    { name: 'Classes', completed: hasValidClasses },
-    { name: 'Combat Stats', completed: hasValidCombatStats },
-  ];
+  const totalLevel = calculateTotalLevel(classes);
+  const completionSections = getCompletionSections(basicInfo, abilityScores, classes, combatStats);
 
   return (
     <Card className="w-full">
@@ -158,8 +139,7 @@ export function CharacterPreview({
             <div className="flex justify-between">
               <span>Hit Points</span>
               <span className="font-mono">
-                {combatStats.hitPoints.current}/{combatStats.hitPoints.maximum}
-                {combatStats.hitPoints.temporary ? ` (+${combatStats.hitPoints.temporary})` : ''}
+                {formatHitPoints(combatStats.hitPoints)}
               </span>
             </div>
             <div className="flex justify-between">

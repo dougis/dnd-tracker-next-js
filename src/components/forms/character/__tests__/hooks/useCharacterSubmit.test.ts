@@ -1,36 +1,20 @@
 import { renderHook, act } from '@testing-library/react';
 import { useCharacterSubmit } from '../../hooks/useCharacterSubmit';
 import { CharacterService } from '@/lib/services/CharacterService';
+import {
+  createMockProps,
+  mockCharacterData,
+  mockSuccessResult,
+  mockErrorResult,
+  expectInitialFormState
+} from '../test-helpers';
 
 // Mock the CharacterService
 jest.mock('@/lib/services/CharacterService');
 const mockCharacterService = CharacterService as jest.Mocked<typeof CharacterService>;
 
 describe('useCharacterSubmit', () => {
-  const mockOnSuccess = jest.fn();
-  const mockOnError = jest.fn();
-  const defaultProps = {
-    ownerId: 'user123',
-    onSuccess: mockOnSuccess,
-    onError: mockOnError,
-  };
-
-  const mockCharacterData = {
-    name: 'Test Character',
-    type: 'pc' as const,
-    race: 'human',
-    abilityScores: {
-      strength: 15,
-      dexterity: 14,
-      constitution: 13,
-      intelligence: 12,
-      wisdom: 11,
-      charisma: 10,
-    },
-    classes: [{ className: 'fighter', level: 1 }],
-    hitPoints: { maximum: 10, current: 10 },
-    armorClass: 16,
-  };
+  const defaultProps = createMockProps();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -39,11 +23,7 @@ describe('useCharacterSubmit', () => {
   describe('Initial State', () => {
     it('returns initial state values', () => {
       const { result } = renderHook(() => useCharacterSubmit(defaultProps));
-
-      expect(result.current.isSubmitting).toBe(false);
-      expect(result.current.submitError).toBe(null);
-      expect(typeof result.current.submitCharacter).toBe('function');
-      expect(typeof result.current.clearError).toBe('function');
+      expectInitialFormState(result);
     });
 
     it('works without optional callbacks', () => {
@@ -58,16 +38,7 @@ describe('useCharacterSubmit', () => {
 
   describe('Successful Submission', () => {
     it('handles successful character creation', async () => {
-      const mockResult = {
-        success: true,
-        data: {
-          id: 'char123',
-          name: 'Test Character',
-          type: 'pc',
-          level: 1,
-        },
-      };
-      mockCharacterService.createCharacter.mockResolvedValue(mockResult);
+      mockCharacterService.createCharacter.mockResolvedValue(mockSuccessResult);
 
       const { result } = renderHook(() => useCharacterSubmit(defaultProps));
 
@@ -76,8 +47,8 @@ describe('useCharacterSubmit', () => {
       });
 
       expect(mockCharacterService.createCharacter).toHaveBeenCalledWith('user123', mockCharacterData);
-      expect(mockOnSuccess).toHaveBeenCalledWith(mockResult.data);
-      expect(mockOnError).not.toHaveBeenCalled();
+      expect(defaultProps.onSuccess).toHaveBeenCalledWith(mockSuccessResult.data);
+      expect(defaultProps.onError).not.toHaveBeenCalled();
       expect(result.current.isSubmitting).toBe(false);
       expect(result.current.submitError).toBe(null);
     });
@@ -139,15 +110,7 @@ describe('useCharacterSubmit', () => {
 
   describe('Failed Submission', () => {
     it('handles service error response', async () => {
-      const mockError = {
-        success: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Character validation failed',
-          details: 'Name is required',
-        },
-      };
-      mockCharacterService.createCharacter.mockResolvedValue(mockError);
+      mockCharacterService.createCharacter.mockResolvedValue(mockErrorResult);
 
       const { result } = renderHook(() => useCharacterSubmit(defaultProps));
 
@@ -156,18 +119,10 @@ describe('useCharacterSubmit', () => {
       });
 
       expect(mockCharacterService.createCharacter).toHaveBeenCalledWith('user123', mockCharacterData);
-      expect(mockOnSuccess).not.toHaveBeenCalled();
-      expect(mockOnError).toHaveBeenCalledWith({
-        code: 'VALIDATION_ERROR',
-        message: 'Character validation failed',
-        details: 'Name is required',
-      });
+      expect(defaultProps.onSuccess).not.toHaveBeenCalled();
+      expect(defaultProps.onError).toHaveBeenCalledWith(mockErrorResult.error);
       expect(result.current.isSubmitting).toBe(false);
-      expect(result.current.submitError).toEqual({
-        code: 'VALIDATION_ERROR',
-        message: 'Character validation failed',
-        details: 'Name is required',
-      });
+      expect(result.current.submitError).toEqual(mockErrorResult.error);
     });
 
     it('handles service error with non-string details', async () => {
@@ -204,8 +159,8 @@ describe('useCharacterSubmit', () => {
         await result.current.submitCharacter(mockCharacterData);
       });
 
-      expect(mockOnSuccess).not.toHaveBeenCalled();
-      expect(mockOnError).toHaveBeenCalledWith({
+      expect(defaultProps.onSuccess).not.toHaveBeenCalled();
+      expect(defaultProps.onError).toHaveBeenCalledWith({
         code: 'UNKNOWN_ERROR',
         message: 'An unexpected error occurred. Please try again.',
         details: 'Network connection failed',
@@ -296,7 +251,7 @@ describe('useCharacterSubmit', () => {
 
       const { result } = renderHook(() => useCharacterSubmit({
         ownerId: 'user123',
-        onError: mockOnError,
+        onError: defaultProps.onError,
       }));
 
       await act(async () => {
@@ -305,7 +260,7 @@ describe('useCharacterSubmit', () => {
 
       expect(result.current.isSubmitting).toBe(false);
       expect(result.current.submitError).toBe(null);
-      expect(mockOnError).not.toHaveBeenCalled();
+      expect(defaultProps.onError).not.toHaveBeenCalled();
     });
 
     it('works correctly when onError is not provided', async () => {
@@ -320,7 +275,7 @@ describe('useCharacterSubmit', () => {
 
       const { result } = renderHook(() => useCharacterSubmit({
         ownerId: 'user123',
-        onSuccess: mockOnSuccess,
+        onSuccess: defaultProps.onSuccess,
       }));
 
       await act(async () => {
@@ -329,7 +284,7 @@ describe('useCharacterSubmit', () => {
 
       expect(result.current.isSubmitting).toBe(false);
       expect(result.current.submitError).not.toBe(null);
-      expect(mockOnSuccess).not.toHaveBeenCalled();
+      expect(defaultProps.onSuccess).not.toHaveBeenCalled();
     });
 
     it('works correctly when neither callback is provided', async () => {
@@ -373,15 +328,15 @@ describe('useCharacterSubmit', () => {
         await result.current.submitCharacter(mockCharacterData);
       });
 
-      expect(mockOnSuccess).toHaveBeenCalledTimes(1);
-      expect(mockOnSuccess).toHaveBeenLastCalledWith(mockResult1.data);
+      expect(defaultProps.onSuccess).toHaveBeenCalledTimes(1);
+      expect(defaultProps.onSuccess).toHaveBeenLastCalledWith(mockResult1.data);
 
       await act(async () => {
         await result.current.submitCharacter({ ...mockCharacterData, name: 'Second Character' });
       });
 
-      expect(mockOnSuccess).toHaveBeenCalledTimes(2);
-      expect(mockOnSuccess).toHaveBeenLastCalledWith(mockResult2.data);
+      expect(defaultProps.onSuccess).toHaveBeenCalledTimes(2);
+      expect(defaultProps.onSuccess).toHaveBeenLastCalledWith(mockResult2.data);
       expect(mockCharacterService.createCharacter).toHaveBeenCalledTimes(2);
     });
 
@@ -410,7 +365,7 @@ describe('useCharacterSubmit', () => {
       });
 
       expect(result.current.submitError).not.toBe(null);
-      expect(mockOnError).toHaveBeenCalledTimes(1);
+      expect(defaultProps.onError).toHaveBeenCalledTimes(1);
 
       // Second submission succeeds
       await act(async () => {
@@ -418,7 +373,7 @@ describe('useCharacterSubmit', () => {
       });
 
       expect(result.current.submitError).toBe(null);
-      expect(mockOnSuccess).toHaveBeenCalledTimes(1);
+      expect(defaultProps.onSuccess).toHaveBeenCalledTimes(1);
     });
   });
 
