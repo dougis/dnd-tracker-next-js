@@ -160,7 +160,7 @@ export const createTestEquipment = (overrides = {}) => ({
 export const generateSpellArray = (count: number) => 
   Array.from({ length: count }, () => createTestSpell());
 
-export const generateEquipmentArray = (count: number) => 
+export const generateEquipmentArray = (count: number) =>
   Array.from({ length: count }, () => createTestEquipment());
 
 // Common test data arrays
