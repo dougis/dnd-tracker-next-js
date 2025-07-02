@@ -83,7 +83,6 @@ if (typeof window !== 'undefined') {
   Element.prototype.hasPointerCapture = jest.fn(() => false);
   Element.prototype.setPointerCapture = jest.fn();
   Element.prototype.releasePointerCapture = jest.fn();
-  
   // Add getBoundingClientRect if not present
   if (!Element.prototype.getBoundingClientRect) {
     Element.prototype.getBoundingClientRect = jest.fn(() => ({

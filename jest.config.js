@@ -12,7 +12,7 @@ const customJestConfig = {
   globalTeardown: '<rootDir>/jest.global-teardown.js', // Added global teardown for MongoDB
   testEnvironment: 'jest-environment-jsdom',
   testPathIgnorePatterns: [
-    '<rootDir>/.next/', 
+    '<rootDir>/.next/',
     '<rootDir>/node_modules/',
     '<rootDir>/src/components/forms/character/__tests__/CharacterCreationForm.test.tsx'
   ],
