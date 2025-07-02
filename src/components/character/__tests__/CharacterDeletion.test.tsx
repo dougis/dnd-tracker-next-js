@@ -28,7 +28,7 @@ const renderCharacterDeletionDialog = (props: Partial<React.ComponentProps<typeo
     onDeleted: jest.fn(),
     ...props
   };
-  
+
   return {
     ...renderWithProviders(<CharacterDeletionDialog {...defaultProps} />),
     props: defaultProps

@@ -45,7 +45,7 @@ const renderCharacterComparison = (props: Partial<React.ComponentProps<typeof Ch
     onRejectChanges: jest.fn(),
     ...props
   };
-  
+
   return {
     ...renderWithProviders(<CharacterComparison {...defaultProps} />),
     props: defaultProps
@@ -141,8 +141,8 @@ describe('CharacterComparison', () => {
   });
 
   it('should display no changes message when characters are identical', () => {
-    renderCharacterComparison({ 
-      updatedCharacter: mockOriginalCharacter as ICharacter 
+    renderCharacterComparison({
+      updatedCharacter: mockOriginalCharacter as ICharacter
     });
 
     expect(screen.getByTestId('no-changes-message')).toBeInTheDocument();
