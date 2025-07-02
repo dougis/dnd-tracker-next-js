@@ -4,9 +4,7 @@ import { UserServiceResponseHelpers } from '../UserServiceResponseHelpers';
 import User from '../../models/User';
 import {
   UNIVERSAL_TEST_DATA,
-  UniversalServiceMocks,
-  UniversalAssertions,
-  UniversalTestPatterns
+  UniversalAssertions
 } from './unified-test-patterns';
 
 /**
