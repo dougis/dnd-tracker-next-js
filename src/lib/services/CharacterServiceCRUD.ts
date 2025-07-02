@@ -57,9 +57,10 @@ export class CharacterServiceCRUD {
       }
 
       // Create character using utility
+      const ownershipFilter = CharacterAccessUtils.createOwnershipFilter(ownerId) as { ownerId: any };
       const character = new Character({
         ...validatedData,
-        ownerId: CharacterAccessUtils.createOwnershipFilter(ownerId).ownerId,
+        ownerId: ownershipFilter.ownerId,
       });
 
       const savedCharacter = await character.save();
