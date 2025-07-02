@@ -22,4 +22,9 @@ jobs:
         run: npm ci
 
       - name: Build
+        env:
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'test-secret-for-ci-build-only' }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL || 'http://localhost:3000' }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI || 'mongodb://localhost:27017/test' }}
+          MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME || 'testdb' }}
         run: npm run build
