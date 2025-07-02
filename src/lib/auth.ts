@@ -4,7 +4,12 @@ import { MongoClient } from 'mongodb';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { UserService } from './services/UserService';
 
-const client = new MongoClient(process.env.MONGODB_URI!);
+const mongoUri = process.env.MONGODB_URI;
+if (!mongoUri) {
+  throw new Error('MONGODB_URI environment variable is not set');
+}
+
+const client = new MongoClient(mongoUri);
 const clientPromise = Promise.resolve(client);
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
