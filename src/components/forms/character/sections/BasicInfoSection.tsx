@@ -77,7 +77,6 @@ export function BasicInfoSection({ value, onChange, errors }: BasicInfoSectionPr
             helperText="Choose a memorable name for your character"
             required
             maxLength={100}
-            aria-describedby="name-helper"
           />
           <div className="text-xs text-muted-foreground mt-1">
             {value.name.length}/100
@@ -118,7 +117,6 @@ export function BasicInfoSection({ value, onChange, errors }: BasicInfoSectionPr
               helperText="Enter the name of your custom race"
               required
               maxLength={50}
-              aria-describedby="custom-race-helper"
             />
             <div className="text-xs text-muted-foreground mt-1">
               {value.customRace.length}/50

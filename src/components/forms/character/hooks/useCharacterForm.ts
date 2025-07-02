@@ -131,6 +131,19 @@ export function useCharacterForm() {
     }));
   }, []);
 
+  const categorizeError = (path: string, message: string, newErrors: any) => {
+    if (path.startsWith('name') || path.startsWith('type') || path.startsWith('race') || path.startsWith('customRace')) {
+      newErrors.basicInfo[path] = message;
+    } else if (path.startsWith('abilityScores')) {
+      const field = path.replace('abilityScores.', '');
+      newErrors.abilityScores[field] = message;
+    } else if (path.startsWith('classes')) {
+      newErrors.classes[path] = message;
+    } else if (path.startsWith('hitPoints') || path.startsWith('armorClass') || path.startsWith('speed') || path.startsWith('proficiencyBonus')) {
+      newErrors.combatStats[path] = message;
+    }
+  };
+
   const validateForm = useCallback((): boolean => {
     try {
       // Transform form data to match validation schema
@@ -168,17 +181,7 @@ export function useCharacterForm() {
 
         error.errors.forEach((err) => {
           const path = err.path.join('.');
-
-          if (path.startsWith('name') || path.startsWith('type') || path.startsWith('race') || path.startsWith('customRace')) {
-            newErrors.basicInfo[path] = err.message;
-          } else if (path.startsWith('abilityScores')) {
-            const field = path.replace('abilityScores.', '');
-            newErrors.abilityScores[field] = err.message;
-          } else if (path.startsWith('classes')) {
-            newErrors.classes[path] = err.message;
-          } else if (path.startsWith('hitPoints') || path.startsWith('armorClass') || path.startsWith('speed') || path.startsWith('proficiencyBonus')) {
-            newErrors.combatStats[path] = err.message;
-          }
+          categorizeError(path, err.message, newErrors);
         });
 
         setErrors(newErrors);
