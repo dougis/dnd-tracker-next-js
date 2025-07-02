@@ -26,7 +26,7 @@ fi
 echo "✅ Prerequisites check passed"
 
 # Load alpha environment variables
-export $(cat .env.alpha | grep -v '^#' | xargs)
+export $(grep -v '^#' .env.alpha | xargs)
 
 # Set Fly.io secrets
 echo "🔐 Setting Fly.io secrets..."
