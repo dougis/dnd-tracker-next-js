@@ -33,20 +33,7 @@ describe('UserServiceProfile - Subscription Management', () => {
   describe('updateSubscription', () => {
     SUBSCRIPTION_TIERS.forEach(tier => {
       it(`should successfully update subscription to ${tier}`, async () => {
-        const mockLookup = MockServiceHelpers.getMockLookup();
-        const mockDatabase = MockServiceHelpers.getMockDatabase();
-        const mockResponseHelpers = MockServiceHelpers.getMockResponseHelpers();
-
-        mockLookup.findUserOrError.mockResolvedValue({
-          success: true,
-          data: mockUser,
-        });
-        mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
-        mockResponseHelpers.createSuccessResponse.mockReturnValue({
-          success: true,
-          data: mockPublicUser,
-        });
-        mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
+        const { mockDatabase } = MockServiceHelpers.setupSubscriptionUpdate(mockUser, mockPublicUser);
 
         const result = await UserServiceProfile.updateSubscription(TEST_CONSTANTS.mockUserId, tier);
 
@@ -65,15 +52,14 @@ describe('UserServiceProfile - Subscription Management', () => {
     });
 
     it('should handle database errors during subscription update', async () => {
-      const mockLookup = MockServiceHelpers.getMockLookup();
-      const mockResponseHelpers = MockServiceHelpers.getMockResponseHelpers();
       const databaseError = new Error('Database connection failed');
+      const { mockLookup, mockResponseHelpers } = MockServiceHelpers.setupSimpleDatabaseError(
+        databaseError,
+        'Failed to update subscription',
+        'SUBSCRIPTION_UPDATE_FAILED'
+      );
 
       mockLookup.findUserOrError.mockRejectedValue(databaseError);
-      mockResponseHelpers.handleCustomError.mockReturnValue({
-        success: false,
-        error: { message: 'Failed to update subscription', code: 'SUBSCRIPTION_UPDATE_FAILED', statusCode: 500 },
-      });
 
       const result = await UserServiceProfile.updateSubscription(TEST_CONSTANTS.mockUserId, 'expert');
 

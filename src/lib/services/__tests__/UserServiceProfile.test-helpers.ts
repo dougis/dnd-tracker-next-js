@@ -97,6 +97,63 @@ export class MockServiceHelpers {
     return require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
   }
 
+  static setupBasicMocks() {
+    return {
+      mockValidation: this.getMockValidation(),
+      mockDatabase: this.getMockDatabase(),
+      mockLookup: this.getMockLookup(),
+      mockResponseHelpers: this.getMockResponseHelpers(),
+    };
+  }
+
+  static setupSuccessfulOperation(mockUser: any, mockPublicUser: PublicUser) {
+    const mocks = this.setupBasicMocks();
+
+    mocks.mockLookup.findUserOrError.mockResolvedValue({
+      success: true,
+      data: mockUser,
+    });
+    mocks.mockResponseHelpers.createSuccessResponse.mockReturnValue({
+      success: true,
+      data: mockPublicUser,
+    });
+    mocks.mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
+
+    return mocks;
+  }
+
+  static setupSubscriptionUpdate(mockUser: any, mockPublicUser: PublicUser) {
+    const mocks = this.setupSuccessfulOperation(mockUser, mockPublicUser);
+    mocks.mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
+    return mocks;
+  }
+
+  static setupDeletionSuccess(mockUser: any) {
+    const mocks = this.setupBasicMocks();
+
+    mocks.mockLookup.findUserOrError.mockResolvedValue({
+      success: true,
+      data: mockUser,
+    });
+    mocks.mockResponseHelpers.createSuccessResponse.mockReturnValue({
+      success: true,
+      data: { deleted: true },
+    });
+
+    return mocks;
+  }
+
+  static setupSimpleDatabaseError(error: Error, errorMessage: string, errorCode: string) {
+    const mocks = this.setupBasicMocks();
+
+    mocks.mockResponseHelpers.handleCustomError.mockReturnValue({
+      success: false,
+      error: { message: errorMessage, code: errorCode, statusCode: 500 },
+    });
+
+    return mocks;
+  }
+
   static setupSuccessfulUserLookup(mockUser: any, mockPublicUser: PublicUser) {
     const mockLookup = this.getMockLookup();
     const mockResponseHelpers = this.getMockResponseHelpers();
