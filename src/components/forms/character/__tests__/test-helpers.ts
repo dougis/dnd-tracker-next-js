@@ -102,7 +102,7 @@ export const createMockFormData = (overrides: any = {}) => ({
 });
 
 // Test assertion helpers
-export const expectFunctionToBeDefined = (fn: any, name: string) => {
+export const expectFunctionToBeDefined = (fn: any, _name: string) => {
   expect(typeof fn).toBe('function');
   expect(fn).toBeDefined();
 };

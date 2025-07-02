@@ -1,13 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
 import { useCharacterForm } from '../../hooks/useCharacterForm';
-import {
-  mockBasicInfoData,
-  mockAbilityScores,
-  mockClassData,
-  mockCombatStats,
-  createValidCharacterData,
-  createInvalidCharacterData
-} from '../test-helpers';
 
 describe('useCharacterForm', () => {
   beforeEach(() => {

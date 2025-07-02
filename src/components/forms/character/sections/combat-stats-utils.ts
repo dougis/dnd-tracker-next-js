@@ -1,6 +1,6 @@
 // Utility functions for combat stats calculations and helpers
 
-export type CharacterClass = 'barbarian' | 'fighter' | 'paladin' | 'ranger' | 
+export type CharacterClass = 'barbarian' | 'fighter' | 'paladin' | 'ranger' |
   'bard' | 'cleric' | 'druid' | 'monk' | 'rogue' | 'warlock' | 'wizard' | 'sorcerer';
 
 interface ClassData {
@@ -50,7 +50,7 @@ export const getHitDieSize = (className: string): number => {
  */
 export const getPrimaryHitDie = (classes: ClassData[]): string => {
   if (classes.length === 0) return 'd8';
-  
+
   const hitDieSize = getHitDieSize(classes[0].className);
   return `d${hitDieSize}`;
 };
