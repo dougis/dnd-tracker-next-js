@@ -9,6 +9,7 @@ This document provides comprehensive instructions for setting up NextAuth.js aut
 The following NextAuth.js components are already implemented:
 
 #### Core Authentication Configuration
+
 - **NextAuth.js v5 (beta.29)** - Latest version with enhanced security
 - **MongoDB Adapter** - Database session storage with MongoDB Atlas
 - **Credentials Provider** - Email/password authentication
@@ -16,6 +17,7 @@ The following NextAuth.js components are already implemented:
 - **JWT Configuration** - Enhanced token handling with user data
 
 #### API Routes
+
 - **Main Auth Handler**: `/src/app/api/auth/[...nextauth]/route.ts`
 - **User Registration**: `/src/app/api/auth/register/route.ts`
 - **Email Verification**: `/src/app/api/auth/verify-email/route.ts`
@@ -24,6 +26,7 @@ The following NextAuth.js components are already implemented:
 - **Resend Verification**: `/src/app/api/auth/resend-verification/route.ts`
 
 #### UI Components
+
 - **Sign In Page**: `/src/app/(auth)/signin/page.tsx`
 - **Sign Up Page**: `/src/app/(auth)/signup/page.tsx`
 - **Error Page**: `/src/app/(auth)/error/page.tsx`
@@ -31,12 +34,14 @@ The following NextAuth.js components are already implemented:
 - **Email Verification Page**: `/src/app/(auth)/verify-email/page.tsx`
 
 #### Middleware & Security
+
 - **Route Protection**: `/src/middleware.ts` - Protects dashboard and API routes
 - **Session Provider**: `/src/components/providers/SessionProvider.tsx`
 - **Authentication Utilities**: `/src/lib/middleware.ts` - API authentication helpers
 - **Type Definitions**: `/src/types/next-auth.d.ts` - Enhanced session types
 
 #### Testing Infrastructure
+
 - **Comprehensive Test Suite**: 32+ authentication tests
 - **Mock Configuration**: NextAuth.js mocking for tests
 - **Test Coverage**: 88%+ coverage for authentication flows
@@ -181,10 +186,10 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 
 #### Database Setup Steps
 
-1. **Create MongoDB Atlas Account**: https://cloud.mongodb.com/
+1. **Create MongoDB Atlas Account**: <https://cloud.mongodb.com/>
 2. **Create Clusters**:
    - Development: `dnd-tracker-dev`
-   - Alpha: `dnd-tracker-alpha` 
+   - Alpha: `dnd-tracker-alpha`
    - Production: `dnd-tracker-prod`
 
 3. **Configure Network Access**:
@@ -193,6 +198,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
    - Production: Restrict to production server IPs
 
 4. **Create Database Users**:
+
    ```javascript
    // Development user
    {
@@ -212,6 +218,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
    ```
 
 5. **Connection Strings**:
+
    ```bash
    # Development
    mongodb+srv://dnd-dev-user:password@dev-cluster.mongodb.net/dnd-tracker-dev?retryWrites=true&w=majority
@@ -250,7 +257,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 
 #### Production: SendGrid Setup
 
-1. Create SendGrid account: https://sendgrid.com/
+1. Create SendGrid account: <https://sendgrid.com/>
 2. Create API key with Mail Send permissions
 3. Add sender authentication (domain or single sender)
 4. Use API key as `EMAIL_SERVER_PASSWORD`
@@ -262,6 +269,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 After deployment, verify these authentication flows work:
 
 1. **User Registration**:
+
    ```bash
    curl -X POST https://your-domain.com/api/auth/register \
      -H "Content-Type: application/json" \
@@ -334,7 +342,8 @@ Check that sessions are properly stored:
 
 **Cause**: Missing or incorrect `NEXTAUTH_SECRET`
 
-**Solution**: 
+**Solution**:
+
 ```bash
 # Generate new secret
 openssl rand -base64 32
@@ -348,6 +357,7 @@ NEXTAUTH_SECRET=your-new-secret
 **Cause**: MongoDB connection string or network access issues
 
 **Solution**:
+
 - Verify MongoDB Atlas network access settings
 - Check connection string format
 - Ensure database user has correct permissions
@@ -357,6 +367,7 @@ NEXTAUTH_SECRET=your-new-secret
 **Cause**: Incorrect callback URLs in OAuth provider settings
 
 **Solution**:
+
 - Verify callback URL format: `{NEXTAUTH_URL}/api/auth/callback/{provider}`
 - Ensure `NEXTAUTH_URL` matches your domain exactly
 
@@ -365,6 +376,7 @@ NEXTAUTH_SECRET=your-new-secret
 **Cause**: Incorrect email server configuration
 
 **Solution**:
+
 - Verify SMTP settings
 - Check authentication credentials
 - Test email service separately
