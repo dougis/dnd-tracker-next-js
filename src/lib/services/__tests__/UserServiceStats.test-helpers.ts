@@ -2,23 +2,23 @@ import { UserServiceStats } from '../UserServiceStats';
 import { convertLeansUsersToPublic } from '../UserServiceHelpers';
 import { UserServiceResponseHelpers } from '../UserServiceResponseHelpers';
 import User from '../../models/User';
-import { SharedMockUtilities } from './shared-test-utilities';
+import {
+  UNIVERSAL_TEST_DATA,
+  UniversalServiceMocks,
+  UniversalAssertions,
+  UniversalTestPatterns
+} from './unified-test-patterns';
 
 /**
- * Test data generators and helper functions for UserServiceStats tests
- * Eliminates code duplication across test scenarios
+ * UserServiceStats test helpers - simplified using unified patterns
+ * Dramatically reduced by leveraging universal test patterns
  */
 
-export const STATS_TEST_CONSTANTS = {
-  mockUserId1: '507f1f77bcf86cd799439011',
-  mockUserId2: '507f1f77bcf86cd799439012',
-  mockEmail1: 'user1@example.com',
-  mockEmail2: 'user2@example.com',
-} as const;
+export const STATS_TEST_CONSTANTS = UNIVERSAL_TEST_DATA.constants;
 
 export const createMockUser = (index: number = 1) => ({
-  _id: index === 1 ? STATS_TEST_CONSTANTS.mockUserId1 : STATS_TEST_CONSTANTS.mockUserId2,
-  email: index === 1 ? STATS_TEST_CONSTANTS.mockEmail1 : STATS_TEST_CONSTANTS.mockEmail2,
+  _id: index === 1 ? STATS_TEST_CONSTANTS.mockUserId : `${STATS_TEST_CONSTANTS.mockUserId.slice(0, -1)}${index}`,
+  email: `user${index}@example.com`,
   username: `user${index}`,
   firstName: 'User',
   lastName: index === 1 ? 'One' : 'Two',
@@ -29,8 +29,8 @@ export const createMockUser = (index: number = 1) => ({
 });
 
 export const createMockPublicUser = (index: number = 1) => ({
-  id: index === 1 ? STATS_TEST_CONSTANTS.mockUserId1 : STATS_TEST_CONSTANTS.mockUserId2,
-  email: index === 1 ? STATS_TEST_CONSTANTS.mockEmail1 : STATS_TEST_CONSTANTS.mockEmail2,
+  id: index === 1 ? STATS_TEST_CONSTANTS.mockUserId : `${STATS_TEST_CONSTANTS.mockUserId.slice(0, -1)}${index}`,
+  email: `user${index}@example.com`,
   username: `user${index}`,
   firstName: 'User',
   lastName: index === 1 ? 'One' : 'Two',
@@ -51,7 +51,13 @@ export const createMockPublicUser = (index: number = 1) => ({
   },
 });
 
-export const createMockQueryChain = SharedMockUtilities.createMockQueryChain;
+// Use shared mock utilities
+export const createMockQueryChain = (mockUsers: any[] = []) => ({
+  sort: jest.fn().mockReturnThis(),
+  skip: jest.fn().mockReturnThis(),
+  limit: jest.fn().mockReturnThis(),
+  lean: jest.fn().mockResolvedValue(mockUsers),
+});
 
 export const createMockSubscriptionStats = () => [
   { _id: 'free', count: 50 },
@@ -60,7 +66,7 @@ export const createMockSubscriptionStats = () => [
 ];
 
 /**
- * Mock service helpers for UserServiceStats tests
+ * Stats test helpers - simplified through universal patterns
  */
 export class StatsTestHelpers {
   static setupBasicMocks() {
@@ -71,6 +77,7 @@ export class StatsTestHelpers {
     const mockUsers = [createMockUser(1), createMockUser(2)];
     const mockPublicUsers = [createMockPublicUser(1), createMockPublicUser(2)];
 
+    // Use universal error patterns
     mockResponseHelpers.createSuccessResponse.mockImplementation((data) => ({
       success: true,
       data,
@@ -128,15 +135,13 @@ export class StatsTestHelpers {
 }
 
 /**
- * Common assertion helpers for UserServiceStats tests
+ * Stats assertion helpers - delegates to universal patterns where possible
  */
 export class StatsAssertionHelpers {
-  static expectSuccessResult(result: any, expectedData?: any) {
-    SharedMockUtilities.expectStandardSuccessResult(result, expectedData);
-  }
+  static expectSuccessResult = UniversalAssertions.expectStandardSuccess;
 
   static expectErrorResult(result: any, expectHandleCustomError?: any) {
-    SharedMockUtilities.expectStandardErrorResult(result);
+    UniversalAssertions.expectStandardError(result);
     if (expectHandleCustomError) {
       expect(expectHandleCustomError).toHaveBeenCalled();
     }
@@ -173,7 +178,7 @@ export class StatsAssertionHelpers {
 }
 
 /**
- * Test scenario generators for common patterns
+ * Stats test scenarios - leverages universal patterns for common operations
  */
 export class StatsTestScenarios {
   static async testGetUsersSuccess(
