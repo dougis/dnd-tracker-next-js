@@ -57,6 +57,93 @@ export class CombatStateError extends EncounterServiceError {
 /**
  * Handle errors and convert them to ServiceResult error format for encounters
  */
+/**
+ * Create error response with given details
+ */
+function createErrorResponse(
+  message: string,
+  code: string,
+  statusCode: number
+): ServiceResult<never> {
+  return {
+    success: false,
+    error: { message, code, statusCode },
+  };
+}
+
+/**
+ * Handle EncounterServiceError instances
+ */
+function handleServiceError(error: EncounterServiceError): ServiceResult<never> {
+  return createErrorResponse(error.message, error.code, error.statusCode);
+}
+
+/**
+ * Handle MongoDB validation errors
+ */
+function handleValidationError(): ServiceResult<never> {
+  return createErrorResponse(
+    'Invalid encounter data provided',
+    'VALIDATION_ERROR',
+    400
+  );
+}
+
+/**
+ * Handle MongoDB duplicate key errors
+ */
+function handleDuplicateKeyError(): ServiceResult<never> {
+  return createErrorResponse(
+    'Duplicate encounter data detected',
+    'DUPLICATE_ENCOUNTER',
+    409
+  );
+}
+
+/**
+ * Handle MongoDB ObjectId casting errors
+ */
+function handleObjectIdError(): ServiceResult<never> {
+  return createErrorResponse(
+    'Invalid ID format provided',
+    'INVALID_ID_FORMAT',
+    400
+  );
+}
+
+/**
+ * Handle database connection errors
+ */
+function handleConnectionError(): ServiceResult<never> {
+  return createErrorResponse(
+    'Database connection error',
+    'DATABASE_ERROR',
+    503
+  );
+}
+
+/**
+ * Check if error is a MongoDB duplicate key error
+ */
+function isDuplicateKeyError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    'code' in error &&
+    (error as any).code === 11000
+  );
+}
+
+/**
+ * Check if error is a connection-related error
+ */
+function isConnectionError(error: Error): boolean {
+  return (
+    error.message.includes('connection') ||
+    error.message.includes('timeout') ||
+    error.message.includes('ECONNREFUSED')
+  );
+}
+
 export function handleEncounterServiceError(
   error: unknown,
   defaultMessage: string,
@@ -64,79 +151,24 @@ export function handleEncounterServiceError(
   defaultStatusCode: number = 500
 ): ServiceResult<never> {
   if (error instanceof EncounterServiceError) {
-    return {
-      success: false,
-      error: {
-        message: error.message,
-        code: error.code,
-        statusCode: error.statusCode,
-      },
-    };
+    return handleServiceError(error);
   }
 
-  // Handle MongoDB validation errors
-  if (error instanceof Error && error.message.includes('validation')) {
-    return {
-      success: false,
-      error: {
-        message: 'Invalid encounter data provided',
-        code: 'VALIDATION_ERROR',
-        statusCode: 400,
-      },
-    };
+  if (error instanceof Error) {
+    if (error.message.includes('validation')) {
+      return handleValidationError();
+    }
+    if (error.message.includes('ObjectId')) {
+      return handleObjectIdError();
+    }
+    if (isConnectionError(error)) {
+      return handleConnectionError();
+    }
   }
 
-  // Handle MongoDB duplicate key errors
-  if (
-    error instanceof Error &&
-    'code' in error &&
-    (error as any).code === 11000
-  ) {
-    return {
-      success: false,
-      error: {
-        message: 'Duplicate encounter data detected',
-        code: 'DUPLICATE_ENCOUNTER',
-        statusCode: 409,
-      },
-    };
+  if (isDuplicateKeyError(error)) {
+    return handleDuplicateKeyError();
   }
 
-  // Handle MongoDB ObjectId casting errors
-  if (error instanceof Error && error.message.includes('ObjectId')) {
-    return {
-      success: false,
-      error: {
-        message: 'Invalid ID format provided',
-        code: 'INVALID_ID_FORMAT',
-        statusCode: 400,
-      },
-    };
-  }
-
-  // Handle connection/database errors
-  if (
-    error instanceof Error &&
-    (error.message.includes('connection') ||
-      error.message.includes('timeout') ||
-      error.message.includes('ECONNREFUSED'))
-  ) {
-    return {
-      success: false,
-      error: {
-        message: 'Database connection error',
-        code: 'DATABASE_ERROR',
-        statusCode: 503,
-      },
-    };
-  }
-
-  return {
-    success: false,
-    error: {
-      message: defaultMessage,
-      code: defaultCode,
-      statusCode: defaultStatusCode,
-    },
-  };
+  return createErrorResponse(defaultMessage, defaultCode, defaultStatusCode);
 }
