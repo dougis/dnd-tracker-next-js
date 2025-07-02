@@ -1,20 +1,12 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import type { ICharacter } from '@/lib/models/Character';
 import { CharacterActionButtons } from './CharacterActionButtons';
+import { CharacterSelectionCheckbox } from './CharacterSelectionCheckbox';
 import { formatCharacterClass, formatHitPoints } from './utils';
+import type { CharacterDisplayProps } from './types';
 
-interface CharacterGridProps {
-  characters: ICharacter[];
-  selectedCharacters: Set<string>;
-  onCharacterSelect?: (_character: ICharacter) => void;
-  onCharacterEdit?: (_character: ICharacter) => void;
-  onCharacterDelete?: (_character: ICharacter) => void;
-  onCharacterDuplicate?: (_character: ICharacter) => void;
-  onSelectCharacter: (_characterId: string, _selected: boolean) => void;
-}
+interface CharacterGridProps extends CharacterDisplayProps {}
 
 export function CharacterGrid({
   characters,
@@ -44,12 +36,10 @@ export function CharacterGrid({
                   Level {character.level}
                 </p>
               </div>
-              <Checkbox
-                checked={selectedCharacters.has(character._id.toString())}
-                onCheckedChange={(checked) =>
-                  onSelectCharacter(character._id.toString(), checked as boolean)
-                }
-                onClick={(e) => e.stopPropagation()}
+              <CharacterSelectionCheckbox
+                characterId={character._id.toString()}
+                isSelected={selectedCharacters.has(character._id.toString())}
+                onSelectCharacter={onSelectCharacter}
               />
             </div>
           </CardHeader>

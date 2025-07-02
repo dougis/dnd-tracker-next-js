@@ -84,3 +84,34 @@ export const expectCharactersNotToBeVisible = (characterNames: string[]) => {
     expect(screen.queryByText(name)).not.toBeInTheDocument();
   });
 };
+
+export const renderCharacterListAndWait = async (props: any) => {
+  const { render } = await import('@testing-library/react');
+  const React = await import('react');
+  const { CharacterListView } = await import('../CharacterListView');
+
+  render(React.createElement(CharacterListView, props));
+  await waitForCharacterToLoad();
+};
+
+export const testFilterOperation = async (
+  props: any,
+  filterSelector: string,
+  filterValue: string,
+  expectedVisible: string[],
+  expectedHidden: string[]
+) => {
+  const { screen, fireEvent, waitFor } = await import('@testing-library/react');
+
+  await renderCharacterListAndWait(props);
+
+  const filterElement = screen.getByRole('combobox', { name: new RegExp(filterSelector, 'i') });
+  fireEvent.change(filterElement, { target: { value: filterValue } });
+
+  await waitFor(() => {
+    expectedVisible.forEach(name => expectCharacterToBeVisible(name));
+    if (expectedHidden.length > 0) {
+      expectCharactersNotToBeVisible(expectedHidden);
+    }
+  });
+};

@@ -9,6 +9,8 @@ import {
   waitForCharacterToLoad,
   expectCharacterToBeVisible,
   expectCharactersNotToBeVisible,
+  renderCharacterListAndWait,
+  testFilterOperation,
 } from './test-helpers';
 
 // Mock the CharacterService
@@ -87,9 +89,7 @@ describe('CharacterListView', () => {
 
   describe('Search and Filtering', () => {
     it('should render search input', async () => {
-      render(<CharacterListView {...defaultProps} />);
-      await waitForCharacterToLoad();
-
+      await renderCharacterListAndWait(defaultProps);
       const searchInput = screen.getByPlaceholderText(/search characters/i);
       expect(searchInput).toBeInTheDocument();
     });
@@ -109,30 +109,23 @@ describe('CharacterListView', () => {
     });
 
     it('should filter characters by class', async () => {
-      render(<CharacterListView {...defaultProps} />);
-      await waitForCharacterToLoad();
-
-      const classFilter = screen.getByRole('combobox', { name: /filter by class/i });
-      fireEvent.change(classFilter, { target: { value: 'ranger' } });
-
-      await waitFor(() => {
-        expectCharacterToBeVisible('Aragorn');
-        expectCharacterToBeVisible('Legolas');
-        expectCharactersNotToBeVisible(['Gimli']);
-      });
+      await testFilterOperation(
+        defaultProps,
+        'filter by class',
+        'ranger',
+        ['Aragorn', 'Legolas'],
+        ['Gimli']
+      );
     });
 
     it('should filter characters by race', async () => {
-      render(<CharacterListView {...defaultProps} />);
-      await waitForCharacterToLoad();
-
-      const raceFilter = screen.getByRole('combobox', { name: /filter by race/i });
-      fireEvent.change(raceFilter, { target: { value: 'human' } });
-
-      await waitFor(() => {
-        expectCharacterToBeVisible('Aragorn');
-        expectCharactersNotToBeVisible(['Legolas', 'Gimli']);
-      });
+      await testFilterOperation(
+        defaultProps,
+        'filter by race',
+        'human',
+        ['Aragorn'],
+        ['Legolas', 'Gimli']
+      );
     });
   });
 
