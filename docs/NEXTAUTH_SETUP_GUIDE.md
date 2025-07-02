@@ -186,7 +186,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 
 #### Database Setup Steps
 
-1. **Create MongoDB Atlas Account**: <https://cloud.mongodb.com/>
+1. **Create MongoDB Atlas Account**: [MongoDB Atlas](https://cloud.mongodb.com/)
 2. **Create Clusters**:
    - Development: `dnd-tracker-dev`
    - Alpha: `dnd-tracker-alpha`
@@ -257,7 +257,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 
 #### Production: SendGrid Setup
 
-1. Create SendGrid account: <https://sendgrid.com/>
+1. Create SendGrid account: [SendGrid](https://sendgrid.com/)
 2. Create API key with Mail Send permissions
 3. Add sender authentication (domain or single sender)
 4. Use API key as `EMAIL_SERVER_PASSWORD`
