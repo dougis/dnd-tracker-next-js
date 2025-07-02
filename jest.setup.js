@@ -153,14 +153,21 @@ jest.mock('mongodb', () => ({
     .mockImplementation(id => ({ toString: () => id || 'mock-object-id' })),
 }));
 
-jest.mock('mongoose', () => ({
-  connect: jest.fn().mockResolvedValue({}),
-  connection: {
-    readyState: 1,
-    on: jest.fn(),
-    once: jest.fn(),
-  },
-  Schema: jest.fn().mockImplementation(function (_definition) {
+jest.mock('mongoose', () => {
+  const mockObjectId = jest
+    .fn()
+    .mockImplementation(id => ({ toString: () => id || 'mock-object-id' }));
+
+  const SchemaTypes = {
+    ObjectId: mockObjectId,
+    String: String,
+    Number: Number,
+    Boolean: Boolean,
+    Array: Array,
+    Date: Date,
+  };
+
+  const MockSchema = jest.fn().mockImplementation(function (_definition) {
     return {
       pre: jest.fn(),
       post: jest.fn(),
@@ -173,12 +180,23 @@ jest.mock('mongoose', () => ({
       plugin: jest.fn(),
       index: jest.fn(),
     };
-  }),
-  model: jest.fn(),
-  models: {},
-  Types: {
-    ObjectId: jest
-      .fn()
-      .mockImplementation(id => ({ toString: () => id || 'mock-object-id' })),
-  },
-}));
+  });
+
+  // Add Schema.Types static property
+  MockSchema.Types = SchemaTypes;
+
+  return {
+    connect: jest.fn().mockResolvedValue({}),
+    connection: {
+      readyState: 1,
+      on: jest.fn(),
+      once: jest.fn(),
+    },
+    Schema: MockSchema,
+    model: jest.fn(),
+    models: {},
+    Types: {
+      ObjectId: mockObjectId,
+    },
+  };
+});
