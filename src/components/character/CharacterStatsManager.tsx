@@ -9,6 +9,7 @@ import { Loader2, Edit, Save, X, Plus } from 'lucide-react';
 import { CharacterService } from '@/lib/services/CharacterService';
 import { CharacterStats } from '@/lib/services/CharacterServiceStats';
 import type { ICharacter } from '@/lib/models/Character';
+import type { CharacterUpdate } from '@/lib/validations/character';
 
 interface CharacterStatsManagerProps {
   characterId: string;
@@ -24,11 +25,11 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [editedCharacter, setEditedCharacter] = useState<Partial<ICharacter>>({});
+  const [editedCharacter, setEditedCharacter] = useState<CharacterUpdate>({});
 
   useEffect(() => {
     loadCharacterData();
-  }, [characterId, userId]);
+  }, [characterId, userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadCharacterData = async () => {
     try {
@@ -44,7 +45,12 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
       }
 
       setCharacter(characterResult.data);
-      setEditedCharacter(characterResult.data);
+      // Initialize editedCharacter with just the editable fields
+      setEditedCharacter({
+        abilityScores: characterResult.data.abilityScores,
+        backstory: characterResult.data.backstory,
+        notes: characterResult.data.notes
+      });
 
       // Load character stats
       const statsResult = await CharacterService.calculateCharacterStats(characterId, userId);
@@ -67,7 +73,7 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
     try {
       setSaving(true);
       const result = await CharacterService.updateCharacter(characterId, userId, editedCharacter);
-      
+
       if (result.success) {
         setCharacter(result.data);
         setEditMode(false);
@@ -86,7 +92,7 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
   };
 
   const handleCancel = () => {
-    setEditedCharacter(character || {});
+    setEditedCharacter({});
     setEditMode(false);
   };
 
@@ -193,7 +199,7 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
               const score = (editMode ? editedCharacter.abilityScores : character.abilityScores)?.[ability as keyof typeof character.abilityScores] || 10;
               const modifier = Math.floor((score - 10) / 2);
               const modifierString = modifier >= 0 ? `+${modifier}` : `${modifier}`;
-              
+
               return (
                 <div key={ability} data-testid={`ability-${ability}`} className="text-center p-4 border rounded">
                   <div className="text-xs font-medium uppercase mb-1">
@@ -271,10 +277,10 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
               const isProficient = character.savingThrows[ability as keyof typeof character.savingThrows];
               const bonus = stats?.savingThrows[ability] || 0;
               const bonusString = bonus >= 0 ? `+${bonus}` : `${bonus}`;
-              
+
               return (
-                <div 
-                  key={ability} 
+                <div
+                  key={ability}
                   data-testid={`saving-throw-${ability}`}
                   className={`text-center p-2 border rounded ${isProficient ? 'proficient bg-blue-50 border-blue-200' : ''}`}
                 >
@@ -300,10 +306,10 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
             {Array.from(character.skills.entries()).map(([skill, isProficient]) => {
               const bonus = stats?.skills[skill] || 0;
               const bonusString = bonus >= 0 ? `+${bonus}` : `${bonus}`;
-              
+
               return (
-                <div 
-                  key={skill} 
+                <div
+                  key={skill}
                   data-testid={`skill-${skill}`}
                   className={`flex justify-between items-center p-2 border rounded ${isProficient ? 'proficient bg-blue-50 border-blue-200' : ''}`}
                 >

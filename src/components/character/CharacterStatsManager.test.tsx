@@ -119,7 +119,7 @@ describe('CharacterStatsManager', () => {
   describe('Basic Rendering', () => {
     it('should render character stats manager component', async () => {
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('character-stats-manager')).toBeInTheDocument();
       });
@@ -127,13 +127,13 @@ describe('CharacterStatsManager', () => {
 
     it('should display loading state initially', () => {
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       expect(screen.getByTestId('stats-loading')).toBeInTheDocument();
     });
 
     it('should display character name when loaded', async () => {
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Test Character')).toBeInTheDocument();
       });
@@ -143,7 +143,7 @@ describe('CharacterStatsManager', () => {
   describe('Ability Scores Display', () => {
     it('should display all six ability scores', async () => {
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('ability-strength')).toBeInTheDocument();
         expect(screen.getByTestId('ability-dexterity')).toBeInTheDocument();
@@ -156,7 +156,7 @@ describe('CharacterStatsManager', () => {
 
     it('should display ability scores with correct values', async () => {
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('ability-strength')).toHaveTextContent('16');
         expect(screen.getByTestId('ability-strength')).toHaveTextContent('+3');
@@ -166,7 +166,7 @@ describe('CharacterStatsManager', () => {
     it('should allow editing ability scores when in edit mode', async () => {
       const user = userEvent.setup();
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('ability-strength')).toBeInTheDocument();
       });
@@ -185,7 +185,7 @@ describe('CharacterStatsManager', () => {
   describe('Derived Stats Display', () => {
     it('should display armor class, initiative, and hit points', async () => {
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('armor-class')).toHaveTextContent('18');
         expect(screen.getByTestId('initiative')).toHaveTextContent('+2');
@@ -195,7 +195,7 @@ describe('CharacterStatsManager', () => {
 
     it('should display saving throws with proficiency indicators', async () => {
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('saving-throw-strength')).toHaveTextContent('+6');
         expect(screen.getByTestId('saving-throw-strength')).toHaveClass('proficient');
@@ -206,7 +206,7 @@ describe('CharacterStatsManager', () => {
 
     it('should display skills with proficiency indicators', async () => {
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('skill-athletics')).toHaveTextContent('+6');
         expect(screen.getByTestId('skill-athletics')).toHaveClass('proficient');
@@ -219,7 +219,7 @@ describe('CharacterStatsManager', () => {
   describe('Equipment Management', () => {
     it('should display equipment list', async () => {
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('equipment-list')).toBeInTheDocument();
         expect(screen.getByText('Longsword')).toBeInTheDocument();
@@ -229,7 +229,7 @@ describe('CharacterStatsManager', () => {
     it('should allow adding new equipment', async () => {
       const user = userEvent.setup();
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('equipment-list')).toBeInTheDocument();
       });
@@ -242,7 +242,7 @@ describe('CharacterStatsManager', () => {
 
     it('should calculate total equipment weight', async () => {
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('total-weight')).toHaveTextContent('3 lbs');
       });
@@ -252,7 +252,7 @@ describe('CharacterStatsManager', () => {
   describe('Character Notes', () => {
     it('should display backstory and notes sections', async () => {
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('backstory-section')).toBeInTheDocument();
         expect(screen.getByTestId('notes-section')).toBeInTheDocument();
@@ -264,7 +264,7 @@ describe('CharacterStatsManager', () => {
     it('should allow editing backstory and notes', async () => {
       const user = userEvent.setup();
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('backstory-section')).toBeInTheDocument();
       });
@@ -286,7 +286,7 @@ describe('CharacterStatsManager', () => {
       });
 
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('error-message')).toHaveTextContent('Character not found');
       });
@@ -299,7 +299,7 @@ describe('CharacterStatsManager', () => {
       });
 
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('stats-error')).toHaveTextContent('Failed to calculate stats');
       });
@@ -315,7 +315,7 @@ describe('CharacterStatsManager', () => {
       });
 
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('ability-strength')).toBeInTheDocument();
       });
@@ -326,7 +326,7 @@ describe('CharacterStatsManager', () => {
 
       const strengthInput = screen.getByTestId('ability-strength-input') as HTMLInputElement;
       expect(strengthInput).toHaveValue(16);
-      
+
       // Use fireEvent to properly clear and set the value
       fireEvent.change(strengthInput, { target: { value: '18' } });
       expect(strengthInput).toHaveValue(18);
@@ -356,7 +356,7 @@ describe('CharacterStatsManager', () => {
       });
 
       render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('edit-stats-button')).toBeInTheDocument();
       });
