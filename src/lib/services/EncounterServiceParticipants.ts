@@ -15,11 +15,12 @@ import { EncounterServiceValidation } from './EncounterServiceValidation';
 
 /**
  * Encounter Service - Participant Management Module
- * 
+ *
  * Handles operations related to encounter participants including
  * adding, removing, and updating characters and NPCs in encounters.
  */
 export class EncounterServiceParticipants {
+
   /**
    * Add participant to encounter
    */

@@ -12,7 +12,7 @@ import type {
  */
 export const ENCOUNTER_TEST_CONSTANTS = {
   mockEncounterId: '65f1a2b3c4d5e6f7a8b9c0d1',
-  mockOwnerId: '65f1a2b3c4d5e6f7a8b9c0d2', 
+  mockOwnerId: '65f1a2b3c4d5e6f7a8b9c0d2',
   mockParticipantId: '65f1a2b3c4d5e6f7a8b9c0d3',
   mockCharacterId: '65f1a2b3c4d5e6f7a8b9c0d4',
   mockPartyId: '65f1a2b3c4d5e6f7a8b9c0d5',

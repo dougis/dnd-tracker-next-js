@@ -11,11 +11,12 @@ import { EncounterServiceValidation } from './EncounterServiceValidation';
 
 /**
  * Encounter Service - Authentication and Permissions Module
- * 
+ *
  * Handles encounter ownership verification, permission checks,
  * and encounter sharing functionality for access control.
  */
 export class EncounterServiceAuth {
+
   /**
    * Check if user owns the encounter
    */

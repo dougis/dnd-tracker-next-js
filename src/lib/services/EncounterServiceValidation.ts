@@ -10,11 +10,12 @@ import { createEncounterSchema } from '@/lib/validations/encounter';
 
 /**
  * Encounter Service - Validation and Data Sanitization Module
- * 
+ *
  * Handles data validation and XSS protection for encounter-related data
  * to ensure security and data integrity throughout the application.
  */
 export class EncounterServiceValidation {
+
   /**
    * Validate encounter data
    */

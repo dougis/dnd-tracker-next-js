@@ -12,11 +12,12 @@ import {
 
 /**
  * Encounter Service - Template and Cloning Module
- * 
- * Handles encounter duplication, template creation, and encounter 
+ *
+ * Handles encounter duplication, template creation, and encounter
  * cloning functionality for efficient encounter management.
  */
 export class EncounterServiceTemplates {
+
   /**
    * Clone an encounter
    */

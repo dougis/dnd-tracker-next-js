@@ -2,8 +2,6 @@ import { Encounter } from '@/lib/models/encounter';
 import type {
   IEncounter,
   CreateEncounterInput,
-  IParticipantReference,
-  EncounterSummary,
 } from '@/lib/models/encounter/interfaces';
 import type { ServiceResult } from './UserServiceErrors';
 import {
@@ -159,19 +157,24 @@ export class EncounterService {
 
   // Participant Management
   static addParticipant = EncounterServiceParticipants.addParticipant;
+
   static removeParticipant = EncounterServiceParticipants.removeParticipant;
+
   static updateParticipant = EncounterServiceParticipants.updateParticipant;
 
   // Search and Filtering
   static searchEncounters = EncounterServiceSearch.searchEncounters;
+
   static getEncountersByOwner = EncounterServiceSearch.getEncountersByOwner;
 
   // Template and Cloning
   static cloneEncounter = EncounterServiceTemplates.cloneEncounter;
+
   static createTemplate = EncounterServiceTemplates.createTemplate;
 
   // Ownership and Permissions
   static checkOwnership = EncounterServiceAuth.checkOwnership;
+
   static shareEncounter = EncounterServiceAuth.shareEncounter;
 
   // Validation and Data Sanitization

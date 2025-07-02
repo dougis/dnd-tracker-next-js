@@ -10,11 +10,12 @@ import { EncounterServiceValidation } from './EncounterServiceValidation';
 
 /**
  * Encounter Service - Search and Filtering Module
- * 
+ *
  * Handles encounter search functionality including filtering by various
  * criteria and retrieving encounters by ownership and permissions.
  */
 export class EncounterServiceSearch {
+
   /**
    * Search encounters with various filters
    */
