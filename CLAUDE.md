@@ -200,7 +200,6 @@ test(character): add comprehensive validation tests
 
 **Main Branch Protection** (configured via GitHub settings):
 
-- ✅ Require pull request reviews (minimum 1 approval)
 - ✅ Dismiss stale reviews when new commits are pushed
 - ✅ Require status checks to pass before merging
 - ✅ Require branches to be up to date before merging
@@ -360,6 +359,7 @@ All comprehensive project documentation is in the `docs/` folder:
 
 ### Code Conventions
 
+- Follow global coding conventions
 - Use TypeScript strictly with proper type definitions
 - Follow Next.js 15 App Router patterns
 - Implement proper error handling and loading states
@@ -456,3 +456,8 @@ All comprehensive project documentation is in the `docs/` folder:
 - Always check the status of any opened PR and merge if all checks pass
 - Always run `npm run lint:fix` before committing code
 - Always run `npm run lint:fix` and `npm run test:ci` before pushing code to remote, if any test fails it must be fixed
+- **Before pushing commits to remote the following commands must pass with no errors**
+  - npm run lint:fix
+  - npm run test:ci
+  - npm run build
+- if any errors exist in the commands above they must be fixed
