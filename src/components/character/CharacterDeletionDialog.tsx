@@ -6,6 +6,27 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Trash2, AlertTriangle, Undo2, CheckCircle } from 'lucide-react';
 import { CharacterService } from '@/lib/services/CharacterService';
 
+// Custom hook to reduce complexity
+function useUndoCountdown(undoInfo: { token: string; expiresAt: number } | null) {
+  const [undoCountdown, setUndoCountdown] = useState(0);
+
+  useEffect(() => {
+    if (!undoInfo) return;
+
+    const remainingTime = Math.max(0, Math.floor((undoInfo.expiresAt - Date.now()) / 1000));
+    setUndoCountdown(remainingTime);
+
+    if (remainingTime > 0) {
+      const timer = setTimeout(() => {
+        setUndoCountdown(prev => prev - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [undoInfo, undoCountdown]);
+
+  return undoCountdown;
+}
+
 interface CharacterDeletionDialogProps {
   character: {
     id: string;
@@ -30,30 +51,24 @@ export function CharacterDeletionDialog({
   const [error, setError] = useState<string | null>(null);
   const [undoInfo, setUndoInfo] = useState<{ token: string; expiresAt: number } | null>(null);
   const [showUndoNotification, setShowUndoNotification] = useState(false);
-  const [undoCountdown, setUndoCountdown] = useState(0);
   const [isRestoring, setIsRestoring] = useState(false);
 
   const isConfirmationValid = confirmationName === character.name;
-
-  useEffect(() => {
-    if (undoInfo && undoCountdown > 0) {
-      const timer = setTimeout(() => {
-        setUndoCountdown(prev => prev - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (undoCountdown === 0 && undoInfo) {
-      setUndoInfo(null);
-      setShowUndoNotification(false);
-    }
-  }, [undoCountdown, undoInfo]);
+  const undoCountdown = useUndoCountdown(undoInfo);
 
   useEffect(() => {
     if (undoInfo) {
-      const remainingTime = Math.max(0, Math.floor((undoInfo.expiresAt - Date.now()) / 1000));
-      setUndoCountdown(remainingTime);
       setShowUndoNotification(true);
+    } else {
+      setShowUndoNotification(false);
     }
   }, [undoInfo]);
+
+  useEffect(() => {
+    if (undoCountdown === 0 && undoInfo) {
+      setUndoInfo(null);
+    }
+  }, [undoCountdown, undoInfo]);
 
   const handleDelete = async () => {
     try {

@@ -36,43 +36,38 @@ const mockUpdatedCharacter: Partial<ICharacter> = {
   armorClass: 18
 };
 
+// Helper function to reduce test duplication
+const renderCharacterComparison = (props: Partial<React.ComponentProps<typeof CharacterComparison>> = {}) => {
+  const defaultProps = {
+    originalCharacter: mockOriginalCharacter as ICharacter,
+    updatedCharacter: mockUpdatedCharacter as ICharacter,
+    onAcceptChanges: jest.fn(),
+    onRejectChanges: jest.fn(),
+    ...props
+  };
+  
+  return {
+    ...renderWithProviders(<CharacterComparison {...defaultProps} />),
+    props: defaultProps
+  };
+};
+
 describe('CharacterComparison', () => {
   it('should render character comparison component', () => {
-    renderWithProviders(
-      <CharacterComparison
-        originalCharacter={mockOriginalCharacter as ICharacter}
-        updatedCharacter={mockUpdatedCharacter as ICharacter}
-        onAcceptChanges={jest.fn()}
-        onRejectChanges={jest.fn()}
-      />
-    );
+    renderCharacterComparison();
 
     expect(screen.getByTestId('character-comparison')).toBeInTheDocument();
   });
 
   it('should display original and updated character names', () => {
-    renderWithProviders(
-      <CharacterComparison
-        originalCharacter={mockOriginalCharacter as ICharacter}
-        updatedCharacter={mockUpdatedCharacter as ICharacter}
-        onAcceptChanges={jest.fn()}
-        onRejectChanges={jest.fn()}
-      />
-    );
+    renderCharacterComparison();
 
     expect(screen.getByTestId('original-name')).toHaveTextContent('Test Character');
     expect(screen.getByTestId('updated-name')).toHaveTextContent('Test Character Updated');
   });
 
   it('should highlight changed ability scores', () => {
-    renderWithProviders(
-      <CharacterComparison
-        originalCharacter={mockOriginalCharacter as ICharacter}
-        updatedCharacter={mockUpdatedCharacter as ICharacter}
-        onAcceptChanges={jest.fn()}
-        onRejectChanges={jest.fn()}
-      />
-    );
+    renderCharacterComparison();
 
     // Strength changed from 14 to 18
     const strengthChange = screen.getByTestId('strength-change');
@@ -91,14 +86,7 @@ describe('CharacterComparison', () => {
   });
 
   it('should display backstory changes', () => {
-    renderWithProviders(
-      <CharacterComparison
-        originalCharacter={mockOriginalCharacter as ICharacter}
-        updatedCharacter={mockUpdatedCharacter as ICharacter}
-        onAcceptChanges={jest.fn()}
-        onRejectChanges={jest.fn()}
-      />
-    );
+    renderCharacterComparison();
 
     expect(screen.getByTestId('backstory-change')).toBeInTheDocument();
     expect(screen.getByText('Original backstory')).toBeInTheDocument();
@@ -106,14 +94,7 @@ describe('CharacterComparison', () => {
   });
 
   it('should display derived stat changes', () => {
-    renderWithProviders(
-      <CharacterComparison
-        originalCharacter={mockOriginalCharacter as ICharacter}
-        updatedCharacter={mockUpdatedCharacter as ICharacter}
-        onAcceptChanges={jest.fn()}
-        onRejectChanges={jest.fn()}
-      />
-    );
+    renderCharacterComparison();
 
     // HP changed from 47 to 50
     const hpChange = screen.getByTestId('hp-change');
@@ -132,14 +113,7 @@ describe('CharacterComparison', () => {
     const user = userEvent.setup();
     const mockAcceptChanges = jest.fn();
 
-    renderWithProviders(
-      <CharacterComparison
-        originalCharacter={mockOriginalCharacter as ICharacter}
-        updatedCharacter={mockUpdatedCharacter as ICharacter}
-        onAcceptChanges={mockAcceptChanges}
-        onRejectChanges={jest.fn()}
-      />
-    );
+    renderCharacterComparison({ onAcceptChanges: mockAcceptChanges });
 
     const acceptButton = screen.getByTestId('accept-changes-button');
     await user.click(acceptButton);
@@ -151,14 +125,7 @@ describe('CharacterComparison', () => {
     const user = userEvent.setup();
     const mockRejectChanges = jest.fn();
 
-    renderWithProviders(
-      <CharacterComparison
-        originalCharacter={mockOriginalCharacter as ICharacter}
-        updatedCharacter={mockUpdatedCharacter as ICharacter}
-        onAcceptChanges={jest.fn()}
-        onRejectChanges={mockRejectChanges}
-      />
-    );
+    renderCharacterComparison({ onRejectChanges: mockRejectChanges });
 
     const rejectButton = screen.getByTestId('reject-changes-button');
     await user.click(rejectButton);
@@ -167,28 +134,16 @@ describe('CharacterComparison', () => {
   });
 
   it('should display summary of total changes', () => {
-    renderWithProviders(
-      <CharacterComparison
-        originalCharacter={mockOriginalCharacter as ICharacter}
-        updatedCharacter={mockUpdatedCharacter as ICharacter}
-        onAcceptChanges={jest.fn()}
-        onRejectChanges={jest.fn()}
-      />
-    );
+    renderCharacterComparison();
 
     expect(screen.getByTestId('changes-summary')).toBeInTheDocument();
     expect(screen.getByText(/7 changes detected/)).toBeInTheDocument();
   });
 
   it('should display no changes message when characters are identical', () => {
-    renderWithProviders(
-      <CharacterComparison
-        originalCharacter={mockOriginalCharacter as ICharacter}
-        updatedCharacter={mockOriginalCharacter as ICharacter}
-        onAcceptChanges={jest.fn()}
-        onRejectChanges={jest.fn()}
-      />
-    );
+    renderCharacterComparison({ 
+      updatedCharacter: mockOriginalCharacter as ICharacter 
+    });
 
     expect(screen.getByTestId('no-changes-message')).toBeInTheDocument();
     expect(screen.getByText('No changes detected')).toBeInTheDocument();

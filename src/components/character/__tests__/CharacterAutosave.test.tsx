@@ -20,6 +20,13 @@ jest.mock('@/lib/services/CharacterService', () => ({
 const mockCharacter = createMockCharacter();
 const mockStats = createMockStats();
 
+// Helper function to reduce test duplication
+const renderCharacterStatsManager = () => {
+  return renderWithProviders(
+    <CharacterStatsManager characterId="char-123" userId="user-123" />
+  );
+};
+
 describe('CharacterAutosave', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -52,9 +59,7 @@ describe('CharacterAutosave', () => {
   it('should automatically save draft changes after 2 seconds of inactivity', async () => {
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
-    renderWithProviders(
-      <CharacterStatsManager characterId="char-123" userId="user-123" />
-    );
+    renderCharacterStatsManager();
 
     // Wait for component to load
     await screen.findByTestId('character-stats-manager');
@@ -87,9 +92,7 @@ describe('CharacterAutosave', () => {
   it('should display autosave indicator when saving', async () => {
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
-    renderWithProviders(
-      <CharacterStatsManager characterId="char-123" userId="user-123" />
-    );
+    renderCharacterStatsManager();
 
     await screen.findByTestId('character-stats-manager');
 
@@ -112,9 +115,7 @@ describe('CharacterAutosave', () => {
   it('should show autosave success message', async () => {
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
-    renderWithProviders(
-      <CharacterStatsManager characterId="char-123" userId="user-123" />
-    );
+    renderCharacterStatsManager();
 
     await screen.findByTestId('character-stats-manager');
 
@@ -137,9 +138,7 @@ describe('CharacterAutosave', () => {
   it('should reset autosave timer on new changes', async () => {
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
-    renderWithProviders(
-      <CharacterStatsManager characterId="char-123" userId="user-123" />
-    );
+    renderCharacterStatsManager();
 
     await screen.findByTestId('character-stats-manager');
 
@@ -181,9 +180,7 @@ describe('CharacterAutosave', () => {
   it('should not autosave when no changes are made', async () => {
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
-    renderWithProviders(
-      <CharacterStatsManager characterId="char-123" userId="user-123" />
-    );
+    renderCharacterStatsManager();
 
     await screen.findByTestId('character-stats-manager');
 
@@ -209,9 +206,7 @@ describe('CharacterAutosave', () => {
       data: draftChanges
     });
 
-    renderWithProviders(
-      <CharacterStatsManager characterId="char-123" userId="user-123" />
-    );
+    renderCharacterStatsManager();
 
     await screen.findByTestId('character-stats-manager');
 
@@ -235,9 +230,7 @@ describe('CharacterAutosave', () => {
       data: draftChanges
     });
 
-    renderWithProviders(
-      <CharacterStatsManager characterId="char-123" userId="user-123" />
-    );
+    renderCharacterStatsManager();
 
     await screen.findByTestId('character-stats-manager');
 
@@ -262,9 +255,7 @@ describe('CharacterAutosave', () => {
       success: true
     });
 
-    renderWithProviders(
-      <CharacterStatsManager characterId="char-123" userId="user-123" />
-    );
+    renderCharacterStatsManager();
 
     await screen.findByTestId('character-stats-manager');
 

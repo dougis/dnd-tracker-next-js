@@ -19,36 +19,37 @@ const mockCharacter = {
   userId: 'user-123'
 };
 
+// Helper function to reduce test duplication
+const renderCharacterDeletionDialog = (props: Partial<React.ComponentProps<typeof CharacterDeletionDialog>> = {}) => {
+  const defaultProps = {
+    character: mockCharacter,
+    isOpen: true,
+    onClose: jest.fn(),
+    onDeleted: jest.fn(),
+    ...props
+  };
+  
+  return {
+    ...renderWithProviders(<CharacterDeletionDialog {...defaultProps} />),
+    props: defaultProps
+  };
+};
+
 describe('CharacterDeletionDialog', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('should render deletion confirmation dialog', () => {
-    renderWithProviders(
-      <CharacterDeletionDialog
-        character={mockCharacter}
-        isOpen={true}
-        onClose={jest.fn()}
-        onDeleted={jest.fn()}
-      />
-    );
+    renderCharacterDeletionDialog();
 
     expect(screen.getByTestId('character-deletion-dialog')).toBeInTheDocument();
-    // Check for dialog title specifically (not button text)
     expect(screen.getByRole('heading', { name: /Delete Character/i })).toBeInTheDocument();
     expect(screen.getByText(/Are you sure you want to delete "Test Character"/)).toBeInTheDocument();
   });
 
   it('should not render when isOpen is false', () => {
-    renderWithProviders(
-      <CharacterDeletionDialog
-        character={mockCharacter}
-        isOpen={false}
-        onClose={jest.fn()}
-        onDeleted={jest.fn()}
-      />
-    );
+    renderCharacterDeletionDialog({ isOpen: false });
 
     expect(screen.queryByTestId('character-deletion-dialog')).not.toBeInTheDocument();
   });
@@ -56,14 +57,7 @@ describe('CharacterDeletionDialog', () => {
   it('should require typing character name to confirm deletion', async () => {
     const user = userEvent.setup();
 
-    renderWithProviders(
-      <CharacterDeletionDialog
-        character={mockCharacter}
-        isOpen={true}
-        onClose={jest.fn()}
-        onDeleted={jest.fn()}
-      />
-    );
+    renderCharacterDeletionDialog();
 
     const deleteButton = screen.getByTestId('confirm-delete-button');
     expect(deleteButton).toBeDisabled();
@@ -75,14 +69,7 @@ describe('CharacterDeletionDialog', () => {
   });
 
   it('should show warning about permanent deletion', () => {
-    renderWithProviders(
-      <CharacterDeletionDialog
-        character={mockCharacter}
-        isOpen={true}
-        onClose={jest.fn()}
-        onDeleted={jest.fn()}
-      />
-    );
+    renderCharacterDeletionDialog();
 
     expect(screen.getByTestId('deletion-warning')).toBeInTheDocument();
     expect(screen.getByText(/This action cannot be undone/)).toBeInTheDocument();
@@ -92,14 +79,7 @@ describe('CharacterDeletionDialog', () => {
     const user = userEvent.setup();
     const mockOnClose = jest.fn();
 
-    renderWithProviders(
-      <CharacterDeletionDialog
-        character={mockCharacter}
-        isOpen={true}
-        onClose={mockOnClose}
-        onDeleted={jest.fn()}
-      />
-    );
+    renderCharacterDeletionDialog({ onClose: mockOnClose });
 
     const cancelButton = screen.getByTestId('cancel-delete-button');
     await user.click(cancelButton);
@@ -115,14 +95,7 @@ describe('CharacterDeletionDialog', () => {
       success: true
     });
 
-    renderWithProviders(
-      <CharacterDeletionDialog
-        character={mockCharacter}
-        isOpen={true}
-        onClose={jest.fn()}
-        onDeleted={mockOnDeleted}
-      />
-    );
+    renderCharacterDeletionDialog({ onDeleted: mockOnDeleted });
 
     const confirmationInput = screen.getByTestId('character-name-confirmation');
     await user.type(confirmationInput, 'Test Character');
@@ -142,14 +115,7 @@ describe('CharacterDeletionDialog', () => {
       error: { message: 'Failed to delete character' }
     });
 
-    renderWithProviders(
-      <CharacterDeletionDialog
-        character={mockCharacter}
-        isOpen={true}
-        onClose={jest.fn()}
-        onDeleted={jest.fn()}
-      />
-    );
+    renderCharacterDeletionDialog();
 
     const confirmationInput = screen.getByTestId('character-name-confirmation');
     await user.type(confirmationInput, 'Test Character');
@@ -168,14 +134,7 @@ describe('CharacterDeletionDialog', () => {
       () => new Promise(resolve => setTimeout(() => resolve({ success: true }), 100))
     );
 
-    renderWithProviders(
-      <CharacterDeletionDialog
-        character={mockCharacter}
-        isOpen={true}
-        onClose={jest.fn()}
-        onDeleted={jest.fn()}
-      />
-    );
+    renderCharacterDeletionDialog();
 
     const confirmationInput = screen.getByTestId('character-name-confirmation');
     await user.type(confirmationInput, 'Test Character');
@@ -202,15 +161,7 @@ describe('CharacterDeletionWithUndo', () => {
       data: { undoToken: 'undo-123', expiresAt: Date.now() + 30000 }
     });
 
-    renderWithProviders(
-      <CharacterDeletionDialog
-        character={mockCharacter}
-        isOpen={true}
-        onClose={jest.fn()}
-        onDeleted={jest.fn()}
-        allowUndo={true}
-      />
-    );
+    renderCharacterDeletionDialog({ allowUndo: true });
 
     const confirmationInput = screen.getByTestId('character-name-confirmation');
     await user.type(confirmationInput, 'Test Character');
@@ -224,15 +175,7 @@ describe('CharacterDeletionWithUndo', () => {
   });
 
   it('should display undo warning when allowUndo is enabled', () => {
-    renderWithProviders(
-      <CharacterDeletionDialog
-        character={mockCharacter}
-        isOpen={true}
-        onClose={jest.fn()}
-        onDeleted={jest.fn()}
-        allowUndo={true}
-      />
-    );
+    renderCharacterDeletionDialog({ allowUndo: true });
 
     // Should show the undo-specific warning text
     expect(screen.getByText(/You will have 30 seconds to undo this action/)).toBeInTheDocument();
@@ -240,15 +183,7 @@ describe('CharacterDeletionWithUndo', () => {
   });
 
   it('should display permanent deletion warning when allowUndo is disabled', () => {
-    renderWithProviders(
-      <CharacterDeletionDialog
-        character={mockCharacter}
-        isOpen={true}
-        onClose={jest.fn()}
-        onDeleted={jest.fn()}
-        allowUndo={false}
-      />
-    );
+    renderCharacterDeletionDialog({ allowUndo: false });
 
     // Should show the permanent deletion warning
     expect(screen.getByText(/This action cannot be undone/)).toBeInTheDocument();
