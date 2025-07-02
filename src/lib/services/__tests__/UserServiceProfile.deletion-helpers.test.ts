@@ -39,22 +39,12 @@ describe('UserServiceProfile - Deletion & Helper Methods', () => {
 
   describe('deleteUser', () => {
     it('should successfully delete user when user exists', async () => {
-      const mockLookup = MockServiceHelpers.getMockLookup();
-      const mockResponseHelpers = MockServiceHelpers.getMockResponseHelpers();
-
-      mockLookup.findUserOrError.mockResolvedValue({
-        success: true,
-        data: mockUser,
-      });
+      const { mockLookup } = MockServiceHelpers.setupDeletionSuccess(mockUser);
       MockedUser.findByIdAndDelete.mockResolvedValue(mockUser);
-      mockResponseHelpers.createSuccessResponse.mockReturnValue({
-        success: true,
-        data: undefined,
-      });
 
       const result = await UserServiceProfile.deleteUser(TEST_CONSTANTS.mockUserId);
 
-      AssertionHelpers.expectSuccessResult(result, undefined);
+      AssertionHelpers.expectSuccessResult(result, { deleted: true });
       expect(mockLookup.findUserOrError).toHaveBeenCalledWith(TEST_CONSTANTS.mockUserId);
       expect(MockedUser.findByIdAndDelete).toHaveBeenCalledWith(TEST_CONSTANTS.mockUserId);
     });
@@ -71,19 +61,18 @@ describe('UserServiceProfile - Deletion & Helper Methods', () => {
     });
 
     it('should handle database errors during user deletion', async () => {
-      const mockLookup = MockServiceHelpers.getMockLookup();
-      const mockResponseHelpers = MockServiceHelpers.getMockResponseHelpers();
       const databaseError = new Error('Database connection failed');
+      const { mockLookup, mockResponseHelpers } = MockServiceHelpers.setupSimpleDatabaseError(
+        databaseError,
+        'Failed to delete user',
+        'USER_DELETION_FAILED'
+      );
 
       mockLookup.findUserOrError.mockResolvedValue({
         success: true,
         data: mockUser,
       });
       MockedUser.findByIdAndDelete.mockRejectedValue(databaseError);
-      mockResponseHelpers.handleCustomError.mockReturnValue({
-        success: false,
-        error: { message: 'Failed to delete user', code: 'USER_DELETION_FAILED', statusCode: 500 },
-      });
 
       const result = await UserServiceProfile.deleteUser(TEST_CONSTANTS.mockUserId);
 

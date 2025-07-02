@@ -1,67 +1,22 @@
+import { type UserProfileUpdate } from '@/lib/validations/user';
 import {
-  type UserProfileUpdate,
-  type SubscriptionTier,
-  type PublicUser,
-} from '@/lib/validations/user';
-import {
-  UserAlreadyExistsError,
-} from '../UserServiceErrors';
+  UNIVERSAL_TEST_DATA,
+  UNIVERSAL_MOCK_SETUP,
+  UniversalServiceMocks,
+  UniversalTestPatterns,
+  UniversalAssertions,
+  UniversalForEachPatterns,
+} from './unified-test-patterns';
 
 /**
- * Test data generators and helper functions for UserServiceProfile tests
- * Eliminates code duplication across test files
+ * UserServiceProfile test helpers - now uses unified patterns to eliminate ALL duplication
+ * This file is dramatically simplified by leveraging universal test patterns
  */
 
-export const TEST_CONSTANTS = {
-  mockUserId: '507f1f77bcf86cd799439011',
-  mockEmail: 'test@example.com',
-  mockUsername: 'testuser',
-} as const;
-
-export const createMockUser = () => ({
-  _id: TEST_CONSTANTS.mockUserId,
-  email: TEST_CONSTANTS.mockEmail,
-  username: TEST_CONSTANTS.mockUsername,
-  firstName: 'Test',
-  lastName: 'User',
-  role: 'user' as const,
-  subscriptionTier: 'free' as SubscriptionTier,
-  isEmailVerified: false,
-  preferences: {
-    theme: 'system' as const,
-    emailNotifications: true,
-    browserNotifications: false,
-    timezone: 'UTC',
-    language: 'en',
-    diceRollAnimations: true,
-    autoSaveEncounters: true,
-  },
-  save: jest.fn(),
-  toPublicJSON: jest.fn(),
-});
-
-export const createMockPublicUser = (): PublicUser => ({
-  id: TEST_CONSTANTS.mockUserId,
-  email: TEST_CONSTANTS.mockEmail,
-  username: TEST_CONSTANTS.mockUsername,
-  firstName: 'Test',
-  lastName: 'User',
-  role: 'user',
-  subscriptionTier: 'free',
-  isEmailVerified: false,
-  preferences: {
-    theme: 'system',
-    emailNotifications: true,
-    browserNotifications: false,
-    timezone: 'UTC',
-    language: 'en',
-    diceRollAnimations: true,
-    autoSaveEncounters: true,
-  },
-  lastLoginAt: '2024-01-01T00:00:00.000Z',
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
-});
+// Export universal data with profile-specific naming for backwards compatibility
+export const TEST_CONSTANTS = UNIVERSAL_TEST_DATA.constants;
+export const createMockUser = UNIVERSAL_TEST_DATA.createMockUser;
+export const createMockPublicUser = UNIVERSAL_TEST_DATA.createMockPublicUser;
 
 export const createMockUpdateData = (): UserProfileUpdate => ({
   firstName: 'Updated',
@@ -78,128 +33,67 @@ export const createMockUpdateData = (): UserProfileUpdate => ({
 });
 
 /**
- * Mock service helpers - reduces duplication in test setup
+ * Simplified mock helpers - delegates to universal patterns
  */
 export class MockServiceHelpers {
-  static getMockValidation() {
-    return require('../UserServiceValidation').UserServiceValidation;
+  static getMockValidation = () => UniversalServiceMocks.getServices().mockValidation;
+
+  static getMockDatabase = () => UniversalServiceMocks.getServices().mockDatabase;
+
+  static getMockLookup = () => UniversalServiceMocks.getServices().mockLookup;
+
+  static getMockResponseHelpers = () => UniversalServiceMocks.getServices().mockResponseHelpers;
+
+  static setupBasicMocks = () => UniversalServiceMocks.getServices();
+
+  static setupTestEnvironment = UNIVERSAL_MOCK_SETUP.getStandardMocks;
+
+  // Delegates to universal patterns
+  static setupSuccessfulOperation = UniversalTestPatterns.createSuccessfulOperation;
+
+  static setupSubscriptionUpdate(mockUser: any, mockPublicUser: any) {
+    const services = this.setupSuccessfulOperation(mockUser, mockPublicUser);
+    services.mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
+    return services;
   }
 
-  static getMockDatabase() {
-    return require('../UserServiceDatabase').UserServiceDatabase;
+  static setupDeletionSuccess(mockUser: any) {
+    const services = UniversalServiceMocks.getServices();
+    services.mockLookup.findUserOrError.mockResolvedValue({ success: true, data: mockUser });
+    services.mockResponseHelpers.createSuccessResponse.mockReturnValue({ success: true, data: { deleted: true } });
+    return services;
   }
 
-  static getMockLookup() {
-    return require('../UserServiceLookup').UserServiceLookup;
-  }
+  static setupSimpleDatabaseError = UniversalTestPatterns.createErrorOperation;
 
-  static getMockResponseHelpers() {
-    return require('../UserServiceResponseHelpers').UserServiceResponseHelpers;
-  }
-
-  static setupSuccessfulUserLookup(mockUser: any, mockPublicUser: PublicUser) {
-    const mockLookup = this.getMockLookup();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-
-    mockLookup.findUserOrError.mockResolvedValue({
-      success: true,
-      data: mockUser,
-    });
-    mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
-    mockResponseHelpers.createSuccessResponse.mockReturnValue({
-      success: true,
-      data: mockPublicUser,
-    });
-
-    return { mockLookup, mockResponseHelpers };
+  static setupSuccessfulUserLookup(mockUser: any, mockPublicUser: any) {
+    const services = this.setupSuccessfulOperation(mockUser, mockPublicUser);
+    return { mockLookup: services.mockLookup, mockResponseHelpers: services.mockResponseHelpers };
   }
 
   static setupFailedUserLookup(errorCode: string, message: string, statusCode: number = 404) {
     const mockLookup = this.getMockLookup();
-    const errorResult = {
-      success: false,
-      error: { message, code: errorCode, statusCode },
-    };
+    const errorResult = { success: false, error: { message, code: errorCode, statusCode } };
     mockLookup.findUserOrError.mockResolvedValue(errorResult);
     return { mockLookup, errorResult };
   }
 
   static setupValidationError(error: Error) {
-    const mockValidation = this.getMockValidation();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-
-    mockValidation.validateAndParseProfileUpdate.mockImplementation(() => {
-      throw error;
+    const services = UniversalServiceMocks.getServices();
+    services.mockValidation.validateAndParseProfileUpdate.mockImplementation(() => { throw error; });
+    services.mockResponseHelpers.handleCustomError.mockReturnValue({
+      success: false, error: { message: 'Validation failed', code: 'VALIDATION_ERROR', statusCode: 400 }
     });
-    mockResponseHelpers.handleCustomError.mockReturnValue({
-      success: false,
-      error: { message: 'Validation failed', code: 'VALIDATION_ERROR', statusCode: 400 },
-    });
-
-    return { mockValidation, mockResponseHelpers };
+    return { mockValidation: services.mockValidation, mockResponseHelpers: services.mockResponseHelpers };
   }
 
-  static setupConflictError(conflictType: 'email' | 'username', value: string) {
-    const mockValidation = this.getMockValidation();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-    const conflictError = new UserAlreadyExistsError(conflictType, value);
-
-    // Setup the mock to return the conflict parameters
-    mockValidation.prepareConflictCheckParams.mockReturnValue({
-      emailToCheck: conflictType === 'email' ? value : undefined,
-      usernameToCheck: conflictType === 'username' ? value : undefined,
-    });
-    mockValidation.extractUserIdString.mockReturnValue(TEST_CONSTANTS.mockUserId);
-
-    // Setup the error response
-    mockResponseHelpers.createErrorResponse.mockReturnValue({
-      success: false,
-      error: { message: `${conflictType} already exists`, code: 'USER_ALREADY_EXISTS', statusCode: 409 },
-    });
-
-    return { mockValidation, mockResponseHelpers, conflictError };
-  }
-
-  static setupUpdateProfileSuccess(mockUser: any, updateData: any, mockPublicUser: any) {
-    const mockValidation = this.getMockValidation();
-    const mockDatabase = this.getMockDatabase();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-
-    mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
-    mockValidation.prepareConflictCheckParams.mockReturnValue({
-      emailToCheck: undefined,
-      usernameToCheck: undefined,
-    });
-    mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
-    mockResponseHelpers.createSuccessResponse.mockReturnValue({
-      success: true,
-      data: mockPublicUser,
-    });
-    mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
-
-    return { mockValidation, mockDatabase, mockResponseHelpers };
-  }
-
-  // Enhanced setup methods to eliminate duplication in update tests
+  // Profile update methods - simplified through delegation
   static setupSuccessfulProfileUpdate(mockUser: any, updateData: any, mockPublicUser: any, MockedUser: any) {
-    const mockValidation = this.getMockValidation();
-    const mockDatabase = this.getMockDatabase();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-    
-    MockedUser.findById.mockResolvedValue(mockUser);
-    mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
-    mockValidation.prepareConflictCheckParams.mockReturnValue({
-      emailToCheck: undefined,
-      usernameToCheck: undefined,
-    });
-    mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
-    mockResponseHelpers.createSuccessResponse.mockReturnValue({
-      success: true,
-      data: mockPublicUser,
-    });
-    mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
-
-    return { mockValidation, mockDatabase, mockResponseHelpers };
+    const services = UniversalTestPatterns.createProfileUpdateBase(mockUser, updateData, MockedUser);
+    services.mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
+    services.mockResponseHelpers.createSuccessResponse.mockReturnValue({ success: true, data: mockPublicUser });
+    services.mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
+    return services;
   }
 
   static setupUserNotFoundForUpdate(MockedUser: any, updateData: any) {
@@ -209,174 +103,85 @@ export class MockServiceHelpers {
     return { mockValidation };
   }
 
-  static setupConflictDuringValidation(mockUser: any, conflictError: UserAlreadyExistsError, MockedUser: any) {
-    const mockValidation = this.getMockValidation();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-    
-    MockedUser.findById.mockResolvedValue(mockUser);
-    mockValidation.validateAndParseProfileUpdate.mockImplementation(() => {
-      throw conflictError;
-    });
-    mockResponseHelpers.createErrorResponse.mockReturnValue({
-      success: false,
-      error: { message: `${conflictError.field} already exists`, code: 'USER_ALREADY_EXISTS', statusCode: 409 },
-    });
-
-    return { mockValidation, mockResponseHelpers };
+  static setupConflictDuringValidation(mockUser: any, conflictError: any, MockedUser: any) {
+    const { setup } = UniversalTestPatterns.createConflictScenario(conflictError.field, conflictError.value);
+    return setup(mockUser, MockedUser);
   }
 
   static setupDatabaseError(mockUser: any, updateData: any, error: Error, MockedUser: any) {
-    const mockValidation = this.getMockValidation();
-    const mockDatabase = this.getMockDatabase();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-    
-    MockedUser.findById.mockResolvedValue(mockUser);
-    mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
-    mockValidation.prepareConflictCheckParams.mockReturnValue({
-      emailToCheck: undefined,
-      usernameToCheck: undefined,
-    });
-    mockDatabase.updateUserFieldsAndSave.mockRejectedValue(error);
-    mockResponseHelpers.handleCustomError.mockReturnValue({
-      success: false,
-      error: { message: 'Failed to update user profile', code: 'PROFILE_UPDATE_FAILED', statusCode: 500 },
-    });
-
-    return { mockValidation, mockDatabase, mockResponseHelpers };
+    const { setup } = UniversalTestPatterns.createDatabaseErrorScenario(error.message);
+    return setup(mockUser, updateData, MockedUser);
   }
 
-  static setupUserAlreadyExistsErrorDuringUpdate(mockUser: any, updateData: any, conflictError: UserAlreadyExistsError, MockedUser: any) {
-    const mockValidation = this.getMockValidation();
-    const mockDatabase = this.getMockDatabase();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-    
-    MockedUser.findById.mockResolvedValue(mockUser);
-    mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
-    mockValidation.prepareConflictCheckParams.mockReturnValue({
-      emailToCheck: undefined,
-      usernameToCheck: undefined,
+  static setupUserAlreadyExistsErrorDuringUpdate(mockUser: any, updateData: any, conflictError: any, MockedUser: any) {
+    const services = UniversalTestPatterns.createProfileUpdateBase(mockUser, updateData, MockedUser);
+    services.mockDatabase.updateUserFieldsAndSave.mockRejectedValue(conflictError);
+    services.mockResponseHelpers.createErrorResponse.mockReturnValue({
+      success: false, error: { message: `${conflictError.field} already exists`, code: 'USER_ALREADY_EXISTS', statusCode: 409 }
     });
-    mockDatabase.updateUserFieldsAndSave.mockRejectedValue(conflictError);
-    mockResponseHelpers.createErrorResponse.mockReturnValue({
-      success: false,
-      error: { message: `${conflictError.field} already exists`, code: 'USER_ALREADY_EXISTS', statusCode: 409 },
-    });
-
-    return { mockValidation, mockDatabase, mockResponseHelpers };
+    return services;
   }
 
-  // Additional helpers for retrieval and other common patterns
+  // Error setup patterns - all delegate to universal patterns
   static setupValidationErrorInRetrieval(error: Error) {
-    const mockLookup = this.getMockLookup();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-    
-    mockLookup.findUserOrError.mockRejectedValue(error);
-    mockResponseHelpers.handleValidationError.mockReturnValue({
-      success: false,
-      error: { message: 'Validation error', code: 'VALIDATION_ERROR', statusCode: 400 },
+    const services = UniversalServiceMocks.getServices();
+    services.mockLookup.findUserOrError.mockRejectedValue(error);
+    services.mockResponseHelpers.handleValidationError.mockReturnValue({
+      success: false, error: { message: 'Validation error', code: 'VALIDATION_ERROR', statusCode: 400 }
     });
-
-    return { mockLookup, mockResponseHelpers };
+    return { mockLookup: services.mockLookup, mockResponseHelpers: services.mockResponseHelpers };
   }
 
   static setupCustomErrorInRetrieval(error: Error) {
-    const mockLookup = this.getMockLookup();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-    
-    mockLookup.findUserOrError.mockRejectedValue(error);
-    mockResponseHelpers.handleValidationError.mockImplementation(() => {
-      throw new Error('Not a validation error');
+    const services = UniversalServiceMocks.getServices();
+    services.mockLookup.findUserOrError.mockRejectedValue(error);
+    services.mockResponseHelpers.handleValidationError.mockImplementation(() => { throw new Error('Not a validation error'); });
+    services.mockResponseHelpers.handleCustomError.mockReturnValue({
+      success: false, error: { message: 'User not found', code: 'USER_NOT_FOUND', statusCode: 404 }
     });
-    mockResponseHelpers.handleCustomError.mockReturnValue({
-      success: false,
-      error: { message: 'User not found', code: 'USER_NOT_FOUND', statusCode: 404 },
-    });
-
-    return { mockLookup, mockResponseHelpers };
+    return { mockLookup: services.mockLookup, mockResponseHelpers: services.mockResponseHelpers };
   }
 
   static setupEmailRetrievalError(error: Error) {
-    const mockLookup = this.getMockLookup();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-    
-    mockLookup.findUserByEmailOrThrow.mockRejectedValue(error);
-    mockResponseHelpers.handleCustomError.mockReturnValue({
-      success: false,
-      error: { message: 'Failed to retrieve user', code: 'USER_RETRIEVAL_FAILED', statusCode: 500 },
+    const services = UniversalServiceMocks.getServices();
+    services.mockLookup.findUserByEmailOrThrow.mockRejectedValue(error);
+    services.mockResponseHelpers.handleCustomError.mockReturnValue({
+      success: false, error: { message: 'Failed to retrieve user', code: 'USER_RETRIEVAL_FAILED', statusCode: 500 }
     });
-
-    return { mockLookup, mockResponseHelpers };
+    return { mockLookup: services.mockLookup, mockResponseHelpers: services.mockResponseHelpers };
   }
 }
 
 /**
- * Common assertion helpers - reduces duplication in test verification
+ * Simplified assertion helpers - delegates to universal patterns
  */
 export class AssertionHelpers {
-  static expectSuccessResult(result: any, expectedData: any) {
-    expect(result.success).toBe(true);
-    expect(result.data).toEqual(expectedData);
-  }
+  static expectSuccessResult = UniversalAssertions.expectStandardSuccess;
 
-  static expectErrorResult(result: any, expectedCode?: string, expectedMessage?: string) {
-    expect(result.success).toBe(false);
-    if (expectedCode) {
-      expect(result.error?.code).toBe(expectedCode);
-    }
-    if (expectedMessage) {
-      expect(result.error?.message).toBe(expectedMessage);
-    }
-  }
+  static expectErrorResult = UniversalAssertions.expectStandardError;
 
-  static expectDatabaseUpdate(mockDatabase: any, expectedUser: any, expectedData: any) {
-    expect(mockDatabase.updateUserFieldsAndSave).toHaveBeenCalledWith(
-      expect.objectContaining({
-        email: expectedUser.email,
-        username: expectedUser.username,
-      }),
-      expectedData
-    );
-  }
+  static expectDatabaseUpdate = UniversalAssertions.expectDatabaseUpdate;
 
-  static expectSubscriptionUpdate(mockDatabase: any, tier: SubscriptionTier) {
-    expect(mockDatabase.updateUserFieldsAndSave).toHaveBeenCalledWith(
-      expect.any(Object),
-      { subscriptionTier: tier }
-    );
-  }
+  static expectSubscriptionUpdate = UniversalAssertions.expectSubscriptionUpdate;
 }
 
 /**
- * Test scenario generators - creates complete test scenarios
+ * Simplified test scenarios - delegates to universal patterns
  */
 export class TestScenarios {
-  static async testSuccessfulRetrieval(
-    serviceMethod: Function,
-    methodArgs: any[],
-    mockUser: any,
-    mockPublicUser: PublicUser
-  ) {
-    const { mockLookup, mockResponseHelpers } = MockServiceHelpers.setupSuccessfulUserLookup(mockUser, mockPublicUser);
-
-    const result = await serviceMethod(...methodArgs);
-
-    AssertionHelpers.expectSuccessResult(result, mockPublicUser);
-    return { mockLookup, mockResponseHelpers };
+  static async testSuccessfulRetrieval(serviceMethod: Function, methodArgs: any[], mockUser: any, mockPublicUser: any) {
+    return await UniversalTestPatterns.testStandardRetrieval(serviceMethod, methodArgs, true, mockPublicUser);
   }
 
-  static async testFailedRetrieval(
-    serviceMethod: Function,
-    methodArgs: any[],
-    errorCode: string,
-    message: string
-  ) {
-    const { mockLookup, errorResult } = MockServiceHelpers.setupFailedUserLookup(errorCode, message);
-
-    const result = await serviceMethod(...methodArgs);
-
-    expect(result).toEqual(errorResult);
-    return { mockLookup };
+  static async testFailedRetrieval(serviceMethod: Function, methodArgs: any[], errorCode: string, message: string) {
+    return await UniversalTestPatterns.testStandardRetrieval(serviceMethod, methodArgs, false, undefined, errorCode, message);
   }
+
+  static createConflictTestScenario = UniversalTestPatterns.createConflictScenario;
+
+  static createDatabaseErrorScenario = UniversalTestPatterns.createDatabaseErrorScenario;
 }
 
-export const SUBSCRIPTION_TIERS: SubscriptionTier[] = ['free', 'seasoned', 'expert', 'master', 'guild'];
+// Export universal patterns for test structure consistency
+export const TestPatterns = UniversalForEachPatterns;
+export { SUBSCRIPTION_TIERS } from './shared-test-utilities';

@@ -10,6 +10,7 @@ import {
   createMockUpdateData,
   MockServiceHelpers,
   AssertionHelpers,
+  TestScenarios,
 } from './UserServiceProfile.test-helpers';
 
 // Mock dependencies
@@ -60,28 +61,22 @@ describe('UserServiceProfile - Profile Updates', () => {
       expect(result.error?.statusCode).toBe(404);
     });
 
-    it('should handle email conflicts during profile update', async () => {
-      const conflictError = new UserAlreadyExistsError('email', 'existing@example.com');
-      const { mockResponseHelpers } = MockServiceHelpers.setupConflictDuringValidation(
-        mockUser, conflictError, MockedUser
-      );
+    // Test conflict scenarios using consolidated helper
+    const conflictScenarios = [
+      { type: 'email', value: 'existing@example.com' },
+      { type: 'username', value: 'existinguser' }
+    ] as const;
 
-      const result = await UserServiceProfile.updateUserProfile(TEST_CONSTANTS.mockUserId, updateData);
+    conflictScenarios.forEach(({ type, value }) => {
+      it(`should handle ${type} conflicts during profile update`, async () => {
+        const { conflictError, setup } = TestScenarios.createConflictTestScenario(type, value);
+        const { mockResponseHelpers } = setup(mockUser, MockedUser);
 
-      expect(result.success).toBe(false);
-      expect(mockResponseHelpers.createErrorResponse).toHaveBeenCalledWith(conflictError);
-    });
+        const result = await UserServiceProfile.updateUserProfile(TEST_CONSTANTS.mockUserId, updateData);
 
-    it('should handle username conflicts during profile update', async () => {
-      const conflictError = new UserAlreadyExistsError('username', 'existinguser');
-      const { mockResponseHelpers } = MockServiceHelpers.setupConflictDuringValidation(
-        mockUser, conflictError, MockedUser
-      );
-
-      const result = await UserServiceProfile.updateUserProfile(TEST_CONSTANTS.mockUserId, updateData);
-
-      expect(result.success).toBe(false);
-      expect(mockResponseHelpers.createErrorResponse).toHaveBeenCalledWith(conflictError);
+        expect(result.success).toBe(false);
+        expect(mockResponseHelpers.createErrorResponse).toHaveBeenCalledWith(conflictError);
+      });
     });
 
     it('should skip conflict check when no email or username changes', async () => {
@@ -116,16 +111,14 @@ describe('UserServiceProfile - Profile Updates', () => {
     });
 
     it('should handle general database errors during profile update', async () => {
-      const databaseError = new Error('Database connection failed');
-      const { mockResponseHelpers } = MockServiceHelpers.setupDatabaseError(
-        mockUser, updateData, databaseError, MockedUser
-      );
+      const { error, setup } = TestScenarios.createDatabaseErrorScenario('Database connection failed');
+      const { mockResponseHelpers } = setup(mockUser, updateData, MockedUser);
 
       const result = await UserServiceProfile.updateUserProfile(TEST_CONSTANTS.mockUserId, updateData);
 
       expect(result.success).toBe(false);
       expect(mockResponseHelpers.handleCustomError).toHaveBeenCalledWith(
-        databaseError,
+        error,
         'Failed to update user profile',
         'PROFILE_UPDATE_FAILED'
       );
