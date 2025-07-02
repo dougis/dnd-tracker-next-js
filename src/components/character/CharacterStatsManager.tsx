@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Edit, Save, X, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { CharacterService } from '@/lib/services/CharacterService';
 import { CharacterStats } from '@/lib/services/CharacterServiceStats';
+import { CharacterEditingHeader } from './CharacterEditingHeader';
+import { CharacterAbilityScores } from './CharacterAbilityScores';
+import { CharacterNotes } from './CharacterNotes';
 import type { ICharacter } from '@/lib/models/Character';
 import type { CharacterUpdate } from '@/lib/validations/character';
 
@@ -232,142 +233,28 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
 
   return (
     <div data-testid="character-stats-manager" className="space-y-6">
-      {/* Character Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">{character.name}</h1>
-        <div className="flex gap-2">
-          {editMode ? (
-            <>
-              <Button
-                data-testid="save-stats-button"
-                onClick={handleSave}
-                disabled={saving}
-                className="flex items-center gap-2"
-              >
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                Save
-              </Button>
-              <Button
-                data-testid="cancel-stats-button"
-                onClick={handleCancel}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <X className="h-4 w-4" />
-                Cancel
-              </Button>
-            </>
-          ) : (
-            <Button
-              data-testid="edit-stats-button"
-              onClick={() => setEditMode(true)}
-              className="flex items-center gap-2"
-            >
-              <Edit className="h-4 w-4" />
-              Edit
-            </Button>
-          )}
-        </div>
-      </div>
+      <CharacterEditingHeader
+        characterName={character.name}
+        editMode={editMode}
+        saving={saving}
+        saveSuccess={saveSuccess}
+        autosaving={autosaving}
+        autosaveSuccess={autosaveSuccess}
+        showDraftIndicator={showDraftIndicator}
+        draftChanges={draftChanges}
+        onEditClick={() => setEditMode(true)}
+        onSaveClick={handleSave}
+        onCancelClick={handleCancel}
+        onRestoreDraft={restoreDraftChanges}
+        onDiscardDraft={discardDraftChanges}
+      />
 
-      {saveSuccess && (
-        <Alert data-testid="save-success-message" className="border-green-200 bg-green-50">
-          <AlertDescription className="text-green-800">
-            Character updated successfully!
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Draft Changes Indicator */}
-      {showDraftIndicator && draftChanges && (
-        <Alert data-testid="draft-indicator" className="border-orange-200 bg-orange-50">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="text-orange-800 flex items-center justify-between">
-            <span>You have unsaved draft changes</span>
-            <div className="flex gap-2">
-              <Button
-                data-testid="restore-draft-button"
-                size="sm"
-                variant="outline"
-                onClick={restoreDraftChanges}
-                className="text-orange-800 border-orange-300 hover:bg-orange-100"
-              >
-                Restore
-              </Button>
-              <Button
-                data-testid="discard-draft-button"
-                size="sm"
-                variant="outline"
-                onClick={discardDraftChanges}
-                className="text-orange-800 border-orange-300 hover:bg-orange-100"
-              >
-                Discard
-              </Button>
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Autosave Indicator */}
-      {editMode && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          {autosaving && (
-            <div data-testid="autosave-indicator" className="flex items-center gap-1">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              <span>Saving draft...</span>
-            </div>
-          )}
-          {autosaveSuccess && (
-            <div data-testid="autosave-success" className="flex items-center gap-1 text-green-600">
-              <CheckCircle2 className="h-3 w-3" />
-              <span>Draft saved</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Ability Scores */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Ability Scores</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-4">
-            {abilities.map((ability) => {
-              const score = (editMode ? editedCharacter.abilityScores : character.abilityScores)?.[ability as keyof typeof character.abilityScores] || 10;
-              const modifier = Math.floor((score - 10) / 2);
-              const modifierString = modifier >= 0 ? `+${modifier}` : `${modifier}`;
-
-              return (
-                <div key={ability} data-testid={`ability-${ability}`} className="text-center p-4 border rounded">
-                  <div className="text-xs font-medium uppercase mb-1">
-                    {ability.substring(0, 3)}
-                  </div>
-                  {editMode ? (
-                    <Input
-                      data-testid={`ability-${ability}-input`}
-                      type="number"
-                      min="1"
-                      max="30"
-                      value={score}
-                      onChange={(e) => {
-                        const numValue = parseInt(e.target.value, 10);
-                        if (!isNaN(numValue)) {
-                          updateAbilityScore(ability, numValue);
-                        }
-                      }}
-                      className="text-center text-2xl font-bold h-12 mb-1"
-                    />
-                  ) : (
-                    <div className="text-2xl font-bold mb-1">{score}</div>
-                  )}
-                  <div className="text-sm text-muted-foreground">{modifierString}</div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      <CharacterAbilityScores
+        character={character}
+        editMode={editMode}
+        editedCharacter={editedCharacter}
+        onUpdateAbilityScore={updateAbilityScore}
+      />
 
       {/* Derived Stats */}
       <Card>
@@ -511,62 +398,14 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
         </CardContent>
       </Card>
 
-      {/* Character Notes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              Backstory
-              {!editMode && (
-                <Button
-                  data-testid="edit-backstory-button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setEditMode(true)}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent data-testid="backstory-section">
-            {editMode ? (
-              <Textarea
-                data-testid="backstory-textarea"
-                value={editedCharacter.backstory || ''}
-                onChange={(e) => updateBackstory(e.target.value)}
-                placeholder="Character backstory..."
-                className="min-h-32"
-              />
-            ) : (
-              <div className="whitespace-pre-wrap">
-                {character.backstory || 'No backstory provided'}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Notes</CardTitle>
-          </CardHeader>
-          <CardContent data-testid="notes-section">
-            {editMode ? (
-              <Textarea
-                data-testid="notes-textarea"
-                value={editedCharacter.notes || ''}
-                onChange={(e) => updateNotes(e.target.value)}
-                placeholder="Character notes..."
-                className="min-h-32"
-              />
-            ) : (
-              <div className="whitespace-pre-wrap">
-                {character.notes || 'No notes added'}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <CharacterNotes
+        character={character}
+        editMode={editMode}
+        editedCharacter={editedCharacter}
+        onUpdateBackstory={updateBackstory}
+        onUpdateNotes={updateNotes}
+        onEnterEditMode={() => setEditMode(true)}
+      />
     </div>
   );
 }
