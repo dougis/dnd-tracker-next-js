@@ -415,8 +415,4 @@ describe('Character Validation Schemas', () => {
       expect(() => equipmentItemSchema.parse(longDescription)).toThrow();
     });
   });
-
-
-      });
-
 });
