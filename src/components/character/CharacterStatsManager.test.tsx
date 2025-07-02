@@ -1,8 +1,18 @@
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { CharacterStatsManager } from './CharacterStatsManager';
 import { CharacterService } from '@/lib/services/CharacterService';
+import {
+  createMockCharacter,
+  createMockStats,
+  renderStatsManager,
+  waitForElement,
+  setupSuccessfulMocks,
+  setupErrorMocks,
+  enterEditMode,
+  expectAbilityScoreDisplay,
+  expectSavingThrowDisplay,
+  expectSkillDisplay
+} from './__tests__/CharacterStatsManager.test-helpers';
 
 // Mock the CharacterService
 jest.mock('@/lib/services/CharacterService', () => ({
@@ -13,169 +23,64 @@ jest.mock('@/lib/services/CharacterService', () => ({
   }
 }));
 
-// Mock character data
-const mockCharacter = {
-  _id: '507f1f77bcf86cd799439011',
-  name: 'Test Character',
-  type: 'pc' as const,
-  race: 'human',
-  size: 'medium' as const,
-  classes: [
-    { class: 'fighter', level: 5, subclass: 'Champion', hitDie: 10 }
-  ],
-  abilityScores: {
-    strength: 16,
-    dexterity: 14,
-    constitution: 15,
-    intelligence: 12,
-    wisdom: 13,
-    charisma: 10
-  },
-  hitPoints: {
-    maximum: 47,
-    current: 47,
-    temporary: 0
-  },
-  armorClass: 18,
-  speed: 30,
-  proficiencyBonus: 3,
-  savingThrows: {
-    strength: true,
-    dexterity: false,
-    constitution: true,
-    intelligence: false,
-    wisdom: false,
-    charisma: false
-  },
-  skills: new Map([
-    ['athletics', true],
-    ['intimidation', true],
-    ['perception', false]
-  ]),
-  equipment: [
-    {
-      name: 'Longsword',
-      quantity: 1,
-      weight: 3,
-      value: 15,
-      equipped: true,
-      magical: false
-    }
-  ],
-  backstory: 'A brave warrior',
-  notes: 'Remember to track rations',
-  isPublic: false,
-  ownerId: '507f1f77bcf86cd799439012',
-  createdAt: new Date(),
-  updatedAt: new Date()
-};
-
-const mockStats = {
-  abilityModifiers: {
-    strength: 3,
-    dexterity: 2,
-    constitution: 2,
-    intelligence: 1,
-    wisdom: 1,
-    charisma: 0
-  },
-  savingThrows: {
-    strength: 6,
-    dexterity: 2,
-    constitution: 5,
-    intelligence: 1,
-    wisdom: 1,
-    charisma: 0
-  },
-  skills: {
-    athletics: 6,
-    intimidation: 3,
-    perception: 1
-  },
-  totalLevel: 5,
-  classLevels: { fighter: 5 },
-  proficiencyBonus: 3,
-  initiativeModifier: 2,
-  armorClass: 18,
-  effectiveHitPoints: 47,
-  status: 'alive' as const,
-  isAlive: true,
-  isUnconscious: false
-};
+const mockCharacter = createMockCharacter();
+const mockStats = createMockStats();
 
 describe('CharacterStatsManager', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (CharacterService.getCharacterById as jest.Mock).mockResolvedValue({
-      success: true,
-      data: mockCharacter
-    });
-    (CharacterService.calculateCharacterStats as jest.Mock).mockResolvedValue({
-      success: true,
-      data: mockStats
-    });
+    setupSuccessfulMocks(mockCharacter, mockStats);
   });
 
   describe('Basic Rendering', () => {
     it('should render character stats manager component', async () => {
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('character-stats-manager')).toBeInTheDocument();
-      });
+      renderStatsManager();
+      await waitForElement('character-stats-manager');
     });
 
     it('should display loading state initially', () => {
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-
+      renderStatsManager();
       expect(screen.getByTestId('stats-loading')).toBeInTheDocument();
     });
 
     it('should display character name when loaded', async () => {
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Character')).toBeInTheDocument();
-      });
+      renderStatsManager();
+      await waitForElement('character-stats-manager');
+      expect(screen.getByText('Test Character')).toBeInTheDocument();
     });
   });
 
   describe('Ability Scores Display', () => {
+    const abilityScoreTests = [
+      { ability: 'strength', score: 16, modifier: 3 },
+      { ability: 'dexterity', score: 14, modifier: 2 },
+      { ability: 'constitution', score: 15, modifier: 2 },
+      { ability: 'intelligence', score: 12, modifier: 1 },
+      { ability: 'wisdom', score: 13, modifier: 1 },
+      { ability: 'charisma', score: 10, modifier: 0 }
+    ];
+
     it('should display all six ability scores', async () => {
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
+      renderStatsManager();
 
-      await waitFor(() => {
-        expect(screen.getByTestId('ability-strength')).toBeInTheDocument();
-        expect(screen.getByTestId('ability-dexterity')).toBeInTheDocument();
-        expect(screen.getByTestId('ability-constitution')).toBeInTheDocument();
-        expect(screen.getByTestId('ability-intelligence')).toBeInTheDocument();
-        expect(screen.getByTestId('ability-wisdom')).toBeInTheDocument();
-        expect(screen.getByTestId('ability-charisma')).toBeInTheDocument();
-      });
+      for (const { ability } of abilityScoreTests) {
+        await waitForElement(`ability-${ability}`);
+      }
     });
 
-    it('should display ability scores with correct values', async () => {
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('ability-strength')).toHaveTextContent('16');
-        expect(screen.getByTestId('ability-strength')).toHaveTextContent('+3');
-      });
-    });
+    it.each(abilityScoreTests)('should display $ability score with correct values',
+      async ({ ability, score, modifier }) => {
+        renderStatsManager();
+        await expectAbilityScoreDisplay(ability, score, modifier);
+      }
+    );
 
     it('should allow editing ability scores when in edit mode', async () => {
       const user = userEvent.setup();
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
+      renderStatsManager();
 
-      await waitFor(() => {
-        expect(screen.getByTestId('ability-strength')).toBeInTheDocument();
-      });
+      await enterEditMode(user);
 
-      // Click edit button
-      const editButton = screen.getByTestId('edit-stats-button');
-      await user.click(editButton);
-
-      // Should see editable input
       const strengthInput = screen.getByTestId('ability-strength-input');
       expect(strengthInput).toBeInTheDocument();
       expect(strengthInput).toHaveValue(16);
@@ -184,56 +89,57 @@ describe('CharacterStatsManager', () => {
 
   describe('Derived Stats Display', () => {
     it('should display armor class, initiative, and hit points', async () => {
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
+      renderStatsManager();
 
-      await waitFor(() => {
-        expect(screen.getByTestId('armor-class')).toHaveTextContent('18');
-        expect(screen.getByTestId('initiative')).toHaveTextContent('+2');
-        expect(screen.getByTestId('hit-points')).toHaveTextContent('47/47');
-      });
+      await waitForElement('armor-class');
+      expect(screen.getByTestId('armor-class')).toHaveTextContent('18');
+      expect(screen.getByTestId('initiative')).toHaveTextContent('+2');
+      expect(screen.getByTestId('hit-points')).toHaveTextContent('47/47');
     });
 
-    it('should display saving throws with proficiency indicators', async () => {
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
+    const savingThrowTests = [
+      { ability: 'strength', bonus: 6, isProficient: true },
+      { ability: 'dexterity', bonus: 2, isProficient: false },
+      { ability: 'constitution', bonus: 5, isProficient: true },
+      { ability: 'intelligence', bonus: 1, isProficient: false },
+      { ability: 'wisdom', bonus: 1, isProficient: false },
+      { ability: 'charisma', bonus: 0, isProficient: false }
+    ];
 
-      await waitFor(() => {
-        expect(screen.getByTestId('saving-throw-strength')).toHaveTextContent('+6');
-        expect(screen.getByTestId('saving-throw-strength')).toHaveClass('proficient');
-        expect(screen.getByTestId('saving-throw-dexterity')).toHaveTextContent('+2');
-        expect(screen.getByTestId('saving-throw-dexterity')).not.toHaveClass('proficient');
-      });
-    });
+    it.each(savingThrowTests)('should display $ability saving throw correctly',
+      async ({ ability, bonus, isProficient }) => {
+        renderStatsManager();
+        await expectSavingThrowDisplay(ability, bonus, isProficient);
+      }
+    );
 
-    it('should display skills with proficiency indicators', async () => {
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
+    const skillTests = [
+      { skill: 'athletics', bonus: 6, isProficient: true },
+      { skill: 'intimidation', bonus: 3, isProficient: true },
+      { skill: 'perception', bonus: 1, isProficient: false }
+    ];
 
-      await waitFor(() => {
-        expect(screen.getByTestId('skill-athletics')).toHaveTextContent('+6');
-        expect(screen.getByTestId('skill-athletics')).toHaveClass('proficient');
-        expect(screen.getByTestId('skill-perception')).toHaveTextContent('+1');
-        expect(screen.getByTestId('skill-perception')).not.toHaveClass('proficient');
-      });
-    });
+    it.each(skillTests)('should display $skill correctly',
+      async ({ skill, bonus, isProficient }) => {
+        renderStatsManager();
+        await expectSkillDisplay(skill, bonus, isProficient);
+      }
+    );
   });
 
   describe('Equipment Management', () => {
     it('should display equipment list', async () => {
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
+      renderStatsManager();
 
-      await waitFor(() => {
-        expect(screen.getByTestId('equipment-list')).toBeInTheDocument();
-        expect(screen.getByText('Longsword')).toBeInTheDocument();
-      });
+      await waitForElement('equipment-list');
+      expect(screen.getByText('Longsword')).toBeInTheDocument();
     });
 
     it('should allow adding new equipment', async () => {
       const user = userEvent.setup();
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
+      renderStatsManager();
 
-      await waitFor(() => {
-        expect(screen.getByTestId('equipment-list')).toBeInTheDocument();
-      });
-
+      await waitForElement('equipment-list');
       const addButton = screen.getByTestId('add-equipment-button');
       await user.click(addButton);
 
@@ -241,34 +147,28 @@ describe('CharacterStatsManager', () => {
     });
 
     it('should calculate total equipment weight', async () => {
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
+      renderStatsManager();
 
-      await waitFor(() => {
-        expect(screen.getByTestId('total-weight')).toHaveTextContent('3 lbs');
-      });
+      await waitForElement('total-weight');
+      expect(screen.getByTestId('total-weight')).toHaveTextContent('3 lbs');
     });
   });
 
   describe('Character Notes', () => {
     it('should display backstory and notes sections', async () => {
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
+      renderStatsManager();
 
-      await waitFor(() => {
-        expect(screen.getByTestId('backstory-section')).toBeInTheDocument();
-        expect(screen.getByTestId('notes-section')).toBeInTheDocument();
-        expect(screen.getByText('A brave warrior')).toBeInTheDocument();
-        expect(screen.getByText('Remember to track rations')).toBeInTheDocument();
-      });
+      await waitForElement('backstory-section');
+      expect(screen.getByTestId('notes-section')).toBeInTheDocument();
+      expect(screen.getByText('A brave warrior')).toBeInTheDocument();
+      expect(screen.getByText('Remember to track rations')).toBeInTheDocument();
     });
 
     it('should allow editing backstory and notes', async () => {
       const user = userEvent.setup();
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
+      renderStatsManager();
 
-      await waitFor(() => {
-        expect(screen.getByTestId('backstory-section')).toBeInTheDocument();
-      });
-
+      await waitForElement('backstory-section');
       const editButton = screen.getByTestId('edit-backstory-button');
       await user.click(editButton);
 
@@ -280,29 +180,19 @@ describe('CharacterStatsManager', () => {
 
   describe('Error Handling', () => {
     it('should display error message when character loading fails', async () => {
-      (CharacterService.getCharacterById as jest.Mock).mockResolvedValue({
-        success: false,
-        error: { message: 'Character not found', code: 'NOT_FOUND' }
-      });
+      setupErrorMocks('Character not found');
+      renderStatsManager();
 
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('error-message')).toHaveTextContent('Character not found');
-      });
+      await waitForElement('error-message');
+      expect(screen.getByTestId('error-message')).toHaveTextContent('Character not found');
     });
 
     it('should display error message when stats calculation fails', async () => {
-      (CharacterService.calculateCharacterStats as jest.Mock).mockResolvedValue({
-        success: false,
-        error: { message: 'Failed to calculate stats', code: 'CALCULATION_ERROR' }
-      });
+      setupErrorMocks(undefined, 'Failed to calculate stats');
+      renderStatsManager();
 
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('stats-error')).toHaveTextContent('Failed to calculate stats');
-      });
+      await waitForElement('stats-error');
+      expect(screen.getByTestId('stats-error')).toHaveTextContent('Failed to calculate stats');
     });
   });
 
@@ -314,38 +204,28 @@ describe('CharacterStatsManager', () => {
         data: mockCharacter
       });
 
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('ability-strength')).toBeInTheDocument();
-      });
-
-      // Enter edit mode and modify strength
-      const editButton = screen.getByTestId('edit-stats-button');
-      await user.click(editButton);
+      renderStatsManager();
+      await enterEditMode(user);
 
       const strengthInput = screen.getByTestId('ability-strength-input') as HTMLInputElement;
       expect(strengthInput).toHaveValue(16);
 
-      // Use fireEvent to properly clear and set the value
       fireEvent.change(strengthInput, { target: { value: '18' } });
       expect(strengthInput).toHaveValue(18);
 
-      // Save changes
       const saveButton = screen.getByTestId('save-stats-button');
       await user.click(saveButton);
 
-      await waitFor(() => {
-        expect(CharacterService.updateCharacter).toHaveBeenCalledWith(
-          '507f1f77bcf86cd799439011',
-          '507f1f77bcf86cd799439012',
-          expect.objectContaining({
-            abilityScores: expect.objectContaining({
-              strength: 18
-            })
+      await waitForElement('character-stats-manager');
+      expect(CharacterService.updateCharacter).toHaveBeenCalledWith(
+        '507f1f77bcf86cd799439011',
+        '507f1f77bcf86cd799439012',
+        expect.objectContaining({
+          abilityScores: expect.objectContaining({
+            strength: 18
           })
-        );
-      });
+        })
+      );
     });
 
     it('should display save confirmation message', async () => {
@@ -355,21 +235,13 @@ describe('CharacterStatsManager', () => {
         data: mockCharacter
       });
 
-      render(<CharacterStatsManager characterId="507f1f77bcf86cd799439011" userId="507f1f77bcf86cd799439012" />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('edit-stats-button')).toBeInTheDocument();
-      });
-
-      const editButton = screen.getByTestId('edit-stats-button');
-      await user.click(editButton);
+      renderStatsManager();
+      await enterEditMode(user);
 
       const saveButton = screen.getByTestId('save-stats-button');
       await user.click(saveButton);
 
-      await waitFor(() => {
-        expect(screen.getByTestId('save-success-message')).toBeInTheDocument();
-      });
+      await waitForElement('save-success-message');
     });
   });
 });
