@@ -39,22 +39,9 @@ describe('UserServiceProfile - Profile Updates', () => {
 
   describe('updateUserProfile', () => {
     it('should successfully update user profile with valid data', async () => {
-      const mockValidation = MockServiceHelpers.getMockValidation();
-      const mockDatabase = MockServiceHelpers.getMockDatabase();
-      const mockResponseHelpers = MockServiceHelpers.getMockResponseHelpers();
-
-      MockedUser.findById.mockResolvedValue(mockUser);
-      mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
-      mockValidation.prepareConflictCheckParams.mockReturnValue({
-        emailToCheck: undefined,
-        usernameToCheck: undefined,
-      });
-      mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
-      mockResponseHelpers.createSuccessResponse.mockReturnValue({
-        success: true,
-        data: mockPublicUser,
-      });
-      mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
+      const { mockValidation, mockDatabase } = MockServiceHelpers.setupSuccessfulProfileUpdate(
+        mockUser, updateData, mockPublicUser, MockedUser
+      );
 
       const result = await UserServiceProfile.updateUserProfile(TEST_CONSTANTS.mockUserId, updateData);
 
@@ -65,9 +52,7 @@ describe('UserServiceProfile - Profile Updates', () => {
     });
 
     it('should return error when user is not found for profile update', async () => {
-      const mockValidation = MockServiceHelpers.getMockValidation();
-      mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
-      MockedUser.findById.mockResolvedValue(null);
+      MockServiceHelpers.setupUserNotFoundForUpdate(MockedUser, updateData);
 
       const result = await UserServiceProfile.updateUserProfile(TEST_CONSTANTS.mockUserId, updateData);
 
@@ -76,19 +61,10 @@ describe('UserServiceProfile - Profile Updates', () => {
     });
 
     it('should handle email conflicts during profile update', async () => {
-      // For this test, we'll test the general error handling path
-      const mockValidation = MockServiceHelpers.getMockValidation();
-      const mockResponseHelpers = MockServiceHelpers.getMockResponseHelpers();
       const conflictError = new UserAlreadyExistsError('email', 'existing@example.com');
-
-      MockedUser.findById.mockResolvedValue(mockUser);
-      mockValidation.validateAndParseProfileUpdate.mockImplementation(() => {
-        throw conflictError;
-      });
-      mockResponseHelpers.createErrorResponse.mockReturnValue({
-        success: false,
-        error: { message: 'Email already exists', code: 'USER_ALREADY_EXISTS', statusCode: 409 },
-      });
+      const { mockResponseHelpers } = MockServiceHelpers.setupConflictDuringValidation(
+        mockUser, conflictError, MockedUser
+      );
 
       const result = await UserServiceProfile.updateUserProfile(TEST_CONSTANTS.mockUserId, updateData);
 
@@ -97,19 +73,10 @@ describe('UserServiceProfile - Profile Updates', () => {
     });
 
     it('should handle username conflicts during profile update', async () => {
-      // For this test, we'll test the general error handling path
-      const mockValidation = MockServiceHelpers.getMockValidation();
-      const mockResponseHelpers = MockServiceHelpers.getMockResponseHelpers();
       const conflictError = new UserAlreadyExistsError('username', 'existinguser');
-
-      MockedUser.findById.mockResolvedValue(mockUser);
-      mockValidation.validateAndParseProfileUpdate.mockImplementation(() => {
-        throw conflictError;
-      });
-      mockResponseHelpers.createErrorResponse.mockReturnValue({
-        success: false,
-        error: { message: 'Username already exists', code: 'USER_ALREADY_EXISTS', statusCode: 409 },
-      });
+      const { mockResponseHelpers } = MockServiceHelpers.setupConflictDuringValidation(
+        mockUser, conflictError, MockedUser
+      );
 
       const result = await UserServiceProfile.updateUserProfile(TEST_CONSTANTS.mockUserId, updateData);
 
@@ -118,22 +85,9 @@ describe('UserServiceProfile - Profile Updates', () => {
     });
 
     it('should skip conflict check when no email or username changes', async () => {
-      const mockValidation = MockServiceHelpers.getMockValidation();
-      const mockDatabase = MockServiceHelpers.getMockDatabase();
-      const mockResponseHelpers = MockServiceHelpers.getMockResponseHelpers();
-
-      MockedUser.findById.mockResolvedValue(mockUser);
-      mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
-      mockValidation.prepareConflictCheckParams.mockReturnValue({
-        emailToCheck: undefined,
-        usernameToCheck: undefined,
-      });
-      mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
-      mockResponseHelpers.createSuccessResponse.mockReturnValue({
-        success: true,
-        data: mockPublicUser,
-      });
-      mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
+      MockServiceHelpers.setupSuccessfulProfileUpdate(
+        mockUser, updateData, mockPublicUser, MockedUser
+      );
 
       const result = await UserServiceProfile.updateUserProfile(TEST_CONSTANTS.mockUserId, updateData);
 
@@ -145,22 +99,15 @@ describe('UserServiceProfile - Profile Updates', () => {
       const userWithoutId = { ...mockUser };
       delete (userWithoutId as any)._id;
 
+      MockServiceHelpers.setupSuccessfulProfileUpdate(
+        userWithoutId, updateData, mockPublicUser, MockedUser
+      );
+      // Override with email check to test _id logic
       const mockValidation = MockServiceHelpers.getMockValidation();
-      const mockDatabase = MockServiceHelpers.getMockDatabase();
-      const mockResponseHelpers = MockServiceHelpers.getMockResponseHelpers();
-
-      MockedUser.findById.mockResolvedValue(userWithoutId);
-      mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
       mockValidation.prepareConflictCheckParams.mockReturnValue({
         emailToCheck: 'new@example.com',
         usernameToCheck: undefined,
       });
-      mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
-      mockResponseHelpers.createSuccessResponse.mockReturnValue({
-        success: true,
-        data: mockPublicUser,
-      });
-      mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
 
       const result = await UserServiceProfile.updateUserProfile(TEST_CONSTANTS.mockUserId, updateData);
 
@@ -169,24 +116,10 @@ describe('UserServiceProfile - Profile Updates', () => {
     });
 
     it('should handle general database errors during profile update', async () => {
-      const mockValidation = MockServiceHelpers.getMockValidation();
-      const mockDatabase = MockServiceHelpers.getMockDatabase();
-      const mockResponseHelpers = MockServiceHelpers.getMockResponseHelpers();
       const databaseError = new Error('Database connection failed');
-
-      MockedUser.findById.mockResolvedValue(mockUser);
-      mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
-      mockValidation.prepareConflictCheckParams.mockReturnValue({
-        emailToCheck: undefined,
-        usernameToCheck: undefined,
-      });
-
-      // Simulate database error during update operation
-      mockDatabase.updateUserFieldsAndSave.mockRejectedValue(databaseError);
-      mockResponseHelpers.handleCustomError.mockReturnValue({
-        success: false,
-        error: { message: 'Failed to update user profile', code: 'PROFILE_UPDATE_FAILED', statusCode: 500 },
-      });
+      const { mockResponseHelpers } = MockServiceHelpers.setupDatabaseError(
+        mockUser, updateData, databaseError, MockedUser
+      );
 
       const result = await UserServiceProfile.updateUserProfile(TEST_CONSTANTS.mockUserId, updateData);
 
@@ -208,22 +141,10 @@ describe('UserServiceProfile - Profile Updates', () => {
     });
 
     it('should handle UserAlreadyExistsError thrown during update process', async () => {
-      const mockValidation = MockServiceHelpers.getMockValidation();
-      const mockDatabase = MockServiceHelpers.getMockDatabase();
-      const mockResponseHelpers = MockServiceHelpers.getMockResponseHelpers();
       const conflictError = new UserAlreadyExistsError('email', 'test@example.com');
-
-      MockedUser.findById.mockResolvedValue(mockUser);
-      mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
-      mockValidation.prepareConflictCheckParams.mockReturnValue({
-        emailToCheck: undefined,
-        usernameToCheck: undefined,
-      });
-      mockDatabase.updateUserFieldsAndSave.mockRejectedValue(conflictError);
-      mockResponseHelpers.createErrorResponse.mockReturnValue({
-        success: false,
-        error: { message: 'Email already exists', code: 'USER_ALREADY_EXISTS', statusCode: 409 },
-      });
+      const { mockResponseHelpers } = MockServiceHelpers.setupUserAlreadyExistsErrorDuringUpdate(
+        mockUser, updateData, conflictError, MockedUser
+      );
 
       const result = await UserServiceProfile.updateUserProfile(TEST_CONSTANTS.mockUserId, updateData);
 

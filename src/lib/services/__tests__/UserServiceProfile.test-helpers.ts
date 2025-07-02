@@ -179,6 +179,134 @@ export class MockServiceHelpers {
 
     return { mockValidation, mockDatabase, mockResponseHelpers };
   }
+
+  // Enhanced setup methods to eliminate duplication in update tests
+  static setupSuccessfulProfileUpdate(mockUser: any, updateData: any, mockPublicUser: any, MockedUser: any) {
+    const mockValidation = this.getMockValidation();
+    const mockDatabase = this.getMockDatabase();
+    const mockResponseHelpers = this.getMockResponseHelpers();
+    
+    MockedUser.findById.mockResolvedValue(mockUser);
+    mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
+    mockValidation.prepareConflictCheckParams.mockReturnValue({
+      emailToCheck: undefined,
+      usernameToCheck: undefined,
+    });
+    mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
+    mockResponseHelpers.createSuccessResponse.mockReturnValue({
+      success: true,
+      data: mockPublicUser,
+    });
+    mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
+
+    return { mockValidation, mockDatabase, mockResponseHelpers };
+  }
+
+  static setupUserNotFoundForUpdate(MockedUser: any, updateData: any) {
+    const mockValidation = this.getMockValidation();
+    mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
+    MockedUser.findById.mockResolvedValue(null);
+    return { mockValidation };
+  }
+
+  static setupConflictDuringValidation(mockUser: any, conflictError: UserAlreadyExistsError, MockedUser: any) {
+    const mockValidation = this.getMockValidation();
+    const mockResponseHelpers = this.getMockResponseHelpers();
+    
+    MockedUser.findById.mockResolvedValue(mockUser);
+    mockValidation.validateAndParseProfileUpdate.mockImplementation(() => {
+      throw conflictError;
+    });
+    mockResponseHelpers.createErrorResponse.mockReturnValue({
+      success: false,
+      error: { message: `${conflictError.field} already exists`, code: 'USER_ALREADY_EXISTS', statusCode: 409 },
+    });
+
+    return { mockValidation, mockResponseHelpers };
+  }
+
+  static setupDatabaseError(mockUser: any, updateData: any, error: Error, MockedUser: any) {
+    const mockValidation = this.getMockValidation();
+    const mockDatabase = this.getMockDatabase();
+    const mockResponseHelpers = this.getMockResponseHelpers();
+    
+    MockedUser.findById.mockResolvedValue(mockUser);
+    mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
+    mockValidation.prepareConflictCheckParams.mockReturnValue({
+      emailToCheck: undefined,
+      usernameToCheck: undefined,
+    });
+    mockDatabase.updateUserFieldsAndSave.mockRejectedValue(error);
+    mockResponseHelpers.handleCustomError.mockReturnValue({
+      success: false,
+      error: { message: 'Failed to update user profile', code: 'PROFILE_UPDATE_FAILED', statusCode: 500 },
+    });
+
+    return { mockValidation, mockDatabase, mockResponseHelpers };
+  }
+
+  static setupUserAlreadyExistsErrorDuringUpdate(mockUser: any, updateData: any, conflictError: UserAlreadyExistsError, MockedUser: any) {
+    const mockValidation = this.getMockValidation();
+    const mockDatabase = this.getMockDatabase();
+    const mockResponseHelpers = this.getMockResponseHelpers();
+    
+    MockedUser.findById.mockResolvedValue(mockUser);
+    mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
+    mockValidation.prepareConflictCheckParams.mockReturnValue({
+      emailToCheck: undefined,
+      usernameToCheck: undefined,
+    });
+    mockDatabase.updateUserFieldsAndSave.mockRejectedValue(conflictError);
+    mockResponseHelpers.createErrorResponse.mockReturnValue({
+      success: false,
+      error: { message: `${conflictError.field} already exists`, code: 'USER_ALREADY_EXISTS', statusCode: 409 },
+    });
+
+    return { mockValidation, mockDatabase, mockResponseHelpers };
+  }
+
+  // Additional helpers for retrieval and other common patterns
+  static setupValidationErrorInRetrieval(error: Error) {
+    const mockLookup = this.getMockLookup();
+    const mockResponseHelpers = this.getMockResponseHelpers();
+    
+    mockLookup.findUserOrError.mockRejectedValue(error);
+    mockResponseHelpers.handleValidationError.mockReturnValue({
+      success: false,
+      error: { message: 'Validation error', code: 'VALIDATION_ERROR', statusCode: 400 },
+    });
+
+    return { mockLookup, mockResponseHelpers };
+  }
+
+  static setupCustomErrorInRetrieval(error: Error) {
+    const mockLookup = this.getMockLookup();
+    const mockResponseHelpers = this.getMockResponseHelpers();
+    
+    mockLookup.findUserOrError.mockRejectedValue(error);
+    mockResponseHelpers.handleValidationError.mockImplementation(() => {
+      throw new Error('Not a validation error');
+    });
+    mockResponseHelpers.handleCustomError.mockReturnValue({
+      success: false,
+      error: { message: 'User not found', code: 'USER_NOT_FOUND', statusCode: 404 },
+    });
+
+    return { mockLookup, mockResponseHelpers };
+  }
+
+  static setupEmailRetrievalError(error: Error) {
+    const mockLookup = this.getMockLookup();
+    const mockResponseHelpers = this.getMockResponseHelpers();
+    
+    mockLookup.findUserByEmailOrThrow.mockRejectedValue(error);
+    mockResponseHelpers.handleCustomError.mockReturnValue({
+      success: false,
+      error: { message: 'Failed to retrieve user', code: 'USER_RETRIEVAL_FAILED', statusCode: 500 },
+    });
+
+    return { mockLookup, mockResponseHelpers };
+  }
 }
 
 /**

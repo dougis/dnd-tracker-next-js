@@ -50,15 +50,8 @@ describe('UserServiceProfile - Profile Retrieval', () => {
     });
 
     it('should handle validation errors in getUserById', async () => {
-      const mockLookup = MockServiceHelpers.getMockLookup();
-      const mockResponseHelpers = MockServiceHelpers.getMockResponseHelpers();
       const validationError = new Error('Validation failed');
-
-      mockLookup.findUserOrError.mockRejectedValue(validationError);
-      mockResponseHelpers.handleValidationError.mockReturnValue({
-        success: false,
-        error: { message: 'Validation error', code: 'VALIDATION_ERROR', statusCode: 400 },
-      });
+      const { mockResponseHelpers } = MockServiceHelpers.setupValidationErrorInRetrieval(validationError);
 
       const result = await UserServiceProfile.getUserById(TEST_CONSTANTS.mockUserId);
 
@@ -67,18 +60,8 @@ describe('UserServiceProfile - Profile Retrieval', () => {
     });
 
     it('should handle custom errors when validation error handling throws', async () => {
-      const mockLookup = MockServiceHelpers.getMockLookup();
-      const mockResponseHelpers = MockServiceHelpers.getMockResponseHelpers();
       const customError = new Error('Database error');
-
-      mockLookup.findUserOrError.mockRejectedValue(customError);
-      mockResponseHelpers.handleValidationError.mockImplementation(() => {
-        throw new Error('Not a validation error');
-      });
-      mockResponseHelpers.handleCustomError.mockReturnValue({
-        success: false,
-        error: { message: 'User not found', code: 'USER_NOT_FOUND', statusCode: 404 },
-      });
+      const { mockResponseHelpers } = MockServiceHelpers.setupCustomErrorInRetrieval(customError);
 
       const result = await UserServiceProfile.getUserById(TEST_CONSTANTS.mockUserId);
 
@@ -121,15 +104,8 @@ describe('UserServiceProfile - Profile Retrieval', () => {
     });
 
     it('should handle errors when user lookup by email fails', async () => {
-      const mockLookup = MockServiceHelpers.getMockLookup();
-      const mockResponseHelpers = MockServiceHelpers.getMockResponseHelpers();
       const lookupError = new UserNotFoundError(TEST_CONSTANTS.mockEmail);
-
-      mockLookup.findUserByEmailOrThrow.mockRejectedValue(lookupError);
-      mockResponseHelpers.handleCustomError.mockReturnValue({
-        success: false,
-        error: { message: 'Failed to retrieve user', code: 'USER_RETRIEVAL_FAILED', statusCode: 500 },
-      });
+      const { mockResponseHelpers } = MockServiceHelpers.setupEmailRetrievalError(lookupError);
 
       const result = await UserServiceProfile.getUserByEmail(TEST_CONSTANTS.mockEmail);
 
