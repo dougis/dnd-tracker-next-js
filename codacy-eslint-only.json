@@ -1,0 +1,10 @@
+
+/home/doug/dev/dnd-tracker-next-js/docker-entrypoint.js
+   6:9  error  'execSync' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+   7:7  error  'fs' is assigned a value but never used. Allowed unused vars must match /^_/u        no-unused-vars
+  51:1  error  Trailing spaces not allowed                                                          no-trailing-spaces
+  54:1  error  Trailing spaces not allowed                                                          no-trailing-spaces
+
+✖ 4 problems (4 errors, 0 warnings)
+  2 errors and 0 warnings potentially fixable with the `--fix` option.
+

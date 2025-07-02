@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Edit, Save, X, Plus } from 'lucide-react';
+import { Loader2, Edit, Save, X, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
 import { CharacterService } from '@/lib/services/CharacterService';
 import { CharacterStats } from '@/lib/services/CharacterServiceStats';
 import type { ICharacter } from '@/lib/models/Character';
@@ -27,9 +27,99 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [editedCharacter, setEditedCharacter] = useState<CharacterUpdate>({});
 
+  // Autosave functionality
+  const [autosaving, setAutosaving] = useState(false);
+  const [autosaveSuccess, setAutosaveSuccess] = useState(false);
+  const [draftChanges, setDraftChanges] = useState<CharacterUpdate | null>(null);
+  const [showDraftIndicator, setShowDraftIndicator] = useState(false);
+  const autosaveTimer = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     loadCharacterData();
   }, [characterId, userId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Autosave effect
+  useEffect(() => {
+    if (editMode && hasChanges()) {
+      // Clear existing timer
+      if (autosaveTimer.current) {
+        clearTimeout(autosaveTimer.current);
+      }
+
+      // Set new timer for 2 seconds
+      autosaveTimer.current = setTimeout(() => {
+        saveDraftChanges();
+      }, 2000);
+    }
+
+    return () => {
+      if (autosaveTimer.current) {
+        clearTimeout(autosaveTimer.current);
+      }
+    };
+  }, [editedCharacter, editMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load draft changes on mount
+  useEffect(() => {
+    loadDraftChanges();
+  }, [characterId, userId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const hasChanges = useCallback(() => {
+    if (!character) return false;
+    return (
+      JSON.stringify(editedCharacter.abilityScores) !== JSON.stringify(character.abilityScores) ||
+      editedCharacter.backstory !== character.backstory ||
+      editedCharacter.notes !== character.notes
+    );
+  }, [editedCharacter, character]);
+
+  const saveDraftChanges = useCallback(async () => {
+    if (!hasChanges()) return;
+
+    try {
+      setAutosaving(true);
+      const result = await CharacterService.saveDraftChanges(characterId, userId, editedCharacter);
+
+      if (result.success) {
+        setAutosaveSuccess(true);
+        setTimeout(() => setAutosaveSuccess(false), 2000);
+      }
+    } catch (err) {
+      // Silently fail autosave to not disrupt user experience
+    } finally {
+      setAutosaving(false);
+    }
+  }, [characterId, userId, editedCharacter, hasChanges]);
+
+  const loadDraftChanges = async () => {
+    try {
+      const result = await CharacterService.getDraftChanges(characterId, userId);
+      if (result.success && result.data) {
+        setDraftChanges(result.data);
+        setShowDraftIndicator(true);
+      }
+    } catch (err) {
+      // Silently fail loading draft changes
+    }
+  };
+
+  const restoreDraftChanges = () => {
+    if (draftChanges) {
+      setEditedCharacter(draftChanges);
+      setEditMode(true);
+      setShowDraftIndicator(false);
+    }
+  };
+
+  const discardDraftChanges = async () => {
+    try {
+      await CharacterService.clearDraftChanges(characterId, userId);
+      setDraftChanges(null);
+      setShowDraftIndicator(false);
+    } catch (err) {
+      // Silently fail clearing draft changes
+    }
+  };
 
   const loadCharacterData = async () => {
     try {
@@ -186,6 +276,54 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
             Character updated successfully!
           </AlertDescription>
         </Alert>
+      )}
+
+      {/* Draft Changes Indicator */}
+      {showDraftIndicator && draftChanges && (
+        <Alert data-testid="draft-indicator" className="border-orange-200 bg-orange-50">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="text-orange-800 flex items-center justify-between">
+            <span>You have unsaved draft changes</span>
+            <div className="flex gap-2">
+              <Button
+                data-testid="restore-draft-button"
+                size="sm"
+                variant="outline"
+                onClick={restoreDraftChanges}
+                className="text-orange-800 border-orange-300 hover:bg-orange-100"
+              >
+                Restore
+              </Button>
+              <Button
+                data-testid="discard-draft-button"
+                size="sm"
+                variant="outline"
+                onClick={discardDraftChanges}
+                className="text-orange-800 border-orange-300 hover:bg-orange-100"
+              >
+                Discard
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Autosave Indicator */}
+      {editMode && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          {autosaving && (
+            <div data-testid="autosave-indicator" className="flex items-center gap-1">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              <span>Saving draft...</span>
+            </div>
+          )}
+          {autosaveSuccess && (
+            <div data-testid="autosave-success" className="flex items-center gap-1 text-green-600">
+              <CheckCircle2 className="h-3 w-3" />
+              <span>Draft saved</span>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Ability Scores */}
