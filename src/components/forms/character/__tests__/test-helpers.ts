@@ -3,7 +3,8 @@
 export const mockCharacterData = {
   name: 'Test Character',
   type: 'pc' as const,
-  race: 'human',
+  race: 'human' as const,
+  size: 'medium' as const,
   abilityScores: {
     strength: 15,
     dexterity: 14,
@@ -12,9 +13,24 @@ export const mockCharacterData = {
     wisdom: 11,
     charisma: 10,
   },
-  classes: [{ className: 'fighter', level: 1 }],
-  hitPoints: { maximum: 10, current: 10 },
+  classes: [{ className: 'fighter' as const, level: 1 }],
+  hitPoints: { maximum: 10, current: 10, temporary: 0 },
   armorClass: 16,
+  speed: 30,
+  proficiencyBonus: 2,
+  savingThrows: {
+    strength: false,
+    dexterity: false,
+    constitution: false,
+    intelligence: false,
+    wisdom: false,
+    charisma: false,
+  },
+  skills: [],
+  equipment: [],
+  spells: [],
+  backstory: '',
+  notes: '',
 };
 
 export const mockBasicInfoData = {
@@ -65,21 +81,52 @@ export const mockValidCharacterPreviewProps = {
 
 // Service mock results
 export const mockSuccessResult = {
-  success: true,
+  success: true as const,
   data: {
-    id: 'char123',
+    _id: 'char123',
+    ownerId: 'user123',
     name: 'Test Character',
-    type: 'pc',
-    level: 1,
+    type: 'pc' as const,
+    race: 'human',
+    size: 'medium' as const,
+    classes: [{ class: 'fighter', level: 1, hitDie: 10 }],
+    abilityScores: {
+      strength: 15,
+      dexterity: 14,
+      constitution: 13,
+      intelligence: 12,
+      wisdom: 11,
+      charisma: 10,
+    },
+    hitPoints: { maximum: 10, current: 10, temporary: 0 },
+    armorClass: 16,
+    speed: 30,
+    proficiencyBonus: 2,
+    savingThrows: {
+      strength: false,
+      dexterity: false,
+      constitution: false,
+      intelligence: false,
+      wisdom: false,
+      charisma: false,
+    },
+    skills: new Map(),
+    equipment: [],
+    spells: [],
+    backstory: '',
+    notes: '',
+    isPublic: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
 };
 
 export const mockErrorResult = {
-  success: false,
+  success: false as const,
   error: {
     code: 'VALIDATION_ERROR',
     message: 'Character validation failed',
-    details: 'Name is required',
+    details: { field: 'name', message: 'Name is required' },
   },
 };
 

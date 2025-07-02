@@ -389,7 +389,7 @@ describe('useCharacterForm', () => {
     it('runs Zod validation and sets errors', () => {
       const { result } = renderHook(() => useCharacterForm());
 
-      let validationResult: boolean;
+      let validationResult: boolean = false;
 
       act(() => {
         validationResult = result.current.validateForm();
@@ -579,7 +579,7 @@ describe('useCharacterForm', () => {
         });
       });
 
-      let validationResult: boolean;
+      let validationResult: boolean = false;
       act(() => {
         validationResult = result.current.validateForm();
       });
