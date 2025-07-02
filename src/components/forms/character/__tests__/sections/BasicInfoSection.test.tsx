@@ -1,6 +1,5 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { BasicInfoSection } from '../../sections/BasicInfoSection';
 
 describe('BasicInfoSection', () => {
@@ -34,7 +33,7 @@ describe('BasicInfoSection', () => {
       const mockOnValueChange = jest.fn();
       const TestComponent = () => {
         const [value, setValue] = React.useState(defaultProps.value);
-        
+
         const handleChange = (newValue: any) => {
           setValue(newValue);
           mockOnValueChange(newValue);
@@ -44,7 +43,7 @@ describe('BasicInfoSection', () => {
       };
 
       render(<TestComponent />);
-      
+
       // Test by directly calling the onChange with expected data
       mockOnValueChange({ ...defaultProps.value, name: 'Test Character' });
       expect(mockOnValueChange).toHaveBeenCalledWith(expect.objectContaining({
@@ -101,7 +100,7 @@ describe('BasicInfoSection', () => {
       const mockOnValueChange = jest.fn();
       const TestComponent = () => {
         const [value, setValue] = React.useState(defaultProps.value);
-        
+
         const handleChange = (newValue: any) => {
           setValue(newValue);
           mockOnValueChange(newValue);
@@ -111,7 +110,7 @@ describe('BasicInfoSection', () => {
       };
 
       render(<TestComponent />);
-      
+
       // Test by directly calling the onChange with expected data
       mockOnValueChange({ ...defaultProps.value, type: 'npc' });
       expect(mockOnValueChange).toHaveBeenCalledWith(expect.objectContaining({
@@ -153,7 +152,7 @@ describe('BasicInfoSection', () => {
       const mockOnValueChange = jest.fn();
       const TestComponent = () => {
         const [value, setValue] = React.useState(defaultProps.value);
-        
+
         const handleChange = (newValue: any) => {
           setValue(newValue);
           mockOnValueChange(newValue);
@@ -163,7 +162,7 @@ describe('BasicInfoSection', () => {
       };
 
       render(<TestComponent />);
-      
+
       // Test by directly calling the onChange with expected data
       mockOnValueChange({ ...defaultProps.value, race: 'elf' });
       expect(mockOnValueChange).toHaveBeenCalledWith(expect.objectContaining({
@@ -191,7 +190,7 @@ describe('BasicInfoSection', () => {
           ...defaultProps.value,
           race: 'custom' as const,
         });
-        
+
         const handleChange = (newValue: any) => {
           setValue(newValue);
           mockOnValueChange(newValue);
@@ -201,7 +200,7 @@ describe('BasicInfoSection', () => {
       };
 
       render(<TestComponent />);
-      
+
       // Test by directly calling the onChange with expected data
       mockOnValueChange({ ...defaultProps.value, race: 'custom', customRace: 'Test Race' });
       expect(mockOnValueChange).toHaveBeenCalledWith(expect.objectContaining({
@@ -294,11 +293,11 @@ describe('BasicInfoSection', () => {
 
       expect(nameField).toHaveAttribute('aria-describedby');
       expect(describedBy).toBeTruthy();
-      
+
       // The helper text should be queryable using the aria-describedby value
       const helperText = screen.getByText(/choose a memorable name/i);
       expect(helperText).toBeInTheDocument();
-      
+
       // Verify the ID relationship exists (should match the pattern ending with -helper)
       expect(helperText.id).toBe(describedBy);
       expect(describedBy).toMatch(/-helper$/);
