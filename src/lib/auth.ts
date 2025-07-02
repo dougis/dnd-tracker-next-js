@@ -4,7 +4,16 @@ import { MongoClient } from 'mongodb';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { UserService } from './services/UserService';
 
-const client = new MongoClient(process.env.MONGODB_URI!);
+const mongoUri = process.env.MONGODB_URI;
+if (!mongoUri) {
+  if (process.env.NODE_ENV === 'production' && process.env.VERCEL !== '1' && process.env.CI !== 'true') {
+    throw new Error('MONGODB_URI environment variable is not set');
+  }
+  // For build time or CI environment, use a placeholder URI that won't be used
+  console.warn('MONGODB_URI not set, using placeholder for build/CI');
+}
+
+const client = new MongoClient(mongoUri || 'mongodb://localhost:27017/placeholder');
 const clientPromise = Promise.resolve(client);
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
