@@ -157,7 +157,7 @@ export const createTestEquipment = (overrides = {}) => ({
 });
 
 // Generate arrays with specified count
-export const generateSpellArray = (count: number) => 
+export const generateSpellArray = (count: number) =>
   Array.from({ length: count }, () => createTestSpell());
 
 export const generateEquipmentArray = (count: number) =>
