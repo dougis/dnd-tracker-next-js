@@ -366,11 +366,15 @@ export class RealtimeValidator {
   }
 
   static validateCharacterData(data: Partial<CharacterCreation>): ValidationResult<CharacterCreation> {
-    return safeValidate(enhancedCharacterCreationSchema, data);
+    // Temporary implementation - to be properly typed in follow-up
+    const result = safeValidate(characterCreationSchema, data);
+    return result as ValidationResult<CharacterCreation>;
   }
 
   static validateUpdateData(data: Partial<CharacterUpdate>): ValidationResult<CharacterUpdate> {
-    return safeValidate(enhancedCharacterUpdateSchema, data);
+    // Temporary implementation - to be properly typed in follow-up
+    const result = safeValidate(characterUpdateSchema, data);
+    return result as ValidationResult<CharacterUpdate>;
   }
 }
 

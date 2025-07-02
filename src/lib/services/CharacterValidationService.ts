@@ -5,13 +5,13 @@
  * CharacterService with comprehensive validation, error recovery, and user guidance.
  */
 
+import { CharacterValidationUtils } from './utils/CharacterValidationUtils';
 import {
-  CharacterValidationUtils,
   type ServiceResult,
   createSuccessResult,
   createErrorResult,
   CharacterServiceErrors,
-} from './utils/CharacterValidationUtils';
+} from './CharacterServiceErrors';
 import {
   RealtimeValidator,
   CharacterConsistencyChecker,
@@ -411,7 +411,7 @@ export class CharacterValidationService {
       suggestions.push('Please review the form for any validation errors');
     }
 
-    return [...new Set(suggestions)]; // Remove duplicates
+    return Array.from(new Set(suggestions)); // Remove duplicates
   }
 
   private static async validateBusinessRules(
@@ -419,6 +419,10 @@ export class CharacterValidationService {
     _context: ValidationContext
   ): Promise<ServiceResult<void>> {
     // Use existing validation utils for business rules
-    return CharacterValidationUtils.validateCharacterData(characterData);
+    const result = CharacterValidationUtils.validateCharacterData(characterData);
+    if (result.success) {
+      return createSuccessResult(undefined);
+    }
+    return result;
   }
 }
