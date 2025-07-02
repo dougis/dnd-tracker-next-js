@@ -41,6 +41,13 @@ export const calculateModifier = (score: number): string => {
 };
 
 /**
+ * Calculate raw ability score modifier (just the number)
+ */
+export const calculateRawModifier = (score: number): number => {
+  return Math.floor((score - 10) / 2);
+};
+
+/**
  * Format race display name
  */
 export const formatRace = (race: string, customRace?: string): string => {

@@ -122,7 +122,7 @@ export function CharacterPreview({
                 <div className="flex items-center space-x-1">
                   <span className="font-mono">{score}</span>
                   <span className="text-muted-foreground font-mono text-xs">
-                    ({calculateModifier(score)})
+                    {calculateModifier(score)}
                   </span>
                 </div>
               </div>
