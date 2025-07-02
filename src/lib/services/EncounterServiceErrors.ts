@@ -55,54 +55,6 @@ export class CombatStateError extends EncounterServiceError {
 }
 
 /**
- * Create standardized error response
- */
-function createErrorResponse(message: string, code: string, statusCode: number): ServiceResult<never> {
-  return {
-    success: false,
-    error: { message, code, statusCode },
-  };
-}
-
-/**
- * Handle EncounterServiceError instances
- */
-function handleCustomError(error: EncounterServiceError): ServiceResult<never> {
-  return createErrorResponse(error.message, error.code, error.statusCode);
-}
-
-/**
- * Handle generic Error instances
- */
-function handleGenericError(error: Error): ServiceResult<never> | null {
-  const message = error.message.toLowerCase();
-  
-  if (message.includes('validation')) {
-    return createErrorResponse('Invalid encounter data provided', 'VALIDATION_ERROR', 400);
-  }
-  
-  if (message.includes('objectid')) {
-    return createErrorResponse('Invalid ID format provided', 'INVALID_ID_FORMAT', 400);
-  }
-  
-  if (message.includes('connection') || message.includes('timeout') || message.includes('econnrefused')) {
-    return createErrorResponse('Database connection error', 'DATABASE_ERROR', 503);
-  }
-  
-  return null;
-}
-
-/**
- * Handle MongoDB duplicate key errors
- */
-function handleDuplicateKeyError(error: unknown): ServiceResult<never> | null {
-  if (error && typeof error === 'object' && 'code' in error && (error as any).code === 11000) {
-    return createErrorResponse('Duplicate encounter data detected', 'DUPLICATE_ENCOUNTER', 409);
-  }
-  return null;
-}
-
-/**
  * Handle errors and convert them to ServiceResult error format for encounters
  */
 export function handleEncounterServiceError(
@@ -111,17 +63,55 @@ export function handleEncounterServiceError(
   defaultCode: string,
   defaultStatusCode: number = 500
 ): ServiceResult<never> {
+  // Handle custom service errors
   if (error instanceof EncounterServiceError) {
-    return handleCustomError(error);
+    return {
+      success: false,
+      error: {
+        message: error.message,
+        code: error.code,
+        statusCode: error.statusCode,
+      },
+    };
   }
 
+  // Handle generic errors with pattern matching
   if (error instanceof Error) {
-    const result = handleGenericError(error);
-    if (result) return result;
+    const message = error.message.toLowerCase();
+
+    if (message.includes('validation')) {
+      return {
+        success: false,
+        error: { message: 'Invalid encounter data provided', code: 'VALIDATION_ERROR', statusCode: 400 },
+      };
+    }
+
+    if (message.includes('objectid')) {
+      return {
+        success: false,
+        error: { message: 'Invalid ID format provided', code: 'INVALID_ID_FORMAT', statusCode: 400 },
+      };
+    }
+
+    if (message.includes('connection') || message.includes('timeout') || message.includes('econnrefused')) {
+      return {
+        success: false,
+        error: { message: 'Database connection error', code: 'DATABASE_ERROR', statusCode: 503 },
+      };
+    }
   }
 
-  const duplicateResult = handleDuplicateKeyError(error);
-  if (duplicateResult) return duplicateResult;
+  // Handle MongoDB duplicate key errors
+  if (error && typeof error === 'object' && 'code' in error && (error as any).code === 11000) {
+    return {
+      success: false,
+      error: { message: 'Duplicate encounter data detected', code: 'DUPLICATE_ENCOUNTER', statusCode: 409 },
+    };
+  }
 
-  return createErrorResponse(defaultMessage, defaultCode, defaultStatusCode);
+  // Default error response
+  return {
+    success: false,
+    error: { message: defaultMessage, code: defaultCode, statusCode: defaultStatusCode },
+  };
 }

@@ -106,11 +106,11 @@ export const createTestEncounter = (overrides: Partial<IEncounter> = {}): IEncou
     get currentParticipant(): IParticipantReference | null {
       const { isActive, initiativeOrder, currentTurn } = this.combatState;
       if (!isActive || !initiativeOrder.length) return null;
-      
+
       const currentEntry = initiativeOrder[currentTurn];
       if (!currentEntry) return null;
-      
-      return this.participants.find(p => 
+
+      return this.participants.find(p =>
         p.characterId.toString() === currentEntry.participantId.toString()
       ) || null;
     },
@@ -213,7 +213,7 @@ export const EncounterTestDataFactories = {
       { name: 'Player 1', armorClass: 16 },
       { name: 'Player 2', armorClass: 14 },
     ];
-    
+
     const npcConfigs = [
       { name: 'Goblin 1', currentHitPoints: 15 },
       { name: 'Goblin 2', currentHitPoints: 10 },
@@ -221,8 +221,8 @@ export const EncounterTestDataFactories = {
 
     const participants = [
       ...playerConfigs.map(config => createTestParticipant({ ...config, isPlayer: true })),
-      ...npcConfigs.map(config => createTestParticipant({ 
-        ...config, 
+      ...npcConfigs.map(config => createTestParticipant({
+        ...config,
         type: 'npc',
         isPlayer: false,
         maxHitPoints: 15,

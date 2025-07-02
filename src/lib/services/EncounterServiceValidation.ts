@@ -60,7 +60,7 @@ export class EncounterServiceValidation {
    */
   static sanitizeEncounterData(data: any): any {
     const sanitized = { ...data };
-    
+
     // Sanitize string fields
     ['name', 'description'].forEach(field => {
       if (sanitized[field]) sanitized[field] = DOMPurify.sanitize(sanitized[field]);
@@ -70,7 +70,7 @@ export class EncounterServiceValidation {
     if (Array.isArray(sanitized.tags)) {
       sanitized.tags = sanitized.tags.map((tag: string) => DOMPurify.sanitize(tag));
     }
-    
+
     if (Array.isArray(sanitized.participants)) {
       sanitized.participants = sanitized.participants.map(EncounterServiceValidation.sanitizeParticipantData);
     }
@@ -83,7 +83,7 @@ export class EncounterServiceValidation {
    */
   static sanitizeParticipantData(data: any): any {
     const sanitized = { ...data };
-    
+
     // Sanitize string fields
     ['name', 'notes'].forEach(field => {
       if (sanitized[field]) sanitized[field] = DOMPurify.sanitize(sanitized[field]);
