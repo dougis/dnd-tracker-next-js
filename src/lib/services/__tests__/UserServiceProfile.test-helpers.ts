@@ -185,7 +185,7 @@ export class MockServiceHelpers {
     const mockValidation = this.getMockValidation();
     const mockDatabase = this.getMockDatabase();
     const mockResponseHelpers = this.getMockResponseHelpers();
-    
+
     MockedUser.findById.mockResolvedValue(mockUser);
     mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
     mockValidation.prepareConflictCheckParams.mockReturnValue({
@@ -212,7 +212,7 @@ export class MockServiceHelpers {
   static setupConflictDuringValidation(mockUser: any, conflictError: UserAlreadyExistsError, MockedUser: any) {
     const mockValidation = this.getMockValidation();
     const mockResponseHelpers = this.getMockResponseHelpers();
-    
+
     MockedUser.findById.mockResolvedValue(mockUser);
     mockValidation.validateAndParseProfileUpdate.mockImplementation(() => {
       throw conflictError;
@@ -229,7 +229,7 @@ export class MockServiceHelpers {
     const mockValidation = this.getMockValidation();
     const mockDatabase = this.getMockDatabase();
     const mockResponseHelpers = this.getMockResponseHelpers();
-    
+
     MockedUser.findById.mockResolvedValue(mockUser);
     mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
     mockValidation.prepareConflictCheckParams.mockReturnValue({
@@ -249,7 +249,7 @@ export class MockServiceHelpers {
     const mockValidation = this.getMockValidation();
     const mockDatabase = this.getMockDatabase();
     const mockResponseHelpers = this.getMockResponseHelpers();
-    
+
     MockedUser.findById.mockResolvedValue(mockUser);
     mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
     mockValidation.prepareConflictCheckParams.mockReturnValue({
@@ -269,7 +269,7 @@ export class MockServiceHelpers {
   static setupValidationErrorInRetrieval(error: Error) {
     const mockLookup = this.getMockLookup();
     const mockResponseHelpers = this.getMockResponseHelpers();
-    
+
     mockLookup.findUserOrError.mockRejectedValue(error);
     mockResponseHelpers.handleValidationError.mockReturnValue({
       success: false,
@@ -282,7 +282,7 @@ export class MockServiceHelpers {
   static setupCustomErrorInRetrieval(error: Error) {
     const mockLookup = this.getMockLookup();
     const mockResponseHelpers = this.getMockResponseHelpers();
-    
+
     mockLookup.findUserOrError.mockRejectedValue(error);
     mockResponseHelpers.handleValidationError.mockImplementation(() => {
       throw new Error('Not a validation error');
@@ -298,7 +298,7 @@ export class MockServiceHelpers {
   static setupEmailRetrievalError(error: Error) {
     const mockLookup = this.getMockLookup();
     const mockResponseHelpers = this.getMockResponseHelpers();
-    
+
     mockLookup.findUserByEmailOrThrow.mockRejectedValue(error);
     mockResponseHelpers.handleCustomError.mockReturnValue({
       success: false,
