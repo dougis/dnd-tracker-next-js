@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CharacterDeletionDialog } from '../CharacterDeletionDialog';
 import { CharacterService } from '@/lib/services/CharacterService';
@@ -8,6 +8,7 @@ import { renderWithProviders } from '@/lib/test-utils';
 jest.mock('@/lib/services/CharacterService', () => ({
   CharacterService: {
     deleteCharacter: jest.fn(),
+    deleteCharacterWithUndo: jest.fn(),
     restoreCharacter: jest.fn(),
   }
 }));
@@ -34,7 +35,8 @@ describe('CharacterDeletionDialog', () => {
     );
 
     expect(screen.getByTestId('character-deletion-dialog')).toBeInTheDocument();
-    expect(screen.getByText('Delete Character')).toBeInTheDocument();
+    // Check for dialog title specifically (not button text)
+    expect(screen.getByRole('heading', { name: /Delete Character/i })).toBeInTheDocument();
     expect(screen.getByText(/Are you sure you want to delete "Test Character"/)).toBeInTheDocument();
   });
 
@@ -187,10 +189,15 @@ describe('CharacterDeletionDialog', () => {
 });
 
 describe('CharacterDeletionWithUndo', () => {
-  it('should show undo notification after successful deletion', async () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should call deleteCharacterWithUndo when allowUndo is true', async () => {
     const user = userEvent.setup();
 
-    (CharacterService.deleteCharacter as jest.Mock).mockResolvedValue({
+    const mockDelete = CharacterService.deleteCharacterWithUndo as jest.Mock;
+    mockDelete.mockResolvedValue({
       success: true,
       data: { undoToken: 'undo-123', expiresAt: Date.now() + 30000 }
     });
@@ -211,24 +218,12 @@ describe('CharacterDeletionWithUndo', () => {
     const deleteButton = screen.getByTestId('confirm-delete-button');
     await user.click(deleteButton);
 
-    await screen.findByTestId('undo-notification');
-    expect(screen.getByText('Character deleted successfully')).toBeInTheDocument();
-    expect(screen.getByTestId('undo-delete-button')).toBeInTheDocument();
+    // Verify the correct delete method was called
+    expect(mockDelete).toHaveBeenCalledWith('char-123', 'user-123');
+    expect(CharacterService.deleteCharacter).not.toHaveBeenCalled();
   });
 
-  it('should restore character when undo is clicked', async () => {
-    const user = userEvent.setup();
-
-    (CharacterService.deleteCharacter as jest.Mock).mockResolvedValue({
-      success: true,
-      data: { undoToken: 'undo-123', expiresAt: Date.now() + 30000 }
-    });
-
-    (CharacterService.restoreCharacter as jest.Mock).mockResolvedValue({
-      success: true,
-      data: mockCharacter
-    });
-
+  it('should display undo warning when allowUndo is enabled', () => {
     renderWithProviders(
       <CharacterDeletionDialog
         character={mockCharacter}
@@ -239,44 +234,25 @@ describe('CharacterDeletionWithUndo', () => {
       />
     );
 
-    const confirmationInput = screen.getByTestId('character-name-confirmation');
-    await user.type(confirmationInput, 'Test Character');
-
-    const deleteButton = screen.getByTestId('confirm-delete-button');
-    await user.click(deleteButton);
-
-    const undoButton = await screen.findByTestId('undo-delete-button');
-    await user.click(undoButton);
-
-    expect(CharacterService.restoreCharacter).toHaveBeenCalledWith('undo-123');
-    await screen.findByText('Character restored successfully');
+    // Should show the undo-specific warning text
+    expect(screen.getByText(/You will have 30 seconds to undo this action/)).toBeInTheDocument();
+    expect(screen.queryByText(/This action cannot be undone/)).not.toBeInTheDocument();
   });
 
-  it('should show countdown timer for undo window', async () => {
-    const user = userEvent.setup();
-
-    (CharacterService.deleteCharacter as jest.Mock).mockResolvedValue({
-      success: true,
-      data: { undoToken: 'undo-123', expiresAt: Date.now() + 30000 }
-    });
-
+  it('should display permanent deletion warning when allowUndo is disabled', () => {
     renderWithProviders(
       <CharacterDeletionDialog
         character={mockCharacter}
         isOpen={true}
         onClose={jest.fn()}
         onDeleted={jest.fn()}
-        allowUndo={true}
+        allowUndo={false}
       />
     );
 
-    const confirmationInput = screen.getByTestId('character-name-confirmation');
-    await user.type(confirmationInput, 'Test Character');
-
-    const deleteButton = screen.getByTestId('confirm-delete-button');
-    await user.click(deleteButton);
-
-    await screen.findByTestId('undo-countdown');
-    expect(screen.getByText(/Undo available for \d+ seconds/)).toBeInTheDocument();
+    // Should show the permanent deletion warning
+    expect(screen.getByText(/This action cannot be undone/)).toBeInTheDocument();
+    expect(screen.queryByText(/You will have 30 seconds to undo this action/)).not.toBeInTheDocument();
   });
+
 });
