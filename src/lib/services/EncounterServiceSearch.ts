@@ -27,19 +27,15 @@ export class EncounterServiceSearch {
     ownerId?: string;
   }): Promise<ServiceResult<IEncounter[]>> {
     try {
-      let encounters: IEncounter[] = [];
+      const searchMethods = [
+        { condition: criteria.name, method: () => Encounter.searchByName(criteria.name!) },
+        { condition: criteria.difficulty, method: () => Encounter.findByDifficulty(criteria.difficulty as any) },
+        { condition: criteria.targetLevel, method: () => Encounter.findByTargetLevel(criteria.targetLevel!) },
+        { condition: criteria.status, method: () => Encounter.findByStatus(criteria.status as any) },
+      ];
 
-      if (criteria.name) {
-        encounters = await Encounter.searchByName(criteria.name);
-      } else if (criteria.difficulty) {
-        encounters = await Encounter.findByDifficulty(criteria.difficulty as any);
-      } else if (criteria.targetLevel) {
-        encounters = await Encounter.findByTargetLevel(criteria.targetLevel);
-      } else if (criteria.status) {
-        encounters = await Encounter.findByStatus(criteria.status as any);
-      } else {
-        encounters = await Encounter.find({});
-      }
+      const activeSearch = searchMethods.find(search => search.condition);
+      const encounters = activeSearch ? await activeSearch.method() : await Encounter.find({});
 
       return {
         success: true,

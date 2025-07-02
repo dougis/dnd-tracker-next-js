@@ -60,23 +60,19 @@ export class EncounterServiceValidation {
    */
   static sanitizeEncounterData(data: any): any {
     const sanitized = { ...data };
+    
+    // Sanitize string fields
+    ['name', 'description'].forEach(field => {
+      if (sanitized[field]) sanitized[field] = DOMPurify.sanitize(sanitized[field]);
+    });
 
-    if (sanitized.name) {
-      sanitized.name = DOMPurify.sanitize(sanitized.name);
-    }
-
-    if (sanitized.description) {
-      sanitized.description = DOMPurify.sanitize(sanitized.description);
-    }
-
-    if (sanitized.tags && Array.isArray(sanitized.tags)) {
+    // Sanitize array fields
+    if (Array.isArray(sanitized.tags)) {
       sanitized.tags = sanitized.tags.map((tag: string) => DOMPurify.sanitize(tag));
     }
-
-    if (sanitized.participants && Array.isArray(sanitized.participants)) {
-      sanitized.participants = sanitized.participants.map((participant: any) =>
-        EncounterServiceValidation.sanitizeParticipantData(participant)
-      );
+    
+    if (Array.isArray(sanitized.participants)) {
+      sanitized.participants = sanitized.participants.map(EncounterServiceValidation.sanitizeParticipantData);
     }
 
     return sanitized;
@@ -87,19 +83,15 @@ export class EncounterServiceValidation {
    */
   static sanitizeParticipantData(data: any): any {
     const sanitized = { ...data };
+    
+    // Sanitize string fields
+    ['name', 'notes'].forEach(field => {
+      if (sanitized[field]) sanitized[field] = DOMPurify.sanitize(sanitized[field]);
+    });
 
-    if (sanitized.name) {
-      sanitized.name = DOMPurify.sanitize(sanitized.name);
-    }
-
-    if (sanitized.notes) {
-      sanitized.notes = DOMPurify.sanitize(sanitized.notes);
-    }
-
-    if (sanitized.conditions && Array.isArray(sanitized.conditions)) {
-      sanitized.conditions = sanitized.conditions.map((condition: string) =>
-        DOMPurify.sanitize(condition)
-      );
+    // Sanitize conditions array
+    if (Array.isArray(sanitized.conditions)) {
+      sanitized.conditions = sanitized.conditions.map((condition: string) => DOMPurify.sanitize(condition));
     }
 
     return sanitized;

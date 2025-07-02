@@ -104,12 +104,13 @@ export const createTestEncounter = (overrides: Partial<IEncounter> = {}): IEncou
       return this.combatState.isActive;
     },
     get currentParticipant(): IParticipantReference | null {
-      if (!this.combatState.isActive || this.combatState.initiativeOrder.length === 0) {
-        return null;
-      }
-      const currentEntry = this.combatState.initiativeOrder[this.combatState.currentTurn];
+      const { isActive, initiativeOrder, currentTurn } = this.combatState;
+      if (!isActive || !initiativeOrder.length) return null;
+      
+      const currentEntry = initiativeOrder[currentTurn];
       if (!currentEntry) return null;
-      return this.participants.find(p =>
+      
+      return this.participants.find(p => 
         p.characterId.toString() === currentEntry.participantId.toString()
       ) || null;
     },
@@ -208,33 +209,25 @@ export const EncounterTestDataFactories = {
    * Creates encounter with multiple participants
    */
   createEncounterWithMultipleParticipants: (): IEncounter => {
+    const playerConfigs = [
+      { name: 'Player 1', armorClass: 16 },
+      { name: 'Player 2', armorClass: 14 },
+    ];
+    
+    const npcConfigs = [
+      { name: 'Goblin 1', currentHitPoints: 15 },
+      { name: 'Goblin 2', currentHitPoints: 10 },
+    ];
+
     const participants = [
-      createTestParticipant({
-        name: 'Player 1',
-        isPlayer: true,
-        armorClass: 16,
-      }),
-      createTestParticipant({
-        name: 'Player 2',
-        isPlayer: true,
-        armorClass: 14,
-      }),
-      createTestParticipant({
-        name: 'Goblin 1',
+      ...playerConfigs.map(config => createTestParticipant({ ...config, isPlayer: true })),
+      ...npcConfigs.map(config => createTestParticipant({ 
+        ...config, 
         type: 'npc',
         isPlayer: false,
         maxHitPoints: 15,
-        currentHitPoints: 15,
         armorClass: 12,
-      }),
-      createTestParticipant({
-        name: 'Goblin 2',
-        type: 'npc',
-        isPlayer: false,
-        maxHitPoints: 15,
-        currentHitPoints: 10,
-        armorClass: 12,
-      }),
+      })),
     ];
 
     return createTestEncounter({ participants });
@@ -339,19 +332,16 @@ export const setupMockImplementations = {
    * Sets up successful CRUD operations
    */
   setupSuccessfulCRUD: (encounter: IEncounter) => {
-    mockEncounterQuery.findById.mockResolvedValue(encounter);
-    mockEncounterQuery.findByIdAndUpdate.mockResolvedValue(encounter);
-    mockEncounterQuery.findByIdAndDelete.mockResolvedValue(encounter);
-    mockEncounterQuery.create.mockResolvedValue(encounter);
+    const methods = ['findById', 'findByIdAndUpdate', 'findByIdAndDelete', 'create'];
+    methods.forEach(method => mockEncounterQuery[method].mockResolvedValue(encounter));
   },
 
   /**
    * Sets up not found responses
    */
   setupNotFound: () => {
-    mockEncounterQuery.findById.mockResolvedValue(null);
-    mockEncounterQuery.findByIdAndUpdate.mockResolvedValue(null);
-    mockEncounterQuery.findByIdAndDelete.mockResolvedValue(null);
+    const methods = ['findById', 'findByIdAndUpdate', 'findByIdAndDelete'];
+    methods.forEach(method => mockEncounterQuery[method].mockResolvedValue(null));
   },
 
   /**
@@ -359,9 +349,7 @@ export const setupMockImplementations = {
    */
   setupDatabaseError: (errorMessage: string = 'Database connection failed') => {
     const error = new Error(errorMessage);
-    mockEncounterQuery.findById.mockRejectedValue(error);
-    mockEncounterQuery.findByIdAndUpdate.mockRejectedValue(error);
-    mockEncounterQuery.findByIdAndDelete.mockRejectedValue(error);
-    mockEncounterQuery.create.mockRejectedValue(error);
+    const methods = ['findById', 'findByIdAndUpdate', 'findByIdAndDelete', 'create'];
+    methods.forEach(method => mockEncounterQuery[method].mockRejectedValue(error));
   },
 };

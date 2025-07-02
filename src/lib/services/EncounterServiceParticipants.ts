@@ -32,10 +32,8 @@ export class EncounterServiceParticipants {
       // Validate participant data
       const validation = participantReferenceSchema.safeParse(participantData);
       if (!validation.success) {
-        throw new EncounterValidationError(
-          'participant',
-          validation.error.errors.map(e => e.message).join(', ')
-        );
+        const errorMessage = validation.error.errors.map(e => e.message).join(', ');
+        throw new EncounterValidationError('participant', errorMessage);
       }
 
       const encounter = await Encounter.findById(encounterId);
