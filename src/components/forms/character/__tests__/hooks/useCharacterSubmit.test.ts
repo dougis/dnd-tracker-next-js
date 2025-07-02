@@ -120,9 +120,18 @@ describe('useCharacterSubmit', () => {
 
       expect(mockCharacterService.createCharacter).toHaveBeenCalledWith('user123', mockCharacterData);
       expect(defaultProps.onSuccess).not.toHaveBeenCalled();
-      expect(defaultProps.onError).toHaveBeenCalledWith(mockErrorResult.error);
+      // The hook converts non-string details to undefined
+      expect(defaultProps.onError).toHaveBeenCalledWith({
+        code: 'VALIDATION_ERROR',
+        message: 'Character validation failed',
+        details: undefined,
+      });
       expect(result.current.isSubmitting).toBe(false);
-      expect(result.current.submitError).toEqual(mockErrorResult.error);
+      expect(result.current.submitError).toEqual({
+        code: 'VALIDATION_ERROR',
+        message: 'Character validation failed',
+        details: undefined,
+      });
     });
 
     it('handles service error with non-string details', async () => {
