@@ -6,10 +6,14 @@ import { UserService } from './services/UserService';
 
 const mongoUri = process.env.MONGODB_URI;
 if (!mongoUri) {
-  throw new Error('MONGODB_URI environment variable is not set');
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('MONGODB_URI environment variable is not set');
+  }
+  // For build time, use a placeholder URI that won't be used
+  console.warn('MONGODB_URI not set, using placeholder for build');
 }
 
-const client = new MongoClient(mongoUri);
+const client = new MongoClient(mongoUri || 'mongodb://localhost:27017/placeholder');
 const clientPromise = Promise.resolve(client);
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
