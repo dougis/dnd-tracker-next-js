@@ -1,23 +1,21 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { CharacterService, type PaginatedCharacters } from '@/lib/services/CharacterService';
 import type { ICharacter } from '@/lib/models/Character';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 
 export interface CharacterListViewProps {
   userId: string;
-  onCharacterSelect?: (character: ICharacter) => void;
-  onCharacterEdit?: (character: ICharacter) => void;
-  onCharacterDelete?: (character: ICharacter) => void;
-  onCharacterDuplicate?: (character: ICharacter) => void;
+  onCharacterSelect?: (_character: ICharacter) => void;
+  onCharacterEdit?: (_character: ICharacter) => void;
+  onCharacterDelete?: (_character: ICharacter) => void;
+  onCharacterDuplicate?: (_character: ICharacter) => void;
 }
 
 type ViewMode = 'grid' | 'table';
@@ -43,17 +41,13 @@ export function CharacterListView({
   const [currentPage, setCurrentPage] = useState(1);
 
   // Load characters
-  useEffect(() => {
-    loadCharacters();
-  }, [userId, currentPage]);
-
-  const loadCharacters = async () => {
+  const loadCharacters = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const result = await CharacterService.getCharactersByOwner(userId, currentPage, 12);
-      
+
       if (result.success) {
         setCharactersData(result.data);
       } else {
@@ -64,35 +58,39 @@ export function CharacterListView({
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, currentPage]);
+
+  useEffect(() => {
+    loadCharacters();
+  }, [loadCharacters]);
 
   // Filter and sort characters
   const processedCharacters = useMemo(() => {
-    if (!charactersData?.characters) return [];
+    if (!charactersData?.items) return [];
 
-    let filtered = charactersData.characters;
+    let filtered = charactersData.items;
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter(char =>
+      filtered = filtered.filter((char: ICharacter) =>
         char.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     // Apply class filter
     if (classFilter) {
-      filtered = filtered.filter(char =>
-        char.classes.some(cls => cls.name === classFilter)
+      filtered = filtered.filter((char: ICharacter) =>
+        char.classes.some((cls: any) => cls.class === classFilter)
       );
     }
 
     // Apply race filter
     if (raceFilter) {
-      filtered = filtered.filter(char => char.race === raceFilter);
+      filtered = filtered.filter((char: ICharacter) => char.race === raceFilter);
     }
 
     // Apply sorting
-    filtered.sort((a, b) => {
+    filtered.sort((a: ICharacter, b: ICharacter) => {
       switch (sortBy) {
         case 'name-asc':
           return a.name.localeCompare(b.name);
@@ -112,7 +110,7 @@ export function CharacterListView({
     });
 
     return filtered;
-  }, [charactersData?.characters, searchTerm, classFilter, raceFilter, sortBy]);
+  }, [charactersData?.items, searchTerm, classFilter, raceFilter, sortBy]);
 
   const handleSelectCharacter = (characterId: string, selected: boolean) => {
     const newSelected = new Set(selectedCharacters);
@@ -126,7 +124,7 @@ export function CharacterListView({
 
   const handleSelectAll = (selected: boolean) => {
     if (selected) {
-      setSelectedCharacters(new Set(processedCharacters.map(char => char._id)));
+      setSelectedCharacters(new Set(processedCharacters.map(char => char._id.toString())));
     } else {
       setSelectedCharacters(new Set());
     }
@@ -134,7 +132,7 @@ export function CharacterListView({
 
   const formatCharacterClass = (character: ICharacter) => {
     const mainClass = character.classes[0];
-    return `${character.race.charAt(0).toUpperCase()}${character.race.slice(1)} ${mainClass.name.charAt(0).toUpperCase()}${mainClass.name.slice(1)}`;
+    return `${character.race.charAt(0).toUpperCase()}${character.race.slice(1)} ${mainClass.class.charAt(0).toUpperCase()}${mainClass.class.slice(1)}`;
   };
 
   const formatHitPoints = (character: ICharacter) => {
@@ -162,7 +160,7 @@ export function CharacterListView({
     return (
       <div className="flex flex-col items-center justify-center py-12 space-y-4">
         <div className="text-lg text-muted-foreground">No characters found</div>
-        <Button onClick={() => router.push('/characters/create')}>
+        <Button onClick={() => router.push('/')}>
           Create your first character
         </Button>
       </div>
@@ -181,7 +179,7 @@ export function CharacterListView({
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full sm:w-64"
           />
-          
+
           <select
             aria-label="Filter by class"
             className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
@@ -296,9 +294,9 @@ export function CharacterListView({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {processedCharacters.map((character) => (
             <Card
-              key={character._id}
+              key={character._id.toString()}
               className="cursor-pointer hover:shadow-md transition-shadow"
-              data-testid={`character-card-${character._id}`}
+              data-testid={`character-card-${character._id.toString()}`}
               onClick={() => onCharacterSelect?.(character)}
             >
               <CardHeader className="pb-2">
@@ -312,9 +310,9 @@ export function CharacterListView({
                     </p>
                   </div>
                   <Checkbox
-                    checked={selectedCharacters.has(character._id)}
-                    onCheckedChange={(checked) => 
-                      handleSelectCharacter(character._id, checked as boolean)
+                    checked={selectedCharacters.has(character._id.toString())}
+                    onCheckedChange={(checked) =>
+                      handleSelectCharacter(character._id.toString(), checked as boolean)
                     }
                     onClick={(e) => e.stopPropagation()}
                   />
@@ -370,6 +368,7 @@ export function CharacterListView({
           ))}
         </div>
       ) : (
+
         /* Table View */
         <div className="border rounded-md">
           <table className="w-full">
@@ -394,16 +393,16 @@ export function CharacterListView({
             <tbody>
               {processedCharacters.map((character) => (
                 <tr
-                  key={character._id}
+                  key={character._id.toString()}
                   className="border-b hover:bg-muted/50 cursor-pointer"
-                  data-testid={`character-row-${character._id}`}
+                  data-testid={`character-row-${character._id.toString()}`}
                   onClick={() => onCharacterSelect?.(character)}
                 >
                   <td className="p-4">
                     <Checkbox
-                      checked={selectedCharacters.has(character._id)}
-                      onCheckedChange={(checked) => 
-                        handleSelectCharacter(character._id, checked as boolean)
+                      checked={selectedCharacters.has(character._id.toString())}
+                      onCheckedChange={(checked) =>
+                        handleSelectCharacter(character._id.toString(), checked as boolean)
                       }
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -414,7 +413,7 @@ export function CharacterListView({
                   <td className="p-4" data-testid="character-level">
                     Level {character.level}
                   </td>
-                  <td className="p-4">{character.classes[0].name}</td>
+                  <td className="p-4">{character.classes[0].class}</td>
                   <td className="p-4">{character.race}</td>
                   <td className="p-4">{character.armorClass}</td>
                   <td className="p-4">{formatHitPoints(character)}</td>
@@ -460,16 +459,16 @@ export function CharacterListView({
       )}
 
       {/* Pagination */}
-      {charactersData && charactersData.totalPages > 1 && (
+      {charactersData && charactersData.pagination.totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            Page {charactersData.page} of {charactersData.totalPages}
+            Page {charactersData.pagination.page} of {charactersData.pagination.totalPages}
           </div>
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
               size="sm"
-              disabled={!charactersData.hasPreviousPage}
+              disabled={charactersData.pagination.page <= 1}
               onClick={() => setCurrentPage(currentPage - 1)}
             >
               Previous page
@@ -477,7 +476,7 @@ export function CharacterListView({
             <Button
               variant="outline"
               size="sm"
-              disabled={!charactersData.hasNextPage}
+              disabled={charactersData.pagination.page >= charactersData.pagination.totalPages}
               onClick={() => setCurrentPage(currentPage + 1)}
             >
               Next page
