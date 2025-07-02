@@ -15,7 +15,7 @@ import {
 
 /**
  * Test data generators and helper functions for UserServiceProfile tests
- * Eliminates code duplication across test files
+ * Uses shared utilities to eliminate cross-service duplication
  */
 
 export const TEST_CONSTANTS = SHARED_TEST_CONSTANTS;
@@ -39,7 +39,49 @@ export const createMockUpdateData = (): UserProfileUpdate => ({
 });
 
 /**
- * Mock service helpers - reduces duplication in test setup
+ * Base mock setup patterns - reduces all setup duplication
+ */
+export class BaseMockSetup {
+  static getMockServices() {
+    return {
+      mockValidation: require('../UserServiceValidation').UserServiceValidation,
+      mockDatabase: require('../UserServiceDatabase').UserServiceDatabase,
+      mockLookup: require('../UserServiceLookup').UserServiceLookup,
+      mockResponseHelpers: require('../UserServiceResponseHelpers').UserServiceResponseHelpers,
+    };
+  }
+
+  static setupStandardMockPattern(mockUser: any, mockPublicUser: PublicUser, MockedUser: any) {
+    const services = this.getMockServices();
+    
+    MockedUser.findById.mockResolvedValue(mockUser);
+    services.mockLookup.findUserOrError.mockResolvedValue({
+      success: true,
+      data: mockUser,
+    });
+    services.mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
+    services.mockResponseHelpers.createSuccessResponse.mockReturnValue({
+      success: true,
+      data: mockPublicUser,
+    });
+    
+    return services;
+  }
+
+  static setupErrorPattern(error: Error, errorMessage: string, errorCode: string) {
+    const services = this.getMockServices();
+    
+    services.mockResponseHelpers.handleCustomError.mockReturnValue({
+      success: false,
+      error: { message: errorMessage, code: errorCode, statusCode: 500 },
+    });
+    
+    return services;
+  }
+}
+
+/**
+ * Mock service helpers - consolidates all mock setup patterns
  */
 export class MockServiceHelpers {
   static getMockValidation() {
@@ -59,12 +101,7 @@ export class MockServiceHelpers {
   }
 
   static setupBasicMocks() {
-    return {
-      mockValidation: this.getMockValidation(),
-      mockDatabase: this.getMockDatabase(),
-      mockLookup: this.getMockLookup(),
-      mockResponseHelpers: this.getMockResponseHelpers(),
-    };
+    return BaseMockSetup.getMockServices();
   }
 
   // Centralized mock environment setup
@@ -77,68 +114,60 @@ export class MockServiceHelpers {
   }
 
   static setupSuccessfulOperation(mockUser: any, mockPublicUser: PublicUser) {
-    const mocks = this.setupBasicMocks();
+    const services = BaseMockSetup.getMockServices();
 
-    mocks.mockLookup.findUserOrError.mockResolvedValue({
+    services.mockLookup.findUserOrError.mockResolvedValue({
       success: true,
       data: mockUser,
     });
-    mocks.mockResponseHelpers.createSuccessResponse.mockReturnValue({
+    services.mockResponseHelpers.createSuccessResponse.mockReturnValue({
       success: true,
       data: mockPublicUser,
     });
-    mocks.mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
+    services.mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
 
-    return mocks;
+    return services;
   }
 
   static setupSubscriptionUpdate(mockUser: any, mockPublicUser: PublicUser) {
-    const mocks = this.setupSuccessfulOperation(mockUser, mockPublicUser);
-    mocks.mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
-    return mocks;
+    const services = this.setupSuccessfulOperation(mockUser, mockPublicUser);
+    services.mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
+    return services;
   }
 
   static setupDeletionSuccess(mockUser: any) {
-    const mocks = this.setupBasicMocks();
+    const services = BaseMockSetup.getMockServices();
 
-    mocks.mockLookup.findUserOrError.mockResolvedValue({
+    services.mockLookup.findUserOrError.mockResolvedValue({
       success: true,
       data: mockUser,
     });
-    mocks.mockResponseHelpers.createSuccessResponse.mockReturnValue({
+    services.mockResponseHelpers.createSuccessResponse.mockReturnValue({
       success: true,
       data: { deleted: true },
     });
 
-    return mocks;
+    return services;
   }
 
   static setupSimpleDatabaseError(error: Error, errorMessage: string, errorCode: string) {
-    const mocks = this.setupBasicMocks();
-
-    mocks.mockResponseHelpers.handleCustomError.mockReturnValue({
-      success: false,
-      error: { message: errorMessage, code: errorCode, statusCode: 500 },
-    });
-
-    return mocks;
+    return BaseMockSetup.setupErrorPattern(error, errorMessage, errorCode);
   }
 
   static setupSuccessfulUserLookup(mockUser: any, mockPublicUser: PublicUser) {
-    const mockLookup = this.getMockLookup();
-    const mockResponseHelpers = this.getMockResponseHelpers();
+    const services = BaseMockSetup.getMockServices();
 
-    mockLookup.findUserOrError.mockResolvedValue({
+    services.mockLookup.findUserOrError.mockResolvedValue({
       success: true,
       data: mockUser,
     });
-    mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
-    mockResponseHelpers.createSuccessResponse.mockReturnValue({
+    services.mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
+    services.mockResponseHelpers.createSuccessResponse.mockReturnValue({
       success: true,
       data: mockPublicUser,
     });
 
-    return { mockLookup, mockResponseHelpers };
+    return { mockLookup: services.mockLookup, mockResponseHelpers: services.mockResponseHelpers };
   }
 
   static setupFailedUserLookup(errorCode: string, message: string, statusCode: number = 404) {
@@ -152,88 +181,44 @@ export class MockServiceHelpers {
   }
 
   static setupValidationError(error: Error) {
-    const mockValidation = this.getMockValidation();
-    const mockResponseHelpers = this.getMockResponseHelpers();
+    const services = BaseMockSetup.getMockServices();
 
-    mockValidation.validateAndParseProfileUpdate.mockImplementation(() => {
+    services.mockValidation.validateAndParseProfileUpdate.mockImplementation(() => {
       throw error;
     });
-    mockResponseHelpers.handleCustomError.mockReturnValue({
+    services.mockResponseHelpers.handleCustomError.mockReturnValue({
       success: false,
       error: { message: 'Validation failed', code: 'VALIDATION_ERROR', statusCode: 400 },
     });
 
-    return { mockValidation, mockResponseHelpers };
+    return { mockValidation: services.mockValidation, mockResponseHelpers: services.mockResponseHelpers };
   }
 
-  static setupConflictError(conflictType: 'email' | 'username', value: string) {
-    const mockValidation = this.getMockValidation();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-    const conflictError = new UserAlreadyExistsError(conflictType, value);
-
-    // Setup the mock to return the conflict parameters
-    mockValidation.prepareConflictCheckParams.mockReturnValue({
-      emailToCheck: conflictType === 'email' ? value : undefined,
-      usernameToCheck: conflictType === 'username' ? value : undefined,
-    });
-    mockValidation.extractUserIdString.mockReturnValue(TEST_CONSTANTS.mockUserId);
-
-    // Setup the error response
-    mockResponseHelpers.createErrorResponse.mockReturnValue({
-      success: false,
-      error: { message: `${conflictType} already exists`, code: 'USER_ALREADY_EXISTS', statusCode: 409 },
-    });
-
-    return { mockValidation, mockResponseHelpers, conflictError };
-  }
-
-  static setupUpdateProfileSuccess(mockUser: any, updateData: any, mockPublicUser: any) {
-    const mockValidation = this.getMockValidation();
-    const mockDatabase = this.getMockDatabase();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-
-    mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
-    mockValidation.prepareConflictCheckParams.mockReturnValue({
-      emailToCheck: undefined,
-      usernameToCheck: undefined,
-    });
-    mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
-    mockResponseHelpers.createSuccessResponse.mockReturnValue({
-      success: true,
-      data: mockPublicUser,
-    });
-    mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
-
-    return { mockValidation, mockDatabase, mockResponseHelpers };
-  }
-
-  // Enhanced setup methods to eliminate duplication in update tests
-  static setupProfileUpdateBase(mockUser: any, updateData: any, mockPublicUser: any, MockedUser: any) {
-    const mockValidation = this.getMockValidation();
-    const mockDatabase = this.getMockDatabase();
-    const mockResponseHelpers = this.getMockResponseHelpers();
+  // Consolidated profile update methods
+  static setupProfileUpdateBase(mockUser: any, updateData: any, MockedUser: any) {
+    const services = BaseMockSetup.getMockServices();
 
     MockedUser.findById.mockResolvedValue(mockUser);
-    mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
-    mockValidation.prepareConflictCheckParams.mockReturnValue({
+    services.mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
+    services.mockValidation.prepareConflictCheckParams.mockReturnValue({
       emailToCheck: undefined,
       usernameToCheck: undefined,
     });
-    mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
 
-    return { mockValidation, mockDatabase, mockResponseHelpers };
+    return services;
   }
 
   static setupSuccessfulProfileUpdate(mockUser: any, updateData: any, mockPublicUser: any, MockedUser: any) {
-    const mocks = this.setupProfileUpdateBase(mockUser, updateData, mockPublicUser, MockedUser);
-
-    mocks.mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
-    mocks.mockResponseHelpers.createSuccessResponse.mockReturnValue({
+    const services = this.setupProfileUpdateBase(mockUser, updateData, MockedUser);
+    
+    services.mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
+    services.mockResponseHelpers.createSuccessResponse.mockReturnValue({
       success: true,
       data: mockPublicUser,
     });
+    services.mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
 
-    return mocks;
+    return services;
   }
 
   static setupUserNotFoundForUpdate(MockedUser: any, updateData: any) {
@@ -244,91 +229,87 @@ export class MockServiceHelpers {
   }
 
   static setupConflictDuringValidation(mockUser: any, conflictError: UserAlreadyExistsError, MockedUser: any) {
-    const mockValidation = this.getMockValidation();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-
+    const services = BaseMockSetup.getMockServices();
+    
     MockedUser.findById.mockResolvedValue(mockUser);
-    mockValidation.validateAndParseProfileUpdate.mockImplementation(() => {
+    services.mockValidation.validateAndParseProfileUpdate.mockImplementation(() => {
       throw conflictError;
     });
-    mockResponseHelpers.createErrorResponse.mockReturnValue({
+    services.mockResponseHelpers.createErrorResponse.mockReturnValue({
       success: false,
       error: { message: `${conflictError.field} already exists`, code: 'USER_ALREADY_EXISTS', statusCode: 409 },
     });
 
-    return { mockValidation, mockResponseHelpers };
+    return { mockValidation: services.mockValidation, mockResponseHelpers: services.mockResponseHelpers };
   }
 
   static setupDatabaseError(mockUser: any, updateData: any, error: Error, MockedUser: any) {
-    const mocks = this.setupProfileUpdateBase(mockUser, updateData, undefined, MockedUser);
-
-    mocks.mockDatabase.updateUserFieldsAndSave.mockRejectedValue(error);
-    mocks.mockResponseHelpers.handleCustomError.mockReturnValue({
+    const services = this.setupProfileUpdateBase(mockUser, updateData, MockedUser);
+    
+    services.mockDatabase.updateUserFieldsAndSave.mockRejectedValue(error);
+    services.mockResponseHelpers.handleCustomError.mockReturnValue({
       success: false,
       error: { message: 'Failed to update user profile', code: 'PROFILE_UPDATE_FAILED', statusCode: 500 },
     });
 
-    return mocks;
+    return services;
   }
 
   static setupUserAlreadyExistsErrorDuringUpdate(mockUser: any, updateData: any, conflictError: UserAlreadyExistsError, MockedUser: any) {
-    const mocks = this.setupProfileUpdateBase(mockUser, updateData, undefined, MockedUser);
-
-    mocks.mockDatabase.updateUserFieldsAndSave.mockRejectedValue(conflictError);
-    mocks.mockResponseHelpers.createErrorResponse.mockReturnValue({
+    const services = this.setupProfileUpdateBase(mockUser, updateData, MockedUser);
+    
+    services.mockDatabase.updateUserFieldsAndSave.mockRejectedValue(conflictError);
+    services.mockResponseHelpers.createErrorResponse.mockReturnValue({
       success: false,
       error: { message: `${conflictError.field} already exists`, code: 'USER_ALREADY_EXISTS', statusCode: 409 },
     });
 
-    return mocks;
+    return services;
   }
 
-  // Additional helpers for retrieval and other common patterns
+  // Generic error setup patterns
   static setupValidationErrorInRetrieval(error: Error) {
-    const mockLookup = this.getMockLookup();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-
-    mockLookup.findUserOrError.mockRejectedValue(error);
-    mockResponseHelpers.handleValidationError.mockReturnValue({
+    const services = BaseMockSetup.getMockServices();
+    
+    services.mockLookup.findUserOrError.mockRejectedValue(error);
+    services.mockResponseHelpers.handleValidationError.mockReturnValue({
       success: false,
       error: { message: 'Validation error', code: 'VALIDATION_ERROR', statusCode: 400 },
     });
 
-    return { mockLookup, mockResponseHelpers };
+    return { mockLookup: services.mockLookup, mockResponseHelpers: services.mockResponseHelpers };
   }
 
   static setupCustomErrorInRetrieval(error: Error) {
-    const mockLookup = this.getMockLookup();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-
-    mockLookup.findUserOrError.mockRejectedValue(error);
-    mockResponseHelpers.handleValidationError.mockImplementation(() => {
+    const services = BaseMockSetup.getMockServices();
+    
+    services.mockLookup.findUserOrError.mockRejectedValue(error);
+    services.mockResponseHelpers.handleValidationError.mockImplementation(() => {
       throw new Error('Not a validation error');
     });
-    mockResponseHelpers.handleCustomError.mockReturnValue({
+    services.mockResponseHelpers.handleCustomError.mockReturnValue({
       success: false,
       error: { message: 'User not found', code: 'USER_NOT_FOUND', statusCode: 404 },
     });
 
-    return { mockLookup, mockResponseHelpers };
+    return { mockLookup: services.mockLookup, mockResponseHelpers: services.mockResponseHelpers };
   }
 
   static setupEmailRetrievalError(error: Error) {
-    const mockLookup = this.getMockLookup();
-    const mockResponseHelpers = this.getMockResponseHelpers();
-
-    mockLookup.findUserByEmailOrThrow.mockRejectedValue(error);
-    mockResponseHelpers.handleCustomError.mockReturnValue({
+    const services = BaseMockSetup.getMockServices();
+    
+    services.mockLookup.findUserByEmailOrThrow.mockRejectedValue(error);
+    services.mockResponseHelpers.handleCustomError.mockReturnValue({
       success: false,
       error: { message: 'Failed to retrieve user', code: 'USER_RETRIEVAL_FAILED', statusCode: 500 },
     });
 
-    return { mockLookup, mockResponseHelpers };
+    return { mockLookup: services.mockLookup, mockResponseHelpers: services.mockResponseHelpers };
   }
 }
 
 /**
- * Common assertion helpers - reduces duplication in test verification
+ * Common assertion helpers - uses shared utilities
  */
 export class AssertionHelpers {
   static expectSuccessResult(result: any, expectedData: any) {
@@ -358,7 +339,7 @@ export class AssertionHelpers {
 }
 
 /**
- * Test scenario generators - creates complete test scenarios
+ * Test scenario generators - creates complete reusable test scenarios
  */
 export class TestScenarios {
   static async testSuccessfulRetrieval(
@@ -394,7 +375,7 @@ export class TestScenarios {
     const conflictError = new UserAlreadyExistsError(conflictType, value);
     return {
       conflictError,
-      setup: (mockUser: any, MockedUser: any) =>
+      setup: (mockUser: any, MockedUser: any) => 
         MockServiceHelpers.setupConflictDuringValidation(mockUser, conflictError, MockedUser)
     };
   }
