@@ -133,7 +133,7 @@ describe('CharacterDataRecovery', () => {
 
     it('should clean up old backups when limit exceeded', () => {
       jest.useFakeTimers();
-      
+
       // Create more than the maximum number of backups
       for (let i = 0; i < 15; i++) {
         CharacterDataRecovery.createBackup(mockCharacterData, 'auto-save');
@@ -143,7 +143,7 @@ describe('CharacterDataRecovery', () => {
 
       const backups = CharacterDataRecovery.getAllBackups();
       expect(backups.length).toBeLessThanOrEqual(10);
-      
+
       jest.useRealTimers();
     });
   });
