@@ -1,0 +1,82 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import type { ICharacter } from '@/lib/models/Character';
+import { CharacterActionButtons } from './CharacterActionButtons';
+import { formatCharacterClass, formatHitPoints } from './utils';
+
+interface CharacterGridProps {
+  characters: ICharacter[];
+  selectedCharacters: Set<string>;
+  onCharacterSelect?: (_character: ICharacter) => void;
+  onCharacterEdit?: (_character: ICharacter) => void;
+  onCharacterDelete?: (_character: ICharacter) => void;
+  onCharacterDuplicate?: (_character: ICharacter) => void;
+  onSelectCharacter: (_characterId: string, _selected: boolean) => void;
+}
+
+export function CharacterGrid({
+  characters,
+  selectedCharacters,
+  onCharacterSelect,
+  onCharacterEdit,
+  onCharacterDelete,
+  onCharacterDuplicate,
+  onSelectCharacter,
+}: CharacterGridProps) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {characters.map((character) => (
+        <Card
+          key={character._id.toString()}
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          data-testid={`character-card-${character._id.toString()}`}
+          onClick={() => onCharacterSelect?.(character)}
+        >
+          <CardHeader className="pb-2">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <CardTitle className="text-lg" data-testid="character-name">
+                  {character.name}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground" data-testid="character-level">
+                  Level {character.level}
+                </p>
+              </div>
+              <Checkbox
+                checked={selectedCharacters.has(character._id.toString())}
+                onCheckedChange={(checked) =>
+                  onSelectCharacter(character._id.toString(), checked as boolean)
+                }
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-2">
+              <p className="text-sm">{formatCharacterClass(character)}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">AC {character.armorClass}</span>
+                <span className="text-sm text-muted-foreground">
+                  HP {formatHitPoints(character)}
+                </span>
+              </div>
+              <Badge variant="outline" className="text-xs">
+                {character.type.toUpperCase()}
+              </Badge>
+            </div>
+            <div className="flex items-center justify-end mt-4">
+              <CharacterActionButtons
+                character={character}
+                onEdit={onCharacterEdit}
+                onDuplicate={onCharacterDuplicate}
+                onDelete={onCharacterDelete}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
