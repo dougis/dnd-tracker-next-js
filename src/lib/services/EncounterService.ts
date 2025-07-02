@@ -37,7 +37,10 @@ export class EncounterService {
       // Validate and sanitize input data
       const validationResult = await EncounterServiceValidation.validateEncounterData(encounterData);
       if (!validationResult.success) {
-        return validationResult;
+        return {
+          success: false,
+          error: validationResult.error,
+        };
       }
 
       const sanitizedData = validationResult.data!;
