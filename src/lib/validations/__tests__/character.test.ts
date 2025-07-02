@@ -417,6 +417,6 @@ describe('Character Validation Schemas', () => {
   });
 
 
-
+      });
 
 });
