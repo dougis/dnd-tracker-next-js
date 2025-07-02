@@ -1,4 +1,4 @@
-import { screen, waitFor, act } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CharacterDeletionDialog } from '../CharacterDeletionDialog';
 import { CharacterService } from '@/lib/services/CharacterService';
