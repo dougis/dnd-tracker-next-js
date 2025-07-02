@@ -15,40 +15,32 @@ export const createMockCharacter = (overrides: Partial<ICharacter> = {}): IChara
   ...overrides,
 } as ICharacter);
 
+const createCharacterWithClass = (
+  id: string,
+  name: string,
+  level: number,
+  race: string,
+  characterClass: string,
+  ac: number,
+  dateOffset: number
+): ICharacter => {
+  const hp = level * 8 + 5; // Simplified HP calculation
+  return createMockCharacter({
+    _id: id,
+    name,
+    level,
+    race,
+    classes: [{ class: characterClass, level, subclass: '', hitDie: 10 }],
+    hitPoints: { current: hp, maximum: hp, temporary: 0 },
+    armorClass: ac,
+    createdAt: new Date(`2024-01-0${dateOffset}`),
+  });
+};
+
 export const mockCharacters: ICharacter[] = [
-  createMockCharacter({
-    _id: 'char1',
-    name: 'Aragorn',
-    type: 'pc',
-    level: 5,
-    race: 'human',
-    classes: [{ class: 'ranger', level: 5, subclass: '', hitDie: 10 }],
-    hitPoints: { current: 45, maximum: 45, temporary: 0 },
-    armorClass: 16,
-    createdAt: new Date('2024-01-01'),
-  }),
-  createMockCharacter({
-    _id: 'char2',
-    name: 'Legolas',
-    type: 'pc',
-    level: 4,
-    race: 'elf',
-    classes: [{ class: 'ranger', level: 4, subclass: '', hitDie: 10 }],
-    hitPoints: { current: 32, maximum: 32, temporary: 0 },
-    armorClass: 15,
-    createdAt: new Date('2024-01-05'),
-  }),
-  createMockCharacter({
-    _id: 'char3',
-    name: 'Gimli',
-    type: 'pc',
-    level: 3,
-    race: 'dwarf',
-    classes: [{ class: 'fighter', level: 3, subclass: '', hitDie: 10 }],
-    hitPoints: { current: 28, maximum: 28, temporary: 0 },
-    armorClass: 18,
-    createdAt: new Date('2024-01-03'),
-  }),
+  createCharacterWithClass('char1', 'Aragorn', 5, 'human', 'ranger', 16, 1),
+  createCharacterWithClass('char2', 'Legolas', 4, 'elf', 'ranger', 15, 5),
+  createCharacterWithClass('char3', 'Gimli', 3, 'dwarf', 'fighter', 18, 3),
 ];
 
 export const createMockPaginatedResponse = (items = mockCharacters, pagination = {}) => ({

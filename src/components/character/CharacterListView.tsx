@@ -65,53 +65,25 @@ export function CharacterListView({
 
   const handleBatchDuplicate = () => {
     console.log('Duplicate selected characters');
-    // TODO: Implement batch duplicate functionality
   };
 
   const handleBatchDelete = () => {
     console.log('Delete selected characters');
-    // TODO: Implement batch delete functionality
   };
 
   const handleSelectAllWrapper = (selected: boolean) => {
     handleSelectAll(processedCharacters, selected);
   };
 
-  const handlePreviousPage = () => {
-    setCurrentPage(currentPage - 1);
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
     clearSelection();
   };
 
-  const handleNextPage = () => {
-    setCurrentPage(currentPage + 1);
-    clearSelection();
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-lg text-muted-foreground">Loading characters...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-lg text-destructive">{error}</div>
-      </div>
-    );
-  }
-
+  if (loading) return <LoadingState />;
+  if (error) return <ErrorState error={error} />;
   if (!charactersData || processedCharacters.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 space-y-4">
-        <div className="text-lg text-muted-foreground">No characters found</div>
-        <Button onClick={() => router.push('/')}>
-          Create your first character
-        </Button>
-      </div>
-    );
+    return <EmptyState onCreateCharacter={() => router.push('/')} />;
   }
 
   return (
@@ -172,10 +144,37 @@ export function CharacterListView({
         <Pagination
           currentPage={charactersData.pagination.page}
           totalPages={charactersData.pagination.totalPages}
-          onPreviousPage={handlePreviousPage}
-          onNextPage={handleNextPage}
+          onPreviousPage={() => handlePageChange(currentPage - 1)}
+          onNextPage={() => handlePageChange(currentPage + 1)}
         />
       )}
+    </div>
+  );
+}
+
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center py-12">
+      <div className="text-lg text-muted-foreground">Loading characters...</div>
+    </div>
+  );
+}
+
+function ErrorState({ error }: { error: string }) {
+  return (
+    <div className="flex items-center justify-center py-12">
+      <div className="text-lg text-destructive">{error}</div>
+    </div>
+  );
+}
+
+function EmptyState({ onCreateCharacter }: { onCreateCharacter: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-12 space-y-4">
+      <div className="text-lg text-muted-foreground">No characters found</div>
+      <Button onClick={onCreateCharacter}>
+        Create your first character
+      </Button>
     </div>
   );
 }
