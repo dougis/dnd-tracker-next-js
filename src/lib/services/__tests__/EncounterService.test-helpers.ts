@@ -11,11 +11,11 @@ import type {
  * Test constants for Encounter service tests
  */
 export const ENCOUNTER_TEST_CONSTANTS = {
-  mockEncounterId: '507f1f77bcf86cd799439011',
-  mockOwnerId: '507f1f77bcf86cd799439012',
-  mockParticipantId: '507f1f77bcf86cd799439013',
-  mockCharacterId: '507f1f77bcf86cd799439014',
-  mockPartyId: '507f1f77bcf86cd799439015',
+  mockEncounterId: '65f1a2b3c4d5e6f7a8b9c0d1',
+  mockOwnerId: '65f1a2b3c4d5e6f7a8b9c0d2', 
+  mockParticipantId: '65f1a2b3c4d5e6f7a8b9c0d3',
+  mockCharacterId: '65f1a2b3c4d5e6f7a8b9c0d4',
+  mockPartyId: '65f1a2b3c4d5e6f7a8b9c0d5',
 } as const;
 
 /**

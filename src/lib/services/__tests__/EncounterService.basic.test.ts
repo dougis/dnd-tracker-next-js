@@ -104,7 +104,7 @@ describe('EncounterService - Basic CRUD', () => {
       const result = await EncounterService.getEncounterById(invalidId);
 
       expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('INVALID_ENCOUNTER_ID');
+      expect(result.error?.code).toBe('INVALID_ID_FORMAT');
     });
   });
 
