@@ -29,7 +29,7 @@ describe('UserServiceStats', () => {
     });
 
     it('should successfully retrieve paginated users with custom parameters', async () => {
-      const { result, mocks: testMocks } = await StatsTestScenarios.testGetUsersSuccess(
+      const { mocks: testMocks } = await StatsTestScenarios.testGetUsersSuccess(
         2, 5, { role: 'admin' },
         () => {
           const setupMocks = StatsTestHelpers.setupBasicMocks();
@@ -124,7 +124,7 @@ describe('UserServiceStats', () => {
     });
 
     it('should successfully retrieve user statistics', async () => {
-      const { result } = await StatsTestScenarios.testGetStatsSuccess();
+      await StatsTestScenarios.testGetStatsSuccess();
       // Additional assertions handled by testGetStatsSuccess
     });
 
