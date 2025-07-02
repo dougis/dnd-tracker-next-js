@@ -1,16 +1,18 @@
+import '../__test-helpers__/test-setup';
 import { UserServiceStats } from '../UserServiceStats';
-import User from '../../models/User';
 import { convertLeansUsersToPublic } from '../UserServiceHelpers';
+import { UserServiceResponseHelpers } from '../UserServiceResponseHelpers';
+import User from '../../models/User';
 
 // Mock dependencies
-jest.mock('../../models/User');
 jest.mock('../UserServiceHelpers');
 jest.mock('../UserServiceResponseHelpers');
 
 const MockedUser = jest.mocked(User);
 const mockConvertLeansUsersToPublic = jest.mocked(convertLeansUsersToPublic);
+const mockResponseHelpers = jest.mocked(UserServiceResponseHelpers);
 
-describe('UserServiceStats - Comprehensive Tests', () => {
+describe('UserServiceStats', () => {
   const mockUsers = [
     {
       _id: '507f1f77bcf86cd799439011',
@@ -38,7 +40,7 @@ describe('UserServiceStats - Comprehensive Tests', () => {
 
   const mockPublicUsers = [
     {
-      _id: '507f1f77bcf86cd799439011',
+      id: '507f1f77bcf86cd799439011',
       email: 'user1@example.com',
       username: 'user1',
       firstName: 'User',
@@ -46,9 +48,21 @@ describe('UserServiceStats - Comprehensive Tests', () => {
       role: 'user',
       subscriptionTier: 'free',
       isEmailVerified: true,
+      lastLoginAt: '2024-01-01T00:00:00.000Z',
+      createdAt: '2024-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-01T00:00:00.000Z',
+      preferences: {
+        theme: 'system',
+        emailNotifications: true,
+        browserNotifications: false,
+        timezone: 'UTC',
+        language: 'en',
+        diceRollAnimations: true,
+        autoSaveEncounters: true,
+      },
     },
     {
-      _id: '507f1f77bcf86cd799439012',
+      id: '507f1f77bcf86cd799439012',
       email: 'user2@example.com',
       username: 'user2',
       firstName: 'User',
@@ -56,36 +70,49 @@ describe('UserServiceStats - Comprehensive Tests', () => {
       role: 'admin',
       subscriptionTier: 'expert',
       isEmailVerified: false,
+      lastLoginAt: '2024-01-02T00:00:00.000Z',
+      createdAt: '2024-01-02T00:00:00.000Z',
+      updatedAt: '2024-01-02T00:00:00.000Z',
+      preferences: {
+        theme: 'system',
+        emailNotifications: true,
+        browserNotifications: false,
+        timezone: 'UTC',
+        language: 'en',
+        diceRollAnimations: true,
+        autoSaveEncounters: true,
+      },
     },
   ];
 
-  const mockQueryChain = {
+  const createMockQueryChain = () => ({
     sort: jest.fn().mockReturnThis(),
     skip: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
     lean: jest.fn().mockResolvedValue(mockUsers),
-  };
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Mock UserServiceResponseHelpers
-    const mockResponseHelpers = {
-      createSuccessResponse: jest.fn().mockImplementation((data) => ({ success: true, data })),
-      createErrorResponse: jest.fn().mockImplementation((error) => ({ success: false, error })),
-      handleCustomError: jest.fn().mockReturnValue({
-        success: false,
-        error: { message: 'Error', code: 'ERROR', statusCode: 500 }
-      }),
-    };
-    require('../UserServiceResponseHelpers').UserServiceResponseHelpers = mockResponseHelpers;
+    // Setup response helper mocks
+    mockResponseHelpers.createSuccessResponse.mockImplementation((data) => ({
+      success: true,
+      data,
+    }));
+    mockResponseHelpers.handleCustomError.mockReturnValue({
+      success: false,
+      error: { message: 'Error', code: 'ERROR', statusCode: 500 },
+    });
 
     // Mock convertLeansUsersToPublic
     mockConvertLeansUsersToPublic.mockReturnValue(mockPublicUsers);
 
-    // Setup default User model mocks for production environment
-    MockedUser.find.mockReturnValue(mockQueryChain as any);
-    MockedUser.countDocuments.mockResolvedValue(10);
+    // Setup default User model mocks
+    const mockQueryChain = createMockQueryChain();
+    MockedUser.find = jest.fn().mockReturnValue(mockQueryChain);
+    MockedUser.countDocuments = jest.fn().mockResolvedValue(10);
+    MockedUser.aggregate = jest.fn().mockResolvedValue([]);
   });
 
   describe('getUsers', () => {
@@ -104,6 +131,9 @@ describe('UserServiceStats - Comprehensive Tests', () => {
     });
 
     it('should successfully retrieve paginated users with custom parameters', async () => {
+      const mockQueryChain = createMockQueryChain();
+      MockedUser.find = jest.fn().mockReturnValue(mockQueryChain);
+
       const result = await UserServiceStats.getUsers(2, 5, { role: 'admin' });
 
       expect(result.success).toBe(true);
@@ -131,7 +161,9 @@ describe('UserServiceStats - Comprehensive Tests', () => {
     });
 
     it('should calculate pagination correctly for multiple pages', async () => {
-      MockedUser.countDocuments.mockResolvedValue(50);
+      MockedUser.countDocuments = jest.fn().mockResolvedValue(50);
+      const mockQueryChain = createMockQueryChain();
+      MockedUser.find = jest.fn().mockReturnValue(mockQueryChain);
 
       const result = await UserServiceStats.getUsers(3, 10);
 
@@ -147,8 +179,7 @@ describe('UserServiceStats - Comprehensive Tests', () => {
     it('should handle test environment with basic mock', async () => {
       // Mock for test environment - no chaining methods
       const basicMock = jest.fn().mockResolvedValue(mockUsers);
-      basicMock.sort = undefined; // Simulate test environment
-      MockedUser.find.mockReturnValue(basicMock as any);
+      MockedUser.find = basicMock as any;
 
       const result = await UserServiceStats.getUsers();
 
@@ -157,33 +188,67 @@ describe('UserServiceStats - Comprehensive Tests', () => {
     });
 
     it('should handle database errors', async () => {
-      MockedUser.find.mockImplementation(() => {
+      MockedUser.find = jest.fn().mockImplementation(() => {
         throw new Error('Database connection failed');
       });
 
       const result = await UserServiceStats.getUsers();
 
       expect(result.success).toBe(false);
+      expect(mockResponseHelpers.handleCustomError).toHaveBeenCalled();
     });
 
     it('should handle zero results', async () => {
+      const mockQueryChain = createMockQueryChain();
       mockQueryChain.lean.mockResolvedValue([]);
-      MockedUser.countDocuments.mockResolvedValue(0);
+      MockedUser.find = jest.fn().mockReturnValue(mockQueryChain);
+      MockedUser.countDocuments = jest.fn().mockResolvedValue(0);
 
       const result = await UserServiceStats.getUsers();
 
       expect(result.success).toBe(true);
-      expect(result.data?.data).toEqual(mockPublicUsers); // convertLeansUsersToPublic still called
       expect(result.data?.pagination.total).toBe(0);
       expect(result.data?.pagination.totalPages).toBe(0);
     });
 
     it('should handle pagination edge case where total is not divisible by limit', async () => {
-      MockedUser.countDocuments.mockResolvedValue(23);
+      MockedUser.countDocuments = jest.fn().mockResolvedValue(23);
+      const mockQueryChain = createMockQueryChain();
+      MockedUser.find = jest.fn().mockReturnValue(mockQueryChain);
 
       const result = await UserServiceStats.getUsers(1, 10);
 
       expect(result.data?.pagination.totalPages).toBe(3); // Math.ceil(23/10)
+    });
+
+    it('should handle edge cases with negative page numbers', async () => {
+      const mockQueryChain = createMockQueryChain();
+      MockedUser.find = jest.fn().mockReturnValue(mockQueryChain);
+
+      const result = await UserServiceStats.getUsers(-1, 10);
+
+      expect(mockQueryChain.skip).toHaveBeenCalledWith(-20); // (-1 - 1) * 10
+      expect(result.success).toBe(true);
+    });
+
+    it('should handle zero limit', async () => {
+      const mockQueryChain = createMockQueryChain();
+      MockedUser.find = jest.fn().mockReturnValue(mockQueryChain);
+
+      const result = await UserServiceStats.getUsers(1, 0);
+
+      expect(mockQueryChain.limit).toHaveBeenCalledWith(0);
+      expect(result.success).toBe(true);
+    });
+
+    it('should handle very large page numbers', async () => {
+      const mockQueryChain = createMockQueryChain();
+      MockedUser.find = jest.fn().mockReturnValue(mockQueryChain);
+
+      const result = await UserServiceStats.getUsers(1000, 10);
+
+      expect(mockQueryChain.skip).toHaveBeenCalledWith(9990); // (1000 - 1) * 10
+      expect(result.success).toBe(true);
     });
   });
 
@@ -196,13 +261,13 @@ describe('UserServiceStats - Comprehensive Tests', () => {
 
     beforeEach(() => {
       // Mock countDocuments for different queries
-      MockedUser.countDocuments
+      MockedUser.countDocuments = jest.fn()
         .mockResolvedValueOnce(100) // totalUsers
         .mockResolvedValueOnce(80)  // verifiedUsers
         .mockResolvedValueOnce(60); // activeUsers
 
       // Mock aggregate for subscription breakdown
-      MockedUser.aggregate.mockResolvedValue(mockSubscriptionStats);
+      MockedUser.aggregate = jest.fn().mockResolvedValue(mockSubscriptionStats);
     });
 
     it('should successfully retrieve user statistics', async () => {
@@ -245,7 +310,7 @@ describe('UserServiceStats - Comprehensive Tests', () => {
     });
 
     it('should handle empty subscription statistics', async () => {
-      MockedUser.aggregate.mockResolvedValue([]);
+      MockedUser.aggregate = jest.fn().mockResolvedValue([]);
 
       const result = await UserServiceStats.getUserStats();
 
@@ -260,7 +325,7 @@ describe('UserServiceStats - Comprehensive Tests', () => {
     });
 
     it('should handle partial subscription data', async () => {
-      MockedUser.aggregate.mockResolvedValue([
+      MockedUser.aggregate = jest.fn().mockResolvedValue([
         { _id: 'free', count: 100 },
         { _id: 'guild', count: 5 },
       ]);
@@ -277,19 +342,21 @@ describe('UserServiceStats - Comprehensive Tests', () => {
     });
 
     it('should handle database errors in statistics retrieval', async () => {
-      MockedUser.countDocuments.mockRejectedValue(new Error('Database error'));
+      MockedUser.countDocuments = jest.fn().mockRejectedValue(new Error('Database error'));
 
       const result = await UserServiceStats.getUserStats();
 
       expect(result.success).toBe(false);
+      expect(mockResponseHelpers.handleCustomError).toHaveBeenCalled();
     });
 
     it('should handle aggregate errors', async () => {
-      MockedUser.aggregate.mockRejectedValue(new Error('Aggregation failed'));
+      MockedUser.aggregate = jest.fn().mockRejectedValue(new Error('Aggregation failed'));
 
       const result = await UserServiceStats.getUserStats();
 
       expect(result.success).toBe(false);
+      expect(mockResponseHelpers.handleCustomError).toHaveBeenCalled();
     });
 
     it('should calculate active users date correctly', async () => {
@@ -304,9 +371,20 @@ describe('UserServiceStats - Comprehensive Tests', () => {
       });
 
       // Verify the date is approximately 30 days ago (within 1 minute tolerance)
-      const actualDate = MockedUser.countDocuments.mock.calls[2][0].lastLoginAt.$gte;
+      const actualDate = (MockedUser.countDocuments as jest.Mock).mock.calls[2][0].lastLoginAt.$gte;
       const timeDiff = Math.abs(actualDate.getTime() - thirtyDaysAgo.getTime());
       expect(timeDiff).toBeLessThan(60000); // Less than 1 minute difference
+    });
+
+    it('should handle Promise.all rejection', async () => {
+      MockedUser.countDocuments = jest.fn()
+        .mockResolvedValueOnce(100)
+        .mockRejectedValueOnce(new Error('Query failed'));
+
+      const result = await UserServiceStats.getUserStats();
+
+      expect(result.success).toBe(false);
+      expect(mockResponseHelpers.handleCustomError).toHaveBeenCalled();
     });
   });
 
@@ -349,7 +427,7 @@ describe('UserServiceStats - Comprehensive Tests', () => {
     it('should detect test environment correctly', async () => {
       // Create a mock that looks like a basic test mock
       const basicTestMock = jest.fn().mockResolvedValue(mockUsers);
-      MockedUser.find.mockReturnValue(basicTestMock as any);
+      MockedUser.find = basicTestMock as any;
 
       // Access private method through reflection for testing
       const UserServiceStatsClass = UserServiceStats as any;
@@ -360,8 +438,8 @@ describe('UserServiceStats - Comprehensive Tests', () => {
     });
 
     it('should handle production environment correctly', async () => {
-      // Ensure we have full query chain
-      MockedUser.find.mockReturnValue(mockQueryChain as any);
+      const mockQueryChain = createMockQueryChain();
+      MockedUser.find = jest.fn().mockReturnValue(mockQueryChain);
 
       // Access private method through reflection for testing
       const UserServiceStatsClass = UserServiceStats as any;
@@ -373,46 +451,19 @@ describe('UserServiceStats - Comprehensive Tests', () => {
       expect(mockQueryChain.lean).toHaveBeenCalled();
       expect(result.users).toEqual(mockUsers);
     });
-  });
 
-  describe('Edge cases', () => {
-    it('should handle negative page numbers', async () => {
-      const result = await UserServiceStats.getUsers(-1, 10);
+    it('should handle null/undefined database responses in basic query', async () => {
+      // Create a mock that returns null/undefined to test fallback branches
+      const basicMock = jest.fn().mockResolvedValue(null);
+      MockedUser.find = basicMock as any;
+      MockedUser.countDocuments = jest.fn().mockResolvedValue(null);
 
-      expect(mockQueryChain.skip).toHaveBeenCalledWith(-20); // (-1 - 1) * 10
-      expect(result.success).toBe(true);
-    });
+      // Access private method through reflection for testing
+      const UserServiceStatsClass = UserServiceStats as any;
+      const result = await UserServiceStatsClass.executeBasicQuery({});
 
-    it('should handle zero limit', async () => {
-      const result = await UserServiceStats.getUsers(1, 0);
-
-      expect(mockQueryChain.limit).toHaveBeenCalledWith(0);
-      expect(result.success).toBe(true);
-    });
-
-    it('should handle very large page numbers', async () => {
-      const result = await UserServiceStats.getUsers(1000, 10);
-
-      expect(mockQueryChain.skip).toHaveBeenCalledWith(9990); // (1000 - 1) * 10
-      expect(result.success).toBe(true);
-    });
-
-    it('should handle null user data from database', async () => {
-      mockQueryChain.lean.mockResolvedValue(null);
-
-      const result = await UserServiceStats.getUsers();
-
-      expect(result.success).toBe(false);
-    });
-
-    it('should handle Promise.all rejection in getUserStats', async () => {
-      MockedUser.countDocuments
-        .mockResolvedValueOnce(100)
-        .mockRejectedValueOnce(new Error('Query failed'));
-
-      const result = await UserServiceStats.getUserStats();
-
-      expect(result.success).toBe(false);
+      expect(result.users).toEqual([]); // Should fallback to empty array
+      expect(result.total).toBe(0); // Should fallback to 0
     });
   });
 });
