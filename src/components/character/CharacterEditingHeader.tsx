@@ -33,11 +33,15 @@ interface DraftActions {
 interface CharacterEditingHeaderProps {
   characterName: string;
   editMode: boolean;
-  saveState: SaveState;
-  autosaveState: AutosaveState;
-  draftState: DraftState;
-  editActions: EditActions;
-  draftActions: DraftActions;
+  states: {
+    save: SaveState;
+    autosave: AutosaveState;
+    draft: DraftState;
+  };
+  actions: {
+    edit: EditActions;
+    draft: DraftActions;
+  };
 }
 
 function EditModeButtons({ saveState, editActions }: { saveState: SaveState; editActions: EditActions }) {
@@ -136,39 +140,58 @@ function AutosaveIndicator({ autosaveState }: { autosaveState: AutosaveState }) 
   );
 }
 
+function CharacterHeader({ characterName, editMode, saveState, actions }: {
+  characterName: string;
+  editMode: boolean;
+  saveState: SaveState;
+  actions: { edit: EditActions };
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <h1 className="text-3xl font-bold">{characterName}</h1>
+      <div className="flex gap-2">
+        {editMode ? (
+          <EditModeButtons saveState={saveState} editActions={actions.edit} />
+        ) : (
+          <ViewModeButton onEditClick={actions.edit.onEditClick} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SaveSuccessAlert({ showSuccess }: { showSuccess: boolean }) {
+  if (!showSuccess) return null;
+
+  return (
+    <Alert data-testid="save-success-message" className="border-green-200 bg-green-50">
+      <AlertDescription className="text-green-800">
+        Character updated successfully!
+      </AlertDescription>
+    </Alert>
+  );
+}
+
 export function CharacterEditingHeader({
   characterName,
   editMode,
-  saveState,
-  autosaveState,
-  draftState,
-  editActions,
-  draftActions,
+  states,
+  actions,
 }: CharacterEditingHeaderProps) {
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">{characterName}</h1>
-        <div className="flex gap-2">
-          {editMode ? (
-            <EditModeButtons saveState={saveState} editActions={editActions} />
-          ) : (
-            <ViewModeButton onEditClick={editActions.onEditClick} />
-          )}
-        </div>
-      </div>
+      <CharacterHeader
+        characterName={characterName}
+        editMode={editMode}
+        saveState={states.save}
+        actions={actions}
+      />
 
-      {saveState.saveSuccess && (
-        <Alert data-testid="save-success-message" className="border-green-200 bg-green-50">
-          <AlertDescription className="text-green-800">
-            Character updated successfully!
-          </AlertDescription>
-        </Alert>
-      )}
+      <SaveSuccessAlert showSuccess={states.save.saveSuccess} />
 
-      <DraftIndicator draftState={draftState} draftActions={draftActions} />
+      <DraftIndicator draftState={states.draft} draftActions={actions.draft} />
 
-      {editMode && <AutosaveIndicator autosaveState={autosaveState} />}
+      {editMode && <AutosaveIndicator autosaveState={states.autosave} />}
     </div>
   );
 }

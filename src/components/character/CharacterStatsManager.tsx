@@ -236,26 +236,30 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
       <CharacterEditingHeader
         characterName={character.name}
         editMode={editMode}
-        saveState={{
-          saving,
-          saveSuccess,
+        states={{
+          save: {
+            saving,
+            saveSuccess,
+          },
+          autosave: {
+            autosaving,
+            autosaveSuccess,
+          },
+          draft: {
+            showDraftIndicator,
+            draftChanges,
+          },
         }}
-        autosaveState={{
-          autosaving,
-          autosaveSuccess,
-        }}
-        draftState={{
-          showDraftIndicator,
-          draftChanges,
-        }}
-        editActions={{
-          onEditClick: () => setEditMode(true),
-          onSaveClick: handleSave,
-          onCancelClick: handleCancel,
-        }}
-        draftActions={{
-          onRestoreDraft: restoreDraftChanges,
-          onDiscardDraft: discardDraftChanges,
+        actions={{
+          edit: {
+            onEditClick: () => setEditMode(true),
+            onSaveClick: handleSave,
+            onCancelClick: handleCancel,
+          },
+          draft: {
+            onRestoreDraft: restoreDraftChanges,
+            onDiscardDraft: discardDraftChanges,
+          },
         }}
       />
 
