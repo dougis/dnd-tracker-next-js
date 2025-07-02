@@ -3,8 +3,6 @@
 // Docker entrypoint script for production deployments
 // Handles environment setup and health checks before starting the application
 
-const { execSync } = require('child_process');
-const fs = require('fs');
 
 console.log('🐳 D&D Encounter Tracker - Docker Container Starting...');
 
@@ -48,10 +46,9 @@ try {
 // Set production optimizations
 if (process.env.NODE_ENV === 'production') {
   console.log('⚡ Applying production optimizations...');
-  
+
   // Disable development features
   process.env.NEXT_TELEMETRY_DISABLED = '1';
-  
   // Set memory limits for Node.js
   if (!process.env.NODE_OPTIONS) {
     process.env.NODE_OPTIONS = '--max-old-space-size=1024';
