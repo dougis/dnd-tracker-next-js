@@ -95,7 +95,7 @@ export class CharacterServiceStats {
 
       // Calculate skills
       const skills: Record<string, number> = {};
-      for (const [skill, isProficient] of character.skills.entries()) {
+      for (const [skill, isProficient] of Array.from(character.skills.entries())) {
         const abilityMod = this.getSkillAbilityModifier(skill, abilityModifiers);
         skills[skill] = abilityMod + (isProficient ? character.proficiencyBonus : 0);
       }
