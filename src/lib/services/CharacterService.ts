@@ -263,7 +263,7 @@ export class CharacterService {
 
     } catch (error) {
       return createErrorResult(
-        CharacterServiceErrors.operationFailed('validate character data', error?.message)
+        CharacterServiceErrors.operationFailed('validate character data', error instanceof Error ? error.message : 'Unknown error')
       );
     }
   }
