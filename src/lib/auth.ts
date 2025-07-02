@@ -6,11 +6,11 @@ import { UserService } from './services/UserService';
 
 const mongoUri = process.env.MONGODB_URI;
 if (!mongoUri) {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && process.env.VERCEL !== '1' && process.env.CI !== 'true') {
     throw new Error('MONGODB_URI environment variable is not set');
   }
-  // For build time, use a placeholder URI that won't be used
-  console.warn('MONGODB_URI not set, using placeholder for build');
+  // For build time or CI environment, use a placeholder URI that won't be used
+  console.warn('MONGODB_URI not set, using placeholder for build/CI');
 }
 
 const client = new MongoClient(mongoUri || 'mongodb://localhost:27017/placeholder');
