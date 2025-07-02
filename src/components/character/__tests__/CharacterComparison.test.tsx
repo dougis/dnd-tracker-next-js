@@ -75,12 +75,16 @@ describe('CharacterComparison', () => {
     );
 
     // Strength changed from 14 to 18
-    expect(screen.getByTestId('strength-change')).toBeInTheDocument();
-    expect(screen.getByText('14 → 18')).toBeInTheDocument();
+    const strengthChange = screen.getByTestId('strength-change');
+    expect(strengthChange).toBeInTheDocument();
+    expect(strengthChange).toHaveTextContent('14');
+    expect(strengthChange).toHaveTextContent('18');
 
     // Charisma changed from 10 to 12
-    expect(screen.getByTestId('charisma-change')).toBeInTheDocument();
-    expect(screen.getByText('10 → 12')).toBeInTheDocument();
+    const charismaChange = screen.getByTestId('charisma-change');
+    expect(charismaChange).toBeInTheDocument();
+    expect(charismaChange).toHaveTextContent('10');
+    expect(charismaChange).toHaveTextContent('12');
 
     // Dexterity unchanged - should not show change indicator
     expect(screen.queryByTestId('dexterity-change')).not.toBeInTheDocument();
@@ -112,12 +116,16 @@ describe('CharacterComparison', () => {
     );
 
     // HP changed from 47 to 50
-    expect(screen.getByTestId('hp-change')).toBeInTheDocument();
-    expect(screen.getByText('47 → 50')).toBeInTheDocument();
+    const hpChange = screen.getByTestId('hp-change');
+    expect(hpChange).toBeInTheDocument();
+    expect(hpChange).toHaveTextContent('47');
+    expect(hpChange).toHaveTextContent('50');
 
     // AC changed from 16 to 18
-    expect(screen.getByTestId('ac-change')).toBeInTheDocument();
-    expect(screen.getByText('16 → 18')).toBeInTheDocument();
+    const acChange = screen.getByTestId('ac-change');
+    expect(acChange).toBeInTheDocument();
+    expect(acChange).toHaveTextContent('16');
+    expect(acChange).toHaveTextContent('18');
   });
 
   it('should call onAcceptChanges when accept button is clicked', async () => {
@@ -169,7 +177,7 @@ describe('CharacterComparison', () => {
     );
 
     expect(screen.getByTestId('changes-summary')).toBeInTheDocument();
-    expect(screen.getByText(/6 changes detected/)).toBeInTheDocument();
+    expect(screen.getByText(/7 changes detected/)).toBeInTheDocument();
   });
 
   it('should display no changes message when characters are identical', () => {

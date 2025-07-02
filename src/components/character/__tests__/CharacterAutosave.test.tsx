@@ -1,4 +1,4 @@
-import { screen, fireEvent, act } from '@testing-library/react';
+import { screen, fireEvent, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CharacterStatsManager } from '../CharacterStatsManager';
 import { CharacterService } from '@/lib/services/CharacterService';
@@ -13,17 +13,16 @@ jest.mock('@/lib/services/CharacterService', () => ({
     updateCharacter: jest.fn(),
     saveDraftChanges: jest.fn(),
     getDraftChanges: jest.fn(),
+    clearDraftChanges: jest.fn(),
   }
 }));
-
-// Mock timers for autosave testing
-jest.useFakeTimers();
 
 const mockCharacter = createMockCharacter();
 const mockStats = createMockStats();
 
 describe('CharacterAutosave', () => {
   beforeEach(() => {
+    jest.useFakeTimers();
     jest.clearAllMocks();
     (CharacterService.getCharacterById as jest.Mock).mockResolvedValue({
       success: true,
@@ -40,6 +39,9 @@ describe('CharacterAutosave', () => {
       success: true,
       data: null
     });
+    (CharacterService.clearDraftChanges as jest.Mock).mockResolvedValue({
+      success: true
+    });
   });
 
   afterEach(() => {
@@ -48,7 +50,7 @@ describe('CharacterAutosave', () => {
   });
 
   it('should automatically save draft changes after 2 seconds of inactivity', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
     renderWithProviders(
       <CharacterStatsManager characterId="char-123" userId="user-123" />
@@ -83,7 +85,7 @@ describe('CharacterAutosave', () => {
   });
 
   it('should display autosave indicator when saving', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
     renderWithProviders(
       <CharacterStatsManager characterId="char-123" userId="user-123" />
@@ -95,7 +97,8 @@ describe('CharacterAutosave', () => {
     await user.click(editButton);
 
     const strengthInput = screen.getByTestId('ability-strength-input');
-    fireEvent.change(strengthInput, { target: { value: '18' } });
+    await user.clear(strengthInput);
+    await user.type(strengthInput, '18');
 
     // Fast forward to trigger autosave
     act(() => {
@@ -107,7 +110,7 @@ describe('CharacterAutosave', () => {
   });
 
   it('should show autosave success message', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
     renderWithProviders(
       <CharacterStatsManager characterId="char-123" userId="user-123" />
@@ -119,7 +122,8 @@ describe('CharacterAutosave', () => {
     await user.click(editButton);
 
     const strengthInput = screen.getByTestId('ability-strength-input');
-    fireEvent.change(strengthInput, { target: { value: '18' } });
+    await user.clear(strengthInput);
+    await user.type(strengthInput, '18');
 
     act(() => {
       jest.advanceTimersByTime(2000);
@@ -131,7 +135,7 @@ describe('CharacterAutosave', () => {
   });
 
   it('should reset autosave timer on new changes', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
     renderWithProviders(
       <CharacterStatsManager characterId="char-123" userId="user-123" />
@@ -145,7 +149,8 @@ describe('CharacterAutosave', () => {
     const strengthInput = screen.getByTestId('ability-strength-input');
 
     // First change
-    fireEvent.change(strengthInput, { target: { value: '17' } });
+    await user.clear(strengthInput);
+    await user.type(strengthInput, '17');
 
     // Advance 1 second
     act(() => {
@@ -153,7 +158,8 @@ describe('CharacterAutosave', () => {
     });
 
     // Second change before autosave triggers
-    fireEvent.change(strengthInput, { target: { value: '18' } });
+    await user.clear(strengthInput);
+    await user.type(strengthInput, '18');
 
     // Advance another 1.5 seconds (total 2.5, but timer should have reset)
     act(() => {
@@ -173,7 +179,7 @@ describe('CharacterAutosave', () => {
   });
 
   it('should not autosave when no changes are made', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
     renderWithProviders(
       <CharacterStatsManager characterId="char-123" userId="user-123" />
@@ -218,7 +224,7 @@ describe('CharacterAutosave', () => {
   });
 
   it('should allow restoring draft changes', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     const draftChanges = {
       abilityScores: { strength: 20 },
       backstory: 'Draft backstory changes'
@@ -243,7 +249,7 @@ describe('CharacterAutosave', () => {
   });
 
   it('should allow discarding draft changes', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     const draftChanges = {
       abilityScores: { strength: 20 }
     };
@@ -265,7 +271,9 @@ describe('CharacterAutosave', () => {
     const discardButton = screen.getByTestId('discard-draft-button');
     await user.click(discardButton);
 
-    // Should hide draft indicator
-    expect(screen.queryByTestId('draft-indicator')).not.toBeInTheDocument();
+    // Wait for the draft indicator to be removed
+    await waitFor(() => {
+      expect(screen.queryByTestId('draft-indicator')).not.toBeInTheDocument();
+    });
   });
 });
