@@ -74,6 +74,7 @@ export class CharacterValidationService {
       // Step 1: Basic schema validation with auto-fix suggestions
       const recoveryResult = CharacterDataRecovery.validateWithRecovery(characterData as Partial<CharacterCreation>);
 
+
       if (!recoveryResult.isValid) {
         return {
           success: false,
@@ -174,8 +175,9 @@ export class CharacterValidationService {
     const _opts = { ...this.defaultOptions, ...options };
 
     try {
-      // Merge update data with existing character for full validation
-      const mergedData = { ...existingCharacter, ...updateData as Partial<CharacterCreation> };
+      // Merge update data with existing character for full validation (deep merge for nested objects)
+      const mergedData = this.deepMerge(existingCharacter, updateData as Partial<CharacterCreation>);
+
 
       // Validate the merged result as a complete character
       const fullValidation = await this.validateCharacterCreation(
@@ -246,6 +248,7 @@ export class CharacterValidationService {
 
     return {
       ...error,
+      message: error.message,
       suggestedFix: this.generateSuggestedFix(fieldName, error.message),
       autoFixable: this.isAutoFixable(fieldName, error.message),
       autoFixValue: this.generateAutoFixValue(fieldName, value),
@@ -423,6 +426,22 @@ export class CharacterValidationService {
     if (result.success) {
       return createSuccessResult(undefined);
     }
+    return result;
+  }
+
+  private static deepMerge(target: any, source: any): any {
+    const result = { ...target };
+
+    for (const key in source) {
+      if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+        // Deep merge objects
+        result[key] = this.deepMerge(target[key] || {}, source[key]);
+      } else {
+        // Direct assignment for primitives and arrays
+        result[key] = source[key];
+      }
+    }
+
     return result;
   }
 }

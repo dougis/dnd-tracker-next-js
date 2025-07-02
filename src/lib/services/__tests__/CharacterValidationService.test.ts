@@ -11,7 +11,10 @@ jest.mock('../../validations/error-recovery', () => ({
     createBackup: jest.fn(),
     validateWithRecovery: jest.fn(),
     generateRecoverySuggestions: jest.fn(),
+    getCharacterBackups: jest.fn(),
+    restoreFromBackup: jest.fn(),
   },
+  useCharacterAutoSave: jest.fn(),
 }));
 
 describe('CharacterValidationService', () => {
@@ -185,6 +188,7 @@ describe('CharacterValidationService', () => {
   describe('validateCharacterUpdate', () => {
     it('should validate character updates successfully', async () => {
       const updateData = { name: 'Updated Name', hitPoints: { current: 40 } };
+
 
       (CharacterDataRecovery.validateWithRecovery as jest.Mock).mockReturnValue({
         isValid: true,
