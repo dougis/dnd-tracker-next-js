@@ -558,8 +558,8 @@ describe('EncounterService', () => {
       const result = await EncounterService.getEncounterById(encounterId);
 
       expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('ENCOUNTER_RETRIEVAL_FAILED');
-      expect(result.error?.statusCode).toBe(500);
+      expect(result.error?.code).toBe('DATABASE_ERROR');
+      expect(result.error?.statusCode).toBe(503);
     });
 
     it('should handle validation errors from model', async () => {
@@ -573,7 +573,7 @@ describe('EncounterService', () => {
       const result = await EncounterService.createEncounter(invalidData);
 
       expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('ENCOUNTER_CREATION_FAILED');
+      expect(result.error?.code).toBe('VALIDATION_ERROR');
     });
   });
 });
