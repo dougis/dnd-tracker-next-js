@@ -28,7 +28,7 @@ export interface PaginationResult<T> {
 }
 
 export interface QueryOptions {
-  sort?: object;
+  sort?: { [key: string]: 1 | -1 | { $meta: string } };
   page?: number;
   limit?: number;
   includeFields?: string[];
@@ -71,15 +71,15 @@ export class CharacterQueryUtils {
       let query = Character.find(filter).skip(skip).limit(limit);
 
       // Apply sorting
-      const defaultSort = { name: 1 };
+      const defaultSort = { name: 1 as const };
       const sortOption = options.sort || defaultSort;
-      query = query.sort(sortOption);
+      query = query.sort(sortOption as any);
 
       // Apply field selection if specified
       if (options.includeFields) {
-        query = query.select(options.includeFields.join(' '));
+        query = query.select(options.includeFields.join(' ')) as any;
       } else if (options.excludeFields) {
-        query = query.select(options.excludeFields.map(field => `-${field}`).join(' '));
+        query = query.select(options.excludeFields.map(field => `-${field}`).join(' ')) as any;
       }
 
       const items = await query.exec();
@@ -118,15 +118,15 @@ export class CharacterQueryUtils {
       let query = Character.find(filter);
 
       // Apply sorting
-      const defaultSort = { name: 1 };
+      const defaultSort = { name: 1 as const };
       const sortOption = options.sort || defaultSort;
-      query = query.sort(sortOption);
+      query = query.sort(sortOption as any);
 
       // Apply field selection if specified
       if (options.includeFields) {
-        query = query.select(options.includeFields.join(' '));
+        query = query.select(options.includeFields.join(' ')) as any;
       } else if (options.excludeFields) {
-        query = query.select(options.excludeFields.map(field => `-${field}`).join(' '));
+        query = query.select(options.excludeFields.map(field => `-${field}`).join(' ')) as any;
       }
 
       const characters = await query.exec();
@@ -231,15 +231,15 @@ export class CharacterQueryUtils {
       let query = Character.find(filter);
 
       // Apply sorting
-      const defaultSort = { name: 1 };
+      const defaultSort = { name: 1 as const };
       const sortOption = options.sort || defaultSort;
-      query = query.sort(sortOption);
+      query = query.sort(sortOption as any);
 
       // Apply field selection if specified
       if (options.includeFields) {
-        query = query.select(options.includeFields.join(' '));
+        query = query.select(options.includeFields.join(' ')) as any;
       } else if (options.excludeFields) {
-        query = query.select(options.excludeFields.map(field => `-${field}`).join(' '));
+        query = query.select(options.excludeFields.map(field => `-${field}`).join(' ')) as any;
       }
 
       const characters = await query.exec();

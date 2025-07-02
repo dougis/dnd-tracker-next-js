@@ -179,7 +179,7 @@ export class CharacterAccessUtils {
   /**
    * Create MongoDB filter for user ownership only
    */
-  static createOwnershipFilter(userId: string): object {
+  static createOwnershipFilter(userId: string): { ownerId: Types.ObjectId | string } {
     try {
       return { ownerId: new Types.ObjectId(userId) };
     } catch (error) {

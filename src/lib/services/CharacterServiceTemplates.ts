@@ -9,6 +9,10 @@ import type {
   CharacterCreation,
   CharacterUpdate,
   CharacterPreset,
+  CharacterRace,
+  CharacterClass,
+  CharacterType,
+  Size,
 } from '../validations/character';
 import type { ICharacter } from '../models/Character';
 import {
@@ -45,9 +49,9 @@ export class CharacterServiceTemplates {
       // Create template from character
       const template: CharacterPreset = {
         name: templateName,
-        type: character.type,
-        race: character.race,
-        class: character.classes[0].class,
+        type: character.type as CharacterType,
+        race: character.race as CharacterRace,
+        class: character.classes[0].class as CharacterClass,
         level: character.classes[0].level,
         abilityScores: character.abilityScores,
         hitPoints: character.hitPoints.maximum,
@@ -58,7 +62,9 @@ export class CharacterServiceTemplates {
 
     } catch (error) {
       return createErrorResult(
-        CharacterServiceErrors.templateCreationFailed(error?.message || 'Unknown error')
+        CharacterServiceErrors.templateCreationFailed(
+          error instanceof Error ? error.message : 'Unknown error'
+        )
       );
     }
   }
@@ -82,11 +88,16 @@ export class CharacterServiceTemplates {
       // Create clone data
       const cloneData: CharacterCreation = {
         name: newName,
-        type: originalCharacter.type,
-        race: originalCharacter.race,
+        type: originalCharacter.type as CharacterType,
+        race: originalCharacter.race as CharacterRace,
         customRace: originalCharacter.customRace,
-        size: originalCharacter.size,
-        classes: originalCharacter.classes,
+        size: originalCharacter.size as Size,
+        classes: originalCharacter.classes.map(c => ({
+          class: c.class as CharacterClass,
+          level: c.level,
+          hitDie: c.hitDie,
+          subclass: c.subclass,
+        })),
         abilityScores: originalCharacter.abilityScores,
         hitPoints: {
           maximum: originalCharacter.hitPoints.maximum,
@@ -99,7 +110,22 @@ export class CharacterServiceTemplates {
         savingThrows: originalCharacter.savingThrows,
         skills: Object.fromEntries(originalCharacter.skills),
         equipment: originalCharacter.equipment,
-        spells: originalCharacter.spells,
+        spells: originalCharacter.spells.map(spell => ({
+          name: spell.name,
+          level: spell.level,
+          school: spell.school as 'abjuration' | 'conjuration' | 'divination' | 'enchantment' | 'evocation' | 'illusion' | 'necromancy' | 'transmutation',
+          castingTime: spell.castingTime,
+          range: spell.range,
+          components: {
+            verbal: false,
+            somatic: false,
+            material: false,
+            materialComponent: spell.components,
+          },
+          duration: spell.duration,
+          description: spell.description,
+          prepared: spell.isPrepared,
+        })),
         backstory: originalCharacter.backstory,
         notes: originalCharacter.notes,
         imageUrl: originalCharacter.imageUrl,
@@ -109,7 +135,10 @@ export class CharacterServiceTemplates {
 
     } catch (error) {
       return createErrorResult(
-        CharacterServiceErrors.operationFailed('clone character', error?.message)
+        CharacterServiceErrors.operationFailed(
+          'clone character',
+          error instanceof Error ? error.message : 'Unknown error'
+        )
       );
     }
   }
@@ -159,7 +188,9 @@ export class CharacterServiceTemplates {
 
     } catch (error) {
       return createErrorResult(
-        CharacterServiceErrors.templateCreationFailed(error?.message || 'Invalid template data')
+        CharacterServiceErrors.templateCreationFailed(
+          error instanceof Error ? error.message : 'Invalid template data'
+        )
       );
     }
   }
@@ -191,7 +222,10 @@ export class CharacterServiceTemplates {
 
     } catch (error) {
       return createErrorResult(
-        CharacterServiceErrors.operationFailed('create multiple characters', error?.message)
+        CharacterServiceErrors.operationFailed(
+          'create multiple characters',
+          error instanceof Error ? error.message : 'Unknown error'
+        )
       );
     }
   }
@@ -217,7 +251,10 @@ export class CharacterServiceTemplates {
 
     } catch (error) {
       return createErrorResult(
-        CharacterServiceErrors.operationFailed('update multiple characters', error?.message)
+        CharacterServiceErrors.operationFailed(
+          'update multiple characters',
+          error instanceof Error ? error.message : 'Unknown error'
+        )
       );
     }
   }
@@ -241,7 +278,10 @@ export class CharacterServiceTemplates {
 
     } catch (error) {
       return createErrorResult(
-        CharacterServiceErrors.operationFailed('delete multiple characters', error?.message)
+        CharacterServiceErrors.operationFailed(
+          'delete multiple characters',
+          error instanceof Error ? error.message : 'Unknown error'
+        )
       );
     }
   }

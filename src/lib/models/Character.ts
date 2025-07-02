@@ -6,6 +6,7 @@ import {
   getStandardSchemaOptions,
   mongooseObjectIdField,
 } from './shared/schema-utils';
+import type { CharacterSummary as ValidationCharacterSummary } from '../validations/character';
 
 // Ability name type for calculations
 type AbilityName =
@@ -96,7 +97,7 @@ export interface ICharacter extends Document {
   takeDamage(_damage: number): void;
   heal(_healing: number): void;
   addTemporaryHP(_tempHP: number): void;
-  toSummary(): CharacterSummary;
+  toSummary(): ValidationCharacterSummary;
 }
 
 // Character model interface with static methods
@@ -109,27 +110,8 @@ export interface CharacterModel extends Model<ICharacter> {
   findByRace(_race: string): Promise<ICharacter[]>;
 }
 
-// Summary type for lightweight character data
-export interface CharacterSummary {
-  _id: Types.ObjectId;
-  name: string;
-  race: string;
-  type: 'pc' | 'npc';
-  level: number;
-  classes: Array<{
-    class: string;
-    level: number;
-    subclass?: string;
-    hitDie: number;
-  }>;
-  hitPoints: {
-    maximum: number;
-    current: number;
-    temporary: number;
-  };
-  armorClass: number;
-  isPublic: boolean;
-}
+// Re-export the validation CharacterSummary type for consistency
+export type CharacterSummary = ValidationCharacterSummary;
 
 // Mongoose schema definition
 const characterSchema = new Schema<ICharacter, CharacterModel>(
@@ -409,17 +391,23 @@ characterSchema.methods.addTemporaryHP = function (tempHP: number): void {
 };
 
 // Instance method: Get character summary
-characterSchema.methods.toSummary = function (): CharacterSummary {
+characterSchema.methods.toSummary = function (): ValidationCharacterSummary {
   return {
-    _id: this._id,
+    _id: this._id.toString(),
     name: this.name,
-    race: this.race,
     type: this.type,
-    level: this.level,
+    race: this.race,
+    customRace: this.customRace,
     classes: this.classes,
-    hitPoints: this.hitPoints,
+    level: this.level,
+    hitPoints: {
+      maximum: this.hitPoints.maximum,
+      current: this.hitPoints.current,
+    },
     armorClass: this.armorClass,
-    isPublic: this.isPublic,
+    ownerId: this.ownerId.toString(),
+    partyId: this.partyId?.toString(),
+    imageUrl: this.imageUrl,
   };
 };
 
