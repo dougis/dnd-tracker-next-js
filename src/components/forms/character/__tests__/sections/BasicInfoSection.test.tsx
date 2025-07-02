@@ -289,16 +289,16 @@ describe('BasicInfoSection', () => {
       render(<BasicInfoSection {...defaultProps} />);
 
       const nameField = screen.getByLabelText(/character name/i);
-      const describedBy = nameField.getAttribute('aria-describedby');
-
       expect(nameField).toHaveAttribute('aria-describedby');
-      expect(describedBy).toBeTruthy();
+    });
 
-      // The helper text should be queryable using the aria-describedby value
+    it('links helper text to field with proper ID relationship', () => {
+      render(<BasicInfoSection {...defaultProps} />);
+
+      const nameField = screen.getByLabelText(/character name/i);
+      const describedBy = nameField.getAttribute('aria-describedby');
       const helperText = screen.getByText(/choose a memorable name/i);
-      expect(helperText).toBeInTheDocument();
 
-      // Verify the ID relationship exists (should match the pattern ending with -helper)
       expect(helperText.id).toBe(describedBy);
       expect(describedBy).toMatch(/-helper$/);
     });
