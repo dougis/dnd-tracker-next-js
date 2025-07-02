@@ -6,62 +6,23 @@ import {
 import {
   UserAlreadyExistsError,
 } from '../UserServiceErrors';
+import {
+  SHARED_TEST_CONSTANTS,
+  createBaseTestUser,
+  createBasePublicUser,
+  SharedMockUtilities,
+} from './shared-test-utilities';
 
 /**
  * Test data generators and helper functions for UserServiceProfile tests
  * Eliminates code duplication across test files
  */
 
-export const TEST_CONSTANTS = {
-  mockUserId: '507f1f77bcf86cd799439011',
-  mockEmail: 'test@example.com',
-  mockUsername: 'testuser',
-} as const;
+export const TEST_CONSTANTS = SHARED_TEST_CONSTANTS;
 
-export const createMockUser = () => ({
-  _id: TEST_CONSTANTS.mockUserId,
-  email: TEST_CONSTANTS.mockEmail,
-  username: TEST_CONSTANTS.mockUsername,
-  firstName: 'Test',
-  lastName: 'User',
-  role: 'user' as const,
-  subscriptionTier: 'free' as SubscriptionTier,
-  isEmailVerified: false,
-  preferences: {
-    theme: 'system' as const,
-    emailNotifications: true,
-    browserNotifications: false,
-    timezone: 'UTC',
-    language: 'en',
-    diceRollAnimations: true,
-    autoSaveEncounters: true,
-  },
-  save: jest.fn(),
-  toPublicJSON: jest.fn(),
-});
+export const createMockUser = () => createBaseTestUser();
 
-export const createMockPublicUser = (): PublicUser => ({
-  id: TEST_CONSTANTS.mockUserId,
-  email: TEST_CONSTANTS.mockEmail,
-  username: TEST_CONSTANTS.mockUsername,
-  firstName: 'Test',
-  lastName: 'User',
-  role: 'user',
-  subscriptionTier: 'free',
-  isEmailVerified: false,
-  preferences: {
-    theme: 'system',
-    emailNotifications: true,
-    browserNotifications: false,
-    timezone: 'UTC',
-    language: 'en',
-    diceRollAnimations: true,
-    autoSaveEncounters: true,
-  },
-  lastLoginAt: '2024-01-01T00:00:00.000Z',
-  createdAt: '2024-01-01T00:00:00.000Z',
-  updatedAt: '2024-01-01T00:00:00.000Z',
-});
+export const createMockPublicUser = (): PublicUser => createBasePublicUser();
 
 export const createMockUpdateData = (): UserProfileUpdate => ({
   firstName: 'Updated',
@@ -104,6 +65,15 @@ export class MockServiceHelpers {
       mockLookup: this.getMockLookup(),
       mockResponseHelpers: this.getMockResponseHelpers(),
     };
+  }
+
+  // Centralized mock environment setup
+  static setupTestEnvironment() {
+    const User = require('../../models/User').default;
+    const MockedUser = jest.mocked(User);
+    MockedUser.findById = jest.fn();
+    MockedUser.findByIdAndDelete = jest.fn();
+    return { MockedUser };
   }
 
   static setupSuccessfulOperation(mockUser: any, mockPublicUser: PublicUser) {
@@ -238,7 +208,7 @@ export class MockServiceHelpers {
   }
 
   // Enhanced setup methods to eliminate duplication in update tests
-  static setupSuccessfulProfileUpdate(mockUser: any, updateData: any, mockPublicUser: any, MockedUser: any) {
+  static setupProfileUpdateBase(mockUser: any, updateData: any, mockPublicUser: any, MockedUser: any) {
     const mockValidation = this.getMockValidation();
     const mockDatabase = this.getMockDatabase();
     const mockResponseHelpers = this.getMockResponseHelpers();
@@ -249,14 +219,21 @@ export class MockServiceHelpers {
       emailToCheck: undefined,
       usernameToCheck: undefined,
     });
-    mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
-    mockResponseHelpers.createSuccessResponse.mockReturnValue({
-      success: true,
-      data: mockPublicUser,
-    });
     mockResponseHelpers.safeToPublicJSON.mockReturnValue(mockPublicUser);
 
     return { mockValidation, mockDatabase, mockResponseHelpers };
+  }
+
+  static setupSuccessfulProfileUpdate(mockUser: any, updateData: any, mockPublicUser: any, MockedUser: any) {
+    const mocks = this.setupProfileUpdateBase(mockUser, updateData, mockPublicUser, MockedUser);
+
+    mocks.mockDatabase.updateUserFieldsAndSave.mockResolvedValue(undefined);
+    mocks.mockResponseHelpers.createSuccessResponse.mockReturnValue({
+      success: true,
+      data: mockPublicUser,
+    });
+
+    return mocks;
   }
 
   static setupUserNotFoundForUpdate(MockedUser: any, updateData: any) {
@@ -283,43 +260,27 @@ export class MockServiceHelpers {
   }
 
   static setupDatabaseError(mockUser: any, updateData: any, error: Error, MockedUser: any) {
-    const mockValidation = this.getMockValidation();
-    const mockDatabase = this.getMockDatabase();
-    const mockResponseHelpers = this.getMockResponseHelpers();
+    const mocks = this.setupProfileUpdateBase(mockUser, updateData, undefined, MockedUser);
 
-    MockedUser.findById.mockResolvedValue(mockUser);
-    mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
-    mockValidation.prepareConflictCheckParams.mockReturnValue({
-      emailToCheck: undefined,
-      usernameToCheck: undefined,
-    });
-    mockDatabase.updateUserFieldsAndSave.mockRejectedValue(error);
-    mockResponseHelpers.handleCustomError.mockReturnValue({
+    mocks.mockDatabase.updateUserFieldsAndSave.mockRejectedValue(error);
+    mocks.mockResponseHelpers.handleCustomError.mockReturnValue({
       success: false,
       error: { message: 'Failed to update user profile', code: 'PROFILE_UPDATE_FAILED', statusCode: 500 },
     });
 
-    return { mockValidation, mockDatabase, mockResponseHelpers };
+    return mocks;
   }
 
   static setupUserAlreadyExistsErrorDuringUpdate(mockUser: any, updateData: any, conflictError: UserAlreadyExistsError, MockedUser: any) {
-    const mockValidation = this.getMockValidation();
-    const mockDatabase = this.getMockDatabase();
-    const mockResponseHelpers = this.getMockResponseHelpers();
+    const mocks = this.setupProfileUpdateBase(mockUser, updateData, undefined, MockedUser);
 
-    MockedUser.findById.mockResolvedValue(mockUser);
-    mockValidation.validateAndParseProfileUpdate.mockReturnValue(updateData);
-    mockValidation.prepareConflictCheckParams.mockReturnValue({
-      emailToCheck: undefined,
-      usernameToCheck: undefined,
-    });
-    mockDatabase.updateUserFieldsAndSave.mockRejectedValue(conflictError);
-    mockResponseHelpers.createErrorResponse.mockReturnValue({
+    mocks.mockDatabase.updateUserFieldsAndSave.mockRejectedValue(conflictError);
+    mocks.mockResponseHelpers.createErrorResponse.mockReturnValue({
       success: false,
       error: { message: `${conflictError.field} already exists`, code: 'USER_ALREADY_EXISTS', statusCode: 409 },
     });
 
-    return { mockValidation, mockDatabase, mockResponseHelpers };
+    return mocks;
   }
 
   // Additional helpers for retrieval and other common patterns
@@ -371,18 +332,11 @@ export class MockServiceHelpers {
  */
 export class AssertionHelpers {
   static expectSuccessResult(result: any, expectedData: any) {
-    expect(result.success).toBe(true);
-    expect(result.data).toEqual(expectedData);
+    SharedMockUtilities.expectStandardSuccessResult(result, expectedData);
   }
 
   static expectErrorResult(result: any, expectedCode?: string, expectedMessage?: string) {
-    expect(result.success).toBe(false);
-    if (expectedCode) {
-      expect(result.error?.code).toBe(expectedCode);
-    }
-    if (expectedMessage) {
-      expect(result.error?.message).toBe(expectedMessage);
-    }
+    SharedMockUtilities.expectStandardErrorResult(result, expectedCode, expectedMessage);
   }
 
   static expectDatabaseUpdate(mockDatabase: any, expectedUser: any, expectedData: any) {
@@ -434,6 +388,26 @@ export class TestScenarios {
     expect(result).toEqual(errorResult);
     return { mockLookup };
   }
+
+  // Generic conflict test scenario
+  static createConflictTestScenario(conflictType: 'email' | 'username', value: string) {
+    const conflictError = new UserAlreadyExistsError(conflictType, value);
+    return {
+      conflictError,
+      setup: (mockUser: any, MockedUser: any) =>
+        MockServiceHelpers.setupConflictDuringValidation(mockUser, conflictError, MockedUser)
+    };
+  }
+
+  // Generic database error test scenario
+  static createDatabaseErrorScenario(errorMessage: string) {
+    const error = new Error(errorMessage);
+    return {
+      error,
+      setup: (mockUser: any, updateData: any, MockedUser: any) =>
+        MockServiceHelpers.setupDatabaseError(mockUser, updateData, error, MockedUser)
+    };
+  }
 }
 
-export const SUBSCRIPTION_TIERS: SubscriptionTier[] = ['free', 'seasoned', 'expert', 'master', 'guild'];
+export { SUBSCRIPTION_TIERS } from './shared-test-utilities';

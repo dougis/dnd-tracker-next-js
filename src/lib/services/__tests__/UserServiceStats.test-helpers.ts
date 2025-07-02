@@ -2,6 +2,7 @@ import { UserServiceStats } from '../UserServiceStats';
 import { convertLeansUsersToPublic } from '../UserServiceHelpers';
 import { UserServiceResponseHelpers } from '../UserServiceResponseHelpers';
 import User from '../../models/User';
+import { SharedMockUtilities } from './shared-test-utilities';
 
 /**
  * Test data generators and helper functions for UserServiceStats tests
@@ -50,12 +51,7 @@ export const createMockPublicUser = (index: number = 1) => ({
   },
 });
 
-export const createMockQueryChain = (mockUsers: any[] = []) => ({
-  sort: jest.fn().mockReturnThis(),
-  skip: jest.fn().mockReturnThis(),
-  limit: jest.fn().mockReturnThis(),
-  lean: jest.fn().mockResolvedValue(mockUsers),
-});
+export const createMockQueryChain = SharedMockUtilities.createMockQueryChain;
 
 export const createMockSubscriptionStats = () => [
   { _id: 'free', count: 50 },
@@ -136,14 +132,11 @@ export class StatsTestHelpers {
  */
 export class StatsAssertionHelpers {
   static expectSuccessResult(result: any, expectedData?: any) {
-    expect(result.success).toBe(true);
-    if (expectedData) {
-      expect(result.data).toEqual(expectedData);
-    }
+    SharedMockUtilities.expectStandardSuccessResult(result, expectedData);
   }
 
   static expectErrorResult(result: any, expectHandleCustomError?: any) {
-    expect(result.success).toBe(false);
+    SharedMockUtilities.expectStandardErrorResult(result);
     if (expectHandleCustomError) {
       expect(expectHandleCustomError).toHaveBeenCalled();
     }
