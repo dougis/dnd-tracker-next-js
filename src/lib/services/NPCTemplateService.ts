@@ -1,0 +1,818 @@
+import { ServiceResult, ServiceError } from './types';
+import { 
+  NPCTemplate, 
+  NPCTemplateSchema,
+  TemplateFilter,
+  VariantType,
+  ImportFormat,
+  ChallengeRating,
+  CreatureType,
+  calculateProficiencyBonus,
+  calculateAbilityModifier,
+  parseChallengeRating,
+} from '@/types/npc';
+
+// Built-in NPC templates
+const SYSTEM_TEMPLATES: NPCTemplate[] = [
+  {
+    id: 'system-guard-basic',
+    name: 'Guard',
+    category: 'humanoid',
+    challengeRating: 0.125,
+    size: 'medium',
+    stats: {
+      abilityScores: {
+        strength: 13,
+        dexterity: 12,
+        constitution: 12,
+        intelligence: 10,
+        wisdom: 11,
+        charisma: 10,
+      },
+      hitPoints: { maximum: 11, current: 11 },
+      armorClass: 16,
+      speed: 30,
+      proficiencyBonus: 2,
+      savingThrows: {},
+      skills: { perception: 2 },
+      damageVulnerabilities: [],
+      damageResistances: [],
+      damageImmunities: [],
+      conditionImmunities: [],
+      senses: [],
+      languages: ['Common'],
+    },
+    equipment: [
+      { name: 'Chain shirt', type: 'armor' },
+      { name: 'Shield', type: 'armor' },
+      { name: 'Spear', type: 'weapon' },
+    ],
+    spells: [],
+    actions: [
+      {
+        name: 'Spear',
+        type: 'action',
+        description: 'Melee or Ranged Weapon Attack: +3 to hit, reach 5 ft. or range 20/60 ft., one target. Hit: 4 (1d6 + 1) piercing damage.',
+        attackBonus: 3,
+        damage: '1d6+1 piercing',
+        range: '5 ft. or 20/60 ft.',
+      },
+    ],
+    behavior: {
+      personality: 'Disciplined and alert',
+      motivations: 'Protect assigned area or person',
+      tactics: 'Calls for help, fights defensively',
+    },
+    isSystem: true,
+  },
+  {
+    id: 'system-goblin-basic',
+    name: 'Goblin',
+    category: 'humanoid',
+    challengeRating: 0.25,
+    size: 'small',
+    stats: {
+      abilityScores: {
+        strength: 8,
+        dexterity: 14,
+        constitution: 10,
+        intelligence: 10,
+        wisdom: 8,
+        charisma: 8,
+      },
+      hitPoints: { maximum: 7, current: 7, hitDice: '2d6' },
+      armorClass: 15,
+      speed: 30,
+      proficiencyBonus: 2,
+      savingThrows: {},
+      skills: { stealth: 6 },
+      damageVulnerabilities: [],
+      damageResistances: [],
+      damageImmunities: [],
+      conditionImmunities: [],
+      senses: ['Darkvision 60 ft.'],
+      languages: ['Common', 'Goblin'],
+    },
+    equipment: [
+      { name: 'Leather armor', type: 'armor' },
+      { name: 'Shield', type: 'armor' },
+      { name: 'Scimitar', type: 'weapon' },
+      { name: 'Shortbow', type: 'weapon' },
+      { name: 'Arrows', quantity: 20, type: 'weapon' },
+    ],
+    spells: [],
+    actions: [
+      {
+        name: 'Scimitar',
+        type: 'action',
+        description: 'Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) slashing damage.',
+        attackBonus: 4,
+        damage: '1d6+2 slashing',
+        range: '5 ft.',
+      },
+      {
+        name: 'Shortbow',
+        type: 'action',
+        description: 'Ranged Weapon Attack: +4 to hit, range 80/320 ft., one target. Hit: 5 (1d6 + 2) piercing damage.',
+        attackBonus: 4,
+        damage: '1d6+2 piercing',
+        range: '80/320 ft.',
+      },
+    ],
+    behavior: {
+      personality: 'Sneaky and cowardly',
+      motivations: 'Survival and treasure',
+      tactics: 'Uses stealth, attacks from range, flees when outnumbered',
+    },
+    isSystem: true,
+  },
+  {
+    id: 'system-orc-basic',
+    name: 'Orc',
+    category: 'humanoid',
+    challengeRating: 1,
+    size: 'medium',
+    stats: {
+      abilityScores: {
+        strength: 16,
+        dexterity: 12,
+        constitution: 16,
+        intelligence: 7,
+        wisdom: 11,
+        charisma: 10,
+      },
+      hitPoints: { maximum: 15, current: 15, hitDice: '2d8+6' },
+      armorClass: 13,
+      speed: 30,
+      proficiencyBonus: 2,
+      savingThrows: {},
+      skills: { intimidation: 2 },
+      damageVulnerabilities: [],
+      damageResistances: [],
+      damageImmunities: [],
+      conditionImmunities: [],
+      senses: ['Darkvision 60 ft.'],
+      languages: ['Common', 'Orc'],
+    },
+    equipment: [
+      { name: 'Hide armor', type: 'armor' },
+      { name: 'Greataxe', type: 'weapon' },
+      { name: 'Javelin', quantity: 4, type: 'weapon' },
+    ],
+    spells: [],
+    actions: [
+      {
+        name: 'Greataxe',
+        type: 'action',
+        description: 'Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 9 (1d12 + 3) slashing damage.',
+        attackBonus: 5,
+        damage: '1d12+3 slashing',
+        range: '5 ft.',
+      },
+      {
+        name: 'Javelin',
+        type: 'action',
+        description: 'Melee or Ranged Weapon Attack: +5 to hit, reach 5 ft. or range 30/120 ft., one target. Hit: 6 (1d6 + 3) piercing damage.',
+        attackBonus: 5,
+        damage: '1d6+3 piercing',
+        range: '5 ft. or 30/120 ft.',
+      },
+    ],
+    behavior: {
+      personality: 'Aggressive and brutal',
+      motivations: 'Violence and conquest',
+      tactics: 'Charges into melee, fights to the death',
+    },
+    isSystem: true,
+  },
+  {
+    id: 'system-skeleton-basic',
+    name: 'Skeleton',
+    category: 'undead',
+    challengeRating: 0.25,
+    size: 'medium',
+    stats: {
+      abilityScores: {
+        strength: 10,
+        dexterity: 14,
+        constitution: 15,
+        intelligence: 6,
+        wisdom: 8,
+        charisma: 5,
+      },
+      hitPoints: { maximum: 13, current: 13, hitDice: '2d8+4' },
+      armorClass: 13,
+      speed: 30,
+      proficiencyBonus: 2,
+      savingThrows: {},
+      skills: {},
+      damageVulnerabilities: ['bludgeoning'],
+      damageResistances: [],
+      damageImmunities: ['poison'],
+      conditionImmunities: ['exhaustion', 'poisoned'],
+      senses: ['Darkvision 60 ft.'],
+      languages: [],
+    },
+    equipment: [
+      { name: 'Armor scraps', type: 'armor' },
+      { name: 'Shortsword', type: 'weapon' },
+      { name: 'Shortbow', type: 'weapon' },
+      { name: 'Arrows', quantity: 20, type: 'weapon' },
+    ],
+    spells: [],
+    actions: [
+      {
+        name: 'Shortsword',
+        type: 'action',
+        description: 'Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) piercing damage.',
+        attackBonus: 4,
+        damage: '1d6+2 piercing',
+        range: '5 ft.',
+      },
+      {
+        name: 'Shortbow',
+        type: 'action',
+        description: 'Ranged Weapon Attack: +4 to hit, range 80/320 ft., one target. Hit: 5 (1d6 + 2) piercing damage.',
+        attackBonus: 4,
+        damage: '1d6+2 piercing',
+        range: '80/320 ft.',
+      },
+    ],
+    behavior: {
+      personality: 'Mindless undead',
+      motivations: 'Follows creator\'s commands',
+      tactics: 'Attacks until destroyed',
+    },
+    isSystem: true,
+  },
+  {
+    id: 'system-wolf-basic',
+    name: 'Wolf',
+    category: 'beast',
+    challengeRating: 0.25,
+    size: 'medium',
+    stats: {
+      abilityScores: {
+        strength: 12,
+        dexterity: 15,
+        constitution: 12,
+        intelligence: 3,
+        wisdom: 12,
+        charisma: 6,
+      },
+      hitPoints: { maximum: 11, current: 11, hitDice: '2d8+2' },
+      armorClass: 13,
+      speed: 40,
+      proficiencyBonus: 2,
+      savingThrows: {},
+      skills: { perception: 3, stealth: 4 },
+      damageVulnerabilities: [],
+      damageResistances: [],
+      damageImmunities: [],
+      conditionImmunities: [],
+      senses: ['Keen hearing and smell'],
+      languages: [],
+    },
+    equipment: [],
+    spells: [],
+    actions: [
+      {
+        name: 'Bite',
+        type: 'action',
+        description: 'Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 7 (2d4 + 2) piercing damage. If the target is a creature, it must succeed on a DC 11 Strength saving throw or be knocked prone.',
+        attackBonus: 4,
+        damage: '2d4+2 piercing',
+        range: '5 ft.',
+        savingThrow: { ability: 'strength', dc: 11 },
+      },
+    ],
+    behavior: {
+      personality: 'Pack hunter',
+      motivations: 'Hunt for food',
+      tactics: 'Works with pack to surround prey',
+    },
+    isSystem: true,
+  },
+];
+
+// In-memory store for custom templates (in production, this would be a database)
+let customTemplates: NPCTemplate[] = [];
+let nextCustomId = 1;
+
+export class NPCTemplateService {
+  /**
+   * Get all available NPC templates with optional filtering
+   */
+  static async getTemplates(filters?: TemplateFilter): Promise<ServiceResult<NPCTemplate[]>> {
+    try {
+      let templates = [...SYSTEM_TEMPLATES, ...customTemplates];
+
+      // Apply filters
+      if (filters) {
+        if (filters.category) {
+          templates = templates.filter(t => t.category === filters.category);
+        }
+        if (filters.minCR !== undefined) {
+          templates = templates.filter(t => t.challengeRating >= filters.minCR!);
+        }
+        if (filters.maxCR !== undefined) {
+          templates = templates.filter(t => t.challengeRating <= filters.maxCR!);
+        }
+        if (filters.search) {
+          const searchLower = filters.search.toLowerCase();
+          templates = templates.filter(t => 
+            t.name.toLowerCase().includes(searchLower) ||
+            t.category.toLowerCase().includes(searchLower)
+          );
+        }
+        if (filters.size) {
+          templates = templates.filter(t => t.size === filters.size);
+        }
+        if (filters.isSystem !== undefined) {
+          templates = templates.filter(t => t.isSystem === filters.isSystem);
+        }
+      }
+
+      // Sort by challenge rating, then by name
+      templates.sort((a, b) => {
+        if (a.challengeRating !== b.challengeRating) {
+          return a.challengeRating - b.challengeRating;
+        }
+        return a.name.localeCompare(b.name);
+      });
+
+      return { success: true, data: templates };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to fetch templates',
+          details: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+    }
+  }
+
+  /**
+   * Get a specific template by ID
+   */
+  static async getTemplateById(id: string): Promise<ServiceResult<NPCTemplate>> {
+    try {
+      if (!id || id.trim() === '') {
+        return {
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Template ID is required',
+          },
+        };
+      }
+
+      const template = [...SYSTEM_TEMPLATES, ...customTemplates].find(t => t.id === id);
+      
+      if (!template) {
+        return {
+          success: false,
+          error: {
+            code: 'NOT_FOUND',
+            message: 'Template not found',
+          },
+        };
+      }
+
+      return { success: true, data: template };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to fetch template',
+          details: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+    }
+  }
+
+  /**
+   * Get templates grouped by category
+   */
+  static async getTemplatesByCategory(): Promise<ServiceResult<Record<CreatureType, NPCTemplate[]>>> {
+    try {
+      const templatesResult = await this.getTemplates();
+      if (!templatesResult.success) {
+        return templatesResult as ServiceResult<Record<CreatureType, NPCTemplate[]>>;
+      }
+
+      const grouped: Record<CreatureType, NPCTemplate[]> = {} as Record<CreatureType, NPCTemplate[]>;
+      
+      templatesResult.data!.forEach(template => {
+        if (!grouped[template.category]) {
+          grouped[template.category] = [];
+        }
+        grouped[template.category].push(template);
+      });
+
+      // Only return categories that have templates
+      const filteredGrouped = Object.fromEntries(
+        Object.entries(grouped).filter(([_, templates]) => templates.length > 0)
+      ) as Record<CreatureType, NPCTemplate[]>;
+
+      return { success: true, data: filteredGrouped };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to group templates by category',
+          details: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+    }
+  }
+
+  /**
+   * Create a new custom template
+   */
+  static async createCustomTemplate(templateData: Omit<NPCTemplate, 'id'>): Promise<ServiceResult<NPCTemplate>> {
+    try {
+      // Validate the template data
+      const validationResult = NPCTemplateSchema.omit({ id: true }).safeParse(templateData);
+      
+      if (!validationResult.success) {
+        const errorMessage = validationResult.error.errors
+          .map(err => `${err.path.join('.')}: ${err.message}`)
+          .join(', ');
+        
+        return {
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: errorMessage,
+          },
+        };
+      }
+
+      // Create new template with generated ID
+      const newTemplate: NPCTemplate = {
+        ...validationResult.data,
+        id: `custom-${nextCustomId++}`,
+        isSystem: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      customTemplates.push(newTemplate);
+
+      return { success: true, data: newTemplate };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to create template',
+          details: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+    }
+  }
+
+  /**
+   * Update an existing template
+   */
+  static async updateTemplate(id: string, updateData: Partial<Omit<NPCTemplate, 'id' | 'isSystem'>>): Promise<ServiceResult<NPCTemplate>> {
+    try {
+      const templateIndex = customTemplates.findIndex(t => t.id === id);
+      
+      if (templateIndex === -1) {
+        return {
+          success: false,
+          error: {
+            code: 'NOT_FOUND',
+            message: 'Template not found',
+          },
+        };
+      }
+
+      // Prevent updating system templates
+      if (customTemplates[templateIndex].isSystem) {
+        return {
+          success: false,
+          error: {
+            code: 'FORBIDDEN',
+            message: 'Cannot update system template',
+          },
+        };
+      }
+
+      // Validate update data
+      const partialSchema = NPCTemplateSchema.omit({ id: true, isSystem: true }).partial();
+      const validationResult = partialSchema.safeParse(updateData);
+      
+      if (!validationResult.success) {
+        const errorMessage = validationResult.error.errors
+          .map(err => `${err.path.join('.')}: ${err.message}`)
+          .join(', ');
+        
+        return {
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: errorMessage,
+          },
+        };
+      }
+
+      // Update template
+      const updatedTemplate = {
+        ...customTemplates[templateIndex],
+        ...validationResult.data,
+        updatedAt: new Date(),
+      };
+
+      customTemplates[templateIndex] = updatedTemplate;
+
+      return { success: true, data: updatedTemplate };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to update template',
+          details: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+    }
+  }
+
+  /**
+   * Delete a custom template
+   */
+  static async deleteTemplate(id: string): Promise<ServiceResult<void>> {
+    try {
+      const templateIndex = customTemplates.findIndex(t => t.id === id);
+      
+      if (templateIndex === -1) {
+        // Check if it's a system template
+        const systemTemplate = SYSTEM_TEMPLATES.find(t => t.id === id);
+        if (systemTemplate) {
+          return {
+            success: false,
+            error: {
+              code: 'FORBIDDEN',
+              message: 'Cannot delete system template',
+            },
+          };
+        }
+        
+        return {
+          success: false,
+          error: {
+            code: 'NOT_FOUND',
+            message: 'Template not found',
+          },
+        };
+      }
+
+      customTemplates.splice(templateIndex, 1);
+
+      return { success: true, data: undefined };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to delete template',
+          details: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+    }
+  }
+
+  /**
+   * Import template from external data
+   */
+  static async importTemplate(data: any, format: ImportFormat): Promise<ServiceResult<NPCTemplate>> {
+    try {
+      let templateData: Omit<NPCTemplate, 'id'>;
+
+      switch (format) {
+        case 'json':
+          templateData = this.parseJSONImport(data);
+          break;
+        case 'dndbeyond':
+          templateData = this.parseDnDBeyondImport(data);
+          break;
+        case 'roll20':
+          templateData = this.parseRoll20Import(data);
+          break;
+        case 'custom':
+          templateData = this.parseCustomImport(data);
+          break;
+        default:
+          return {
+            success: false,
+            error: {
+              code: 'UNSUPPORTED_FORMAT',
+              message: 'Unsupported import format',
+            },
+          };
+      }
+
+      // Create the template using the parsed data
+      return await this.createCustomTemplate(templateData);
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'IMPORT_ERROR',
+          message: 'Failed to import template',
+          details: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+    }
+  }
+
+  /**
+   * Apply variant modifiers to a base template
+   */
+  static async applyVariant(baseTemplate: Partial<NPCTemplate>, variantType: VariantType): Promise<ServiceResult<NPCTemplate>> {
+    try {
+      if (!['elite', 'weak', 'champion', 'minion'].includes(variantType)) {
+        return {
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Invalid variant type',
+          },
+        };
+      }
+
+      const variant = { ...baseTemplate };
+
+      switch (variantType) {
+        case 'elite':
+          variant.name = `Elite ${baseTemplate.name}`;
+          variant.challengeRating = this.adjustChallengeRating(baseTemplate.challengeRating!, 1.5);
+          if (variant.stats) {
+            variant.stats.hitPoints.maximum = Math.floor(variant.stats.hitPoints.maximum * 1.5);
+            variant.stats.hitPoints.current = variant.stats.hitPoints.maximum;
+            variant.stats.abilityScores = {
+              ...variant.stats.abilityScores,
+              strength: Math.min(30, variant.stats.abilityScores.strength + 2),
+              dexterity: Math.min(30, variant.stats.abilityScores.dexterity + 2),
+              constitution: Math.min(30, variant.stats.abilityScores.constitution + 2),
+            };
+          }
+          break;
+
+        case 'weak':
+          variant.name = `Weak ${baseTemplate.name}`;
+          variant.challengeRating = this.adjustChallengeRating(baseTemplate.challengeRating!, 0.7);
+          if (variant.stats) {
+            variant.stats.hitPoints.maximum = Math.max(1, Math.floor(variant.stats.hitPoints.maximum * 0.6));
+            variant.stats.hitPoints.current = variant.stats.hitPoints.maximum;
+            variant.stats.abilityScores = {
+              ...variant.stats.abilityScores,
+              strength: Math.max(1, variant.stats.abilityScores.strength - 2),
+              dexterity: Math.max(1, variant.stats.abilityScores.dexterity - 2),
+              constitution: Math.max(1, variant.stats.abilityScores.constitution - 2),
+            };
+          }
+          break;
+
+        case 'champion':
+          variant.name = `${baseTemplate.name} Champion`;
+          variant.challengeRating = this.adjustChallengeRating(baseTemplate.challengeRating!, 2);
+          if (variant.stats) {
+            variant.stats.hitPoints.maximum = Math.floor(variant.stats.hitPoints.maximum * 2);
+            variant.stats.hitPoints.current = variant.stats.hitPoints.maximum;
+            variant.stats.armorClass += 2;
+            // Add legendary actions or special abilities
+          }
+          break;
+
+        case 'minion':
+          variant.name = `${baseTemplate.name} Minion`;
+          variant.challengeRating = this.adjustChallengeRating(baseTemplate.challengeRating!, 0.5);
+          if (variant.stats) {
+            variant.stats.hitPoints.maximum = 1;
+            variant.stats.hitPoints.current = 1;
+          }
+          break;
+      }
+
+      return { success: true, data: variant as NPCTemplate };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to apply variant',
+          details: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+    }
+  }
+
+  // Private helper methods
+  private static parseJSONImport(data: any): Omit<NPCTemplate, 'id'> {
+    // Basic validation for JSON import
+    if (!data.name) throw new Error('name is required');
+    if (data.challengeRating === undefined && data.challengeRating !== 0) throw new Error('challengeRating is required');
+
+    return {
+      name: data.name,
+      category: data.creatureType || data.category || 'humanoid',
+      challengeRating: data.challengeRating,
+      size: data.size || 'medium',
+      stats: {
+        abilityScores: data.abilityScores || {
+          strength: 10, dexterity: 10, constitution: 10,
+          intelligence: 10, wisdom: 10, charisma: 10,
+        },
+        hitPoints: data.hitPoints || { maximum: 1, current: 1 },
+        armorClass: data.armorClass || 10,
+        speed: data.speed || 30,
+        proficiencyBonus: calculateProficiencyBonus(data.challengeRating),
+        savingThrows: data.savingThrows || {},
+        skills: data.skills || {},
+        damageVulnerabilities: data.damageVulnerabilities || [],
+        damageResistances: data.damageResistances || [],
+        damageImmunities: data.damageImmunities || [],
+        conditionImmunities: data.conditionImmunities || [],
+        senses: data.senses || [],
+        languages: data.languages || [],
+      },
+      equipment: (data.equipment || []).map((item: any) => 
+        typeof item === 'string' ? { name: item } : item
+      ),
+      spells: data.spells || [],
+      actions: data.actions || [],
+      behavior: data.behavior,
+      isSystem: false,
+    };
+  }
+
+  private static parseDnDBeyondImport(data: any): Omit<NPCTemplate, 'id'> {
+    // Parse D&D Beyond format
+    const challengeRating = typeof data.cr === 'string' ? parseChallengeRating(data.cr) : data.cr;
+
+    return {
+      name: data.name,
+      category: 'humanoid', // Default, should be parsed from data
+      challengeRating,
+      size: 'medium',
+      stats: {
+        abilityScores: {
+          strength: data.stats?.str || 10,
+          dexterity: data.stats?.dex || 10,
+          constitution: data.stats?.con || 10,
+          intelligence: data.stats?.int || 10,
+          wisdom: data.stats?.wis || 10,
+          charisma: data.stats?.cha || 10,
+        },
+        hitPoints: { maximum: data.hp || 1, current: data.hp || 1 },
+        armorClass: data.ac || 10,
+        speed: data.speed || 30,
+        proficiencyBonus: calculateProficiencyBonus(challengeRating),
+        damageVulnerabilities: [],
+        damageResistances: [],
+        damageImmunities: [],
+        conditionImmunities: [],
+        senses: [],
+        languages: [],
+      },
+      equipment: [],
+      spells: [],
+      actions: [],
+    };
+  }
+
+  private static parseRoll20Import(data: any): Omit<NPCTemplate, 'id'> {
+    // Parse Roll20 format - placeholder implementation
+    throw new Error('Roll20 import not yet implemented');
+  }
+
+  private static parseCustomImport(data: any): Omit<NPCTemplate, 'id'> {
+    // Parse custom format - placeholder implementation
+    throw new Error('Custom import not yet implemented');
+  }
+
+  private static adjustChallengeRating(baseCR: ChallengeRating, multiplier: number): ChallengeRating {
+    if (baseCR === 0) return multiplier > 1 ? 0.125 : 0;
+    
+    const adjusted = baseCR * multiplier;
+    
+    // Handle fractional CRs
+    if (adjusted <= 0) return 0;
+    if (adjusted < 0.125) return 0;
+    if (adjusted < 0.25) return 0.125;
+    if (adjusted < 0.5) return 0.25;
+    if (adjusted < 1) return 0.5;
+    
+    // Handle integer CRs
+    const rounded = Math.round(adjusted);
+    return Math.min(30, Math.max(1, rounded)) as ChallengeRating;
+  }
+}
