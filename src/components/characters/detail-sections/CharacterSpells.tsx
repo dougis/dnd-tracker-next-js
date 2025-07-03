@@ -2,25 +2,12 @@ import React from 'react';
 import type { ICharacter } from '@/lib/models/Character';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { getOrdinalSuffix } from './character-utils';
 
 interface CharacterSpellsProps {
   character: ICharacter;
 }
 
-const getOrdinalSuffix = (num: number): string => {
-  const j = num % 10;
-  const k = num % 100;
-  if (j === 1 && k !== 11) {
-    return 'st';
-  }
-  if (j === 2 && k !== 12) {
-    return 'nd';
-  }
-  if (j === 3 && k !== 13) {
-    return 'rd';
-  }
-  return 'th';
-};
 
 export function CharacterSpells({ character }: CharacterSpellsProps) {
   if (!character.spells || character.spells.length === 0) {
