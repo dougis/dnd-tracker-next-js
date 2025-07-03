@@ -6,6 +6,20 @@ const compat = new FlatCompat({
 
 /** @type {import('eslint').Linter.Config[]} */
 module.exports = [
+  // Global ignores
+  {
+    ignores: [
+      '.next/**/*',
+      'node_modules/**/*',
+      'dist/**/*',
+      'build/**/*',
+      'coverage/**/*',
+      'out/**/*',
+      '*.config.js',
+      'plato_report/**/*'
+    ]
+  },
+  // Main configuration
   ...compat.extends('next/core-web-vitals', 'prettier'),
   {
     rules: {
