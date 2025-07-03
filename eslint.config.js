@@ -1,8 +1,10 @@
 const { FlatCompat } = require('@eslint/eslintrc');
+
 const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
+/** @type {import('eslint').Linter.Config[]} */
 module.exports = [
   ...compat.extends('next/core-web-vitals', 'prettier'),
   {
@@ -21,12 +23,6 @@ module.exports = [
       'newline-after-var': 'off',
       'newline-per-chained-call': 'off',
       'no-trailing-spaces': 'error'
-    },
-    languageOptions: {
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module'
-      }
     }
   }
 ];
