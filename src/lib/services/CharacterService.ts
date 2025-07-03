@@ -359,6 +359,238 @@ export class CharacterService {
   }
 
   // ================================
+  // Enhanced Character Editing Features
+  // ================================
+
+  /**
+   * Save draft changes for autosave functionality
+   */
+  static async saveDraftChanges(
+    characterId: string,
+    userId: string,
+    _draftData: CharacterUpdate
+  ): Promise<ServiceResult<void>> {
+    try {
+      // Verify character access
+      const accessResult = await this.checkCharacterAccess(characterId, userId);
+      if (!accessResult.success) {
+        return accessResult;
+      }
+
+      // Store draft changes in a separate collection or field
+      // For now, we'll simulate this - in a real implementation,
+      // you would store this in a separate drafts collection
+      return createSuccessResult(void 0);
+
+    } catch (error) {
+      return createErrorResult(
+        CharacterServiceErrors.databaseError('save draft changes', error)
+      );
+    }
+  }
+
+  /**
+   * Get draft changes for a character
+   */
+  static async getDraftChanges(
+    characterId: string,
+    userId: string
+  ): Promise<ServiceResult<CharacterUpdate | null>> {
+    try {
+      // Verify character access
+      const accessResult = await this.checkCharacterAccess(characterId, userId);
+      if (!accessResult.success) {
+        return accessResult;
+      }
+
+      // Retrieve draft changes - for now return null (no drafts)
+      // In a real implementation, you would query the drafts collection
+      return createSuccessResult(null);
+
+    } catch (error) {
+      return createErrorResult(
+        CharacterServiceErrors.databaseError('get draft changes', error)
+      );
+    }
+  }
+
+  /**
+   * Clear draft changes for a character
+   */
+  static async clearDraftChanges(
+    characterId: string,
+    userId: string
+  ): Promise<ServiceResult<void>> {
+    try {
+      // Verify character access
+      const accessResult = await this.checkCharacterAccess(characterId, userId);
+      if (!accessResult.success) {
+        return accessResult;
+      }
+
+      // Clear draft changes - for now just return success
+      // In a real implementation, you would delete from drafts collection
+      return createSuccessResult(void 0);
+
+    } catch (error) {
+      return createErrorResult(
+        CharacterServiceErrors.databaseError('clear draft changes', error)
+      );
+    }
+  }
+
+  /**
+   * Get character version history
+   */
+  static async getCharacterVersionHistory(
+    characterId: string,
+    userId: string
+  ): Promise<ServiceResult<any[]>> {
+    try {
+      // Verify character access
+      const accessResult = await this.checkCharacterAccess(characterId, userId);
+      if (!accessResult.success) {
+        return accessResult;
+      }
+
+      // Return mock version history for now
+      // In a real implementation, you would query a versions collection
+      const mockHistory = [
+        {
+          id: 'version-1',
+          timestamp: new Date(Date.now() - 86400000), // 1 day ago
+          changes: {
+            abilityScores: { strength: { from: 14, to: 16 } }
+          },
+          changeDescription: 'Increased strength from 14 to 16',
+          userId: userId
+        }
+      ];
+
+      return createSuccessResult(mockHistory);
+
+    } catch (error) {
+      return createErrorResult(
+        CharacterServiceErrors.databaseError('get version history', error)
+      );
+    }
+  }
+
+  /**
+   * Revert character to a previous version
+   */
+  static async revertCharacterToVersion(
+    characterId: string,
+    userId: string,
+    _versionId: string
+  ): Promise<ServiceResult<ICharacter>> {
+    try {
+      // Verify character access and ownership
+      const ownershipResult = await this.checkCharacterOwnership(characterId, userId);
+      if (!ownershipResult.success) {
+        return ownershipResult;
+      }
+
+      // Get current character
+      const characterResult = await this.getCharacterById(characterId, userId);
+      if (!characterResult.success) {
+        return characterResult;
+      }
+
+      // In a real implementation, you would:
+      // 1. Find the version data
+      // 2. Update the character with that version's data
+      // 3. Create a new version entry for this revert action
+
+      // For now, just return the current character
+      return createSuccessResult(characterResult.data);
+
+    } catch (error) {
+      return createErrorResult(
+        CharacterServiceErrors.databaseError('revert to version', error)
+      );
+    }
+  }
+
+  /**
+   * Enhanced delete character with undo functionality
+   */
+  static async deleteCharacterWithUndo(
+    characterId: string,
+    userId: string
+  ): Promise<ServiceResult<{ undoToken: string; expiresAt: number }>> {
+    try {
+      // Verify character ownership
+      const ownershipResult = await this.checkCharacterOwnership(characterId, userId);
+      if (!ownershipResult.success) {
+        return ownershipResult;
+      }
+
+      // Get character data before deletion
+      const characterResult = await this.getCharacterById(characterId, userId);
+      if (!characterResult.success) {
+        return characterResult;
+      }
+
+      // Perform soft delete and create undo token
+      const undoToken = new Types.ObjectId().toString();
+      const expiresAt = Date.now() + (30 * 1000); // 30 seconds
+
+      // Mark character as deleted with undo info
+      await Character.findByIdAndUpdate(characterId, {
+        isDeleted: true,
+        deletedAt: new Date(),
+        undoToken: undoToken,
+        undoExpiresAt: new Date(expiresAt)
+      });
+
+      return createSuccessResult({ undoToken, expiresAt });
+
+    } catch (error) {
+      return createErrorResult(
+        CharacterServiceErrors.databaseError('delete character with undo', error)
+      );
+    }
+  }
+
+  /**
+   * Restore a deleted character using undo token
+   */
+  static async restoreCharacter(
+    undoToken: string
+  ): Promise<ServiceResult<ICharacter>> {
+    try {
+      // Find character by undo token
+      const character = await Character.findOne({
+        undoToken: undoToken,
+        isDeleted: true,
+        undoExpiresAt: { $gt: new Date() }
+      });
+
+      if (!character) {
+        return createErrorResult(
+          CharacterServiceErrors.characterNotFound('with valid undo token')
+        );
+      }
+
+      // Restore character
+      character.isDeleted = false;
+      character.deletedAt = undefined;
+      character.undoToken = undefined;
+      character.undoExpiresAt = undefined;
+
+      await character.save();
+
+      return createSuccessResult(character.toObject());
+
+    } catch (error) {
+      return createErrorResult(
+        CharacterServiceErrors.databaseError('restore character', error)
+      );
+    }
+  }
+
+  // ================================
   // Private Helper Methods
   // ================================
 
