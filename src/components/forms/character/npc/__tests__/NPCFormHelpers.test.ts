@@ -1,56 +1,58 @@
 import { NPCFormHelpers } from '../NPCFormHelpers';
 import { NPCTemplate } from '@/types/npc';
 
+const createMockTemplate = (): NPCTemplate => ({
+  id: 'test-1',
+  name: 'Test Goblin',
+  category: 'humanoid',
+  challengeRating: 0.25,
+  size: 'small',
+  stats: {
+    abilityScores: {
+      strength: 8,
+      dexterity: 14,
+      constitution: 10,
+      intelligence: 10,
+      wisdom: 8,
+      charisma: 8,
+    },
+    hitPoints: { maximum: 7, current: 7, temporary: 0 },
+    armorClass: 15,
+    speed: 30,
+    proficiencyBonus: 2,
+    savingThrows: {},
+    skills: {},
+    damageVulnerabilities: [],
+    damageResistances: [],
+    damageImmunities: [],
+    conditionImmunities: [],
+    senses: ['darkvision 60 ft.'],
+    languages: ['Common', 'Goblin'],
+  },
+  equipment: [
+    { name: 'Scimitar', type: 'weapon', quantity: 1, magical: false },
+    { name: 'Shortbow', type: 'weapon', quantity: 1, magical: false },
+  ],
+  spells: [],
+  actions: [
+    {
+      name: 'Scimitar',
+      type: 'melee',
+      description: 'Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) slashing damage.',
+      attackBonus: 4,
+      damage: '1d6 + 2',
+    },
+  ],
+  behavior: {
+    personality: 'Cowardly but cunning',
+    motivations: 'Survival and treasure',
+    tactics: 'Hit and run attacks',
+  },
+  isSystem: true,
+});
+
 describe('NPCFormHelpers', () => {
-  const mockTemplate: NPCTemplate = {
-    id: 'test-1',
-    name: 'Test Goblin',
-    category: 'humanoid',
-    challengeRating: 0.25,
-    size: 'small',
-    stats: {
-      abilityScores: {
-        strength: 8,
-        dexterity: 14,
-        constitution: 10,
-        intelligence: 10,
-        wisdom: 8,
-        charisma: 8,
-      },
-      hitPoints: { maximum: 7, current: 7, temporary: 0 },
-      armorClass: 15,
-      speed: 30,
-      proficiencyBonus: 2,
-      savingThrows: {},
-      skills: {},
-      damageVulnerabilities: [],
-      damageResistances: [],
-      damageImmunities: [],
-      conditionImmunities: [],
-      senses: ['darkvision 60 ft.'],
-      languages: ['Common', 'Goblin'],
-    },
-    equipment: [
-      { name: 'Scimitar', type: 'weapon', quantity: 1, magical: false },
-      { name: 'Shortbow', type: 'weapon', quantity: 1, magical: false },
-    ],
-    spells: [],
-    actions: [
-      {
-        name: 'Scimitar',
-        type: 'melee',
-        description: 'Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) slashing damage.',
-        attackBonus: 4,
-        damage: '1d6 + 2',
-      },
-    ],
-    behavior: {
-      personality: 'Cowardly but cunning',
-      motivations: 'Survival and treasure',
-      tactics: 'Hit and run attacks',
-    },
-    isSystem: true,
-  };
+  const mockTemplate = createMockTemplate();
 
   describe('templateToFormData', () => {
     it('converts template to form data correctly', () => {

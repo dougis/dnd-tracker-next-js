@@ -14,18 +14,26 @@ export class NPCTemplateImporter {
    * Parse imported data based on format
    */
   static parseImportData(data: any, format: ImportFormat): Omit<NPCTemplate, 'id'> {
-    switch (format) {
-      case 'json':
-        return this.parseJSONImport(data);
-      case 'dndbeyond':
-        return this.parseDnDBeyondImport(data);
-      case 'roll20':
-        return this.parseRoll20Import(data);
-      case 'custom':
-        return this.parseCustomImport(data);
-      default:
-        throw new Error(`Unsupported import format: ${format}`);
+    const parser = this.getFormatParser(format);
+    return parser(data);
+  }
+
+  /**
+   * Get appropriate parser function for format
+   */
+  private static getFormatParser(format: ImportFormat): (_data: any) => Omit<NPCTemplate, 'id'> {
+    const parsers = {
+      json: this.parseJSONImport.bind(this),
+      dndbeyond: this.parseDnDBeyondImport.bind(this),
+      roll20: this.parseRoll20Import.bind(this),
+      custom: this.parseCustomImport.bind(this),
+    };
+
+    if (!(format in parsers)) {
+      throw new Error(`Unsupported import format: ${format}`);
     }
+
+    return parsers[format as keyof typeof parsers];
   }
 
   private static parseJSONImport(data: any): Omit<NPCTemplate, 'id'> {
