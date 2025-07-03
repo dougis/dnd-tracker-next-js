@@ -208,7 +208,7 @@ export function createServerValidator<T extends FieldValues>(
         }
 
         return { success: false, errors: result.errors, status: 400 };
-      } catch (error) {
+      } catch {
         return {
           success: false,
           errors: { _root: 'Invalid JSON in request body' },

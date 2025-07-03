@@ -85,7 +85,7 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
         setAutosaveSuccess(true);
         setTimeout(() => setAutosaveSuccess(false), 2000);
       }
-    } catch (err) {
+    } catch {
       // Silently fail autosave to not disrupt user experience
     } finally {
       setAutosaving(false);
@@ -99,7 +99,7 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
         setDraftChanges(result.data);
         setShowDraftIndicator(true);
       }
-    } catch (err) {
+    } catch {
       // Silently fail loading draft changes
     }
   };
@@ -117,7 +117,7 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
       await CharacterService.clearDraftChanges(characterId, userId);
       setDraftChanges(null);
       setShowDraftIndicator(false);
-    } catch (err) {
+    } catch {
       // Silently fail clearing draft changes
     }
   };
@@ -151,7 +151,7 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
       } else {
         setStats(statsResult.data);
       }
-    } catch (err) {
+    } catch {
       setError('Unexpected error occurred');
     } finally {
       setLoading(false);
@@ -175,7 +175,7 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
       } else {
         setError(result.error?.message || 'Failed to save changes');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to save changes');
     } finally {
       setSaving(false);

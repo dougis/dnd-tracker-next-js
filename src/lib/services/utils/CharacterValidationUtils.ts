@@ -70,7 +70,7 @@ export class CharacterValidationUtils {
       }
 
       return createSuccessResult(validationResult.data);
-    } catch (error) {
+    } catch {
       return createErrorResult(
         CharacterServiceErrors.invalidCharacterData([{ message: 'Validation failed' }])
       );
@@ -90,7 +90,7 @@ export class CharacterValidationUtils {
       }
 
       return createSuccessResult(validationResult.data);
-    } catch (error) {
+    } catch {
       return createErrorResult(
         CharacterServiceErrors.invalidCharacterData([{ message: 'Update validation failed' }])
       );

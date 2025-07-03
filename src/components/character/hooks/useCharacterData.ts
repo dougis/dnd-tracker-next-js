@@ -29,7 +29,7 @@ export function useCharacterData(userId: string): UseCharacterDataResult {
       } else {
         setError(result.error?.message || 'Failed to load characters');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to load characters');
     } finally {
       setLoading(false);

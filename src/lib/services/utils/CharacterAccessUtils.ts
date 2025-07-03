@@ -165,7 +165,7 @@ export class CharacterAccessUtils {
           { isPublic: true },
         ],
       };
-    } catch (error) {
+    } catch {
       // Fallback for testing environments
       return {
         $or: [
@@ -182,7 +182,7 @@ export class CharacterAccessUtils {
   static createOwnershipFilter(userId: string): { ownerId: Types.ObjectId | string } {
     try {
       return { ownerId: new Types.ObjectId(userId) };
-    } catch (error) {
+    } catch {
       // Fallback for testing environments where Types.ObjectId might not work
       return { ownerId: userId };
     }

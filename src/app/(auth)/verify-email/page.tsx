@@ -47,7 +47,7 @@ export default function VerifyEmailPage() {
       }
 
       setState('success');
-    } catch (error) {
+    } catch {
       setState('error');
       setError('An unexpected error occurred');
     }
@@ -81,7 +81,7 @@ export default function VerifyEmailPage() {
       }
 
       setState('sent');
-    } catch (error) {
+    } catch {
       setState('error');
       setError('An unexpected error occurred');
     }

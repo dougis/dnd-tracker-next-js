@@ -45,7 +45,7 @@ export function CharacterVersionHistory({ characterId, userId }: CharacterVersio
       }
 
       setVersions(result.data || []);
-    } catch (err) {
+    } catch {
       setError('Unexpected error occurred');
     } finally {
       setLoading(false);
@@ -76,7 +76,7 @@ export function CharacterVersionHistory({ characterId, userId }: CharacterVersio
       } else {
         setError(result.error?.message || 'Failed to revert character');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to revert character');
     } finally {
       setRevertingVersion(null);
