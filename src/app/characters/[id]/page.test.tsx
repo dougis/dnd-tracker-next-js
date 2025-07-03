@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
 import { CharacterDetailClient } from './CharacterDetailClient';
 import { CharacterService } from '@/lib/services/CharacterService';
@@ -50,8 +51,9 @@ describe('CharacterDetailClient', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Test Character')).toBeInTheDocument();
-      expect(screen.getByText('human')).toBeInTheDocument();
-      expect(screen.getByText('Level 5')).toBeInTheDocument();
+      expect(screen.getByText((content, _element) => {
+        return content.includes('human') && content.includes('Level 5');
+      })).toBeInTheDocument();
     });
   });
 
@@ -78,7 +80,7 @@ describe('CharacterDetailClient', () => {
 
   it('should display character stats section', async () => {
     const testCharacter = createMockCharacter({
-      hitPoints: { max: 45, current: 35, temp: 0 },
+      hitPoints: { maximum: 45, current: 35, temporary: 0 },
       armorClass: 15,
       speed: 30,
     });
@@ -98,6 +100,8 @@ describe('CharacterDetailClient', () => {
   });
 
   it('should display ability scores section', async () => {
+    const user = userEvent.setup();
+
     const testCharacter = createMockCharacter({
       abilityScores: {
         strength: 16,
@@ -116,6 +120,16 @@ describe('CharacterDetailClient', () => {
 
     render(<CharacterDetailClient id="test-id" />);
 
+    // First wait for character to load
+    await waitFor(() => {
+      expect(screen.getByText('Test Character')).toBeInTheDocument();
+    });
+
+    // Find and click on Stats tab using userEvent
+    const statsTab = screen.getByRole('tab', { name: 'Stats' });
+    await user.click(statsTab);
+
+    // Then wait for ability scores to appear
     await waitFor(() => {
       expect(screen.getByText('16 (+3)')).toBeInTheDocument(); // STR
       expect(screen.getByText('14 (+2)')).toBeInTheDocument(); // DEX
@@ -123,7 +137,7 @@ describe('CharacterDetailClient', () => {
       expect(screen.getByText('12 (+1)')).toBeInTheDocument(); // INT
       expect(screen.getByText('10 (+0)')).toBeInTheDocument(); // WIS
       expect(screen.getByText('8 (-1)')).toBeInTheDocument(); // CHA
-    });
+    }, { timeout: 3000 });
   });
 
   it('should display multiclass information', async () => {
@@ -179,21 +193,25 @@ describe('CharacterDetailClient', () => {
 
     render(<CharacterDetailClient id="test-id" />);
 
+    // First wait for character to load
     await waitFor(() => {
-      const editButton = screen.getByText('Edit Character');
-      editButton.click();
+      expect(screen.getByText('Test Character')).toBeInTheDocument();
     });
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/characters/507f1f77bcf86cd799439011/edit');
+    // Click the edit button
+    fireEvent.click(screen.getByText('Edit Character'));
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/characters/test-id/edit');
   });
 
   it('should display equipment section when character has equipment', async () => {
+    const user = userEvent.setup();
+
     const testCharacter = createMockCharacter({
       equipment: [
         {
           name: 'Longsword',
-          type: 'Weapon',
-          rarity: 'Common',
+          quantity: 1,
           weight: 3,
           value: 15,
           equipped: true,
@@ -201,8 +219,7 @@ describe('CharacterDetailClient', () => {
         },
         {
           name: 'Chain Mail',
-          type: 'Armor',
-          rarity: 'Common',
+          quantity: 1,
           weight: 55,
           value: 75,
           equipped: true,
@@ -218,31 +235,42 @@ describe('CharacterDetailClient', () => {
 
     render(<CharacterDetailClient id="test-id" />);
 
+    // First wait for character to load
     await waitFor(() => {
-      expect(screen.getByText('Equipment')).toBeInTheDocument();
+      expect(screen.getByText('Test Character')).toBeInTheDocument();
+    });
+
+    // Click on Equipment tab using userEvent
+    const equipmentTab = screen.getByRole('tab', { name: 'Equipment' });
+    await user.click(equipmentTab);
+
+    // Then wait for equipment to appear
+    await waitFor(() => {
       expect(screen.getByText('Longsword')).toBeInTheDocument();
       expect(screen.getByText('Chain Mail')).toBeInTheDocument();
     });
   });
 
   it('should display spells section when character has spells', async () => {
+    const user = userEvent.setup();
+
     const testCharacter = createMockCharacter({
       spells: [
         {
           name: 'Fireball',
           level: 3,
           school: 'Evocation',
-          components: ['V', 'S', 'M'],
+          components: 'V, S, M',
           duration: 'Instantaneous',
-          prepared: true,
+          isPrepared: true,
         },
         {
           name: 'Magic Missile',
           level: 1,
           school: 'Evocation',
-          components: ['V', 'S'],
+          components: 'V, S',
           duration: 'Instantaneous',
-          prepared: true,
+          isPrepared: true,
         },
       ],
     });
@@ -254,14 +282,25 @@ describe('CharacterDetailClient', () => {
 
     render(<CharacterDetailClient id="test-id" />);
 
+    // First wait for character to load
     await waitFor(() => {
-      expect(screen.getByText('Spells')).toBeInTheDocument();
+      expect(screen.getByText('Test Character')).toBeInTheDocument();
+    });
+
+    // Click on Spells tab using userEvent
+    const spellsTab = screen.getByRole('tab', { name: 'Spells' });
+    await user.click(spellsTab);
+
+    // Then wait for spells to appear
+    await waitFor(() => {
       expect(screen.getByText('Fireball')).toBeInTheDocument();
       expect(screen.getByText('Magic Missile')).toBeInTheDocument();
     });
   });
 
   it('should display notes section when character has notes', async () => {
+    const user = userEvent.setup();
+
     const testCharacter = createMockCharacter({
       notes: 'This is a test character with some notes.',
     });
@@ -273,13 +312,24 @@ describe('CharacterDetailClient', () => {
 
     render(<CharacterDetailClient id="test-id" />);
 
+    // First wait for character to load
     await waitFor(() => {
-      expect(screen.getByText('Notes')).toBeInTheDocument();
+      expect(screen.getByText('Test Character')).toBeInTheDocument();
+    });
+
+    // Click on Notes tab using userEvent
+    const notesTab = screen.getByRole('tab', { name: 'Notes' });
+    await user.click(notesTab);
+
+    // Then wait for notes content to appear
+    await waitFor(() => {
       expect(screen.getByText('This is a test character with some notes.')).toBeInTheDocument();
     });
   });
 
   it('should display backstory section when character has backstory', async () => {
+    const user = userEvent.setup();
+
     const testCharacter = createMockCharacter({
       backstory: 'Born in a small village, this character has a rich history.',
     });
@@ -291,6 +341,16 @@ describe('CharacterDetailClient', () => {
 
     render(<CharacterDetailClient id="test-id" />);
 
+    // First wait for character to load
+    await waitFor(() => {
+      expect(screen.getByText('Test Character')).toBeInTheDocument();
+    });
+
+    // Click on Notes tab using userEvent
+    const notesTab = screen.getByRole('tab', { name: 'Notes' });
+    await user.click(notesTab);
+
+    // Then wait for backstory content to appear
     await waitFor(() => {
       expect(screen.getByText('Backstory')).toBeInTheDocument();
       expect(screen.getByText('Born in a small village, this character has a rich history.')).toBeInTheDocument();

@@ -1,0 +1,5 @@
+
+> dnd-tracker-next-js@0.2.0 lint
+> next lint --format json
+
+✔ No ESLint warnings or errors
