@@ -1,4 +1,4 @@
-/* eslint-disable react/jsx-no-literals */
+
 'use client';
 
 import ButtonShowcase from '@/components/showcase/ButtonShowcase';
