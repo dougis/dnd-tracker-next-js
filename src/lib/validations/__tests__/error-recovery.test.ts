@@ -46,6 +46,15 @@ describe('CharacterDataRecovery', () => {
     },
     hitPoints: { maximum: 45, current: 45, temporary: 0 },
     armorClass: 16,
+    proficiencyBonus: 3,
+    savingThrows: {
+      strength: false,
+      dexterity: false,
+      constitution: false,
+      intelligence: false,
+      wisdom: false,
+      charisma: false,
+    },
   };
 
   beforeEach(() => {
@@ -271,12 +280,12 @@ describe('CharacterDataRecovery', () => {
       const lowStatsData = {
         ...mockCharacterData,
         abilityScores: {
-          strength: 1,
-          dexterity: 1,
-          constitution: 1,
-          intelligence: 1,
-          wisdom: 1,
-          charisma: 1,
+          strength: 0,
+          dexterity: 0,
+          constitution: 0,
+          intelligence: 0,
+          wisdom: 0,
+          charisma: 0,
         },
       };
 
@@ -385,6 +394,15 @@ describe('useCharacterAutoSave Hook', () => {
     },
     hitPoints: { maximum: 45, current: 45, temporary: 0 },
     armorClass: 16,
+    proficiencyBonus: 3,
+    savingThrows: {
+      strength: false,
+      dexterity: false,
+      constitution: false,
+      intelligence: false,
+      wisdom: false,
+      charisma: false,
+    },
   };
 
   beforeEach(() => {
