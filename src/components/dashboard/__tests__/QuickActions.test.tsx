@@ -1,34 +1,26 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { QuickActions } from '../QuickActions';
-
-const mockHandlers = {
-  onCreateCharacter: jest.fn(),
-  onCreateEncounter: jest.fn(),
-  onStartCombat: jest.fn(),
-};
+import { screen, fireEvent } from '@testing-library/react';
+import { createMockHandlers, renderQuickActions, expectElementToBeInDocument, expectTextToBeInDocument, expectButtonToBeInDocument, type MockHandlers } from './test-helpers';
 
 describe('QuickActions', () => {
+  let mockHandlers: MockHandlers;
+
   beforeEach(() => {
-    jest.clearAllMocks();
+    mockHandlers = createMockHandlers();
   });
 
   describe('Component Rendering', () => {
     test('renders without errors', () => {
-      render(<QuickActions {...mockHandlers} />);
-
-      expect(screen.getByTestId('quick-actions')).toBeInTheDocument();
+      renderQuickActions(mockHandlers);
+      expectElementToBeInDocument('quick-actions');
     });
 
     test('renders section title', () => {
-      render(<QuickActions {...mockHandlers} />);
-
-      expect(screen.getByText('Quick Actions')).toBeInTheDocument();
+      renderQuickActions(mockHandlers);
+      expectTextToBeInDocument('Quick Actions');
     });
 
     test('applies correct card styling', () => {
-      render(<QuickActions {...mockHandlers} />);
-
+      renderQuickActions(mockHandlers);
       const quickActions = screen.getByTestId('quick-actions');
       expect(quickActions).toHaveClass('rounded-xl', 'border', 'bg-card');
     });
@@ -36,16 +28,14 @@ describe('QuickActions', () => {
 
   describe('Action Buttons', () => {
     test('renders all action buttons', () => {
-      render(<QuickActions {...mockHandlers} />);
-
-      expect(screen.getByRole('button', { name: /create character/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /create encounter/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /start combat/i })).toBeInTheDocument();
+      renderQuickActions(mockHandlers);
+      expectButtonToBeInDocument(/create character/i);
+      expectButtonToBeInDocument(/create encounter/i);
+      expectButtonToBeInDocument(/start combat/i);
     });
 
     test('buttons have correct styling', () => {
-      render(<QuickActions {...mockHandlers} />);
-
+      renderQuickActions(mockHandlers);
       const buttons = screen.getAllByRole('button');
       buttons.forEach((button) => {
         expect(button).toHaveClass('w-full', 'justify-start');
@@ -53,56 +43,42 @@ describe('QuickActions', () => {
     });
 
     test('buttons display icons and text', () => {
-      render(<QuickActions {...mockHandlers} />);
-
-      const createCharacterBtn = screen.getByRole('button', { name: /create character/i });
-      const createEncounterBtn = screen.getByRole('button', { name: /create encounter/i });
-      const startCombatBtn = screen.getByRole('button', { name: /start combat/i });
-
-      expect(createCharacterBtn).toHaveTextContent('Create Character');
-      expect(createEncounterBtn).toHaveTextContent('Create Encounter');
-      expect(startCombatBtn).toHaveTextContent('Start Combat');
+      renderQuickActions(mockHandlers);
+      expectTextToBeInDocument('Create Character');
+      expectTextToBeInDocument('Create Encounter');
+      expectTextToBeInDocument('Start Combat');
     });
   });
 
   describe('Button Interactions', () => {
     test('create character button calls handler when clicked', () => {
-      render(<QuickActions {...mockHandlers} />);
-
+      renderQuickActions(mockHandlers);
       const createCharacterBtn = screen.getByRole('button', { name: /create character/i });
       fireEvent.click(createCharacterBtn);
-
       expect(mockHandlers.onCreateCharacter).toHaveBeenCalledTimes(1);
     });
 
     test('create encounter button calls handler when clicked', () => {
-      render(<QuickActions {...mockHandlers} />);
-
+      renderQuickActions(mockHandlers);
       const createEncounterBtn = screen.getByRole('button', { name: /create encounter/i });
       fireEvent.click(createEncounterBtn);
-
       expect(mockHandlers.onCreateEncounter).toHaveBeenCalledTimes(1);
     });
 
     test('start combat button calls handler when clicked', () => {
-      render(<QuickActions {...mockHandlers} />);
-
+      renderQuickActions(mockHandlers);
       const startCombatBtn = screen.getByRole('button', { name: /start combat/i });
       fireEvent.click(startCombatBtn);
-
       expect(mockHandlers.onStartCombat).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('Accessibility', () => {
     test('buttons are keyboard accessible', () => {
-      render(<QuickActions {...mockHandlers} />);
-
+      renderQuickActions(mockHandlers);
       const createCharacterBtn = screen.getByRole('button', { name: /create character/i });
       createCharacterBtn.focus();
       fireEvent.keyDown(createCharacterBtn, { key: 'Enter', code: 'Enter' });
-
-      // Button click handler should still be called when pressing Enter
       expect(createCharacterBtn).toHaveFocus();
     });
   });

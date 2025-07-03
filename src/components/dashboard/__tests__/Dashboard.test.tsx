@@ -1,24 +1,20 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { Dashboard } from '../Dashboard';
+import { screen } from '@testing-library/react';
+import { renderDashboard, expectElementToBeInDocument, expectTextToBeInDocument, expectButtonToBeInDocument } from './test-helpers';
 
 describe('Dashboard', () => {
   describe('Component Rendering', () => {
     test('renders without errors', () => {
-      render(<Dashboard />);
-
-      expect(screen.getByTestId('dashboard')).toBeInTheDocument();
+      renderDashboard();
+      expectElementToBeInDocument('dashboard');
     });
 
     test('renders dashboard title', () => {
-      render(<Dashboard />);
-
+      renderDashboard();
       expect(screen.getByRole('heading', { name: /dashboard/i })).toBeInTheDocument();
     });
 
     test('applies correct layout classes', () => {
-      render(<Dashboard />);
-
+      renderDashboard();
       const dashboard = screen.getByTestId('dashboard');
       expect(dashboard).toHaveClass('p-6', 'space-y-6');
     });
@@ -26,22 +22,19 @@ describe('Dashboard', () => {
 
   describe('Summary Cards', () => {
     test('renders summary cards component', () => {
-      render(<Dashboard />);
-
-      expect(screen.getByTestId('summary-cards')).toBeInTheDocument();
+      renderDashboard();
+      expectElementToBeInDocument('summary-cards');
     });
 
     test('summary cards display correct titles', () => {
-      render(<Dashboard />);
-
-      expect(screen.getByText('Characters')).toBeInTheDocument();
-      expect(screen.getByText('Encounters')).toBeInTheDocument();
-      expect(screen.getByText('Active Sessions')).toBeInTheDocument();
+      renderDashboard();
+      expectTextToBeInDocument('Characters');
+      expectTextToBeInDocument('Encounters');
+      expectTextToBeInDocument('Active Sessions');
     });
 
     test('summary cards display placeholder statistics', () => {
-      render(<Dashboard />);
-
+      renderDashboard();
       const characterValue = screen.getByTestId('characters-value');
       const encounterValue = screen.getByTestId('encounters-value');
       const sessionsValue = screen.getByTestId('active-sessions-value');
@@ -54,30 +47,26 @@ describe('Dashboard', () => {
 
   describe('Quick Actions', () => {
     test('renders quick action toolbar', () => {
-      render(<Dashboard />);
-
-      expect(screen.getByTestId('quick-actions')).toBeInTheDocument();
+      renderDashboard();
+      expectElementToBeInDocument('quick-actions');
     });
 
     test('displays all quick action buttons', () => {
-      render(<Dashboard />);
-
-      expect(screen.getByRole('button', { name: /create character/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /create encounter/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /start combat/i })).toBeInTheDocument();
+      renderDashboard();
+      expectButtonToBeInDocument(/create character/i);
+      expectButtonToBeInDocument(/create encounter/i);
+      expectButtonToBeInDocument(/start combat/i);
     });
   });
 
   describe('Dashboard Widgets', () => {
     test('renders widget grid container', () => {
-      render(<Dashboard />);
-
-      expect(screen.getByTestId('dashboard-widgets')).toBeInTheDocument();
+      renderDashboard();
+      expectElementToBeInDocument('dashboard-widgets');
     });
 
     test('widget grid has correct responsive classes', () => {
-      render(<Dashboard />);
-
+      renderDashboard();
       const widgetGrid = screen.getByTestId('dashboard-widgets');
       expect(widgetGrid).toHaveClass('grid', 'grid-cols-1', 'lg:grid-cols-2', 'gap-6');
     });
@@ -85,23 +74,20 @@ describe('Dashboard', () => {
 
   describe('Recent Activity Feed', () => {
     test('renders activity feed section', () => {
-      render(<Dashboard />);
-
-      expect(screen.getByTestId('activity-feed')).toBeInTheDocument();
+      renderDashboard();
+      expectElementToBeInDocument('activity-feed');
     });
 
     test('displays empty state when no activity', () => {
-      render(<Dashboard />);
-
-      expect(screen.getByText(/no recent activity/i)).toBeInTheDocument();
+      renderDashboard();
+      expectTextToBeInDocument(/no recent activity/i);
     });
   });
 
   describe('Customization Features', () => {
     test('renders customization button', () => {
-      render(<Dashboard />);
-
-      expect(screen.getByRole('button', { name: /customize dashboard/i })).toBeInTheDocument();
+      renderDashboard();
+      expectButtonToBeInDocument(/customize dashboard/i);
     });
   });
 });

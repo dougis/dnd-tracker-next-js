@@ -14,25 +14,14 @@ export function Dashboard() {
     activeSessions: 0,
   };
 
-  const handleCreateCharacter = () => {
-    // Placeholder - will implement navigation later
-    console.log('Create character clicked');
+  const createHandler = (action: string) => () => {
+    console.log(`${action} clicked`);
   };
 
-  const handleCreateEncounter = () => {
-    // Placeholder - will implement navigation later
-    console.log('Create encounter clicked');
-  };
-
-  const handleStartCombat = () => {
-    // Placeholder - will implement navigation later
-    console.log('Start combat clicked');
-  };
-
-  const handleCustomizeDashboard = () => {
-    // Placeholder - will implement customization later
-    console.log('Customize dashboard clicked');
-  };
+  const handleCreateCharacter = createHandler('Create character');
+  const handleCreateEncounter = createHandler('Create encounter');
+  const handleStartCombat = createHandler('Start combat');
+  const handleCustomizeDashboard = createHandler('Customize dashboard');
 
   return (
     <div data-testid="dashboard" className="p-6 space-y-6">
