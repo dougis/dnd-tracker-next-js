@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FormModal } from '@/components/modals/FormModal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,26 +11,23 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Minus, Search, FileText, Download, Upload } from 'lucide-react';
+import { Plus, Minus, Search, Download, Upload } from 'lucide-react';
 import { CharacterService } from '@/lib/services/CharacterService';
 import { NPCTemplateService } from '@/lib/services/NPCTemplateService';
-import { 
-  NPCCreationData, 
-  NPCTemplate, 
-  CreatureType, 
-  Size, 
+import {
+  NPCTemplate,
+  CreatureType,
+  Size,
   ChallengeRating,
   formatChallengeRating,
-  parseChallengeRating,
   calculateProficiencyBonus,
   calculateAbilityModifier,
   VariantType
 } from '@/types/npc';
-import { NPCCreationSchema } from '@/types/npc';
 
 interface NPCCreationFormProps {
   ownerId: string;
-  onSuccess: (npcId: string) => void;
+  onSuccess: (_npcId: string) => void;
   onCancel: () => void;
   isOpen: boolean;
 }
@@ -51,6 +48,7 @@ interface NPCFormData {
   hitPoints: {
     maximum: number;
     current: number;
+    temporary: number;
     hitDice?: string;
   };
   armorClass: number;
@@ -61,8 +59,19 @@ interface NPCFormData {
   conditionImmunities: string[];
   senses: string[];
   languages: string[];
-  equipment: Array<{ name: string; type?: 'weapon' | 'armor' | 'tool' | 'misc' }>;
+  equipment: Array<{ name: string; type?: 'weapon' | 'armor' | 'tool' | 'misc'; quantity?: number; magical?: boolean }>;
   spells: Array<{ name: string; level: number }>;
+  actions: Array<{
+    name: string;
+    type: 'action' | 'bonus_action' | 'reaction' | 'legendary_action' | 'lair_action';
+    description: string;
+    attackBonus?: number;
+    damage?: string;
+    range?: string;
+    recharge?: string;
+    uses?: number;
+    maxUses?: number;
+  }>;
   isSpellcaster: boolean;
   personality?: string;
   motivations?: string;
@@ -87,6 +96,7 @@ const initialFormData: NPCFormData = {
   hitPoints: {
     maximum: 1,
     current: 1,
+    temporary: 0,
   },
   armorClass: 10,
   speed: 30,
@@ -98,6 +108,7 @@ const initialFormData: NPCFormData = {
   languages: [],
   equipment: [],
   spells: [],
+  actions: [],
   isSpellcaster: false,
   isVariant: false,
 };
@@ -122,19 +133,19 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
   // Filter templates based on search and category
   useEffect(() => {
     let filtered = templates;
-    
+
     if (templateCategory !== 'all') {
       filtered = filtered.filter(t => t.category === templateCategory);
     }
-    
+
     if (templateSearch) {
       const searchLower = templateSearch.toLowerCase();
-      filtered = filtered.filter(t => 
+      filtered = filtered.filter(t =>
         t.name.toLowerCase().includes(searchLower) ||
         t.category.toLowerCase().includes(searchLower)
       );
     }
-    
+
     setFilteredTemplates(filtered);
   }, [templates, templateSearch, templateCategory]);
 
@@ -146,7 +157,7 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
       } else {
         console.error('Failed to load NPC templates');
       }
-    } catch (error) {
+    } catch {
       console.error('Error loading templates');
     }
   };
@@ -160,7 +171,7 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
       size: template.size || 'medium',
       challengeRating: template.challengeRating,
       abilityScores: { ...template.stats.abilityScores },
-      hitPoints: { ...template.stats.hitPoints },
+      hitPoints: { ...template.stats.hitPoints, temporary: 0 },
       armorClass: template.stats.armorClass,
       speed: template.stats.speed,
       damageVulnerabilities: [...(template.stats.damageVulnerabilities || [])],
@@ -169,8 +180,19 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
       conditionImmunities: [...(template.stats.conditionImmunities || [])],
       senses: [...(template.stats.senses || [])],
       languages: [...(template.stats.languages || [])],
-      equipment: template.equipment?.map(eq => ({ name: eq.name, type: eq.type })) || [],
+      equipment: template.equipment?.map(eq => ({ name: eq.name, type: eq.type, quantity: eq.quantity || 1, magical: eq.magical || false })) || [],
       spells: template.spells?.map(spell => ({ name: spell.name, level: spell.level })) || [],
+      actions: template.actions?.map(action => ({
+        name: action.name,
+        type: action.type,
+        description: action.description,
+        attackBonus: action.attackBonus,
+        damage: action.damage,
+        range: action.range,
+        recharge: action.recharge,
+        uses: action.uses,
+        maxUses: action.maxUses,
+      })) || [],
       isSpellcaster: (template.spells?.length || 0) > 0,
       personality: template.behavior?.personality,
       motivations: template.behavior?.motivations,
@@ -183,7 +205,7 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
   const handleJsonImport = () => {
     try {
       const parsed = JSON.parse(jsonImportData);
-      
+
       // Map the imported data to our form structure
       setFormData({
         ...formData,
@@ -191,15 +213,15 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
         creatureType: parsed.creatureType || parsed.category || 'humanoid',
         challengeRating: parsed.challengeRating || 0.5,
         abilityScores: parsed.abilityScores || formData.abilityScores,
-        hitPoints: parsed.hitPoints || formData.hitPoints,
+        hitPoints: parsed.hitPoints ? { ...parsed.hitPoints, temporary: parsed.hitPoints.temporary || 0 } : formData.hitPoints,
         armorClass: parsed.armorClass || 10,
         speed: parsed.speed || 30,
       });
-      
+
       setJsonImportData('');
       setActiveTab('basic');
       console.log('NPC data imported successfully');
-    } catch (error) {
+    } catch {
       console.error('Invalid JSON data');
     }
   };
@@ -214,7 +236,7 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
 
   const applyVariant = async () => {
     if (!selectedTemplate || !formData.variantType) return;
-    
+
     try {
       const result = await NPCTemplateService.applyVariant(selectedTemplate, formData.variantType);
       if (result.success) {
@@ -224,11 +246,11 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
           name: variant.name!,
           challengeRating: variant.challengeRating!,
           abilityScores: { ...variant.stats!.abilityScores },
-          hitPoints: { ...variant.stats!.hitPoints },
+          hitPoints: { ...variant.stats!.hitPoints, temporary: 0 },
         }));
         console.log(`Applied ${formData.variantType} variant`);
       }
-    } catch (error) {
+    } catch {
       console.error('Failed to apply variant');
     }
   };
@@ -236,7 +258,7 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
   const addEquipment = () => {
     setFormData(prev => ({
       ...prev,
-      equipment: [...prev.equipment, { name: '', type: 'misc' }],
+      equipment: [...prev.equipment, { name: '', type: 'misc', quantity: 1, magical: false }],
     }));
   };
 
@@ -300,51 +322,78 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
 
     setIsSubmitting(true);
     try {
-      const npcData: NPCCreationData = {
+      // Map NPC data to Character schema for compatibility
+      const characterData = {
         name: formData.name,
         type: 'npc' as const,
-        creatureType: formData.creatureType,
+        race: 'custom' as const, // Map creatureType to custom race
+        customRace: formData.creatureType,
         size: formData.size,
-        challengeRating: formData.challengeRating,
+        classes: [{ class: 'fighter' as const, level: 1, hitDie: 10 }], // Default class for NPCs
         abilityScores: formData.abilityScores,
         hitPoints: formData.hitPoints,
         armorClass: formData.armorClass,
         speed: formData.speed,
-        damageVulnerabilities: formData.damageVulnerabilities,
-        damageResistances: formData.damageResistances,
-        damageImmunities: formData.damageImmunities,
-        conditionImmunities: formData.conditionImmunities,
-        senses: formData.senses,
-        languages: formData.languages,
-        equipment: formData.equipment.map(eq => ({ name: eq.name, type: eq.type })),
-        spells: formData.spells.map(spell => ({ name: spell.name, level: spell.level })),
-        isSpellcaster: formData.isSpellcaster,
-        behavior: {
-          personality: formData.personality,
-          motivations: formData.motivations,
-          tactics: formData.tactics,
+        proficiencyBonus: calculateProficiencyBonus(formData.challengeRating),
+        savingThrows: {
+          strength: false,
+          dexterity: false,
+          constitution: false,
+          intelligence: false,
+          wisdom: false,
+          charisma: false,
         },
-        isVariant: formData.isVariant,
-        variantType: formData.variantType,
+        skills: {},
+        equipment: formData.equipment.map(eq => ({
+          name: eq.name,
+          quantity: eq.quantity || 1,
+          equipped: true,
+          magical: eq.magical || false
+        })),
+        spells: formData.spells.map(spell => ({
+          name: spell.name,
+          level: spell.level,
+          description: '',
+          range: '',
+          school: 'evocation' as const,
+          castingTime: '',
+          components: { verbal: false, somatic: false, material: false },
+          duration: '',
+          prepared: true,
+        })),
+        // Store NPC-specific data in notes or custom fields
+        notes: JSON.stringify({
+          creatureType: formData.creatureType,
+          challengeRating: formData.challengeRating,
+          damageVulnerabilities: formData.damageVulnerabilities,
+          damageResistances: formData.damageResistances,
+          damageImmunities: formData.damageImmunities,
+          conditionImmunities: formData.conditionImmunities,
+          senses: formData.senses,
+          languages: formData.languages,
+          equipment: formData.equipment,
+          spells: formData.spells,
+          actions: formData.actions,
+          isSpellcaster: formData.isSpellcaster,
+          behavior: {
+            personality: formData.personality,
+            motivations: formData.motivations,
+            tactics: formData.tactics,
+          },
+          isVariant: formData.isVariant,
+          variantType: formData.variantType,
+        }),
       };
 
-      // Validate with schema
-      const validationResult = NPCCreationSchema.safeParse(npcData);
-      if (!validationResult.success) {
-        const firstError = validationResult.error.errors[0];
-        console.error(`Validation error: ${firstError.message}`);
-        return;
-      }
+      const result = await CharacterService.createCharacter(ownerId, characterData);
 
-      const result = await CharacterService.createCharacter(ownerId, validationResult.data);
-      
       if (result.success) {
         console.log('NPC created successfully');
         onSuccess(result.data.id);
       } else {
         console.error(result.error?.message || 'Failed to create NPC');
       }
-    } catch (error) {
+    } catch {
       console.error('Error creating NPC');
     } finally {
       setIsSubmitting(false);
@@ -355,17 +404,13 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
   const suggestedAC = 10 + calculateAbilityModifier(formData.abilityScores.dexterity);
 
   return (
-    <FormModal
-      isOpen={isOpen}
-      onClose={onCancel}
-      config={{
-        title: "Create NPC",
-        size: "4xl",
-        showCancelButton: false
-      }}
-    >
-      <div className="space-y-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Create NPC</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="template">Templates</TabsTrigger>
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
@@ -418,8 +463,8 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
             <div className="max-h-96 overflow-y-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {filteredTemplates.map((template) => (
-                  <Card 
-                    key={template.id} 
+                  <Card
+                    key={template.id}
                     className={`cursor-pointer transition-colors hover:bg-accent ${
                       selectedTemplate?.id === template.id ? 'ring-2 ring-primary' : ''
                     }`}
@@ -439,7 +484,7 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
                         <div>HP: {template.stats.hitPoints.maximum}</div>
                         <div>AC: {template.stats.armorClass}</div>
                         {template.behavior?.personality && (
-                          <div className="mt-2 italic">"{template.behavior.personality}"</div>
+                          <div className="mt-2 italic">&ldquo;{template.behavior.personality}&rdquo;</div>
                         )}
                       </div>
                     </CardContent>
@@ -456,7 +501,7 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
                   Import from D&D Beyond
                 </Button>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="json-import">Paste JSON Data</Label>
                 <Textarea
@@ -466,8 +511,8 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
                   onChange={(e) => setJsonImportData(e.target.value)}
                   rows={4}
                 />
-                <Button 
-                  onClick={handleJsonImport} 
+                <Button
+                  onClick={handleJsonImport}
                   disabled={!jsonImportData.trim()}
                   size="sm"
                 >
@@ -481,8 +526,8 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
               <Button variant="outline" onClick={() => setActiveTab('basic')}>
                 Create Custom NPC
               </Button>
-              <Button 
-                onClick={() => setActiveTab('basic')} 
+              <Button
+                onClick={() => setActiveTab('basic')}
                 disabled={!selectedTemplate}
               >
                 Start from Template
@@ -506,8 +551,8 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
 
               <div className="space-y-2">
                 <Label htmlFor="creature-type">Creature Type *</Label>
-                <Select 
-                  value={formData.creatureType} 
+                <Select
+                  value={formData.creatureType}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, creatureType: value as CreatureType }))}
                 >
                   <SelectTrigger id="creature-type" aria-required="true">
@@ -535,8 +580,8 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
 
               <div className="space-y-2">
                 <Label htmlFor="size">Size</Label>
-                <Select 
-                  value={formData.size} 
+                <Select
+                  value={formData.size}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, size: value as Size }))}
                 >
                   <SelectTrigger id="size">
@@ -584,8 +629,8 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
               {formData.isVariant && (
                 <div className="space-y-2">
                   <Label htmlFor="variant-type">Variant Type</Label>
-                  <Select 
-                    value={formData.variantType} 
+                  <Select
+                    value={formData.variantType}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, variantType: value as VariantType }))}
                   >
                     <SelectTrigger id="variant-type">
@@ -674,7 +719,7 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
                       const max = parseInt(e.target.value) || 1;
                       setFormData(prev => ({
                         ...prev,
-                        hitPoints: { maximum: max, current: max }
+                        hitPoints: { maximum: max, current: max, temporary: prev.hitPoints.temporary }
                       }));
                     }}
                     aria-required="true"
@@ -787,7 +832,7 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
                   Add Equipment
                 </Button>
               </div>
-              
+
               {formData.equipment.map((item, index) => (
                 <div key={index} className="flex gap-2 items-center">
                   <Input
@@ -800,8 +845,8 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
                     }}
                     aria-label="Equipment item"
                   />
-                  <Select 
-                    value={item.type || 'misc'} 
+                  <Select
+                    value={item.type || 'misc'}
                     onValueChange={(value) => {
                       const newEquipment = [...formData.equipment];
                       newEquipment[index] = { ...item, type: value as any };
@@ -818,9 +863,9 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
                       <SelectItem value="misc">Misc</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button 
-                    onClick={() => removeEquipment(index)} 
-                    size="sm" 
+                  <Button
+                    onClick={() => removeEquipment(index)}
+                    size="sm"
                     variant="outline"
                     aria-label="Remove equipment"
                   >
@@ -877,9 +922,9 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
                         className="w-20"
                         aria-label="Spell level"
                       />
-                      <Button 
-                        onClick={() => removeSpell(index)} 
-                        size="sm" 
+                      <Button
+                        onClick={() => removeSpell(index)}
+                        size="sm"
                         variant="outline"
                         aria-label="Remove spell"
                       >
@@ -894,7 +939,7 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
             {/* Behavior & Notes */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Behavior & Notes</h3>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="personality">Personality</Label>
                 <Textarea
@@ -944,7 +989,8 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
             </div>
           </TabsContent>
         </Tabs>
-      </div>
-    </FormModal>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

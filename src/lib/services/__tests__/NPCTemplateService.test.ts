@@ -33,9 +33,9 @@ describe('NPCTemplateService', () => {
     });
 
     it('filters templates by challenge rating range', async () => {
-      const result = await NPCTemplateService.getTemplates({ 
-        minCR: 0.5, 
-        maxCR: 2 
+      const result = await NPCTemplateService.getTemplates({
+        minCR: 0.5,
+        maxCR: 2
       });
 
       expect(result.success).toBe(true);

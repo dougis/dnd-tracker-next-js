@@ -21,7 +21,7 @@ export const CreatureTypeSchema = z.enum([
 // NPC sizes
 export const SizeSchema = z.enum([
   'tiny',
-  'small', 
+  'small',
   'medium',
   'large',
   'huge',

@@ -1,6 +1,6 @@
-import { ServiceResult, ServiceError } from './types';
-import { 
-  NPCTemplate, 
+import { ServiceResult } from './CharacterServiceErrors';
+import {
+  NPCTemplate,
   NPCTemplateSchema,
   TemplateFilter,
   VariantType,
@@ -8,7 +8,6 @@ import {
   ChallengeRating,
   CreatureType,
   calculateProficiencyBonus,
-  calculateAbilityModifier,
   parseChallengeRating,
 } from '@/types/npc';
 
@@ -29,7 +28,7 @@ const SYSTEM_TEMPLATES: NPCTemplate[] = [
         wisdom: 11,
         charisma: 10,
       },
-      hitPoints: { maximum: 11, current: 11 },
+      hitPoints: { maximum: 11, current: 11, temporary: 0 },
       armorClass: 16,
       speed: 30,
       proficiencyBonus: 2,
@@ -43,9 +42,9 @@ const SYSTEM_TEMPLATES: NPCTemplate[] = [
       languages: ['Common'],
     },
     equipment: [
-      { name: 'Chain shirt', type: 'armor' },
-      { name: 'Shield', type: 'armor' },
-      { name: 'Spear', type: 'weapon' },
+      { name: 'Chain shirt', type: 'armor', quantity: 1, magical: false },
+      { name: 'Shield', type: 'armor', quantity: 1, magical: false },
+      { name: 'Spear', type: 'weapon', quantity: 1, magical: false },
     ],
     spells: [],
     actions: [
@@ -80,7 +79,7 @@ const SYSTEM_TEMPLATES: NPCTemplate[] = [
         wisdom: 8,
         charisma: 8,
       },
-      hitPoints: { maximum: 7, current: 7, hitDice: '2d6' },
+      hitPoints: { maximum: 7, current: 7, temporary: 0, hitDice: '2d6' },
       armorClass: 15,
       speed: 30,
       proficiencyBonus: 2,
@@ -94,11 +93,11 @@ const SYSTEM_TEMPLATES: NPCTemplate[] = [
       languages: ['Common', 'Goblin'],
     },
     equipment: [
-      { name: 'Leather armor', type: 'armor' },
-      { name: 'Shield', type: 'armor' },
-      { name: 'Scimitar', type: 'weapon' },
-      { name: 'Shortbow', type: 'weapon' },
-      { name: 'Arrows', quantity: 20, type: 'weapon' },
+      { name: 'Leather armor', type: 'armor', quantity: 1, magical: false },
+      { name: 'Shield', type: 'armor', quantity: 1, magical: false },
+      { name: 'Scimitar', type: 'weapon', quantity: 1, magical: false },
+      { name: 'Shortbow', type: 'weapon', quantity: 1, magical: false },
+      { name: 'Arrows', quantity: 20, type: 'weapon', magical: false },
     ],
     spells: [],
     actions: [
@@ -141,7 +140,7 @@ const SYSTEM_TEMPLATES: NPCTemplate[] = [
         wisdom: 11,
         charisma: 10,
       },
-      hitPoints: { maximum: 15, current: 15, hitDice: '2d8+6' },
+      hitPoints: { maximum: 15, current: 15, temporary: 0, hitDice: '2d8+6' },
       armorClass: 13,
       speed: 30,
       proficiencyBonus: 2,
@@ -155,9 +154,9 @@ const SYSTEM_TEMPLATES: NPCTemplate[] = [
       languages: ['Common', 'Orc'],
     },
     equipment: [
-      { name: 'Hide armor', type: 'armor' },
-      { name: 'Greataxe', type: 'weapon' },
-      { name: 'Javelin', quantity: 4, type: 'weapon' },
+      { name: 'Hide armor', type: 'armor', quantity: 1, magical: false },
+      { name: 'Greataxe', type: 'weapon', quantity: 1, magical: false },
+      { name: 'Javelin', quantity: 4, type: 'weapon', magical: false },
     ],
     spells: [],
     actions: [
@@ -200,7 +199,7 @@ const SYSTEM_TEMPLATES: NPCTemplate[] = [
         wisdom: 8,
         charisma: 5,
       },
-      hitPoints: { maximum: 13, current: 13, hitDice: '2d8+4' },
+      hitPoints: { maximum: 13, current: 13, temporary: 0, hitDice: '2d8+4' },
       armorClass: 13,
       speed: 30,
       proficiencyBonus: 2,
@@ -214,10 +213,10 @@ const SYSTEM_TEMPLATES: NPCTemplate[] = [
       languages: [],
     },
     equipment: [
-      { name: 'Armor scraps', type: 'armor' },
-      { name: 'Shortsword', type: 'weapon' },
-      { name: 'Shortbow', type: 'weapon' },
-      { name: 'Arrows', quantity: 20, type: 'weapon' },
+      { name: 'Armor scraps', type: 'armor', quantity: 1, magical: false },
+      { name: 'Shortsword', type: 'weapon', quantity: 1, magical: false },
+      { name: 'Shortbow', type: 'weapon', quantity: 1, magical: false },
+      { name: 'Arrows', quantity: 20, type: 'weapon', magical: false },
     ],
     spells: [],
     actions: [
@@ -260,7 +259,7 @@ const SYSTEM_TEMPLATES: NPCTemplate[] = [
         wisdom: 12,
         charisma: 6,
       },
-      hitPoints: { maximum: 11, current: 11, hitDice: '2d8+2' },
+      hitPoints: { maximum: 11, current: 11, temporary: 0, hitDice: '2d8+2' },
       armorClass: 13,
       speed: 40,
       proficiencyBonus: 2,
@@ -296,10 +295,11 @@ const SYSTEM_TEMPLATES: NPCTemplate[] = [
 ];
 
 // In-memory store for custom templates (in production, this would be a database)
-let customTemplates: NPCTemplate[] = [];
+const customTemplates: NPCTemplate[] = [];
 let nextCustomId = 1;
 
 export class NPCTemplateService {
+
   /**
    * Get all available NPC templates with optional filtering
    */
@@ -320,7 +320,7 @@ export class NPCTemplateService {
         }
         if (filters.search) {
           const searchLower = filters.search.toLowerCase();
-          templates = templates.filter(t => 
+          templates = templates.filter(t =>
             t.name.toLowerCase().includes(searchLower) ||
             t.category.toLowerCase().includes(searchLower)
           );
@@ -348,7 +348,7 @@ export class NPCTemplateService {
         error: {
           code: 'INTERNAL_ERROR',
           message: 'Failed to fetch templates',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { message: error instanceof Error ? error.message : 'Unknown error' },
         },
       };
     }
@@ -370,7 +370,7 @@ export class NPCTemplateService {
       }
 
       const template = [...SYSTEM_TEMPLATES, ...customTemplates].find(t => t.id === id);
-      
+
       if (!template) {
         return {
           success: false,
@@ -388,7 +388,7 @@ export class NPCTemplateService {
         error: {
           code: 'INTERNAL_ERROR',
           message: 'Failed to fetch template',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { message: error instanceof Error ? error.message : 'Unknown error' },
         },
       };
     }
@@ -405,7 +405,7 @@ export class NPCTemplateService {
       }
 
       const grouped: Record<CreatureType, NPCTemplate[]> = {} as Record<CreatureType, NPCTemplate[]>;
-      
+
       templatesResult.data!.forEach(template => {
         if (!grouped[template.category]) {
           grouped[template.category] = [];
@@ -425,7 +425,7 @@ export class NPCTemplateService {
         error: {
           code: 'INTERNAL_ERROR',
           message: 'Failed to group templates by category',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { message: error instanceof Error ? error.message : 'Unknown error' },
         },
       };
     }
@@ -438,12 +438,12 @@ export class NPCTemplateService {
     try {
       // Validate the template data
       const validationResult = NPCTemplateSchema.omit({ id: true }).safeParse(templateData);
-      
+
       if (!validationResult.success) {
         const errorMessage = validationResult.error.errors
           .map(err => `${err.path.join('.')}: ${err.message}`)
           .join(', ');
-        
+
         return {
           success: false,
           error: {
@@ -471,7 +471,7 @@ export class NPCTemplateService {
         error: {
           code: 'INTERNAL_ERROR',
           message: 'Failed to create template',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { message: error instanceof Error ? error.message : 'Unknown error' },
         },
       };
     }
@@ -483,7 +483,7 @@ export class NPCTemplateService {
   static async updateTemplate(id: string, updateData: Partial<Omit<NPCTemplate, 'id' | 'isSystem'>>): Promise<ServiceResult<NPCTemplate>> {
     try {
       const templateIndex = customTemplates.findIndex(t => t.id === id);
-      
+
       if (templateIndex === -1) {
         return {
           success: false,
@@ -508,12 +508,12 @@ export class NPCTemplateService {
       // Validate update data
       const partialSchema = NPCTemplateSchema.omit({ id: true, isSystem: true }).partial();
       const validationResult = partialSchema.safeParse(updateData);
-      
+
       if (!validationResult.success) {
         const errorMessage = validationResult.error.errors
           .map(err => `${err.path.join('.')}: ${err.message}`)
           .join(', ');
-        
+
         return {
           success: false,
           error: {
@@ -539,7 +539,7 @@ export class NPCTemplateService {
         error: {
           code: 'INTERNAL_ERROR',
           message: 'Failed to update template',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { message: error instanceof Error ? error.message : 'Unknown error' },
         },
       };
     }
@@ -551,7 +551,7 @@ export class NPCTemplateService {
   static async deleteTemplate(id: string): Promise<ServiceResult<void>> {
     try {
       const templateIndex = customTemplates.findIndex(t => t.id === id);
-      
+
       if (templateIndex === -1) {
         // Check if it's a system template
         const systemTemplate = SYSTEM_TEMPLATES.find(t => t.id === id);
@@ -564,7 +564,7 @@ export class NPCTemplateService {
             },
           };
         }
-        
+
         return {
           success: false,
           error: {
@@ -583,7 +583,7 @@ export class NPCTemplateService {
         error: {
           code: 'INTERNAL_ERROR',
           message: 'Failed to delete template',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { message: error instanceof Error ? error.message : 'Unknown error' },
         },
       };
     }
@@ -627,7 +627,7 @@ export class NPCTemplateService {
         error: {
           code: 'IMPORT_ERROR',
           message: 'Failed to import template',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { message: error instanceof Error ? error.message : 'Unknown error' },
         },
       };
     }
@@ -709,7 +709,7 @@ export class NPCTemplateService {
         error: {
           code: 'INTERNAL_ERROR',
           message: 'Failed to apply variant',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: { message: error instanceof Error ? error.message : 'Unknown error' },
         },
       };
     }
@@ -731,7 +731,7 @@ export class NPCTemplateService {
           strength: 10, dexterity: 10, constitution: 10,
           intelligence: 10, wisdom: 10, charisma: 10,
         },
-        hitPoints: data.hitPoints || { maximum: 1, current: 1 },
+        hitPoints: data.hitPoints ? { ...data.hitPoints, temporary: data.hitPoints.temporary || 0 } : { maximum: 1, current: 1, temporary: 0 },
         armorClass: data.armorClass || 10,
         speed: data.speed || 30,
         proficiencyBonus: calculateProficiencyBonus(data.challengeRating),
@@ -744,7 +744,7 @@ export class NPCTemplateService {
         senses: data.senses || [],
         languages: data.languages || [],
       },
-      equipment: (data.equipment || []).map((item: any) => 
+      equipment: (data.equipment || []).map((item: any) =>
         typeof item === 'string' ? { name: item } : item
       ),
       spells: data.spells || [],
@@ -772,7 +772,7 @@ export class NPCTemplateService {
           wisdom: data.stats?.wis || 10,
           charisma: data.stats?.cha || 10,
         },
-        hitPoints: { maximum: data.hp || 1, current: data.hp || 1 },
+        hitPoints: { maximum: data.hp || 1, current: data.hp || 1, temporary: 0 },
         armorClass: data.ac || 10,
         speed: data.speed || 30,
         proficiencyBonus: calculateProficiencyBonus(challengeRating),
@@ -786,31 +786,32 @@ export class NPCTemplateService {
       equipment: [],
       spells: [],
       actions: [],
+      isSystem: false,
     };
   }
 
-  private static parseRoll20Import(data: any): Omit<NPCTemplate, 'id'> {
+  private static parseRoll20Import(_data: any): Omit<NPCTemplate, 'id'> {
     // Parse Roll20 format - placeholder implementation
     throw new Error('Roll20 import not yet implemented');
   }
 
-  private static parseCustomImport(data: any): Omit<NPCTemplate, 'id'> {
+  private static parseCustomImport(_data: any): Omit<NPCTemplate, 'id'> {
     // Parse custom format - placeholder implementation
     throw new Error('Custom import not yet implemented');
   }
 
   private static adjustChallengeRating(baseCR: ChallengeRating, multiplier: number): ChallengeRating {
     if (baseCR === 0) return multiplier > 1 ? 0.125 : 0;
-    
+
     const adjusted = baseCR * multiplier;
-    
+
     // Handle fractional CRs
     if (adjusted <= 0) return 0;
     if (adjusted < 0.125) return 0;
     if (adjusted < 0.25) return 0.125;
     if (adjusted < 0.5) return 0.25;
     if (adjusted < 1) return 0.5;
-    
+
     // Handle integer CRs
     const rounded = Math.round(adjusted);
     return Math.min(30, Math.max(1, rounded)) as ChallengeRating;

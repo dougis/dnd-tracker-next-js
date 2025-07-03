@@ -495,7 +495,7 @@ describe('NPCCreationForm', () => {
       });
 
       await user.type(jsonInput, mockNPCData);
-      
+
       const importButton = screen.getByRole('button', { name: /import/i });
       await user.click(importButton);
 
