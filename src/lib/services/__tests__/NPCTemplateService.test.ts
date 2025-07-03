@@ -1,5 +1,13 @@
 import { NPCTemplateService } from '../NPCTemplateService';
 import { NPCTemplate } from '@/types/npc';
+import {
+  createBaseTemplate,
+  createMinimalTemplate,
+  createTemplateWithEquipment,
+  createTemplateWithBehavior,
+  expectValidTemplateStructure,
+  expectErrorWithCode
+} from './test-helpers';
 
 describe('NPCTemplateService', () => {
   beforeEach(() => {
@@ -14,13 +22,8 @@ describe('NPCTemplateService', () => {
       expect(result.data).toBeInstanceOf(Array);
       expect(result.data!.length).toBeGreaterThan(0);
 
-      // Check template structure
-      const template = result.data![0];
-      expect(template).toHaveProperty('id');
-      expect(template).toHaveProperty('name');
-      expect(template).toHaveProperty('category');
-      expect(template).toHaveProperty('challengeRating');
-      expect(template).toHaveProperty('stats');
+      // Check template structure using helper
+      expectValidTemplateStructure(result.data![0]);
     });
 
     it('filters templates by category', async () => {
@@ -95,16 +98,14 @@ describe('NPCTemplateService', () => {
     it('returns error for non-existent template ID', async () => {
       const result = await NPCTemplateService.getTemplateById('nonexistent-id');
 
-      expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('NOT_FOUND');
+      expectErrorWithCode(result, 'NOT_FOUND');
       expect(result.error?.message).toContain('Template not found');
     });
 
     it('validates template ID format', async () => {
       const result = await NPCTemplateService.getTemplateById('');
 
-      expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('VALIDATION_ERROR');
+      expectErrorWithCode(result, 'VALIDATION_ERROR');
       expect(result.error?.message).toContain('Template ID is required');
     });
   });
@@ -140,47 +141,7 @@ describe('NPCTemplateService', () => {
   });
 
   describe('createCustomTemplate', () => {
-    const validTemplate: Omit<NPCTemplate, 'id'> = {
-      name: 'Custom Guard',
-      category: 'humanoid',
-      challengeRating: 1,
-      size: 'medium',
-      stats: {
-        abilityScores: {
-          strength: 15,
-          dexterity: 12,
-          constitution: 14,
-          intelligence: 10,
-          wisdom: 11,
-          charisma: 10
-        },
-        hitPoints: { maximum: 12, current: 12 },
-        armorClass: 16,
-        speed: 30,
-        proficiencyBonus: 2,
-        savingThrows: {},
-        skills: {},
-        damageVulnerabilities: [],
-        damageResistances: [],
-        damageImmunities: [],
-        conditionImmunities: [],
-        senses: [],
-        languages: [],
-      },
-      equipment: [
-        { name: 'Chain mail', type: 'armor' },
-        { name: 'Shield', type: 'armor' },
-        { name: 'Longsword', type: 'weapon' }
-      ],
-      spells: [],
-      actions: [],
-      behavior: {
-        personality: 'Disciplined and loyal',
-        motivations: 'Protect the town',
-        tactics: 'Forms shield wall with allies'
-      },
-      isSystem: false
-    };
+    const validTemplate = createTemplateWithEquipment();
 
     it('creates new custom template', async () => {
       const result = await NPCTemplateService.createCustomTemplate(validTemplate);
@@ -196,8 +157,7 @@ describe('NPCTemplateService', () => {
       const invalidTemplate = { ...validTemplate, name: '' };
       const result = await NPCTemplateService.createCustomTemplate(invalidTemplate);
 
-      expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('VALIDATION_ERROR');
+      expectErrorWithCode(result, 'VALIDATION_ERROR');
       expect(result.error?.message).toContain('name is required');
     });
 
@@ -205,14 +165,12 @@ describe('NPCTemplateService', () => {
       const invalidTemplate = { ...validTemplate, challengeRating: 35 };
       const result = await NPCTemplateService.createCustomTemplate(invalidTemplate);
 
-      expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('VALIDATION_ERROR');
+      expectErrorWithCode(result, 'VALIDATION_ERROR');
       expect(result.error?.message).toContain('Number must be less than or equal to 30');
     });
 
     it('validates ability scores range', async () => {
-      const invalidTemplate = {
-        ...validTemplate,
+      const invalidTemplate = createBaseTemplate({
         stats: {
           ...validTemplate.stats,
           abilityScores: {
@@ -220,26 +178,23 @@ describe('NPCTemplateService', () => {
             strength: 35
           }
         }
-      };
+      });
       const result = await NPCTemplateService.createCustomTemplate(invalidTemplate);
 
-      expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('VALIDATION_ERROR');
+      expectErrorWithCode(result, 'VALIDATION_ERROR');
       expect(result.error?.message).toContain('Number must be less than or equal to 30');
     });
 
     it('validates hit points are positive', async () => {
-      const invalidTemplate = {
-        ...validTemplate,
+      const invalidTemplate = createBaseTemplate({
         stats: {
           ...validTemplate.stats,
-          hitPoints: { maximum: 0, current: 0 }
+          hitPoints: { maximum: 0, current: 0, temporary: 0 }
         }
-      };
+      });
       const result = await NPCTemplateService.createCustomTemplate(invalidTemplate);
 
-      expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('VALIDATION_ERROR');
+      expectErrorWithCode(result, 'VALIDATION_ERROR');
       expect(result.error?.message).toContain('Number must be greater than or equal to 1');
     });
   });
@@ -274,31 +229,9 @@ describe('NPCTemplateService', () => {
 
     it('updates existing template', async () => {
       // First create a template
-      const createResult = await NPCTemplateService.createCustomTemplate({
-        name: 'Test Guard',
-        category: 'humanoid',
-        challengeRating: 1,
-        size: 'medium',
-        stats: {
-          abilityScores: { strength: 15, dexterity: 12, constitution: 14, intelligence: 10, wisdom: 11, charisma: 10 },
-          hitPoints: { maximum: 12, current: 12 },
-          armorClass: 16,
-          speed: 30,
-          proficiencyBonus: 2,
-          savingThrows: {},
-          skills: {},
-          damageVulnerabilities: [],
-          damageResistances: [],
-          damageImmunities: [],
-          conditionImmunities: [],
-          senses: [],
-          languages: [],
-        },
-        equipment: [],
-        spells: [],
-        actions: [],
-        isSystem: false
-      });
+      const createResult = await NPCTemplateService.createCustomTemplate(
+        createBaseTemplate({ name: 'Test Guard' })
+      );
 
       const templateId = createResult.data!.id;
       const result = await NPCTemplateService.updateTemplate(templateId, templateUpdate);
@@ -311,76 +244,30 @@ describe('NPCTemplateService', () => {
     it('returns error for non-existent template', async () => {
       const result = await NPCTemplateService.updateTemplate('nonexistent-id', templateUpdate);
 
-      expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('NOT_FOUND');
+      expectErrorWithCode(result, 'NOT_FOUND');
       expect(result.error?.message).toContain('Template not found');
     });
 
     it('validates update data', async () => {
       // First create a custom template to update
-      const createResult = await NPCTemplateService.createCustomTemplate({
-        name: 'Update Test',
-        category: 'humanoid',
-        challengeRating: 1,
-        size: 'medium',
-        stats: {
-          abilityScores: { strength: 15, dexterity: 12, constitution: 14, intelligence: 10, wisdom: 11, charisma: 10 },
-          hitPoints: { maximum: 12, current: 12 },
-          armorClass: 16,
-          speed: 30,
-          proficiencyBonus: 2,
-          savingThrows: {},
-          skills: {},
-          damageVulnerabilities: [],
-          damageResistances: [],
-          damageImmunities: [],
-          conditionImmunities: [],
-          senses: [],
-          languages: [],
-        },
-        equipment: [],
-        spells: [],
-        actions: [],
-        isSystem: false
-      });
+      const createResult = await NPCTemplateService.createCustomTemplate(
+        createBaseTemplate({ name: 'Update Test' })
+      );
 
       const templateId = createResult.data!.id;
       const invalidUpdate = { challengeRating: -1 };
       const result = await NPCTemplateService.updateTemplate(templateId, invalidUpdate);
 
-      expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('VALIDATION_ERROR');
+      expectErrorWithCode(result, 'VALIDATION_ERROR');
     });
   });
 
   describe('deleteTemplate', () => {
     it('deletes custom template', async () => {
       // First create a template
-      const createResult = await NPCTemplateService.createCustomTemplate({
-        name: 'Delete Test',
-        category: 'humanoid',
-        challengeRating: 1,
-        size: 'medium',
-        stats: {
-          abilityScores: { strength: 15, dexterity: 12, constitution: 14, intelligence: 10, wisdom: 11, charisma: 10 },
-          hitPoints: { maximum: 12, current: 12 },
-          armorClass: 16,
-          speed: 30,
-          proficiencyBonus: 2,
-          savingThrows: {},
-          skills: {},
-          damageVulnerabilities: [],
-          damageResistances: [],
-          damageImmunities: [],
-          conditionImmunities: [],
-          senses: [],
-          languages: [],
-        },
-        equipment: [],
-        spells: [],
-        actions: [],
-        isSystem: false
-      });
+      const createResult = await NPCTemplateService.createCustomTemplate(
+        createBaseTemplate({ name: 'Delete Test' })
+      );
 
       const templateId = createResult.data!.id;
       const result = await NPCTemplateService.deleteTemplate(templateId);
@@ -389,15 +276,13 @@ describe('NPCTemplateService', () => {
 
       // Verify template is deleted
       const getResult = await NPCTemplateService.getTemplateById(templateId);
-      expect(getResult.success).toBe(false);
-      expect(getResult.error?.code).toBe('NOT_FOUND');
+      expectErrorWithCode(getResult, 'NOT_FOUND');
     });
 
     it('returns error for non-existent template', async () => {
       const result = await NPCTemplateService.deleteTemplate('nonexistent-id');
 
-      expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('NOT_FOUND');
+      expectErrorWithCode(result, 'NOT_FOUND');
       expect(result.error?.message).toContain('Template not found');
     });
 
@@ -405,8 +290,7 @@ describe('NPCTemplateService', () => {
       // Try to delete a system template (should have specific IDs)
       const result = await NPCTemplateService.deleteTemplate('system-guard-basic');
 
-      expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('FORBIDDEN');
+      expectErrorWithCode(result, 'FORBIDDEN');
       expect(result.error?.message).toContain('Cannot delete system template');
     });
   });
@@ -442,8 +326,7 @@ describe('NPCTemplateService', () => {
       const invalidData = { name: 'Invalid', missing: 'challengeRating' };
       const result = await NPCTemplateService.importTemplate(invalidData, 'json');
 
-      expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('IMPORT_ERROR');
+      expectErrorWithCode(result, 'IMPORT_ERROR');
       expect(result.error?.message).toContain('Failed to import template');
     });
 
@@ -473,8 +356,7 @@ describe('NPCTemplateService', () => {
     it('returns error for unsupported format', async () => {
       const result = await NPCTemplateService.importTemplate(validImportData, 'unsupported' as any);
 
-      expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('UNSUPPORTED_FORMAT');
+      expectErrorWithCode(result, 'UNSUPPORTED_FORMAT');
       expect(result.error?.message).toContain('Unsupported import format');
     });
   });
@@ -538,8 +420,7 @@ describe('NPCTemplateService', () => {
 
       const result = await NPCTemplateService.applyVariant(baseTemplate, 'invalid' as any);
 
-      expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('VALIDATION_ERROR');
+      expectErrorWithCode(result, 'VALIDATION_ERROR');
       expect(result.error?.message).toContain('Invalid variant type');
     });
   });
