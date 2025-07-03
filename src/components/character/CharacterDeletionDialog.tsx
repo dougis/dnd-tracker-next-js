@@ -92,7 +92,7 @@ export function CharacterDeletionDialog({
       } else {
         setError(result.error?.message || 'Failed to delete character');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to delete character');
     } finally {
       setIsDeleting(false);
@@ -114,7 +114,7 @@ export function CharacterDeletionDialog({
       } else {
         setError(result.error?.message || 'Failed to restore character');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to restore character');
     } finally {
       setIsRestoring(false);

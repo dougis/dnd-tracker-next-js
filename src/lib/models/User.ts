@@ -317,7 +317,7 @@ userSchema.methods.comparePassword = async function (
 ): Promise<boolean> {
   try {
     return await bcrypt.compare(password, this.passwordHash);
-  } catch (error) {
+  } catch {
     throw new Error('Error comparing passwords');
   }
 };

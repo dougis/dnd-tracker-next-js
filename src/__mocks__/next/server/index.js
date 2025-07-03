@@ -53,7 +53,7 @@ export class NextResponse extends Response {
     return this.text().then(text => {
       try {
         return JSON.parse(text);
-      } catch (e) {
+      } catch {
         return text;
       }
     });

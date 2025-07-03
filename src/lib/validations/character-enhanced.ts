@@ -312,7 +312,6 @@ export class CharacterConsistencyChecker {
     if (character.classes.length > 1) {
       const scores = Object.values(character.abilityScores);
       const hasMulticlassStats = scores.some(score => score >= 13);
-      
       if (!hasMulticlassStats) {
         warnings.push({
           field: 'classes',
@@ -386,7 +385,7 @@ export class RealtimeValidator {
       }
 
       return null;
-    } catch (error) {
+    } catch {
       return new ValidationError('Validation error occurred', fieldName);
     }
   }
@@ -406,7 +405,7 @@ export class RealtimeValidator {
           errors: validationResult.error.errors.map(err => new ValidationError(err.message, err.path.join('.'))),
         };
       }
-    } catch (error) {
+    } catch {
       return {
         success: false,
         errors: [new ValidationError('Validation failed', 'general')],

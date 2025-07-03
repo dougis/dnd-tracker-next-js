@@ -91,7 +91,7 @@ export function getParticipant(
 /**
  * Combat management methods
  */
-// eslint-disable-next-line no-unused-vars
+
 export function startCombat(
   this: IEncounter,
   autoRollInitiative = false

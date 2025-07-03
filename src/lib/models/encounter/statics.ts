@@ -11,7 +11,7 @@ import { createDefaultEncounterSettings } from './utils';
  * Static methods for the Encounter model
  */
 
-// eslint-disable-next-line no-unused-vars
+
 export function findByOwnerId(
   this: any,
   ownerId: Types.ObjectId,
@@ -24,7 +24,7 @@ export function findByOwnerId(
   return this.find(query).sort({ updatedAt: -1 });
 }
 
-// eslint-disable-next-line no-unused-vars
+
 export function findByStatus(
   this: any,
   status: z.infer<typeof encounterStatusSchema>
@@ -37,7 +37,7 @@ export function findPublic(this: any): Promise<IEncounter[]> {
   return this.find({ isPublic: true }).sort({ updatedAt: -1 });
 }
 
-// eslint-disable-next-line no-unused-vars
+
 export function searchByName(
   this: any,
   searchTerm: string
@@ -47,7 +47,7 @@ export function searchByName(
   }).sort({ score: { $meta: 'textScore' } });
 }
 
-// eslint-disable-next-line no-unused-vars
+
 export function findByDifficulty(
   this: any,
   difficulty: z.infer<typeof encounterDifficultySchema>
@@ -55,7 +55,7 @@ export function findByDifficulty(
   return this.find({ difficulty }).sort({ updatedAt: -1 });
 }
 
-// eslint-disable-next-line no-unused-vars
+
 export function findByTargetLevel(
   this: any,
   level: number
@@ -70,7 +70,7 @@ export function findActive(this: any): Promise<IEncounter[]> {
   });
 }
 
-// eslint-disable-next-line no-unused-vars
+
 export async function createEncounter(
   this: any,
   encounterData: CreateEncounterInput
