@@ -200,84 +200,19 @@ export class CharacterDataRecovery {
 
     const errors: ValidationErrorWithFix[] = [];
     const suggestedFixes: Record<string, any> = {};
-    const autoFixableData = JSON.parse(JSON.stringify(data));
+    const autoFixableData = this.cloneData(data);
 
     result.error.errors.forEach(error => {
       const { path, message, code } = error;
       const fieldPath = path.join('.');
-
       const validationError: ValidationErrorWithFix = new ValidationError(message, fieldPath);
 
-      // Generate suggested fixes based on error type
-      switch (code) {
-        case 'too_small':
-          if (fieldPath.includes('name')) {
-            validationError.suggestedFix = 'Character name must be at least 1 character long';
-            validationError.autoFixable = false;
-          } else if (fieldPath.includes('abilityScores')) {
-            validationError.suggestedFix = 'Ability scores must be at least 1. Consider using 8 as minimum.';
-            validationError.autoFixable = true;
-            validationError.autoFixValue = 8;
-            suggestedFixes[fieldPath] = 8;
-          } else if (fieldPath === 'classes') {
-            validationError.suggestedFix = 'At least one character class is required';
-            validationError.autoFixable = false;
-          }
-          break;
-
-        case 'too_big':
-          if (fieldPath.includes('name')) {
-            validationError.suggestedFix = 'Character name must be 100 characters or less';
-            validationError.autoFixable = false;
-          } else if (fieldPath.includes('abilityScores')) {
-            validationError.suggestedFix = 'Ability scores cannot exceed 30. Consider using 20 as maximum.';
-            validationError.autoFixable = true;
-            validationError.autoFixValue = 20;
-            suggestedFixes[fieldPath] = 20;
-          }
-          break;
-
-        case 'invalid_type':
-          if (fieldPath.includes('level')) {
-            validationError.suggestedFix = 'Level must be a number between 1 and 20';
-            validationError.autoFixable = true;
-            validationError.autoFixValue = 1;
-            suggestedFixes[fieldPath] = 1;
-          }
-          break;
-
-        case 'invalid_enum_value':
-          if (fieldPath === 'race') {
-            validationError.suggestedFix = 'Please select a valid race from the dropdown list';
-            validationError.autoFixable = false;
-          } else if (fieldPath.includes('class')) {
-            validationError.suggestedFix = 'Please select a valid class from the dropdown list';
-            validationError.autoFixable = false;
-          }
-          break;
-
-        default:
-          validationError.suggestedFix = 'Please check the value and try again';
-          break;
-      }
-
+      this.processValidationError(validationError, fieldPath, code, suggestedFixes);
       errors.push(validationError);
     });
 
     // Apply auto-fixes where possible
-    Object.entries(suggestedFixes).forEach(([path, value]) => {
-      const pathParts = path.split('.');
-      let current: any = autoFixableData;
-
-      for (let i = 0; i < pathParts.length - 1; i++) {
-        if (current[pathParts[i]] === undefined) {
-          current[pathParts[i]] = {};
-        }
-        current = current[pathParts[i]];
-      }
-
-      current[pathParts[pathParts.length - 1]] = value;
-    });
+    this.applyAutoFixes(autoFixableData, suggestedFixes);
 
     return {
       isValid: false,
@@ -285,6 +220,163 @@ export class CharacterDataRecovery {
       suggestedFixes,
       autoFixableData: Object.keys(suggestedFixes).length > 0 ? autoFixableData : undefined,
     };
+  }
+
+  /**
+   * Create a deep clone of data without relying on JSON.stringify key ordering
+   */
+  private static cloneData(data: Partial<CharacterCreation>): any {
+    if (data === null || typeof data !== 'object') {
+      return data;
+    }
+
+    if (Array.isArray(data)) {
+      return data.map(item => this.cloneData(item));
+    }
+
+    const cloned: any = {};
+    const sortedKeys = Object.keys(data).sort(); // Ensure stable key ordering
+    for (const key of sortedKeys) {
+      cloned[key] = this.cloneData((data as any)[key]);
+    }
+    return cloned;
+  }
+
+  /**
+   * Process a single validation error and set suggested fixes
+   */
+  private static processValidationError(
+    validationError: ValidationErrorWithFix,
+    fieldPath: string,
+    code: string,
+    suggestedFixes: Record<string, any>
+  ): void {
+    switch (code) {
+      case 'too_small':
+        this.handleTooSmallError(validationError, fieldPath, suggestedFixes);
+        break;
+      case 'too_big':
+        this.handleTooBigError(validationError, fieldPath, suggestedFixes);
+        break;
+      case 'invalid_type':
+        this.handleInvalidTypeError(validationError, fieldPath, suggestedFixes);
+        break;
+      case 'invalid_enum_value':
+        this.handleInvalidEnumError(validationError, fieldPath);
+        break;
+      default:
+        validationError.suggestedFix = 'Please check the value and try again';
+        break;
+    }
+  }
+
+  /**
+   * Handle 'too_small' validation errors
+   */
+  private static handleTooSmallError(
+    validationError: ValidationErrorWithFix,
+    fieldPath: string,
+    suggestedFixes: Record<string, any>
+  ): void {
+    if (fieldPath.includes('name')) {
+      validationError.suggestedFix = 'Character name must be at least 1 character long';
+      validationError.autoFixable = false;
+    } else if (fieldPath.includes('abilityScores')) {
+      validationError.suggestedFix = 'Ability scores must be at least 1. Consider using 8 as minimum.';
+      validationError.autoFixable = true;
+      validationError.autoFixValue = 8;
+      suggestedFixes[fieldPath] = 8;
+    } else if (fieldPath === 'classes') {
+      validationError.suggestedFix = 'At least one character class is required';
+      validationError.autoFixable = false;
+    }
+  }
+
+  /**
+   * Handle 'too_big' validation errors
+   */
+  private static handleTooBigError(
+    validationError: ValidationErrorWithFix,
+    fieldPath: string,
+    suggestedFixes: Record<string, any>
+  ): void {
+    if (fieldPath.includes('name')) {
+      validationError.suggestedFix = 'Character name must be 100 characters or less';
+      validationError.autoFixable = false;
+    } else if (fieldPath.includes('abilityScores')) {
+      validationError.suggestedFix = 'Ability scores cannot exceed 30. Consider using 20 as maximum.';
+      validationError.autoFixable = true;
+      validationError.autoFixValue = 20;
+      suggestedFixes[fieldPath] = 20;
+    }
+  }
+
+  /**
+   * Handle 'invalid_type' validation errors
+   */
+  private static handleInvalidTypeError(
+    validationError: ValidationErrorWithFix,
+    fieldPath: string,
+    suggestedFixes: Record<string, any>
+  ): void {
+    if (fieldPath.includes('level')) {
+      validationError.suggestedFix = 'Level must be a number between 1 and 20';
+      validationError.autoFixable = true;
+      validationError.autoFixValue = 1;
+      suggestedFixes[fieldPath] = 1;
+    }
+  }
+
+  /**
+   * Handle 'invalid_enum_value' validation errors
+   */
+  private static handleInvalidEnumError(
+    validationError: ValidationErrorWithFix,
+    fieldPath: string
+  ): void {
+    if (fieldPath === 'race') {
+      validationError.suggestedFix = 'Please select a valid race from the dropdown list';
+      validationError.autoFixable = false;
+    } else if (fieldPath.includes('class')) {
+      validationError.suggestedFix = 'Please select a valid class from the dropdown list';
+      validationError.autoFixable = false;
+    }
+  }
+
+  /**
+   * Apply auto-fixes to data using safe property access
+   */
+  private static applyAutoFixes(
+    autoFixableData: any,
+    suggestedFixes: Record<string, any>
+  ): void {
+    Object.entries(suggestedFixes).forEach(([path, value]) => {
+      this.setNestedProperty(autoFixableData, path, value);
+    });
+  }
+
+  /**
+   * Safely set nested property without relying on JSON.stringify key ordering
+   */
+  private static setNestedProperty(obj: any, path: string, value: any): void {
+    const pathParts = path.split('.');
+    let current = obj;
+
+    for (let i = 0; i < pathParts.length - 1; i++) {
+      const key = pathParts[i];
+      if (!current || typeof current !== 'object') {
+        return; // Cannot set property on non-object
+      }
+      if (current[key] === undefined) {
+        current[key] = {};
+      }
+      current = current[key];
+    }
+
+    if (current && typeof current === 'object') {
+      const finalKey = pathParts[pathParts.length - 1];
+      current[finalKey] = value;
+    }
   }
 
   /**

@@ -216,8 +216,18 @@ export interface ConsistencyWarning {
 export class CharacterConsistencyChecker {
   static checkConsistency(character: CharacterCreation): ConsistencyWarning[] {
     const warnings: ConsistencyWarning[] = [];
+    
+    // Check different aspects of the character
+    warnings.push(...this.checkHitPoints(character));
+    warnings.push(...this.checkArmorClass(character));
+    warnings.push(...this.checkAbilityScores(character));
+    warnings.push(...this.checkMulticlassPrerequisites(character));
 
-    // Check if hit points are reasonable for level and constitution
+    return warnings;
+  }
+
+  private static checkHitPoints(character: CharacterCreation): ConsistencyWarning[] {
+    const warnings: ConsistencyWarning[] = [];
     const totalLevel = character.classes.reduce((sum, cls) => sum + cls.level, 0);
     const constitutionModifier = Math.floor((character.abilityScores.constitution - 10) / 2);
     const averageHitDie = character.classes.reduce((sum, cls) => sum + cls.hitDie, 0) / character.classes.length;
@@ -242,7 +252,13 @@ export class CharacterConsistencyChecker {
       });
     }
 
-    // Check if armor class is reasonable for character type and level
+    return warnings;
+  }
+
+  private static checkArmorClass(character: CharacterCreation): ConsistencyWarning[] {
+    const warnings: ConsistencyWarning[] = [];
+    const totalLevel = character.classes.reduce((sum, cls) => sum + cls.level, 0);
+
     if (character.armorClass < 10) {
       warnings.push({
         field: 'armorClass',
@@ -261,7 +277,11 @@ export class CharacterConsistencyChecker {
       });
     }
 
-    // Check ability score distribution
+    return warnings;
+  }
+
+  private static checkAbilityScores(character: CharacterCreation): ConsistencyWarning[] {
+    const warnings: ConsistencyWarning[] = [];
     const scores = Object.values(character.abilityScores);
     const maxScore = Math.max(...scores);
     const minScore = Math.min(...scores);
@@ -284,9 +304,16 @@ export class CharacterConsistencyChecker {
       });
     }
 
-    // Check multiclass prerequisites (simplified)
+    return warnings;
+  }
+
+  private static checkMulticlassPrerequisites(character: CharacterCreation): ConsistencyWarning[] {
+    const warnings: ConsistencyWarning[] = [];
+
     if (character.classes.length > 1) {
+      const scores = Object.values(character.abilityScores);
       const hasMulticlassStats = scores.some(score => score >= 13);
+      
       if (!hasMulticlassStats) {
         warnings.push({
           field: 'classes',

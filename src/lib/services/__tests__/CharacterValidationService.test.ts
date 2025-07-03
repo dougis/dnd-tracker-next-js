@@ -427,7 +427,11 @@ describe('CharacterValidationService', () => {
 
       if (!results[1].success) {
         console.log('Batch validation failed for character 2:');
-        console.log('Errors:', JSON.stringify(results[1].errors, null, 2));
+        console.log('Errors:', results[1].errors.map(err => ({
+          field: err.field,
+          message: err.message,
+          code: err.code
+        })));
       }
 
       expect(results).toHaveLength(2);
