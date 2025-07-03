@@ -5,13 +5,12 @@ import {
   TemplateFilter,
   VariantType,
   ImportFormat,
-  ChallengeRating,
   CreatureType,
-  calculateProficiencyBonus,
-  parseChallengeRating,
 } from '@/types/npc';
 import { SYSTEM_TEMPLATES } from './NPCTemplateData';
 import { NPCTemplateFilters } from './NPCTemplateFilters';
+import { NPCTemplateVariants } from './NPCTemplateVariants';
+import { NPCTemplateImporter } from './NPCTemplateImporter';
 
 // In-memory store for custom templates (in production, this would be a database)
 const customTemplates: NPCTemplate[] = [];
@@ -287,32 +286,7 @@ export class NPCTemplateService {
    */
   static async importTemplate(data: any, format: ImportFormat): Promise<ServiceResult<NPCTemplate>> {
     try {
-      let templateData: Omit<NPCTemplate, 'id'>;
-
-      switch (format) {
-        case 'json':
-          templateData = this.parseJSONImport(data);
-          break;
-        case 'dndbeyond':
-          templateData = this.parseDnDBeyondImport(data);
-          break;
-        case 'roll20':
-          templateData = this.parseRoll20Import(data);
-          break;
-        case 'custom':
-          templateData = this.parseCustomImport(data);
-          break;
-        default:
-          return {
-            success: false,
-            error: {
-              code: 'UNSUPPORTED_FORMAT',
-              message: 'Unsupported import format',
-            },
-          };
-      }
-
-      // Create the template using the parsed data
+      const templateData = NPCTemplateImporter.parseImportData(data, format);
       return await this.createCustomTemplate(templateData);
     } catch (error) {
       return {
@@ -330,182 +304,7 @@ export class NPCTemplateService {
    * Apply variant modifiers to a base template
    */
   static async applyVariant(baseTemplate: Partial<NPCTemplate>, variantType: VariantType): Promise<ServiceResult<NPCTemplate>> {
-    try {
-      if (!['elite', 'weak', 'champion', 'minion'].includes(variantType)) {
-        return {
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Invalid variant type',
-          },
-        };
-      }
-
-      const variant = { ...baseTemplate };
-
-      switch (variantType) {
-        case 'elite':
-          variant.name = `Elite ${baseTemplate.name}`;
-          variant.challengeRating = this.adjustChallengeRating(baseTemplate.challengeRating!, 1.5);
-          if (variant.stats) {
-            variant.stats.hitPoints.maximum = Math.floor(variant.stats.hitPoints.maximum * 1.5);
-            variant.stats.hitPoints.current = variant.stats.hitPoints.maximum;
-            variant.stats.abilityScores = {
-              ...variant.stats.abilityScores,
-              strength: Math.min(30, variant.stats.abilityScores.strength + 2),
-              dexterity: Math.min(30, variant.stats.abilityScores.dexterity + 2),
-              constitution: Math.min(30, variant.stats.abilityScores.constitution + 2),
-            };
-          }
-          break;
-
-        case 'weak':
-          variant.name = `Weak ${baseTemplate.name}`;
-          variant.challengeRating = this.adjustChallengeRating(baseTemplate.challengeRating!, 0.7);
-          if (variant.stats) {
-            variant.stats.hitPoints.maximum = Math.max(1, Math.floor(variant.stats.hitPoints.maximum * 0.6));
-            variant.stats.hitPoints.current = variant.stats.hitPoints.maximum;
-            variant.stats.abilityScores = {
-              ...variant.stats.abilityScores,
-              strength: Math.max(1, variant.stats.abilityScores.strength - 2),
-              dexterity: Math.max(1, variant.stats.abilityScores.dexterity - 2),
-              constitution: Math.max(1, variant.stats.abilityScores.constitution - 2),
-            };
-          }
-          break;
-
-        case 'champion':
-          variant.name = `${baseTemplate.name} Champion`;
-          variant.challengeRating = this.adjustChallengeRating(baseTemplate.challengeRating!, 2);
-          if (variant.stats) {
-            variant.stats.hitPoints.maximum = Math.floor(variant.stats.hitPoints.maximum * 2);
-            variant.stats.hitPoints.current = variant.stats.hitPoints.maximum;
-            variant.stats.armorClass += 2;
-            // Add legendary actions or special abilities
-          }
-          break;
-
-        case 'minion':
-          variant.name = `${baseTemplate.name} Minion`;
-          variant.challengeRating = this.adjustChallengeRating(baseTemplate.challengeRating!, 0.5);
-          if (variant.stats) {
-            variant.stats.hitPoints.maximum = 1;
-            variant.stats.hitPoints.current = 1;
-          }
-          break;
-      }
-
-      return { success: true, data: variant as NPCTemplate };
-    } catch (error) {
-      return {
-        success: false,
-        error: {
-          code: 'INTERNAL_ERROR',
-          message: 'Failed to apply variant',
-          details: { message: error instanceof Error ? error.message : 'Unknown error' },
-        },
-      };
-    }
+    return NPCTemplateVariants.applyVariant(baseTemplate, variantType);
   }
 
-  // Private helper methods
-  private static parseJSONImport(data: any): Omit<NPCTemplate, 'id'> {
-    // Basic validation for JSON import
-    if (!data.name) throw new Error('name is required');
-    if (data.challengeRating === undefined && data.challengeRating !== 0) throw new Error('challengeRating is required');
-
-    return {
-      name: data.name,
-      category: data.creatureType || data.category || 'humanoid',
-      challengeRating: data.challengeRating,
-      size: data.size || 'medium',
-      stats: {
-        abilityScores: data.abilityScores || {
-          strength: 10, dexterity: 10, constitution: 10,
-          intelligence: 10, wisdom: 10, charisma: 10,
-        },
-        hitPoints: data.hitPoints ? { ...data.hitPoints, temporary: data.hitPoints.temporary || 0 } : { maximum: 1, current: 1, temporary: 0 },
-        armorClass: data.armorClass || 10,
-        speed: data.speed || 30,
-        proficiencyBonus: calculateProficiencyBonus(data.challengeRating),
-        savingThrows: data.savingThrows || {},
-        skills: data.skills || {},
-        damageVulnerabilities: data.damageVulnerabilities || [],
-        damageResistances: data.damageResistances || [],
-        damageImmunities: data.damageImmunities || [],
-        conditionImmunities: data.conditionImmunities || [],
-        senses: data.senses || [],
-        languages: data.languages || [],
-      },
-      equipment: (data.equipment || []).map((item: any) =>
-        typeof item === 'string' ? { name: item } : item
-      ),
-      spells: data.spells || [],
-      actions: data.actions || [],
-      behavior: data.behavior,
-      isSystem: false,
-    };
-  }
-
-  private static parseDnDBeyondImport(data: any): Omit<NPCTemplate, 'id'> {
-    // Parse D&D Beyond format
-    const challengeRating = typeof data.cr === 'string' ? parseChallengeRating(data.cr) : data.cr;
-
-    return {
-      name: data.name,
-      category: 'humanoid', // Default, should be parsed from data
-      challengeRating,
-      size: 'medium',
-      stats: {
-        abilityScores: {
-          strength: data.stats?.str || 10,
-          dexterity: data.stats?.dex || 10,
-          constitution: data.stats?.con || 10,
-          intelligence: data.stats?.int || 10,
-          wisdom: data.stats?.wis || 10,
-          charisma: data.stats?.cha || 10,
-        },
-        hitPoints: { maximum: data.hp || 1, current: data.hp || 1, temporary: 0 },
-        armorClass: data.ac || 10,
-        speed: data.speed || 30,
-        proficiencyBonus: calculateProficiencyBonus(challengeRating),
-        damageVulnerabilities: [],
-        damageResistances: [],
-        damageImmunities: [],
-        conditionImmunities: [],
-        senses: [],
-        languages: [],
-      },
-      equipment: [],
-      spells: [],
-      actions: [],
-      isSystem: false,
-    };
-  }
-
-  private static parseRoll20Import(_data: any): Omit<NPCTemplate, 'id'> {
-    // Parse Roll20 format - placeholder implementation
-    throw new Error('Roll20 import not yet implemented');
-  }
-
-  private static parseCustomImport(_data: any): Omit<NPCTemplate, 'id'> {
-    // Parse custom format - placeholder implementation
-    throw new Error('Custom import not yet implemented');
-  }
-
-  private static adjustChallengeRating(baseCR: ChallengeRating, multiplier: number): ChallengeRating {
-    if (baseCR === 0) return multiplier > 1 ? 0.125 : 0;
-
-    const adjusted = baseCR * multiplier;
-
-    // Handle fractional CRs
-    if (adjusted <= 0) return 0;
-    if (adjusted <= 0.125) return 0.125;
-    if (adjusted <= 0.25) return 0.25;
-    if (adjusted < 1) return 0.5;
-
-    // Handle integer CRs
-    const rounded = Math.round(adjusted);
-    return Math.min(30, Math.max(1, rounded)) as ChallengeRating;
-  }
 }

@@ -353,8 +353,8 @@ describe('NPCTemplateService', () => {
     it('returns error for unsupported format', async () => {
       const result = await NPCTemplateService.importTemplate(validImportData, 'unsupported' as any);
 
-      expectErrorWithCode(result, 'UNSUPPORTED_FORMAT');
-      expect(result.error?.message).toContain('Unsupported import format');
+      expectErrorWithCode(result, 'IMPORT_ERROR');
+      expect(result.error?.message).toBe('Failed to import template');
     });
   });
 

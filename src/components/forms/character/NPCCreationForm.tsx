@@ -15,6 +15,7 @@ import { NPCBasicInfoTab } from './npc/NPCBasicInfoTab';
 import { NPCStatsTab } from './npc/NPCStatsTab';
 import { NPCDetailsTab } from './npc/NPCDetailsTab';
 import { useNPCForm } from './npc/hooks/useNPCForm';
+import { NPCFormHelpers } from './npc/NPCFormHelpers';
 
 interface NPCCreationFormProps {
   ownerId: string;
@@ -41,20 +42,7 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
 
   // Filter templates based on search and category
   useEffect(() => {
-    let filtered = templates;
-
-    if (templateCategory !== 'all') {
-      filtered = filtered.filter(t => t.category === templateCategory);
-    }
-
-    if (templateSearch) {
-      const searchLower = templateSearch.toLowerCase();
-      filtered = filtered.filter(t =>
-        t.name.toLowerCase().includes(searchLower) ||
-        t.category.toLowerCase().includes(searchLower)
-      );
-    }
-
+    const filtered = NPCFormHelpers.filterTemplates(templates, templateSearch, templateCategory);
     setFilteredTemplates(filtered);
   }, [templates, templateSearch, templateCategory]);
 
@@ -73,58 +61,16 @@ export function NPCCreationForm({ ownerId, onSuccess, onCancel, isOpen }: NPCCre
 
   const handleTemplateSelect = (template: NPCTemplate) => {
     setSelectedTemplate(template);
-    updateFormData({
-      name: template.name,
-      creatureType: template.category,
-      size: template.size || 'medium',
-      challengeRating: template.challengeRating,
-      abilityScores: { ...template.stats.abilityScores },
-      hitPoints: { ...template.stats.hitPoints, temporary: 0 },
-      armorClass: template.stats.armorClass,
-      speed: template.stats.speed,
-      damageVulnerabilities: [...(template.stats.damageVulnerabilities || [])],
-      damageResistances: [...(template.stats.damageResistances || [])],
-      damageImmunities: [...(template.stats.damageImmunities || [])],
-      conditionImmunities: [...(template.stats.conditionImmunities || [])],
-      senses: [...(template.stats.senses || [])],
-      languages: [...(template.stats.languages || [])],
-      equipment: template.equipment?.map(eq => ({ name: eq.name, type: eq.type, quantity: eq.quantity || 1, magical: eq.magical || false })) || [],
-      spells: template.spells?.map(spell => ({ name: spell.name, level: spell.level })) || [],
-      actions: template.actions?.map(action => ({
-        name: action.name,
-        type: action.type,
-        description: action.description,
-        attackBonus: action.attackBonus,
-        damage: action.damage,
-        range: action.range,
-        recharge: action.recharge,
-        uses: action.uses,
-        maxUses: action.maxUses,
-      })) || [],
-      isSpellcaster: (template.spells?.length || 0) > 0,
-      personality: template.behavior?.personality,
-      motivations: template.behavior?.motivations,
-      tactics: template.behavior?.tactics,
-      isVariant: false,
-    });
+    const formData = NPCFormHelpers.templateToFormData(template);
+    updateFormData(formData);
     setActiveTab('basic');
   };
 
   const handleJsonImport = () => {
     try {
       const parsed = JSON.parse(jsonImportData);
-
-      // Map the imported data to our form structure
-      updateFormData({
-        name: parsed.name || '',
-        creatureType: parsed.creatureType || parsed.category || 'humanoid',
-        challengeRating: parsed.challengeRating || 0.5,
-        abilityScores: parsed.abilityScores || formData.abilityScores,
-        hitPoints: parsed.hitPoints ? { ...parsed.hitPoints, temporary: parsed.hitPoints.temporary || 0 } : formData.hitPoints,
-        armorClass: parsed.armorClass || 10,
-        speed: parsed.speed || 30,
-      });
-
+      const importedFormData = NPCFormHelpers.jsonToFormData(parsed, formData);
+      updateFormData(importedFormData);
       setJsonImportData('');
       setActiveTab('basic');
       console.log('NPC data imported successfully');
