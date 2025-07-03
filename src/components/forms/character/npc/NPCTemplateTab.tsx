@@ -16,10 +16,10 @@ interface NPCTemplateTabProps {
   templateCategory: CreatureType | 'all';
   selectedTemplate: NPCTemplate | null;
   jsonImportData: string;
-  onTemplateSelect: (template: NPCTemplate) => void;
-  onSearchChange: (search: string) => void;
-  onCategoryChange: (category: CreatureType | 'all') => void;
-  onJsonImportDataChange: (data: string) => void;
+  onTemplateSelect: (_template: NPCTemplate) => void;
+  onSearchChange: (_search: string) => void;
+  onCategoryChange: (_category: CreatureType | 'all') => void;
+  onJsonImportDataChange: (_data: string) => void;
   onJsonImport: () => void;
   onGoToBasic: () => void;
 }

@@ -1,10 +1,7 @@
 import { NPCTemplateService } from '../NPCTemplateService';
-import { NPCTemplate } from '@/types/npc';
 import {
   createBaseTemplate,
-  createMinimalTemplate,
   createTemplateWithEquipment,
-  createTemplateWithBehavior,
   expectValidTemplateStructure,
   expectErrorWithCode
 } from './test-helpers';

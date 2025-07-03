@@ -91,7 +91,7 @@ export const createTemplateWithEquipment = (): Omit<NPCTemplate, 'id'> => create
 export const createTemplateWithBehavior = (): Omit<NPCTemplate, 'id'> => createBaseTemplate({
   behavior: {
     personality: 'Disciplined and loyal',
-    motivations: 'Protect the town', 
+    motivations: 'Protect the town',
     tactics: 'Forms shield wall with allies'
   }
 });
