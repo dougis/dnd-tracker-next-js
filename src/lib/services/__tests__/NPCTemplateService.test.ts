@@ -497,7 +497,9 @@ describe('NPCTemplateService', () => {
       expect(result.success).toBe(true);
       expect(result.data!.name).toBe('Elite Guard');
       expect(result.data!.challengeRating).toBeGreaterThan(baseTemplate.challengeRating);
-      expect(result.data!.stats.hitPoints.maximum).toBeGreaterThan(baseTemplate.stats.hitPoints.maximum);
+      // Elite variant should have 1.5x HP: 8 * 1.5 = 12
+      expect(result.data!.stats.hitPoints.maximum).toBe(12);
+      expect(result.data!.stats.hitPoints.maximum).toBeGreaterThan(8);
     });
 
     it('applies weak variant modifier', async () => {
@@ -517,7 +519,9 @@ describe('NPCTemplateService', () => {
       expect(result.success).toBe(true);
       expect(result.data!.name).toBe('Weak Orc');
       expect(result.data!.challengeRating).toBeLessThan(baseTemplate.challengeRating);
-      expect(result.data!.stats.hitPoints.maximum).toBeLessThan(baseTemplate.stats.hitPoints.maximum);
+      // Weak variant should have 0.6x HP: 20 * 0.6 = 12
+      expect(result.data!.stats.hitPoints.maximum).toBe(12);
+      expect(result.data!.stats.hitPoints.maximum).toBeLessThan(20);
     });
 
     it('returns error for invalid variant type', async () => {
