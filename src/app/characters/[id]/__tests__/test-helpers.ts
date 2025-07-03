@@ -60,7 +60,7 @@ export const mockEquipment = {
 // Helper to create character with spells
 export const createCharacterWithSpells = (spellNames: (keyof typeof mockSpells)[]) => {
   const spells = spellNames.map(name => mockSpells[name]);
-  return createMockCharacter({ 
+  return createMockCharacter({
     name: 'Test Character',
     spells,
     abilityScores: {
@@ -77,7 +77,7 @@ export const createCharacterWithSpells = (spellNames: (keyof typeof mockSpells)[
 // Helper to create character with equipment
 export const createCharacterWithEquipment = (equipmentNames: (keyof typeof mockEquipment)[]) => {
   const equipment = equipmentNames.map(name => mockEquipment[name]);
-  return createMockCharacter({ 
+  return createMockCharacter({
     name: 'Test Character',
     equipment,
     abilityScores: {
