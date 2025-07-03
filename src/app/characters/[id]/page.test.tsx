@@ -163,7 +163,6 @@ describe('CharacterDetailClient', () => {
 
   it('should display edit and share buttons', async () => {
     const testCharacter = createMockCharacter({
-      _id: 'test-id',
       name: 'Test Character',
     });
 
@@ -182,7 +181,6 @@ describe('CharacterDetailClient', () => {
 
   it('should navigate to edit page when edit button is clicked', async () => {
     const testCharacter = createMockCharacter({
-      _id: 'test-id',
       name: 'Test Character',
     });
 
@@ -260,16 +258,22 @@ describe('CharacterDetailClient', () => {
           name: 'Fireball',
           level: 3,
           school: 'Evocation',
+          castingTime: '1 action',
+          range: '150 feet',
           components: 'V, S, M',
           duration: 'Instantaneous',
+          description: 'A bright streak flashes from your pointing finger to a point you choose within range.',
           isPrepared: true,
         },
         {
           name: 'Magic Missile',
           level: 1,
           school: 'Evocation',
+          castingTime: '1 action',
+          range: '120 feet',
           components: 'V, S',
           duration: 'Instantaneous',
+          description: 'You create three glowing darts of magical force.',
           isPrepared: true,
         },
       ],

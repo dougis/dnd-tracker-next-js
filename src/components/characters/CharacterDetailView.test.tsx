@@ -166,11 +166,11 @@ describe('CharacterDetailView', () => {
     const user = userEvent.setup();
 
     const testCharacter = createMockCharacter({
-      skills: {
-        'Athletics': true,
-        'Stealth': true,
-        'Perception': false,
-      },
+      skills: new Map([
+        ['Athletics', true],
+        ['Stealth', true],
+        ['Perception', false],
+      ]),
       abilityScores: {
         strength: 16,
         dexterity: 14,
@@ -261,24 +261,33 @@ describe('CharacterDetailView', () => {
           name: 'Fireball',
           level: 3,
           school: 'Evocation',
+          castingTime: '1 action',
+          range: '150 feet',
           components: 'V, S, M',
           duration: 'Instantaneous',
+          description: 'A bright streak flashes from your pointing finger to a point you choose within range.',
           isPrepared: true,
         },
         {
           name: 'Magic Missile',
           level: 1,
           school: 'Evocation',
+          castingTime: '1 action',
+          range: '120 feet',
           components: 'V, S',
           duration: 'Instantaneous',
+          description: 'You create three glowing darts of magical force.',
           isPrepared: true,
         },
         {
           name: 'Shield',
           level: 1,
           school: 'Abjuration',
+          castingTime: '1 reaction',
+          range: 'Self',
           components: 'V, S',
           duration: '1 round',
+          description: 'An invisible barrier of magical force appears and protects you.',
           isPrepared: false,
         },
       ],
