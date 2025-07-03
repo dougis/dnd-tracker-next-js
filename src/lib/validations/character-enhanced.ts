@@ -216,7 +216,6 @@ export interface ConsistencyWarning {
 export class CharacterConsistencyChecker {
   static checkConsistency(character: CharacterCreation): ConsistencyWarning[] {
     const warnings: ConsistencyWarning[] = [];
-    
     // Check different aspects of the character
     warnings.push(...this.checkHitPoints(character));
     warnings.push(...this.checkArmorClass(character));
