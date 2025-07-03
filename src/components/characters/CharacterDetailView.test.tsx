@@ -5,6 +5,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CharacterDetailView from './CharacterDetailView';
 import { createMockCharacter } from '@/lib/services/__tests__/CharacterService.test-helpers';
+import { createCharacterWithSpells } from '@/app/characters/[id]/__tests__/test-helpers';
 
 describe('CharacterDetailView', () => {
   const mockOnEdit = jest.fn();
@@ -255,43 +256,7 @@ describe('CharacterDetailView', () => {
   it('should render spells grouped by level', async () => {
     const user = userEvent.setup();
 
-    const testCharacter = createMockCharacter({
-      spells: [
-        {
-          name: 'Fireball',
-          level: 3,
-          school: 'Evocation',
-          castingTime: '1 action',
-          range: '150 feet',
-          components: 'V, S, M',
-          duration: 'Instantaneous',
-          description: 'A bright streak flashes from your pointing finger to a point you choose within range.',
-          isPrepared: true,
-        },
-        {
-          name: 'Magic Missile',
-          level: 1,
-          school: 'Evocation',
-          castingTime: '1 action',
-          range: '120 feet',
-          components: 'V, S',
-          duration: 'Instantaneous',
-          description: 'You create three glowing darts of magical force.',
-          isPrepared: true,
-        },
-        {
-          name: 'Shield',
-          level: 1,
-          school: 'Abjuration',
-          castingTime: '1 reaction',
-          range: 'Self',
-          components: 'V, S',
-          duration: '1 round',
-          description: 'An invisible barrier of magical force appears and protects you.',
-          isPrepared: false,
-        },
-      ],
-    });
+    const testCharacter = createCharacterWithSpells(['fireball', 'magicMissile', 'shield']);
 
     render(
       <CharacterDetailView

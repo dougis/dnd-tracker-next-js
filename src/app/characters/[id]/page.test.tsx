@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { CharacterDetailClient } from './CharacterDetailClient';
 import { CharacterService } from '@/lib/services/CharacterService';
 import { createMockCharacter } from '@/lib/services/__tests__/CharacterService.test-helpers';
+import { createCharacterWithSpells, createCharacterWithEquipment } from './__tests__/test-helpers';
 
 // Mock dependencies
 jest.mock('next/navigation', () => ({
@@ -205,26 +206,7 @@ describe('CharacterDetailClient', () => {
   it('should display equipment section when character has equipment', async () => {
     const user = userEvent.setup();
 
-    const testCharacter = createMockCharacter({
-      equipment: [
-        {
-          name: 'Longsword',
-          quantity: 1,
-          weight: 3,
-          value: 15,
-          equipped: true,
-          magical: false,
-        },
-        {
-          name: 'Chain Mail',
-          quantity: 1,
-          weight: 55,
-          value: 75,
-          equipped: true,
-          magical: false,
-        },
-      ],
-    });
+    const testCharacter = createCharacterWithEquipment(['longsword', 'chainMail']);
 
     createMockCharacterService.getCharacterById.mockResolvedValue({
       success: true,
@@ -252,32 +234,7 @@ describe('CharacterDetailClient', () => {
   it('should display spells section when character has spells', async () => {
     const user = userEvent.setup();
 
-    const testCharacter = createMockCharacter({
-      spells: [
-        {
-          name: 'Fireball',
-          level: 3,
-          school: 'Evocation',
-          castingTime: '1 action',
-          range: '150 feet',
-          components: 'V, S, M',
-          duration: 'Instantaneous',
-          description: 'A bright streak flashes from your pointing finger to a point you choose within range.',
-          isPrepared: true,
-        },
-        {
-          name: 'Magic Missile',
-          level: 1,
-          school: 'Evocation',
-          castingTime: '1 action',
-          range: '120 feet',
-          components: 'V, S',
-          duration: 'Instantaneous',
-          description: 'You create three glowing darts of magical force.',
-          isPrepared: true,
-        },
-      ],
-    });
+    const testCharacter = createCharacterWithSpells(['fireball', 'magicMissile']);
 
     createMockCharacterService.getCharacterById.mockResolvedValue({
       success: true,
