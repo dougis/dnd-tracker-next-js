@@ -807,9 +807,8 @@ export class NPCTemplateService {
 
     // Handle fractional CRs
     if (adjusted <= 0) return 0;
-    if (adjusted < 0.125) return 0;
-    if (adjusted < 0.25) return 0.125;
-    if (adjusted < 0.5) return 0.25;
+    if (adjusted <= 0.125) return 0.125;
+    if (adjusted <= 0.25) return 0.25;
     if (adjusted < 1) return 0.5;
 
     // Handle integer CRs

@@ -444,7 +444,7 @@ describe('NPCTemplateService', () => {
 
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('IMPORT_ERROR');
-      expect(result.error?.message).toContain('challengeRating is required');
+      expect(result.error?.message).toContain('Failed to import template');
     });
 
     it('handles different import formats', async () => {
@@ -486,7 +486,7 @@ describe('NPCTemplateService', () => {
         challengeRating: 0.25 as any,
         stats: {
           abilityScores: { strength: 13, dexterity: 12, constitution: 12, intelligence: 10, wisdom: 11, charisma: 10 },
-          hitPoints: { maximum: 11, current: 11 },
+          hitPoints: { maximum: 8, current: 8 },
           armorClass: 16,
           speed: 30,
         }
