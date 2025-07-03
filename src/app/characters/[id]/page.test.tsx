@@ -199,7 +199,7 @@ describe('CharacterDetailClient', () => {
     // Click the edit button
     fireEvent.click(screen.getByText('Edit Character'));
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/characters/test-id/edit');
+    expect(mockRouterPush).toHaveBeenCalledWith(`/characters/${testCharacter._id.toString()}/edit`);
   });
 
   it('should display equipment section when character has equipment', async () => {
