@@ -210,20 +210,14 @@ export type TemplateFilter = z.infer<typeof TemplateFilterSchema>;
 
 // Utility functions
 export function calculateProficiencyBonus(challengeRating: ChallengeRating): number {
-  // Simplified lookup table to reduce complexity
-  const bonusByLevel = [
-    { max: 0.5, bonus: 2 },
-    { max: 4, bonus: 2 },
-    { max: 8, bonus: 3 },
-    { max: 12, bonus: 4 },
-    { max: 16, bonus: 5 },
-    { max: 20, bonus: 6 },
-    { max: 24, bonus: 7 },
-    { max: 28, bonus: 8 },
-    { max: Infinity, bonus: 9 }
-  ];
-
-  return bonusByLevel.find(level => challengeRating <= level.max)?.bonus || 2;
+  if (challengeRating <= 4) return 2;
+  if (challengeRating <= 8) return 3;
+  if (challengeRating <= 12) return 4;
+  if (challengeRating <= 16) return 5;
+  if (challengeRating <= 20) return 6;
+  if (challengeRating <= 24) return 7;
+  if (challengeRating <= 28) return 8;
+  return 9;
 }
 
 export function calculateAbilityModifier(score: number): number {
@@ -239,15 +233,19 @@ export function formatChallengeRating(cr: ChallengeRating): string {
 }
 
 export function parseChallengeRating(crString: string): ChallengeRating {
-  switch (crString.toLowerCase()) {
-    case '0': return 0;
-    case '1/8': return 0.125;
-    case '1/4': return 0.25;
-    case '1/2': return 0.5;
-    default: {
-      const parsed = parseInt(crString, 10);
-      if (parsed >= 1 && parsed <= 30) return parsed;
-      throw new Error(`Invalid challenge rating: ${crString}`);
-    }
+  const crMap: Record<string, ChallengeRating> = {
+    '0': 0,
+    '1/8': 0.125,
+    '1/4': 0.25,
+    '1/2': 0.5,
+  };
+
+  const normalized = crString.toLowerCase();
+  if (normalized in crMap) {
+    return crMap[normalized];
   }
+
+  const parsed = parseInt(crString, 10);
+  if (parsed >= 1 && parsed <= 30) return parsed;
+  throw new Error(`Invalid challenge rating: ${crString}`);
 }
