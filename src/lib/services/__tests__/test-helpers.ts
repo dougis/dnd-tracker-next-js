@@ -45,11 +45,8 @@ export const createBaseTemplate = (overrides: Partial<Omit<NPCTemplate, 'id'>> =
 /**
  * Create a template with minimal required fields for validation tests
  */
-export const createMinimalTemplate = (): Omit<NPCTemplate, 'id'> => ({
+export const createMinimalTemplate = (): Omit<NPCTemplate, 'id'> => createBaseTemplate({
   name: 'Minimal',
-  category: 'humanoid',
-  challengeRating: 1,
-  size: 'medium',
   stats: {
     abilityScores: {
       strength: 10, dexterity: 10, constitution: 10,
@@ -67,11 +64,7 @@ export const createMinimalTemplate = (): Omit<NPCTemplate, 'id'> => ({
     conditionImmunities: [],
     senses: [],
     languages: [],
-  },
-  equipment: [],
-  spells: [],
-  actions: [],
-  isSystem: false
+  }
 });
 
 /**
@@ -113,4 +106,22 @@ export const expectValidTemplateStructure = (template: NPCTemplate) => {
 export const expectErrorWithCode = (result: any, code: string) => {
   expect(result.success).toBe(false);
   expect(result.error?.code).toBe(code);
+};
+
+/**
+ * Create multiple test templates for filtering tests
+ */
+export const createTestTemplatesArray = (): NPCTemplate[] => [
+  { ...createBaseTemplate({ name: 'Goblin Warrior', category: 'humanoid' }), id: '1' },
+  { ...createBaseTemplate({ name: 'Dire Wolf', category: 'beast' }), id: '2' },
+  { ...createBaseTemplate({ name: 'Fire Elemental', category: 'elemental' }), id: '3' },
+  { ...createBaseTemplate({ name: 'Goblin Shaman', category: 'humanoid' }), id: '4' },
+];
+
+/**
+ * Default ability scores for testing
+ */
+export const DEFAULT_ABILITY_SCORES = {
+  strength: 10, dexterity: 10, constitution: 10,
+  intelligence: 10, wisdom: 10, charisma: 10
 };

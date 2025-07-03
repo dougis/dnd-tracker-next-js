@@ -1,5 +1,6 @@
 import { NPCFormHelpers } from '../NPCFormHelpers';
 import { NPCTemplate } from '@/types/npc';
+import { createTestTemplatesArray, DEFAULT_ABILITY_SCORES } from '@/lib/services/__tests__/test-helpers';
 
 const createMockTemplate = (): NPCTemplate => ({
   id: 'test-1',
@@ -114,7 +115,7 @@ describe('NPCFormHelpers', () => {
 
   describe('jsonToFormData', () => {
     const currentFormData = {
-      abilityScores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 },
+      abilityScores: DEFAULT_ABILITY_SCORES,
       hitPoints: { maximum: 10, current: 10, temporary: 0 },
     };
 
@@ -171,12 +172,7 @@ describe('NPCFormHelpers', () => {
   });
 
   describe('filterTemplates', () => {
-    const templates: NPCTemplate[] = [
-      { ...mockTemplate, id: '1', name: 'Goblin Warrior', category: 'humanoid' },
-      { ...mockTemplate, id: '2', name: 'Dire Wolf', category: 'beast' },
-      { ...mockTemplate, id: '3', name: 'Fire Elemental', category: 'elemental' },
-      { ...mockTemplate, id: '4', name: 'Goblin Shaman', category: 'humanoid' },
-    ];
+    const templates = createTestTemplatesArray();
 
     it('filters by category correctly', () => {
       const result = NPCFormHelpers.filterTemplates(templates, '', 'humanoid');
