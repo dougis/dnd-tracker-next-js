@@ -82,6 +82,10 @@ export interface ICharacter extends Document {
   imageUrl?: string;
   isPublic: boolean;
   partyId?: Types.ObjectId;
+  isDeleted?: boolean;
+  deletedAt?: Date;
+  undoToken?: string;
+  undoExpiresAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 
@@ -315,6 +319,21 @@ const characterSchema = new Schema<ICharacter, CharacterModel>(
       index: true,
     },
     partyId: mongooseObjectIdField('Party', false),
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    deletedAt: {
+      type: Date,
+    },
+    undoToken: {
+      type: String,
+      trim: true,
+    },
+    undoExpiresAt: {
+      type: Date,
+    },
   },
   getStandardSchemaOptions()
 );

@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Edit, Save, X, Plus } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { CharacterService } from '@/lib/services/CharacterService';
 import { CharacterStats } from '@/lib/services/CharacterServiceStats';
+import { CharacterEditingHeader } from './CharacterEditingHeader';
+import { CharacterAbilityScores } from './CharacterAbilityScores';
+import { CharacterNotes } from './CharacterNotes';
 import type { ICharacter } from '@/lib/models/Character';
 import type { CharacterUpdate } from '@/lib/validations/character';
 
@@ -27,9 +28,99 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [editedCharacter, setEditedCharacter] = useState<CharacterUpdate>({});
 
+  // Autosave functionality
+  const [autosaving, setAutosaving] = useState(false);
+  const [autosaveSuccess, setAutosaveSuccess] = useState(false);
+  const [draftChanges, setDraftChanges] = useState<CharacterUpdate | null>(null);
+  const [showDraftIndicator, setShowDraftIndicator] = useState(false);
+  const autosaveTimer = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     loadCharacterData();
   }, [characterId, userId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Autosave effect
+  useEffect(() => {
+    if (editMode && hasChanges()) {
+      // Clear existing timer
+      if (autosaveTimer.current) {
+        clearTimeout(autosaveTimer.current);
+      }
+
+      // Set new timer for 2 seconds
+      autosaveTimer.current = setTimeout(() => {
+        saveDraftChanges();
+      }, 2000);
+    }
+
+    return () => {
+      if (autosaveTimer.current) {
+        clearTimeout(autosaveTimer.current);
+      }
+    };
+  }, [editedCharacter, editMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load draft changes on mount
+  useEffect(() => {
+    loadDraftChanges();
+  }, [characterId, userId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const hasChanges = useCallback(() => {
+    if (!character) return false;
+    return (
+      JSON.stringify(editedCharacter.abilityScores) !== JSON.stringify(character.abilityScores) ||
+      editedCharacter.backstory !== character.backstory ||
+      editedCharacter.notes !== character.notes
+    );
+  }, [editedCharacter, character]);
+
+  const saveDraftChanges = useCallback(async () => {
+    if (!hasChanges()) return;
+
+    try {
+      setAutosaving(true);
+      const result = await CharacterService.saveDraftChanges(characterId, userId, editedCharacter);
+
+      if (result.success) {
+        setAutosaveSuccess(true);
+        setTimeout(() => setAutosaveSuccess(false), 2000);
+      }
+    } catch (err) {
+      // Silently fail autosave to not disrupt user experience
+    } finally {
+      setAutosaving(false);
+    }
+  }, [characterId, userId, editedCharacter, hasChanges]);
+
+  const loadDraftChanges = async () => {
+    try {
+      const result = await CharacterService.getDraftChanges(characterId, userId);
+      if (result.success && result.data) {
+        setDraftChanges(result.data);
+        setShowDraftIndicator(true);
+      }
+    } catch (err) {
+      // Silently fail loading draft changes
+    }
+  };
+
+  const restoreDraftChanges = () => {
+    if (draftChanges) {
+      setEditedCharacter(draftChanges);
+      setEditMode(true);
+      setShowDraftIndicator(false);
+    }
+  };
+
+  const discardDraftChanges = async () => {
+    try {
+      await CharacterService.clearDraftChanges(characterId, userId);
+      setDraftChanges(null);
+      setShowDraftIndicator(false);
+    } catch (err) {
+      // Silently fail clearing draft changes
+    }
+  };
 
   const loadCharacterData = async () => {
     try {
@@ -142,94 +233,42 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
 
   return (
     <div data-testid="character-stats-manager" className="space-y-6">
-      {/* Character Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">{character.name}</h1>
-        <div className="flex gap-2">
-          {editMode ? (
-            <>
-              <Button
-                data-testid="save-stats-button"
-                onClick={handleSave}
-                disabled={saving}
-                className="flex items-center gap-2"
-              >
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                Save
-              </Button>
-              <Button
-                data-testid="cancel-stats-button"
-                onClick={handleCancel}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <X className="h-4 w-4" />
-                Cancel
-              </Button>
-            </>
-          ) : (
-            <Button
-              data-testid="edit-stats-button"
-              onClick={() => setEditMode(true)}
-              className="flex items-center gap-2"
-            >
-              <Edit className="h-4 w-4" />
-              Edit
-            </Button>
-          )}
-        </div>
-      </div>
+      <CharacterEditingHeader
+        characterName={character.name}
+        editMode={editMode}
+        states={{
+          save: {
+            saving,
+            saveSuccess,
+          },
+          autosave: {
+            autosaving,
+            autosaveSuccess,
+          },
+          draft: {
+            showDraftIndicator,
+            draftChanges,
+          },
+        }}
+        actions={{
+          edit: {
+            onEditClick: () => setEditMode(true),
+            onSaveClick: handleSave,
+            onCancelClick: handleCancel,
+          },
+          draft: {
+            onRestoreDraft: restoreDraftChanges,
+            onDiscardDraft: discardDraftChanges,
+          },
+        }}
+      />
 
-      {saveSuccess && (
-        <Alert data-testid="save-success-message" className="border-green-200 bg-green-50">
-          <AlertDescription className="text-green-800">
-            Character updated successfully!
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Ability Scores */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Ability Scores</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-4">
-            {abilities.map((ability) => {
-              const score = (editMode ? editedCharacter.abilityScores : character.abilityScores)?.[ability as keyof typeof character.abilityScores] || 10;
-              const modifier = Math.floor((score - 10) / 2);
-              const modifierString = modifier >= 0 ? `+${modifier}` : `${modifier}`;
-
-              return (
-                <div key={ability} data-testid={`ability-${ability}`} className="text-center p-4 border rounded">
-                  <div className="text-xs font-medium uppercase mb-1">
-                    {ability.substring(0, 3)}
-                  </div>
-                  {editMode ? (
-                    <Input
-                      data-testid={`ability-${ability}-input`}
-                      type="number"
-                      min="1"
-                      max="30"
-                      value={score}
-                      onChange={(e) => {
-                        const numValue = parseInt(e.target.value, 10);
-                        if (!isNaN(numValue)) {
-                          updateAbilityScore(ability, numValue);
-                        }
-                      }}
-                      className="text-center text-2xl font-bold h-12 mb-1"
-                    />
-                  ) : (
-                    <div className="text-2xl font-bold mb-1">{score}</div>
-                  )}
-                  <div className="text-sm text-muted-foreground">{modifierString}</div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      <CharacterAbilityScores
+        character={character}
+        editMode={editMode}
+        editedCharacter={editedCharacter}
+        onUpdateAbilityScore={updateAbilityScore}
+      />
 
       {/* Derived Stats */}
       <Card>
@@ -373,62 +412,14 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
         </CardContent>
       </Card>
 
-      {/* Character Notes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              Backstory
-              {!editMode && (
-                <Button
-                  data-testid="edit-backstory-button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setEditMode(true)}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent data-testid="backstory-section">
-            {editMode ? (
-              <Textarea
-                data-testid="backstory-textarea"
-                value={editedCharacter.backstory || ''}
-                onChange={(e) => updateBackstory(e.target.value)}
-                placeholder="Character backstory..."
-                className="min-h-32"
-              />
-            ) : (
-              <div className="whitespace-pre-wrap">
-                {character.backstory || 'No backstory provided'}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Notes</CardTitle>
-          </CardHeader>
-          <CardContent data-testid="notes-section">
-            {editMode ? (
-              <Textarea
-                data-testid="notes-textarea"
-                value={editedCharacter.notes || ''}
-                onChange={(e) => updateNotes(e.target.value)}
-                placeholder="Character notes..."
-                className="min-h-32"
-              />
-            ) : (
-              <div className="whitespace-pre-wrap">
-                {character.notes || 'No notes added'}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <CharacterNotes
+        character={character}
+        editMode={editMode}
+        editedCharacter={editedCharacter}
+        onUpdateBackstory={updateBackstory}
+        onUpdateNotes={updateNotes}
+        onEnterEditMode={() => setEditMode(true)}
+      />
     </div>
   );
 }

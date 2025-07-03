@@ -44,7 +44,7 @@ export const mockCharacters: ICharacter[] = [
 ];
 
 export const createMockPaginatedResponse = (items = mockCharacters, pagination = {}) => ({
-  success: true,
+  success: true as const,
   data: {
     items,
     pagination: {
@@ -58,7 +58,7 @@ export const createMockPaginatedResponse = (items = mockCharacters, pagination =
 });
 
 export const createMockErrorResponse = (message = 'Test error') => ({
-  success: false,
+  success: false as const,
   error: {
     type: 'DatabaseError',
     message,

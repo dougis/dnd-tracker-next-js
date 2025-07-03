@@ -175,7 +175,9 @@ describe('CharacterValidationUtils', () => {
 
       const result = CharacterValidationUtils.validateUpdateData({ name: 'Updated' });
       expect(result.success).toBe(true);
-      expect(result.data).toEqual({ name: 'Updated' });
+      if (result.success) {
+        expect(result.data).toEqual({ name: 'Updated' });
+      }
     });
 
     it('should fail for invalid update data', () => {
@@ -187,7 +189,9 @@ describe('CharacterValidationUtils', () => {
 
       const result = CharacterValidationUtils.validateUpdateData({});
       expect(result.success).toBe(false);
-      expect(result.error.code).toBe(CHARACTER_ERROR_CODES.INVALID_CHARACTER_DATA);
+      if (!result.success) {
+        expect(result.error.code).toBe(CHARACTER_ERROR_CODES.INVALID_CHARACTER_DATA);
+      }
     });
   });
 
