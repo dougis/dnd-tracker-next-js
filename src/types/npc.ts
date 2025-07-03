@@ -210,17 +210,20 @@ export type TemplateFilter = z.infer<typeof TemplateFilterSchema>;
 
 // Utility functions
 export function calculateProficiencyBonus(challengeRating: ChallengeRating): number {
-  if (challengeRating === 0 || challengeRating === 0.125 || challengeRating === 0.25 || challengeRating === 0.5) {
-    return 2;
-  }
-  if (challengeRating <= 4) return 2;
-  if (challengeRating <= 8) return 3;
-  if (challengeRating <= 12) return 4;
-  if (challengeRating <= 16) return 5;
-  if (challengeRating <= 20) return 6;
-  if (challengeRating <= 24) return 7;
-  if (challengeRating <= 28) return 8;
-  return 9;
+  // Simplified lookup table to reduce complexity
+  const bonusByLevel = [
+    { max: 0.5, bonus: 2 },
+    { max: 4, bonus: 2 },
+    { max: 8, bonus: 3 },
+    { max: 12, bonus: 4 },
+    { max: 16, bonus: 5 },
+    { max: 20, bonus: 6 },
+    { max: 24, bonus: 7 },
+    { max: 28, bonus: 8 },
+    { max: Infinity, bonus: 9 }
+  ];
+
+  return bonusByLevel.find(level => challengeRating <= level.max)?.bonus || 2;
 }
 
 export function calculateAbilityModifier(score: number): number {
