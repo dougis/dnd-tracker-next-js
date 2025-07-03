@@ -3,7 +3,7 @@
  */
 import { render, screen, waitFor } from '@testing-library/react';
 import { useRouter } from 'next/navigation';
-import CharacterDetailPage from './page';
+import { CharacterDetailClient } from './CharacterDetailClient';
 import { CharacterService } from '@/lib/services/CharacterService';
 import { createMockCharacter } from '@/lib/services/__tests__/CharacterService.test-helpers';
 
@@ -14,14 +14,14 @@ jest.mock('next/navigation', () => ({
 
 jest.mock('@/lib/services/CharacterService', () => ({
   CharacterService: {
-    getById: jest.fn(),
+    getCharacterById: jest.fn(),
   },
 }));
 
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 const createMockCharacterService = CharacterService as jest.Mocked<typeof CharacterService>;
 
-describe('CharacterDetailPage', () => {
+describe('CharacterDetailClient', () => {
   const mockRouterPush = jest.fn();
   const mockRouterBack = jest.fn();
 
@@ -41,9 +41,12 @@ describe('CharacterDetailPage', () => {
       level: 5,
     });
 
-    createMockCharacterService.getById.mockResolvedValue(testCharacter);
+    createMockCharacterService.getCharacterById.mockResolvedValue({
+      success: true,
+      data: testCharacter,
+    });
 
-    render(<CharacterDetailPage params={{ id: 'test-id' }} />);
+    render(<CharacterDetailClient id="test-id" />);
 
     await waitFor(() => {
       expect(screen.getByText('Test Character')).toBeInTheDocument();
@@ -53,17 +56,20 @@ describe('CharacterDetailPage', () => {
   });
 
   it('should render loading state while fetching character', () => {
-    createMockCharacterService.getById.mockReturnValue(new Promise(() => {}));
+    createMockCharacterService.getCharacterById.mockReturnValue(new Promise(() => {}));
 
-    render(<CharacterDetailPage params={{ id: 'test-id' }} />);
+    render(<CharacterDetailClient id="test-id" />);
 
     expect(screen.getByText('Loading character...')).toBeInTheDocument();
   });
 
   it('should render error state when character not found', async () => {
-    createMockCharacterService.getById.mockRejectedValue(new Error('Character not found'));
+    createMockCharacterService.getCharacterById.mockResolvedValue({
+      success: false,
+      error: { message: 'Character not found', code: 'NOT_FOUND' },
+    });
 
-    render(<CharacterDetailPage params={{ id: 'test-id' }} />);
+    render(<CharacterDetailClient id="test-id" />);
 
     await waitFor(() => {
       expect(screen.getByText('Character not found')).toBeInTheDocument();
@@ -77,9 +83,12 @@ describe('CharacterDetailPage', () => {
       speed: 30,
     });
 
-    createMockCharacterService.getById.mockResolvedValue(testCharacter);
+    createMockCharacterService.getCharacterById.mockResolvedValue({
+      success: true,
+      data: testCharacter,
+    });
 
-    render(<CharacterDetailPage params={{ id: 'test-id' }} />);
+    render(<CharacterDetailClient id="test-id" />);
 
     await waitFor(() => {
       expect(screen.getByText('35 / 45')).toBeInTheDocument(); // HP
@@ -100,9 +109,12 @@ describe('CharacterDetailPage', () => {
       },
     });
 
-    createMockCharacterService.getById.mockResolvedValue(testCharacter);
+    createMockCharacterService.getCharacterById.mockResolvedValue({
+      success: true,
+      data: testCharacter,
+    });
 
-    render(<CharacterDetailPage params={{ id: 'test-id' }} />);
+    render(<CharacterDetailClient id="test-id" />);
 
     await waitFor(() => {
       expect(screen.getByText('16 (+3)')).toBeInTheDocument(); // STR
@@ -122,9 +134,12 @@ describe('CharacterDetailPage', () => {
       ],
     });
 
-    createMockCharacterService.getById.mockResolvedValue(testCharacter);
+    createMockCharacterService.getCharacterById.mockResolvedValue({
+      success: true,
+      data: testCharacter,
+    });
 
-    render(<CharacterDetailPage params={{ id: 'test-id' }} />);
+    render(<CharacterDetailClient id="test-id" />);
 
     await waitFor(() => {
       expect(screen.getByText('Fighter (Battle Master) - Level 3')).toBeInTheDocument();
@@ -138,9 +153,12 @@ describe('CharacterDetailPage', () => {
       name: 'Test Character',
     });
 
-    createMockCharacterService.getById.mockResolvedValue(testCharacter);
+    createMockCharacterService.getCharacterById.mockResolvedValue({
+      success: true,
+      data: testCharacter,
+    });
 
-    render(<CharacterDetailPage params={{ id: 'test-id' }} />);
+    render(<CharacterDetailClient id="test-id" />);
 
     await waitFor(() => {
       expect(screen.getByText('Edit Character')).toBeInTheDocument();
@@ -154,16 +172,19 @@ describe('CharacterDetailPage', () => {
       name: 'Test Character',
     });
 
-    createMockCharacterService.getById.mockResolvedValue(testCharacter);
+    createMockCharacterService.getCharacterById.mockResolvedValue({
+      success: true,
+      data: testCharacter,
+    });
 
-    render(<CharacterDetailPage params={{ id: 'test-id' }} />);
+    render(<CharacterDetailClient id="test-id" />);
 
     await waitFor(() => {
       const editButton = screen.getByText('Edit Character');
       editButton.click();
     });
 
-    expect(mockRouterPush).toHaveBeenCalledWith('/characters/test-id/edit');
+    expect(mockRouterPush).toHaveBeenCalledWith('/characters/507f1f77bcf86cd799439011/edit');
   });
 
   it('should display equipment section when character has equipment', async () => {
@@ -190,9 +211,12 @@ describe('CharacterDetailPage', () => {
       ],
     });
 
-    createMockCharacterService.getById.mockResolvedValue(testCharacter);
+    createMockCharacterService.getCharacterById.mockResolvedValue({
+      success: true,
+      data: testCharacter,
+    });
 
-    render(<CharacterDetailPage params={{ id: 'test-id' }} />);
+    render(<CharacterDetailClient id="test-id" />);
 
     await waitFor(() => {
       expect(screen.getByText('Equipment')).toBeInTheDocument();
@@ -223,9 +247,12 @@ describe('CharacterDetailPage', () => {
       ],
     });
 
-    createMockCharacterService.getById.mockResolvedValue(testCharacter);
+    createMockCharacterService.getCharacterById.mockResolvedValue({
+      success: true,
+      data: testCharacter,
+    });
 
-    render(<CharacterDetailPage params={{ id: 'test-id' }} />);
+    render(<CharacterDetailClient id="test-id" />);
 
     await waitFor(() => {
       expect(screen.getByText('Spells')).toBeInTheDocument();
@@ -239,9 +266,12 @@ describe('CharacterDetailPage', () => {
       notes: 'This is a test character with some notes.',
     });
 
-    createMockCharacterService.getById.mockResolvedValue(testCharacter);
+    createMockCharacterService.getCharacterById.mockResolvedValue({
+      success: true,
+      data: testCharacter,
+    });
 
-    render(<CharacterDetailPage params={{ id: 'test-id' }} />);
+    render(<CharacterDetailClient id="test-id" />);
 
     await waitFor(() => {
       expect(screen.getByText('Notes')).toBeInTheDocument();
@@ -254,9 +284,12 @@ describe('CharacterDetailPage', () => {
       backstory: 'Born in a small village, this character has a rich history.',
     });
 
-    createMockCharacterService.getById.mockResolvedValue(testCharacter);
+    createMockCharacterService.getCharacterById.mockResolvedValue({
+      success: true,
+      data: testCharacter,
+    });
 
-    render(<CharacterDetailPage params={{ id: 'test-id' }} />);
+    render(<CharacterDetailClient id="test-id" />);
 
     await waitFor(() => {
       expect(screen.getByText('Backstory')).toBeInTheDocument();

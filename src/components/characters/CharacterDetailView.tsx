@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import { Character } from '@/lib/models/Character';
+import type { ICharacter } from '@/lib/models/Character';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
-import { Edit, Share2, Heart, Shield, Zap, Eye } from 'lucide-react';
+import { Edit, Share2, Heart, Shield, Zap } from 'lucide-react';
 
 interface CharacterDetailViewProps {
-  character: Character;
-  onEdit: (character: Character) => void;
-  onShare: (character: Character) => void;
+  character: ICharacter;
+  onEdit: (_character: ICharacter) => void;
+  onShare: (_character: ICharacter) => void;
 }
 
 export default function CharacterDetailView({ character, onEdit, onShare }: CharacterDetailViewProps) {
@@ -25,15 +24,12 @@ export default function CharacterDetailView({ character, onEdit, onShare }: Char
     return `${score} (${getAbilityModifier(score)})`;
   };
 
-  const getProficiencyBonus = (level: number): number => {
-    return Math.ceil(level / 4) + 1;
-  };
 
   const getSavingThrowBonus = (ability: string, score: number): number => {
     const modifier = Math.floor((score - 10) / 2);
     // Handle both Map and object for savingThrows
-    const isProficient = character.savingThrows instanceof Map 
-      ? character.savingThrows.get(ability) 
+    const isProficient = character.savingThrows instanceof Map
+      ? character.savingThrows.get(ability)
       : character.savingThrows?.[ability as keyof typeof character.savingThrows] || false;
     return isProficient ? modifier + character.proficiencyBonus : modifier;
   };
@@ -41,8 +37,8 @@ export default function CharacterDetailView({ character, onEdit, onShare }: Char
   const getSkillBonus = (skillName: string, abilityScore: number): number => {
     const modifier = Math.floor((abilityScore - 10) / 2);
     // Handle both Map and object for skills
-    const isProficient = character.skills instanceof Map 
-      ? character.skills.get(skillName) 
+    const isProficient = character.skills instanceof Map
+      ? character.skills.get(skillName)
       : character.skills?.[skillName] || false;
     return isProficient ? modifier + character.proficiencyBonus : modifier;
   };
@@ -246,7 +242,7 @@ export default function CharacterDetailView({ character, onEdit, onShare }: Char
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {(character.skills instanceof Map 
+              {(character.skills instanceof Map
                 ? Array.from(character.skills.entries())
                 : Object.entries(character.skills)
               ).map(([skillName, isProficient]) => {
@@ -289,7 +285,7 @@ export default function CharacterDetailView({ character, onEdit, onShare }: Char
       'Performance': 'charisma',
       'Persuasion': 'charisma',
     };
-    
+
     const ability = skillToAbility[skillName] || 'strength';
     return character.abilityScores[ability];
   };

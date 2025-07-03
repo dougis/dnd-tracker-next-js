@@ -30,7 +30,7 @@ describe('CharacterDetailView', () => {
     );
 
     expect(screen.getByText('Aragorn')).toBeInTheDocument();
-    expect(screen.getByText((content, element) => {
+    expect(screen.getByText((content, _element) => {
       return content.includes('human') && content.includes('Level 10');
     })).toBeInTheDocument();
   });
@@ -77,6 +77,9 @@ describe('CharacterDetailView', () => {
         onShare={mockOnShare}
       />
     );
+
+    // Click on Stats tab to see ability scores
+    fireEvent.click(screen.getByText('Stats'));
 
     expect(screen.getByText('20 (+5)')).toBeInTheDocument(); // STR
     expect(screen.getByText('16 (+3)')).toBeInTheDocument(); // DEX
@@ -135,6 +138,9 @@ describe('CharacterDetailView', () => {
       />
     );
 
+    // Click on Stats tab to see saving throws
+    fireEvent.click(screen.getByText('Stats'));
+
     expect(screen.getByText('STR +6')).toBeInTheDocument(); // 3 + 3 (prof)
     expect(screen.getByText('CON +7')).toBeInTheDocument(); // 4 + 3 (prof)
     expect(screen.getByText('WIS +0')).toBeInTheDocument(); // 0 (no prof)
@@ -165,6 +171,9 @@ describe('CharacterDetailView', () => {
         onShare={mockOnShare}
       />
     );
+
+    // Click on Stats tab to see skills
+    fireEvent.click(screen.getByText('Stats'));
 
     expect(screen.getByText('Athletics +6')).toBeInTheDocument(); // STR 3 + prof 3
     expect(screen.getByText('Stealth +5')).toBeInTheDocument(); // DEX 2 + prof 3
@@ -201,7 +210,9 @@ describe('CharacterDetailView', () => {
       />
     );
 
-    expect(screen.getByText('Equipment')).toBeInTheDocument();
+    // Click on Equipment tab
+    fireEvent.click(screen.getByText('Equipment'));
+
     expect(screen.getByText('Flametongue Sword')).toBeInTheDocument();
     expect(screen.getByText('Studded Leather Armor')).toBeInTheDocument();
     expect(screen.getByText('500')).toBeInTheDocument();
@@ -245,7 +256,9 @@ describe('CharacterDetailView', () => {
       />
     );
 
-    expect(screen.getByText('Spells')).toBeInTheDocument();
+    // Click on Spells tab
+    fireEvent.click(screen.getByText('Spells'));
+
     expect(screen.getByText('1st Level')).toBeInTheDocument();
     expect(screen.getByText('3rd Level')).toBeInTheDocument();
     expect(screen.getByText('Magic Missile')).toBeInTheDocument();
@@ -266,6 +279,9 @@ describe('CharacterDetailView', () => {
       />
     );
 
+    // Click on Notes tab
+    fireEvent.click(screen.getByText('Notes'));
+
     expect(screen.getByText('Notes')).toBeInTheDocument();
     expect(screen.getByText('This character has a mysterious past and carries ancient secrets.')).toBeInTheDocument();
   });
@@ -282,6 +298,9 @@ describe('CharacterDetailView', () => {
         onShare={mockOnShare}
       />
     );
+
+    // Click on Notes tab
+    fireEvent.click(screen.getByText('Notes'));
 
     expect(screen.getByText('Backstory')).toBeInTheDocument();
     expect(screen.getByText('Born in the northern kingdoms, trained as a ranger from childhood.')).toBeInTheDocument();
