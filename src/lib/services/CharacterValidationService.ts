@@ -24,7 +24,7 @@ import {
   type ValidationErrorWithFix,
   type CharacterBackup,
 } from '../validations/error-recovery';
-import type { CharacterCreation, CharacterUpdate } from '../validations/character';
+import type { CharacterCreation } from '../validations/character';
 
 export interface ValidationContext {
   userId: string;
@@ -86,15 +86,18 @@ export class CharacterValidationService {
         };
       }
 
-      // Step 2: Enhanced schema validation
-      const enhancedValidation = RealtimeValidator.validateCharacterData(characterData as Partial<CharacterCreation>);
+      // Step 2: Use the working validation directly from CharacterValidationUtils
+      const directValidation = CharacterValidationUtils.validateCharacterData(characterData);
 
-      if (!enhancedValidation.success) {
-        const errors: ValidationErrorWithFix[] = enhancedValidation.errors?.map(error => ({
-          ...error,
-          suggestedFix: this.generateSuggestedFix(error.field, error.message),
-          autoFixable: this.isAutoFixable(error.field, error.message),
-        })) || [];
+      if (!directValidation.success) {
+        const errors: ValidationErrorWithFix[] = [{
+          name: 'ValidationError',
+          message: directValidation.error.message,
+          field: 'general',
+          code: directValidation.error.code,
+          suggestedFix: this.generateSuggestedFix('general', directValidation.error.message),
+          autoFixable: this.isAutoFixable('general', directValidation.error.message),
+        }];
 
         return {
           success: false,
@@ -105,17 +108,20 @@ export class CharacterValidationService {
         };
       }
 
+      // Use the validated data from the working validation
+      const validatedData = directValidation.data;
+
       // Step 3: Business rule validation (if enabled)
       if (opts.validateBusinessRules) {
         const businessValidation = await this.validateBusinessRules(
-          enhancedValidation.data,
+          validatedData,
           context
         );
 
         if (!businessValidation.success) {
           return {
             success: false,
-            data: enhancedValidation.data,
+            data: validatedData,
             errors: [businessValidation.error] as ValidationErrorWithFix[],
             warnings: [],
             suggestions: ['Please check business rule requirements'],
@@ -126,13 +132,13 @@ export class CharacterValidationService {
       // Step 4: Consistency checks (if enabled)
       let warnings: ConsistencyWarning[] = [];
       if (opts.enableConsistencyChecks) {
-        warnings = CharacterConsistencyChecker.checkConsistency(enhancedValidation.data);
+        warnings = CharacterConsistencyChecker.checkConsistency(validatedData);
       }
 
       // Step 5: Create backup if data recovery is enabled
       if (opts.enableDataRecovery && context.characterId) {
         CharacterDataRecovery.createBackup(
-          enhancedValidation.data,
+          validatedData,
           context.operationType === 'create' ? 'auto-save' : 'pre-operation',
           context.characterId
         );
@@ -140,7 +146,7 @@ export class CharacterValidationService {
 
       return {
         success: true,
-        data: enhancedValidation.data,
+        data: validatedData,
         errors: [],
         warnings,
         suggestions: warnings.length > 0
@@ -152,7 +158,7 @@ export class CharacterValidationService {
       return {
         success: false,
         errors: [{
-          ...new Error('Validation process failed'),
+          name: 'ValidationError',
           message: error instanceof Error ? error.message : 'Unknown validation error',
           field: 'general',
           suggestedFix: 'Please try again or contact support',
@@ -175,9 +181,28 @@ export class CharacterValidationService {
     const _opts = { ...this.defaultOptions, ...options };
 
     try {
-      // Merge update data with existing character for full validation (deep merge for nested objects)
-      const mergedData = this.deepMerge(existingCharacter, updateData as Partial<CharacterCreation>);
+      // First validate just the update data using the CharacterValidationUtils
+      const initialUpdateValidation = CharacterValidationUtils.validateUpdateData(updateData);
+      if (!initialUpdateValidation.success) {
+        const errors: ValidationErrorWithFix[] = [{
+          name: 'ValidationError',
+          message: initialUpdateValidation.error.message,
+          field: 'general',
+          code: initialUpdateValidation.error.code,
+          suggestedFix: this.generateSuggestedFix('general', initialUpdateValidation.error.message),
+          autoFixable: this.isAutoFixable('general', initialUpdateValidation.error.message),
+        }];
 
+        return {
+          success: false,
+          errors,
+          warnings: [],
+          suggestions: this.generateValidationSuggestions(errors),
+        };
+      }
+
+      // Merge update data with existing character for full validation
+      const mergedData = this.deepMerge(existingCharacter, updateData as Partial<CharacterCreation>);
 
       // Validate the merged result as a complete character
       const fullValidation = await this.validateCharacterCreation(
@@ -193,27 +218,9 @@ export class CharacterValidationService {
         };
       }
 
-      // Validate the update data itself
-      const updateValidation = RealtimeValidator.validateUpdateData(updateData as Partial<CharacterUpdate>);
-
-      if (!updateValidation.success) {
-        const errors: ValidationErrorWithFix[] = updateValidation.errors?.map(error => ({
-          ...error,
-          suggestedFix: this.generateSuggestedFix(error.field, error.message),
-          autoFixable: this.isAutoFixable(error.field, error.message),
-        })) || [];
-
-        return {
-          success: false,
-          errors,
-          warnings: [],
-          suggestions: this.generateValidationSuggestions(errors),
-        };
-      }
-
       return {
         success: true,
-        data: updateValidation.data,
+        data: initialUpdateValidation.data as EnhancedCharacterUpdate,
         errors: [],
         warnings: fullValidation.warnings,
         suggestions: fullValidation.suggestions,
@@ -223,7 +230,7 @@ export class CharacterValidationService {
       return {
         success: false,
         errors: [{
-          ...new Error('Update validation failed'),
+          name: 'ValidationError',
           message: error instanceof Error ? error.message : 'Unknown update validation error',
           field: 'general',
           suggestedFix: 'Please check your update data and try again',
@@ -430,15 +437,26 @@ export class CharacterValidationService {
   }
 
   private static deepMerge(target: any, source: any): any {
+    if (!target || typeof target !== 'object') {
+      return source;
+    }
+
+    if (!source || typeof source !== 'object') {
+      return target;
+    }
+
     const result = { ...target };
 
     for (const key in source) {
-      if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
-        // Deep merge objects
-        result[key] = this.deepMerge(target[key] || {}, source[key]);
-      } else {
-        // Direct assignment for primitives and arrays
-        result[key] = source[key];
+      if (source[key] !== null && source[key] !== undefined) {
+        if (typeof source[key] === 'object' && !Array.isArray(source[key]) &&
+            target[key] && typeof target[key] === 'object' && !Array.isArray(target[key])) {
+          // Deep merge objects only if both are objects and target[key] exists
+          result[key] = this.deepMerge(target[key], source[key]);
+        } else {
+          // Direct assignment for primitives, arrays, or when target doesn't have the key
+          result[key] = source[key];
+        }
       }
     }
 

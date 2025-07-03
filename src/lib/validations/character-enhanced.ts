@@ -366,9 +366,26 @@ export class RealtimeValidator {
   }
 
   static validateCharacterData(data: Partial<CharacterCreation>): ValidationResult<CharacterCreation> {
-    // Temporary implementation - to be properly typed in follow-up
-    const result = safeValidate(characterCreationSchema, data);
-    return result as ValidationResult<CharacterCreation>;
+    // Use the existing validation from CharacterValidationUtils which works correctly
+    try {
+      const validationResult = characterCreationSchema.safeParse(data);
+      if (validationResult.success) {
+        return {
+          success: true,
+          data: validationResult.data,
+        };
+      } else {
+        return {
+          success: false,
+          errors: validationResult.error.errors.map(err => new ValidationError(err.message, err.path.join('.'))),
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        errors: [new ValidationError('Validation failed', 'general')],
+      };
+    }
   }
 
   static validateUpdateData(data: Partial<CharacterUpdate>): ValidationResult<CharacterUpdate> {
