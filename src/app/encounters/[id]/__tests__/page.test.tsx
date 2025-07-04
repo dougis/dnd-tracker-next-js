@@ -49,6 +49,17 @@ describe('EncounterDetailClient', () => {
     ],
     tags: ['forest', 'ambush'],
     status: 'draft',
+    settings: {
+      allowPlayerVisibility: true,
+      autoRollInitiative: true,
+      trackResources: true,
+      enableLairActions: false,
+      lairActionInitiative: undefined,
+      enableGridMovement: false,
+      gridSize: 5,
+      roundTimeLimit: undefined,
+      experienceThreshold: undefined,
+    },
   });
 
   beforeEach(() => {
@@ -429,7 +440,7 @@ describe('EncounterDetailClient', () => {
 
       await user.click(screen.getByText('Edit Encounter'));
 
-      expect(mockRouterPush).toHaveBeenCalledWith(`/encounters/${mockEncounter._id}/edit`);
+      expect(mockRouterPush).toHaveBeenCalledWith('/encounters/test-id/edit');
     });
 
     it('should show start combat confirmation', async () => {
@@ -443,7 +454,7 @@ describe('EncounterDetailClient', () => {
       await user.click(screen.getByText('Start Combat'));
 
       expect(screen.getByText('Start Combat Session?')).toBeInTheDocument();
-      expect(screen.getByText('This will initialize combat and roll initiative for all participants.')).toBeInTheDocument();
+      expect(screen.getByText('This will initialize combat and roll initiative for all participants. Initiative will be rolled automatically.')).toBeInTheDocument();
     });
   });
 
