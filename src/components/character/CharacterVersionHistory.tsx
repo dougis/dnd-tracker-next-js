@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -31,9 +31,9 @@ export function CharacterVersionHistory({ characterId, userId }: CharacterVersio
 
   useEffect(() => {
     loadVersionHistory();
-  }, [characterId, userId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loadVersionHistory]);
 
-  const loadVersionHistory = async () => {
+  const loadVersionHistory = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -50,7 +50,7 @@ export function CharacterVersionHistory({ characterId, userId }: CharacterVersio
     } finally {
       setLoading(false);
     }
-  };
+  }, [characterId, userId]);
 
   const handleRevertClick = (version: CharacterVersion) => {
     setSelectedVersion(version);

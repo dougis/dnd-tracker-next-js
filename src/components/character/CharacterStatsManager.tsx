@@ -37,7 +37,7 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
 
   useEffect(() => {
     loadCharacterData();
-  }, [characterId, userId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loadCharacterData]);
 
   // Autosave effect
   useEffect(() => {
@@ -58,12 +58,12 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
         clearTimeout(autosaveTimer.current);
       }
     };
-  }, [editedCharacter, editMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [editMode, editedCharacter, hasChanges, saveDraftChanges]);
 
   // Load draft changes on mount
   useEffect(() => {
     loadDraftChanges();
-  }, [characterId, userId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loadDraftChanges]);
 
   const hasChanges = useCallback(() => {
     if (!character) return false;
@@ -92,7 +92,7 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
     }
   }, [characterId, userId, editedCharacter, hasChanges]);
 
-  const loadDraftChanges = async () => {
+  const loadDraftChanges = useCallback(async () => {
     try {
       const result = await CharacterService.getDraftChanges(characterId, userId);
       if (result.success && result.data) {
@@ -102,7 +102,7 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
     } catch {
       // Silently fail loading draft changes
     }
-  };
+  }, [characterId, userId]);
 
   const restoreDraftChanges = () => {
     if (draftChanges) {
@@ -122,7 +122,7 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
     }
   };
 
-  const loadCharacterData = async () => {
+  const loadCharacterData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -156,7 +156,7 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
     } finally {
       setLoading(false);
     }
-  };
+  }, [characterId, userId]);
 
   const handleSave = async () => {
     if (!character) return;
