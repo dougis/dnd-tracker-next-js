@@ -3,13 +3,51 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { EncounterCard } from '../EncounterCard';
 import { createMockProps, createMockEncounter, setupTestEnvironment } from './test-helpers';
 
-// Simple helpers to eliminate duplication
+// Test helpers
 const renderCard = (overrides?: any) => {
   const props = createMockProps.encounterCard(overrides);
   render(<EncounterCard {...props} />);
   return props;
 };
+
 const expectText = (text: string) => expect(screen.getByText(text)).toBeInTheDocument();
+const expectTexts = (texts: string[]) => texts.forEach(expectText);
+
+const withConsoleSpy = (callback: (spy: jest.SpyInstance) => void) => {
+  const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+  try {
+    callback(consoleSpy);
+  } finally {
+    consoleSpy.mockRestore();
+  }
+};
+
+const clickCheckbox = (props: any) => {
+  const checkbox = screen.getByRole('checkbox');
+  fireEvent.click(checkbox);
+  return checkbox;
+};
+
+const clickActionButtons = () => {
+  const actionButtons = screen.getByTestId('action-buttons');
+  fireEvent.click(actionButtons);
+  return actionButtons;
+};
+
+const testNavigationClick = (props: any) => {
+  withConsoleSpy((spy) => {
+    const card = screen.getByText(props.encounter.name).closest('div[class*="cursor-pointer"]');
+    fireEvent.click(card!);
+    expect(spy).toHaveBeenCalledWith('View encounter:', props.encounter.id);
+  });
+};
+
+const testNoNavigationClick = (props: any, clickAction: () => void) => {
+  withConsoleSpy((spy) => {
+    clickAction();
+    expect(spy).not.toHaveBeenCalledWith('View encounter:', props.encounter.id);
+  });
+};
 
 // Mock child components
 jest.mock('../EncounterActionButtons', () => ({
@@ -61,8 +99,8 @@ describe('EncounterCard', () => {
 
       renderCard({ encounter });
 
-      ['Dragon Lair Encounter', 'A dangerous dragon encounter', 'draft', 'deadly', 
-       '8 participants', '(4 players)', 'Level 10', '120 minutes', 'dragon', 'lair'].forEach(expectText);
+      expectTexts(['Dragon Lair Encounter', 'A dangerous dragon encounter', 'draft', 'deadly',
+       '8 participants', '(4 players)', 'Level 10', '120 minutes', 'dragon', 'lair']);
     });
 
     it('renders status badge with correct variant', () => {
@@ -83,7 +121,7 @@ describe('EncounterCard', () => {
       });
       renderCard({ encounter });
 
-      ['combat', 'dungeon', 'magic', '+2'].forEach(expectText);
+      expectTexts(['combat', 'dungeon', 'magic', '+2']);
     });
 
     it('does not render optional fields when not provided', () => {
@@ -120,11 +158,8 @@ describe('EncounterCard', () => {
     });
 
     it('calls onSelect when checkbox is clicked', () => {
-      const props = createMockProps.encounterCard();
-      render(<EncounterCard {...props} />);
-
-      const checkbox = screen.getByRole('checkbox');
-      fireEvent.click(checkbox);
+      const props = renderCard();
+      clickCheckbox(props);
 
       expect(props.onSelect).toHaveBeenCalledWith(props.encounter.id);
     });
@@ -132,54 +167,27 @@ describe('EncounterCard', () => {
 
   describe('User Interactions', () => {
     it('handles card click for navigation', () => {
-      // Mock console.log to capture navigation calls
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      const props = createMockProps.encounterCard();
-      render(<EncounterCard {...props} />);
-
-      const card = screen.getByText(props.encounter.name).closest('div[class*="cursor-pointer"]');
-      fireEvent.click(card!);
-
-      expect(consoleSpy).toHaveBeenCalledWith('View encounter:', props.encounter.id);
-
-      consoleSpy.mockRestore();
+      const props = renderCard();
+      testNavigationClick(props);
     });
 
     it('does not trigger card click when clicking checkbox', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      const props = createMockProps.encounterCard();
-      render(<EncounterCard {...props} />);
-
-      const checkbox = screen.getByRole('checkbox');
-      fireEvent.click(checkbox);
-
-      expect(consoleSpy).not.toHaveBeenCalledWith('View encounter:', props.encounter.id);
-      expect(props.onSelect).toHaveBeenCalled();
-
-      consoleSpy.mockRestore();
+      const props = renderCard();
+      testNoNavigationClick(props, () => {
+        clickCheckbox(props);
+        expect(props.onSelect).toHaveBeenCalled();
+      });
     });
 
     it('does not trigger card click when clicking action buttons', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      const props = createMockProps.encounterCard();
-      render(<EncounterCard {...props} />);
-
-      const actionButtons = screen.getByTestId('action-buttons');
-      fireEvent.click(actionButtons);
-
-      expect(consoleSpy).not.toHaveBeenCalledWith('View encounter:', props.encounter.id);
-
-      consoleSpy.mockRestore();
+      const props = renderCard();
+      testNoNavigationClick(props, () => clickActionButtons());
     });
   });
 
   describe('Action Buttons Integration', () => {
     it('renders action buttons with correct props', () => {
-      const props = createMockProps.encounterCard();
-      render(<EncounterCard {...props} />);
+      const props = renderCard();
 
       const actionButtons = screen.getByTestId('action-buttons');
       expect(actionButtons).toBeInTheDocument();
@@ -187,11 +195,8 @@ describe('EncounterCard', () => {
     });
 
     it('passes onRefetch to action buttons', () => {
-      const props = createMockProps.encounterCard();
-      render(<EncounterCard {...props} />);
-
-      const actionButtons = screen.getByTestId('action-buttons');
-      fireEvent.click(actionButtons);
+      const props = renderCard();
+      clickActionButtons();
 
       expect(props.onRefetch).toHaveBeenCalled();
     });

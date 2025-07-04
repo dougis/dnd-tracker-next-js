@@ -63,57 +63,33 @@ describe('useEncounterData', () => {
     });
 
     it('handles network error correctly', async () => {
-      mockEncounterService.searchEncounters.mockRejectedValue(
-        new Error('Network failure')
-      );
-
-      const { result } = renderHook(() => useEncounterData(defaultParams));
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expectErrorState(result, 'Network failure');
+      await testErrorHandling(useEncounterData, defaultParams, mockEncounterService, 'Network failure');
     });
 
     it('handles unexpected error format', async () => {
-      mockEncounterService.searchEncounters.mockRejectedValue('String error');
-
-      const { result } = renderHook(() => useEncounterData(defaultParams));
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expectErrorState(result, 'An unexpected error occurred');
+      await testErrorHandling(useEncounterData, defaultParams, mockEncounterService, 'An unexpected error occurred');
     });
   });
 
   describe('Search Parameters', () => {
-    it('passes search query correctly', async () => {
+    const testParameterPassing = async (params: any, expectedCall: any) => {
       mockEncounterService.searchEncounters.mockResolvedValue(
         mockServiceResponses.searchSuccess()
       );
-
-      const params = {
-        ...defaultParams,
-        searchQuery: 'dragon encounter',
-      };
 
       renderHook(() => useEncounterData(params));
 
       await waitFor(() => {
-        expectServiceCallWith(mockEncounterService, expect.objectContaining({
-          query: 'dragon encounter',
-        }));
+        expectServiceCallWith(mockEncounterService, expect.objectContaining(expectedCall));
       });
+    };
+
+    it('passes search query correctly', async () => {
+      const params = { ...defaultParams, searchQuery: 'dragon encounter' };
+      await testParameterPassing(params, { query: 'dragon encounter' });
     });
 
     it('passes filters correctly', async () => {
-      mockEncounterService.searchEncounters.mockResolvedValue(
-        mockServiceResponses.searchSuccess()
-      );
-
       const params = {
         ...defaultParams,
         filters: createMockFilters({
@@ -124,39 +100,22 @@ describe('useEncounterData', () => {
           tags: ['combat'],
         }),
       };
-
-      renderHook(() => useEncounterData(params));
-
-      await waitFor(() => {
-        expectServiceCallWith(mockEncounterService, expect.objectContaining({
-          status: ['active', 'draft'],
-          difficulty: ['hard'],
-          targetLevelMin: 5,
-          targetLevelMax: 10,
-          tags: ['combat'],
-        }));
+      await testParameterPassing(params, {
+        status: ['active', 'draft'],
+        difficulty: ['hard'],
+        targetLevelMin: 5,
+        targetLevelMax: 10,
+        tags: ['combat'],
       });
     });
 
     it('passes sort parameters correctly', async () => {
-      mockEncounterService.searchEncounters.mockResolvedValue(
-        mockServiceResponses.searchSuccess()
-      );
-
       const params = {
         ...defaultParams,
         sortBy: 'name' as const,
         sortOrder: 'asc' as const,
       };
-
-      renderHook(() => useEncounterData(params));
-
-      await waitFor(() => {
-        expectServiceCallWith(mockEncounterService, expect.objectContaining({
-          sortBy: 'name',
-          sortOrder: 'asc',
-        }));
-      });
+      await testParameterPassing(params, { sortBy: 'name', sortOrder: 'asc' });
     });
   });
 
@@ -188,10 +147,7 @@ describe('useEncounterData', () => {
         mockServiceResponses.searchSuccess()
       );
 
-      renderHook(() => useEncounterData({
-        ...defaultParams,
-        limit: 50,
-      }));
+      renderHook(() => useEncounterData({ ...defaultParams, limit: 50 }));
 
       await waitFor(() => {
         expectServiceCallWith(mockEncounterService, expect.objectContaining({

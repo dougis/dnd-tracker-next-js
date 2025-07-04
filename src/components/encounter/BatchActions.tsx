@@ -15,6 +15,7 @@ import {
 import { X, Trash2, Copy, Archive } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createSuccessHandler, createErrorHandler } from './actions/errorUtils';
+import { getEncounterText } from './BatchActions/utils';
 
 interface BatchActionsProps {
   selectedCount: number;
@@ -73,7 +74,7 @@ export function BatchActions({
       <div className="flex items-center justify-between p-4 bg-muted/50 border rounded-lg">
         <div className="flex items-center space-x-4">
           <span className="text-sm font-medium">
-            {selectedCount} encounter{selectedCount !== 1 ? 's' : ''} selected
+            {getEncounterText(selectedCount)} selected
           </span>
 
           <div className="flex items-center space-x-2">
@@ -122,7 +123,7 @@ export function BatchActions({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Encounters</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {selectedCount} encounter{selectedCount !== 1 ? 's' : ''}?
+              Are you sure you want to delete {getEncounterText(selectedCount)}?
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

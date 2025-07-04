@@ -10,6 +10,15 @@ import {
   createTestEncounterInput,
   ENCOUNTER_TEST_CONSTANTS,
 } from './EncounterService.test-helpers';
+import {
+  setupSearchMocks,
+  setupBasicMock,
+  setupBasicMockWithSave,
+  expectSuccess,
+  expectError,
+  expectSearchResult,
+  expectMethodCalled,
+} from './test-utils/serviceTestHelpers';
 
 jest.mock('@/lib/models/encounter', () => ({
   Encounter: {
@@ -97,29 +106,20 @@ describe('EncounterService', () => {
         const encounterId = ENCOUNTER_TEST_CONSTANTS.mockEncounterId;
         const mockEncounter = createTestEncounter();
 
-        const mockFindById = jest.fn().mockResolvedValue(mockEncounter);
-        (Encounter.findById as jest.Mock) = mockFindById;
-
+        setupBasicMock('findById', mockEncounter);
         const result = await EncounterService.getEncounterById(encounterId);
 
-        // Debug removed
-
-        expect(result.success).toBe(true);
-        expect(result.data).toEqual(mockEncounter);
-        expect(mockFindById).toHaveBeenCalledWith(encounterId);
+        expectSuccess(result, mockEncounter);
+        expectMethodCalled(Encounter.findById as jest.Mock, [encounterId]);
       });
 
       it('should return error when encounter not found', async () => {
         const encounterId = ENCOUNTER_TEST_CONSTANTS.mockEncounterId;
 
-        const mockFindById = jest.fn().mockResolvedValue(null);
-        (Encounter.findById as jest.Mock) = mockFindById;
-
+        setupBasicMock('findById', null);
         const result = await EncounterService.getEncounterById(encounterId);
 
-        expect(result.success).toBe(false);
-        expect(result.error?.code).toBe('ENCOUNTER_NOT_FOUND');
-        expect(result.error?.statusCode).toBe(404);
+        expectError(result, 'ENCOUNTER_NOT_FOUND', 404);
       });
 
       it('should validate encounter ID format', async () => {
@@ -138,31 +138,25 @@ describe('EncounterService', () => {
         const updateData = { name: 'Updated Encounter Name' };
         const mockEncounter = createTestEncounter();
 
-        const mockFindByIdAndUpdate = jest.fn().mockResolvedValue(mockEncounter);
-        (Encounter.findByIdAndUpdate as jest.Mock) = mockFindByIdAndUpdate;
-
+        setupBasicMock('findByIdAndUpdate', mockEncounter);
         const result = await EncounterService.updateEncounter(encounterId, updateData);
 
-        expect(result.success).toBe(true);
-        expect(result.data).toEqual(mockEncounter);
-        expect(mockFindByIdAndUpdate).toHaveBeenCalledWith(
+        expectSuccess(result, mockEncounter);
+        expectMethodCalled(Encounter.findByIdAndUpdate as jest.Mock, [
           encounterId,
           updateData,
           { new: true, runValidators: true }
-        );
+        ]);
       });
 
       it('should return error when encounter not found for update', async () => {
         const encounterId = ENCOUNTER_TEST_CONSTANTS.mockEncounterId;
         const updateData = { name: 'Updated Name' };
 
-        const mockFindByIdAndUpdate = jest.fn().mockResolvedValue(null);
-        (Encounter.findByIdAndUpdate as jest.Mock) = mockFindByIdAndUpdate;
-
+        setupBasicMock('findByIdAndUpdate', null);
         const result = await EncounterService.updateEncounter(encounterId, updateData);
 
-        expect(result.success).toBe(false);
-        expect(result.error?.code).toBe('ENCOUNTER_NOT_FOUND');
+        expectError(result, 'ENCOUNTER_NOT_FOUND');
       });
     });
 
@@ -170,25 +164,20 @@ describe('EncounterService', () => {
       it('should delete encounter when found', async () => {
         const encounterId = ENCOUNTER_TEST_CONSTANTS.mockEncounterId;
 
-        const mockFindByIdAndDelete = jest.fn().mockResolvedValue(createTestEncounter());
-        (Encounter.findByIdAndDelete as jest.Mock) = mockFindByIdAndDelete;
-
+        setupBasicMock('findByIdAndDelete', createTestEncounter());
         const result = await EncounterService.deleteEncounter(encounterId);
 
-        expect(result.success).toBe(true);
-        expect(mockFindByIdAndDelete).toHaveBeenCalledWith(encounterId);
+        expectSuccess(result);
+        expectMethodCalled(Encounter.findByIdAndDelete as jest.Mock, [encounterId]);
       });
 
       it('should return error when encounter not found for deletion', async () => {
         const encounterId = ENCOUNTER_TEST_CONSTANTS.mockEncounterId;
 
-        const mockFindByIdAndDelete = jest.fn().mockResolvedValue(null);
-        (Encounter.findByIdAndDelete as jest.Mock) = mockFindByIdAndDelete;
-
+        setupBasicMock('findByIdAndDelete', null);
         const result = await EncounterService.deleteEncounter(encounterId);
 
-        expect(result.success).toBe(false);
-        expect(result.error?.code).toBe('ENCOUNTER_NOT_FOUND');
+        expectError(result, 'ENCOUNTER_NOT_FOUND');
       });
     });
   });
@@ -309,78 +298,30 @@ describe('EncounterService', () => {
         const searchTerm = 'Dragon';
         const mockEncounters = [createTestEncounter()];
 
-        const mockFind = jest.fn().mockReturnValue({
-          sort: jest.fn().mockReturnValue({
-            skip: jest.fn().mockReturnValue({
-              limit: jest.fn().mockReturnValue({
-                exec: jest.fn().mockResolvedValue(mockEncounters),
-              }),
-            }),
-          }),
-        });
-        const mockCountDocuments = jest.fn().mockResolvedValue(1);
-        (Encounter.find as jest.Mock) = mockFind;
-        (Encounter.countDocuments as jest.Mock) = mockCountDocuments;
-
+        setupSearchMocks(mockEncounters, 1);
         const result = await EncounterService.searchEncounters({ query: searchTerm });
 
-        expect(result.success).toBe(true);
-        expect(result.data.encounters).toEqual(mockEncounters);
-        expect(result.data.currentPage).toBe(1);
-        expect(result.data.totalPages).toBe(1);
-        expect(result.data.totalItems).toBe(1);
+        expectSearchResult(result, mockEncounters, 1, 1);
       });
 
       it('should filter encounters by difficulty', async () => {
         const difficulty = 'hard';
         const mockEncounters = [createTestEncounter()];
 
-        const mockFind = jest.fn().mockReturnValue({
-          sort: jest.fn().mockReturnValue({
-            skip: jest.fn().mockReturnValue({
-              limit: jest.fn().mockReturnValue({
-                exec: jest.fn().mockResolvedValue(mockEncounters),
-              }),
-            }),
-          }),
-        });
-        const mockCountDocuments = jest.fn().mockResolvedValue(1);
-        (Encounter.find as jest.Mock) = mockFind;
-        (Encounter.countDocuments as jest.Mock) = mockCountDocuments;
-
+        setupSearchMocks(mockEncounters, 1);
         const result = await EncounterService.searchEncounters({ difficulty });
 
-        expect(result.success).toBe(true);
-        expect(result.data.encounters).toEqual(mockEncounters);
-        expect(result.data.currentPage).toBe(1);
-        expect(result.data.totalPages).toBe(1);
-        expect(result.data.totalItems).toBe(1);
+        expectSearchResult(result, mockEncounters, 1, 1);
       });
 
       it('should filter encounters by target level', async () => {
         const targetLevel = 5;
         const mockEncounters = [createTestEncounter()];
 
-        const mockFind = jest.fn().mockReturnValue({
-          sort: jest.fn().mockReturnValue({
-            skip: jest.fn().mockReturnValue({
-              limit: jest.fn().mockReturnValue({
-                exec: jest.fn().mockResolvedValue(mockEncounters),
-              }),
-            }),
-          }),
-        });
-        const mockCountDocuments = jest.fn().mockResolvedValue(1);
-        (Encounter.find as jest.Mock) = mockFind;
-        (Encounter.countDocuments as jest.Mock) = mockCountDocuments;
-
+        setupSearchMocks(mockEncounters, 1);
         const result = await EncounterService.searchEncounters({ targetLevel });
 
-        expect(result.success).toBe(true);
-        expect(result.data.encounters).toEqual(mockEncounters);
-        expect(result.data.currentPage).toBe(1);
-        expect(result.data.totalPages).toBe(1);
-        expect(result.data.totalItems).toBe(1);
+        expectSearchResult(result, mockEncounters, 1, 1);
       });
     });
 
@@ -389,22 +330,16 @@ describe('EncounterService', () => {
         const ownerId = ENCOUNTER_TEST_CONSTANTS.mockOwnerId;
         const mockEncounters = [createTestEncounter()];
 
-        const mockFindByOwnerId = jest.fn().mockResolvedValue(mockEncounters);
-        (Encounter.findByOwnerId as jest.Mock) = mockFindByOwnerId;
-
+        setupBasicMock('findByOwnerId', mockEncounters);
         const result = await EncounterService.getEncountersByOwner(ownerId);
 
-        expect(result.success).toBe(true);
-        expect(result.data).toEqual(mockEncounters);
+        expectSuccess(result, mockEncounters);
+        const mockFindByOwnerId = Encounter.findByOwnerId as jest.Mock;
         expect(mockFindByOwnerId).toHaveBeenCalledWith(
-          expect.objectContaining({
-            toString: expect.any(Function)
-          }),
+          expect.objectContaining({ toString: expect.any(Function) }),
           false
         );
-        // Verify the ObjectId string value
-        const callArgs = mockFindByOwnerId.mock.calls[0];
-        expect(callArgs[0].toString()).toBe(ownerId);
+        expect(mockFindByOwnerId.mock.calls[0][0].toString()).toBe(ownerId);
       });
 
       it('should include shared encounters when specified', async () => {
@@ -412,21 +347,16 @@ describe('EncounterService', () => {
         const includeShared = true;
         const mockEncounters = [createTestEncounter()];
 
-        const mockFindByOwnerId = jest.fn().mockResolvedValue(mockEncounters);
-        (Encounter.findByOwnerId as jest.Mock) = mockFindByOwnerId;
-
+        setupBasicMock('findByOwnerId', mockEncounters);
         const result = await EncounterService.getEncountersByOwner(ownerId, includeShared);
 
-        expect(result.success).toBe(true);
+        expectSuccess(result);
+        const mockFindByOwnerId = Encounter.findByOwnerId as jest.Mock;
         expect(mockFindByOwnerId).toHaveBeenCalledWith(
-          expect.objectContaining({
-            toString: expect.any(Function)
-          }),
+          expect.objectContaining({ toString: expect.any(Function) }),
           true
         );
-        // Verify the ObjectId string value
-        const callArgs = mockFindByOwnerId.mock.calls[0];
-        expect(callArgs[0].toString()).toBe(ownerId);
+        expect(mockFindByOwnerId.mock.calls[0][0].toString()).toBe(ownerId);
       });
     });
   });
