@@ -13,7 +13,7 @@ const executeServiceOperation = async <T>(
     onError?.(result.error);
     throw new Error(errorMessage);
   }
-  
+
   return result;
 };
 
@@ -27,12 +27,12 @@ export const createServiceOperationHandler = (toastFn: any) => {
   ) => {
     try {
       const result = await executeServiceOperation(operation, onSuccess, onError);
-      
+
       toastFn({
         title: 'Success',
         description: successMessage,
       });
-      
+
       return result;
     } catch (error: any) {
       toastFn({
