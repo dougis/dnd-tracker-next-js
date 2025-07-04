@@ -6,11 +6,11 @@ import { EncounterService } from '@/lib/services/EncounterService';
 import { testDataFactories } from '@/lib/services/__tests__/testDataFactories';
 import {
   createTestParticipant,
-  formHelpers,
-  serviceHelpers,
-  waitHelpers,
-  participantHelpers,
-  workflowHelpers
+  formActions,
+  serviceMocks,
+  testExpectations,
+  getElements,
+  workflows
 } from './participant-test-helpers';
 
 // Mock the EncounterService
@@ -52,8 +52,8 @@ describe('EncounterParticipantManager', () => {
       renderComponent(mockEncounter);
 
       expect(screen.getByText('Encounter Participants')).toBeInTheDocument();
-      participantHelpers.expectVisible('Aragorn', 'HP: 45/45', 'AC: 16');
-      participantHelpers.expectVisible('Goblin Scout', 'HP: 7/7', 'AC: 15');
+      testExpectations.elementsVisible('Aragorn', 'HP: 45/45', 'AC: 16');
+      testExpectations.elementsVisible('Goblin Scout', 'HP: 7/7', 'AC: 15');
     });
 
     it('should show empty state when no participants', () => {
@@ -80,26 +80,26 @@ describe('EncounterParticipantManager', () => {
       const user = userEvent.setup();
       renderComponent(mockEncounter);
 
-      await formHelpers.openAddDialog(user);
+      await formActions.openDialog(user);
 
       expect(screen.getByRole('dialog')).toBeInTheDocument();
-      participantHelpers.expectFormElements();
+      testExpectations.formElements();
     });
 
     it('should add participant successfully', async () => {
       const user = userEvent.setup();
-      serviceHelpers.setupMock(mockEncounterService, 'addParticipant', { success: true, data: mockEncounter });
+      serviceMocks.setup(mockEncounterService, 'addParticipant', { success: true, data: mockEncounter });
 
       renderComponent(mockEncounter);
 
-      await workflowHelpers.addParticipant(user, {
+      await workflows.addParticipant(user, {
         name: 'Legolas',
         hitPoints: '42',
         armorClass: '14',
       });
 
       await waitFor(() => {
-        serviceHelpers.expectCall(mockEncounterService, 'addParticipant', [
+        serviceMocks.expectCall(mockEncounterService, 'addParticipant', [
           mockEncounter._id.toString(),
           expect.objectContaining({
             name: 'Legolas',
@@ -122,9 +122,9 @@ describe('EncounterParticipantManager', () => {
       const user = userEvent.setup();
       renderComponent(mockEncounter);
 
-      await workflowHelpers.addParticipant(user, { name: '', hitPoints: '0' });
+      await workflows.addParticipant(user, { name: '', hitPoints: '0' });
 
-      await participantHelpers.expectValidationErrors(['Name is required', 'Hit Points must be greater than 0']);
+      await testExpectations.validationErrors(['Name is required', 'Hit Points must be greater than 0']);
     });
   });
 
@@ -133,7 +133,7 @@ describe('EncounterParticipantManager', () => {
       const user = userEvent.setup();
       renderComponent(mockEncounter);
 
-      const { removeButtons } = participantHelpers.getElements();
+      const { removeButtons } = getElements();
       await user.click(removeButtons[0]);
 
       expect(screen.getByText('Remove Participant')).toBeInTheDocument();
@@ -142,14 +142,14 @@ describe('EncounterParticipantManager', () => {
 
     it('should remove participant successfully', async () => {
       const user = userEvent.setup();
-      serviceHelpers.setupMock(mockEncounterService, 'removeParticipant', { success: true, data: mockEncounter });
+      serviceMocks.setup(mockEncounterService, 'removeParticipant', { success: true, data: mockEncounter });
 
       renderComponent(mockEncounter);
 
-      await workflowHelpers.removeParticipant(user, 0);
+      await workflows.removeParticipant(user, 0);
 
       await waitFor(() => {
-        serviceHelpers.expectCall(mockEncounterService, 'removeParticipant', [
+        serviceMocks.expectCall(mockEncounterService, 'removeParticipant', [
           mockEncounter._id.toString(),
           '64a1b2c3d4e5f6789abcdef0'
         ]);
@@ -162,7 +162,7 @@ describe('EncounterParticipantManager', () => {
       const user = userEvent.setup();
       renderComponent(mockEncounter);
 
-      const { editButtons } = participantHelpers.getElements();
+      const { editButtons } = getElements();
       await user.click(editButtons[0]);
 
       expect(screen.getByText('Edit Participant')).toBeInTheDocument();
@@ -172,14 +172,14 @@ describe('EncounterParticipantManager', () => {
 
     it('should update participant successfully', async () => {
       const user = userEvent.setup();
-      serviceHelpers.setupMock(mockEncounterService, 'updateParticipant', { success: true, data: mockEncounter });
+      serviceMocks.setup(mockEncounterService, 'updateParticipant', { success: true, data: mockEncounter });
 
       renderComponent(mockEncounter);
 
-      await workflowHelpers.editParticipant(user, 0, { hitPoints: '50' });
+      await workflows.editParticipant(user, 0, { hitPoints: '50' });
 
       await waitFor(() => {
-        serviceHelpers.expectCall(mockEncounterService, 'updateParticipant', [
+        serviceMocks.expectCall(mockEncounterService, 'updateParticipant', [
           mockEncounter._id.toString(),
           '64a1b2c3d4e5f6789abcdef0',
           expect.objectContaining({
@@ -204,7 +204,7 @@ describe('EncounterParticipantManager', () => {
     it('should support drag and drop reordering', async () => {
       renderComponent(mockEncounter);
 
-      const { participants } = participantHelpers.getElements();
+      const { participants } = getElements();
       expect(participants).toHaveLength(2);
 
       // Mock drag and drop implementation would go here
@@ -217,21 +217,21 @@ describe('EncounterParticipantManager', () => {
   describe('Participant Role Assignment', () => {
     it('should allow changing participant roles', async () => {
       const user = userEvent.setup();
-      serviceHelpers.setupMock(mockEncounterService, 'updateParticipant', { success: true, data: mockEncounter });
+      serviceMocks.setup(mockEncounterService, 'updateParticipant', { success: true, data: mockEncounter });
 
       renderComponent(mockEncounter);
 
-      const { editButtons } = participantHelpers.getElements();
+      const { editButtons } = getElements();
       await user.click(editButtons[1]); // Edit Goblin Scout
 
       await waitFor(() => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
-      await formHelpers.submitForm(user, 'update participant');
+      await formActions.submit(user, 'update participant');
 
       await waitFor(() => {
-        serviceHelpers.expectCall(mockEncounterService, 'updateParticipant', [
+        serviceMocks.expectCall(mockEncounterService, 'updateParticipant', [
           mockEncounter._id.toString(),
           '64a1b2c3d4e5f6789abcdef1',
           expect.objectContaining({
@@ -247,9 +247,9 @@ describe('EncounterParticipantManager', () => {
       const user = userEvent.setup();
       renderComponent(mockEncounter);
 
-      await workflowHelpers.selectMultiple(user, [0, 1]);
+      await workflows.selectMultiple(user, [0, 1]);
 
-      workflowHelpers.expectBatchSelection(2);
+      testExpectations.batchSelection(2);
     });
 
     it('should perform batch removal', async () => {
@@ -276,22 +276,22 @@ describe('EncounterParticipantManager', () => {
       const user = userEvent.setup();
       renderComponent(mockEncounter);
 
-      const { importButton } = participantHelpers.getElements();
+      const { importButton } = getElements();
       await user.click(importButton);
 
-      await waitHelpers.forText('Import Characters');
-      await waitHelpers.forText('Select characters from your library to add to this encounter');
+      await testExpectations.elementVisible('Import Characters');
+      await testExpectations.elementVisible('Select characters from your library to add to this encounter');
     });
   });
 
   describe('Error Handling', () => {
     it('should display error message when participant addition fails', async () => {
       const user = userEvent.setup();
-      serviceHelpers.setupMock(mockEncounterService, 'addParticipant', { success: false, error: 'Failed to add participant' });
+      serviceMocks.setup(mockEncounterService, 'addParticipant', { success: false, error: 'Failed to add participant' });
 
       renderComponent(mockEncounter);
 
-      await workflowHelpers.addParticipant(user, { name: 'Test', hitPoints: '10', armorClass: '10' });
+      await workflows.addParticipant(user, { name: 'Test', hitPoints: '10', armorClass: '10' });
 
       await waitFor(() => {
         expect(mockEncounterService.addParticipant).toHaveBeenCalled();
@@ -304,7 +304,7 @@ describe('EncounterParticipantManager', () => {
 
       renderComponent(mockEncounter);
 
-      await workflowHelpers.addParticipant(user, { name: 'Test', hitPoints: '10', armorClass: '10' });
+      await workflows.addParticipant(user, { name: 'Test', hitPoints: '10', armorClass: '10' });
 
       await waitFor(() => {
         expect(mockEncounterService.addParticipant).toHaveBeenCalled();
