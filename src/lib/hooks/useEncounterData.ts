@@ -3,6 +3,17 @@ import { EncounterService } from '@/lib/services/EncounterService';
 import type { IEncounter } from '@/lib/models/encounter/interfaces';
 
 /**
+ * Extract error message from service result
+ */
+const extractErrorMessage = (error: unknown): string => {
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object' && 'message' in error) {
+    return (error as { message: string }).message;
+  }
+  return 'Failed to load encounter';
+};
+
+/**
  * Custom hook for managing encounter data loading and state
  */
 export function useEncounterData(encounterId: string) {
@@ -20,7 +31,7 @@ export function useEncounterData(encounterId: string) {
       if (result.success && result.data) {
         setEncounter(result.data);
       } else {
-        setError(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to load encounter');
+        setError(extractErrorMessage(result.error));
       }
     } catch {
       setError('An unexpected error occurred');

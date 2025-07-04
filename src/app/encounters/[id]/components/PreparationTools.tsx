@@ -15,6 +15,85 @@ interface PreparationItem {
   required: boolean;
 }
 
+interface ProgressDisplayProps {
+  completedItems: number;
+  totalItems: number;
+  progressPercentage: number;
+  status: string;
+  statusColor: string;
+}
+
+/**
+ * Display preparation progress
+ */
+function ProgressDisplay({ completedItems, totalItems, progressPercentage, status, statusColor }: ProgressDisplayProps) {
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between text-sm">
+        <span>Preparation Progress</span>
+        <span className={statusColor}>{status}</span>
+      </div>
+      <Progress value={progressPercentage} className="h-2" />
+      <p className="text-xs text-muted-foreground text-center">
+        {completedItems}/{totalItems} Complete
+      </p>
+    </div>
+  );
+}
+
+interface ChecklistItemProps {
+  item: PreparationItem;
+  onToggle: (_itemId: string) => void;
+}
+
+/**
+ * Individual checklist item
+ */
+function ChecklistItem({ item, onToggle }: ChecklistItemProps) {
+  return (
+    <div className="flex items-center space-x-3">
+      <Checkbox
+        id={item.id}
+        checked={item.completed}
+        onCheckedChange={() => onToggle(item.id)}
+      />
+      <label
+        htmlFor={item.id}
+        className={`text-sm cursor-pointer flex-1 ${
+          item.completed ? 'line-through text-muted-foreground' : ''
+        }`}
+      >
+        {item.label}
+        {item.required && (
+          <span className="text-red-500 ml-1">*</span>
+        )}
+      </label>
+    </div>
+  );
+}
+
+/**
+ * Generate preparation status based on completion
+ */
+function getPreparationStatus(checklist: PreparationItem[], completedItems: number, totalItems: number) {
+  const requiredCompleted = checklist
+    .filter(item => item.required)
+    .every(item => item.completed);
+
+  if (requiredCompleted && completedItems === totalItems) return 'Fully Prepared';
+  if (requiredCompleted) return 'Ready to Start';
+  return 'Needs Preparation';
+}
+
+/**
+ * Get status color based on preparation status
+ */
+function getStatusColor(status: string): string {
+  if (status === 'Fully Prepared') return 'text-green-600';
+  if (status === 'Ready to Start') return 'text-yellow-600';
+  return 'text-red-600';
+}
+
 /**
  * Encounter preparation checklist and tools to help DMs ready encounters for play
  */
@@ -66,22 +145,8 @@ export function PreparationTools({ encounter: _encounter }: PreparationToolsProp
     );
   };
 
-  const getReadinessStatus = () => {
-    const requiredCompleted = checklist
-      .filter(item => item.required)
-      .every(item => item.completed);
-
-    if (requiredCompleted && completedItems === totalItems) return 'Fully Prepared';
-    if (requiredCompleted) return 'Ready to Start';
-    return 'Needs Preparation';
-  };
-
-  const getStatusColor = () => {
-    const status = getReadinessStatus();
-    if (status === 'Fully Prepared') return 'text-green-600';
-    if (status === 'Ready to Start') return 'text-yellow-600';
-    return 'text-red-600';
-  };
+  const status = getPreparationStatus(checklist, completedItems, totalItems);
+  const statusColor = getStatusColor(status);
 
   return (
     <Card>
@@ -90,38 +155,22 @@ export function PreparationTools({ encounter: _encounter }: PreparationToolsProp
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Progress Overview */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Preparation Progress</span>
-            <span className={getStatusColor()}>{getReadinessStatus()}</span>
-          </div>
-          <Progress value={progressPercentage} className="h-2" />
-          <p className="text-xs text-muted-foreground text-center">
-            {completedItems}/{totalItems} Complete
-          </p>
-        </div>
+        <ProgressDisplay 
+          completedItems={completedItems}
+          totalItems={totalItems}
+          progressPercentage={progressPercentage}
+          status={status}
+          statusColor={statusColor}
+        />
 
         {/* Checklist Items */}
         <div className="space-y-3">
           {checklist.map((item) => (
-            <div key={item.id} className="flex items-center space-x-3">
-              <Checkbox
-                id={item.id}
-                checked={item.completed}
-                onCheckedChange={() => toggleItem(item.id)}
-              />
-              <label
-                htmlFor={item.id}
-                className={`text-sm cursor-pointer flex-1 ${
-                  item.completed ? 'line-through text-muted-foreground' : ''
-                }`}
-              >
-                {item.label}
-                {item.required && (
-                  <span className="text-red-500 ml-1">*</span>
-                )}
-              </label>
-            </div>
+            <ChecklistItem 
+              key={item.id} 
+              item={item} 
+              onToggle={toggleItem} 
+            />
           ))}
         </div>
 

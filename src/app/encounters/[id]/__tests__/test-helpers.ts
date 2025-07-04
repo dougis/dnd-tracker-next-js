@@ -1,6 +1,10 @@
 import { Types } from 'mongoose';
 import type { Encounter, ParticipantReference } from '@/lib/validations/encounter';
 
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { EncounterDetailClient } from '../EncounterDetailClient';
+
 /**
  * Test helper functions for encounter detail page tests
  */
@@ -322,5 +326,83 @@ export const testPatterns = {
 
   getByTextWithTimeout: async (screen: any, text: string) => {
     return testPatterns.waitForElement(() => screen.queryByText(text));
+  },
+};
+
+/**
+ * Test render helpers to reduce duplication
+ */
+export const renderHelpers = {
+  renderEncounterDetail: (encounterId = 'test-id') => {
+    return render(React.createElement(EncounterDetailClient, { encounterId }));
+  },
+
+  waitForEncounterLoad: async (screen: any) => {
+    await waitFor(() => {
+      expect(screen.getByText('Goblin Ambush')).toBeInTheDocument();
+    });
+  },
+
+  expectTextPresent: async (screen: any, text: string) => {
+    await waitFor(() => {
+      expect(screen.getByText(text)).toBeInTheDocument();
+    });
+  },
+
+  expectMultipleTextsPresent: async (screen: any, texts: string[]) => {
+    await waitFor(() => {
+      texts.forEach(text => {
+        expect(screen.getByText(text)).toBeInTheDocument();
+      });
+    });
+  },
+};
+
+/**
+ * Mock setup helpers
+ */
+export const mockHelpers = {
+  setupSuccessfulEncounterMock: (mockService: any, encounter = mockEncounterStates.draft()) => {
+    mockService.getEncounterById.mockResolvedValue({
+      success: true,
+      data: encounter,
+    });
+  },
+
+  setupErrorMock: (mockService: any, error = 'Test error') => {
+    mockService.getEncounterById.mockResolvedValue({
+      success: false,
+      error,
+    });
+  },
+
+  setupLoadingMock: (mockService: any) => {
+    mockService.getEncounterById.mockImplementation(() =>
+      new Promise(() => {}) // Never resolves to simulate loading
+    );
+  },
+};
+
+/**
+ * User interaction helpers
+ */
+export const interactionHelpers = {
+  clickButton: async (user: any, screen: any, buttonText: string) => {
+    await waitFor(() => {
+      expect(screen.getByText(buttonText)).toBeInTheDocument();
+    });
+    await user.click(screen.getByText(buttonText));
+  },
+
+  clickButtonAndWaitFor: async (user: any, screen: any, buttonText: string, expectedText: string) => {
+    await interactionHelpers.clickButton(user, screen, buttonText);
+    await waitFor(() => {
+      expect(screen.getByText(expectedText)).toBeInTheDocument();
+    });
+  },
+
+  checkboxAction: async (user: any, screen: any, checkboxes: HTMLElement[], index: number) => {
+    await user.click(checkboxes[index]);
+    expect(checkboxes[index]).toBeChecked();
   },
 };

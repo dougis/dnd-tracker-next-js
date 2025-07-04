@@ -7,7 +7,14 @@ import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
 import { EncounterDetailClient } from '../EncounterDetailClient';
 import { EncounterService } from '@/lib/services/EncounterService';
-import { createTestEncounter, createTestParticipant } from './test-helpers';
+import { 
+  createTestEncounter, 
+  createTestParticipant,
+  renderHelpers,
+  mockHelpers,
+  interactionHelpers,
+  mockEncounterStates
+} from './test-helpers';
 
 // Mock dependencies
 jest.mock('next/navigation', () => ({
@@ -72,95 +79,58 @@ describe('EncounterDetailClient', () => {
 
   describe('Loading States', () => {
     it('should display loading state while fetching encounter', () => {
-      mockEncounterService.getEncounterById.mockImplementation(() =>
-        new Promise(() => {}) // Never resolves to simulate loading
-      );
-
-      render(<EncounterDetailClient encounterId="test-id" />);
-
+      mockHelpers.setupLoadingMock(mockEncounterService);
+      renderHelpers.renderEncounterDetail();
       expect(screen.getByText('Loading encounter...')).toBeInTheDocument();
     });
 
     it('should display error state when encounter not found', async () => {
-      mockEncounterService.getEncounterById.mockResolvedValue({
-        success: false,
-        error: 'Encounter not found',
-      });
-
-      render(<EncounterDetailClient encounterId="invalid-id" />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Encounter not found')).toBeInTheDocument();
-      });
+      mockHelpers.setupErrorMock(mockEncounterService, 'Encounter not found');
+      renderHelpers.renderEncounterDetail('invalid-id');
+      await renderHelpers.expectTextPresent(screen, 'Encounter not found');
     });
   });
 
   describe('Encounter Overview Display', () => {
     beforeEach(() => {
-      mockEncounterService.getEncounterById.mockResolvedValue({
-        success: true,
-        data: mockEncounter,
-      });
+      mockHelpers.setupSuccessfulEncounterMock(mockEncounterService, mockEncounter);
     });
 
     it('should display encounter basic information', async () => {
-      render(<EncounterDetailClient encounterId="test-id" />);
-
+      renderHelpers.renderEncounterDetail();
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: 'Goblin Ambush' })).toBeInTheDocument();
-        expect(screen.getAllByText('A surprise attack by goblins on the road')).toHaveLength(3); // Header, overview, and notes
-        expect(screen.getByText('Medium')).toBeInTheDocument();
-        expect(screen.getByText('45 minutes')).toBeInTheDocument();
-        expect(screen.getByText('Level 3')).toBeInTheDocument();
+        expect(screen.getAllByText('A surprise attack by goblins on the road')).toHaveLength(3);
       });
+      await renderHelpers.expectMultipleTextsPresent(screen, ['Medium', '45 minutes', 'Level 3']);
     });
 
     it('should display encounter tags', async () => {
-      render(<EncounterDetailClient encounterId="test-id" />);
-
-      await waitFor(() => {
-        expect(screen.getByText('forest')).toBeInTheDocument();
-        expect(screen.getByText('ambush')).toBeInTheDocument();
-      });
+      renderHelpers.renderEncounterDetail();
+      await renderHelpers.expectMultipleTextsPresent(screen, ['forest', 'ambush']);
     });
 
     it('should display encounter status badge', async () => {
-      render(<EncounterDetailClient encounterId="test-id" />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Draft')).toBeInTheDocument();
-      });
+      renderHelpers.renderEncounterDetail();
+      await renderHelpers.expectTextPresent(screen, 'Draft');
     });
   });
 
   describe('Participant Overview', () => {
     beforeEach(() => {
-      mockEncounterService.getEncounterById.mockResolvedValue({
-        success: true,
-        data: mockEncounter,
-      });
+      mockHelpers.setupSuccessfulEncounterMock(mockEncounterService, mockEncounter);
     });
 
     it('should display participant list with basic stats', async () => {
-      render(<EncounterDetailClient encounterId="test-id" />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Aragorn')).toBeInTheDocument();
-        expect(screen.getByText('Goblin Scout')).toBeInTheDocument();
-        expect(screen.getByText('HP: 45/45')).toBeInTheDocument();
-        expect(screen.getByText('AC: 16')).toBeInTheDocument();
-        expect(screen.getByText('HP: 7/7')).toBeInTheDocument();
-        expect(screen.getByText('AC: 15')).toBeInTheDocument();
-      });
+      renderHelpers.renderEncounterDetail();
+      await renderHelpers.expectMultipleTextsPresent(screen, [
+        'Aragorn', 'Goblin Scout', 'HP: 45/45', 'AC: 16', 'HP: 7/7', 'AC: 15'
+      ]);
     });
 
     it('should display participant type indicators', async () => {
-      render(<EncounterDetailClient encounterId="test-id" />);
-
-      await waitFor(() => {
-        expect(screen.getByText('PC')).toBeInTheDocument();
-        expect(screen.getByText('NPC')).toBeInTheDocument();
-      });
+      renderHelpers.renderEncounterDetail();
+      await renderHelpers.expectMultipleTextsPresent(screen, ['PC', 'NPC']);
     });
 
     it('should show participant count summary', async () => {
@@ -180,28 +150,19 @@ describe('EncounterDetailClient', () => {
 
   describe('Settings Panel', () => {
     beforeEach(() => {
-      mockEncounterService.getEncounterById.mockResolvedValue({
-        success: true,
-        data: mockEncounter,
-      });
+      mockHelpers.setupSuccessfulEncounterMock(mockEncounterService, mockEncounter);
     });
 
     it('should display encounter settings section', async () => {
-      render(<EncounterDetailClient encounterId="test-id" />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Encounter Settings')).toBeInTheDocument();
-      });
+      renderHelpers.renderEncounterDetail();
+      await renderHelpers.expectTextPresent(screen, 'Encounter Settings');
     });
 
     it('should show combat configuration options', async () => {
-      render(<EncounterDetailClient encounterId="test-id" />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Auto-roll Initiative')).toBeInTheDocument();
-        expect(screen.getByText('Track Resources')).toBeInTheDocument();
-        expect(screen.getByText('Enable Lair Actions')).toBeInTheDocument();
-      });
+      renderHelpers.renderEncounterDetail();
+      await renderHelpers.expectMultipleTextsPresent(screen, [
+        'Auto-roll Initiative', 'Track Resources', 'Enable Lair Actions'
+      ]);
     });
 
     it('should allow toggling settings', async () => {

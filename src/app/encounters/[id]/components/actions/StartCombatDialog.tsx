@@ -17,6 +17,54 @@ interface StartCombatDialogProps {
   onCancel: () => void;
 }
 
+interface SettingDisplayProps {
+  label: string;
+  value: string | number;
+}
+
+/**
+ * Display a single setting in the combat dialog
+ */
+function SettingDisplay({ label, value }: SettingDisplayProps) {
+  return (
+    <p className="text-sm">
+      <strong>{label}:</strong> {value}
+    </p>
+  );
+}
+
+interface CombatSummaryProps {
+  encounter: IEncounter;
+}
+
+/**
+ * Display combat settings summary
+ */
+function CombatSummary({ encounter }: CombatSummaryProps) {
+  return (
+    <div className="space-y-2">
+      <SettingDisplay 
+        label="Participants" 
+        value={encounter.participants.length} 
+      />
+      <SettingDisplay 
+        label="Auto-roll Initiative" 
+        value={encounter.settings.autoRollInitiative ? 'Yes' : 'No'} 
+      />
+      <SettingDisplay 
+        label="Track Resources" 
+        value={encounter.settings.trackResources ? 'Yes' : 'No'} 
+      />
+      {encounter.settings.enableLairActions && (
+        <SettingDisplay 
+          label="Lair Actions" 
+          value={`Initiative ${encounter.settings.lairActionInitiative || 20}`} 
+        />
+      )}
+    </div>
+  );
+}
+
 /**
  * Confirmation dialog for starting combat
  */
@@ -33,22 +81,7 @@ export function StartCombatDialog({ open, encounter, onConfirm, onCancel }: Star
         </DialogHeader>
 
         <div className="py-4">
-          <div className="space-y-2">
-            <p className="text-sm">
-              <strong>Participants:</strong> {encounter.participants.length}
-            </p>
-            <p className="text-sm">
-              <strong>Auto-roll Initiative:</strong> {encounter.settings.autoRollInitiative ? 'Yes' : 'No'}
-            </p>
-            <p className="text-sm">
-              <strong>Track Resources:</strong> {encounter.settings.trackResources ? 'Yes' : 'No'}
-            </p>
-            {encounter.settings.enableLairActions && (
-              <p className="text-sm">
-                <strong>Lair Actions:</strong> Initiative {encounter.settings.lairActionInitiative || 20}
-              </p>
-            )}
-          </div>
+          <CombatSummary encounter={encounter} />
         </div>
 
         <DialogFooter>
