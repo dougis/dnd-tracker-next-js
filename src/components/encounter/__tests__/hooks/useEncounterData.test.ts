@@ -2,6 +2,21 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { useEncounterData } from '../../hooks/useEncounterData';
 import { EncounterService } from '@/lib/services/EncounterService';
 import { createMockFilters, mockServiceResponses, createMockEncounters } from '../test-helpers';
+import {
+  createDefaultParams,
+  setupMockService,
+  expectInitialLoadingState,
+  expectLoadedState,
+  expectErrorState,
+  expectPaginationState,
+  expectServiceCallWith,
+  expectDefaultServiceCall,
+  testSuccessfulDataFetch,
+  testErrorHandling,
+  testLoadingState,
+  testPaginationFetch,
+  testParameterChanges,
+} from '../test-utils/hookTestHelpers';
 
 // Mock the EncounterService
 jest.mock('@/lib/services/EncounterService', () => ({
@@ -13,15 +28,10 @@ jest.mock('@/lib/services/EncounterService', () => ({
 const mockEncounterService = EncounterService as jest.Mocked<typeof EncounterService>;
 
 describe('useEncounterData', () => {
-  const defaultParams = {
-    filters: createMockFilters(),
-    searchQuery: '',
-    sortBy: 'updatedAt' as const,
-    sortOrder: 'desc' as const,
-  };
+  const defaultParams = createDefaultParams();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    setupMockService();
   });
 
   describe('Initial State', () => {
@@ -31,106 +41,28 @@ describe('useEncounterData', () => {
       );
 
       const { result } = renderHook(() => useEncounterData(defaultParams));
-
-      expect(result.current.encounters).toEqual([]);
-      expect(result.current.isLoading).toBe(true);
-      expect(result.current.error).toBe(null);
-      expect(result.current.pagination).toBe(null);
+      expectInitialLoadingState(result);
     });
   });
 
   describe('Data Fetching', () => {
     it('fetches encounters on mount', async () => {
-      const mockEncounters = createMockEncounters(3);
-      mockEncounterService.searchEncounters.mockResolvedValue(
-        mockServiceResponses.searchSuccess(mockEncounters)
-      );
-
-      const { result } = renderHook(() => useEncounterData(defaultParams));
-
-      // Initially loading
-      expect(result.current.isLoading).toBe(true);
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.encounters).toHaveLength(3);
-      expect(result.current.error).toBe(null);
-      expect(mockEncounterService.searchEncounters).toHaveBeenCalledWith({
-        query: '',
-        status: [],
-        difficulty: [],
-        targetLevelMin: undefined,
-        targetLevelMax: undefined,
-        tags: [],
-        sortBy: 'updatedAt',
-        sortOrder: 'desc',
-        page: 1,
-        limit: 20,
-      });
+      await testSuccessfulDataFetch(useEncounterData, defaultParams, mockEncounterService);
     });
 
     it('sets loading state correctly during fetch', async () => {
-      mockEncounterService.searchEncounters.mockImplementation(
-        () => new Promise(resolve => setTimeout(() => resolve(mockServiceResponses.searchSuccess()), 100))
-      );
-
-      const { result } = renderHook(() => useEncounterData(defaultParams));
-
-      expect(result.current.isLoading).toBe(true);
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
+      await testLoadingState(useEncounterData, defaultParams, mockEncounterService);
     });
 
     it('handles successful data fetch with pagination', async () => {
-      const mockEncounters = createMockEncounters(10);
-      mockEncounterService.searchEncounters.mockResolvedValue({
-        success: true,
-        data: {
-          encounters: mockEncounters,
-          currentPage: 2,
-          totalPages: 5,
-          totalItems: 50,
-        },
-      });
-
-      const { result } = renderHook(() => useEncounterData({
-        ...defaultParams,
-        page: 2,
-      }));
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.encounters).toHaveLength(10);
-      expect(result.current.pagination).toEqual({
-        currentPage: 2,
-        totalPages: 5,
-        totalItems: 50,
-        itemsPerPage: 20,
-      });
+      const paginatedParams = { ...defaultParams, page: 2 };
+      await testPaginationFetch(useEncounterData, paginatedParams, mockEncounterService);
     });
   });
 
   describe('Error Handling', () => {
     it('handles service error correctly', async () => {
-      mockEncounterService.searchEncounters.mockResolvedValue(
-        mockServiceResponses.searchError('Network error')
-      );
-
-      const { result } = renderHook(() => useEncounterData(defaultParams));
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.error).toBe('Network error');
-      expect(result.current.encounters).toEqual([]);
-      expect(result.current.pagination).toBe(null);
+      await testErrorHandling(useEncounterData, defaultParams, mockEncounterService, 'Network error');
     });
 
     it('handles network error correctly', async () => {
@@ -144,8 +76,7 @@ describe('useEncounterData', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      expect(result.current.error).toBe('Network failure');
-      expect(result.current.encounters).toEqual([]);
+      expectErrorState(result, 'Network failure');
     });
 
     it('handles unexpected error format', async () => {
@@ -157,7 +88,7 @@ describe('useEncounterData', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      expect(result.current.error).toBe('An unexpected error occurred');
+      expectErrorState(result, 'An unexpected error occurred');
     });
   });
 
@@ -175,11 +106,9 @@ describe('useEncounterData', () => {
       renderHook(() => useEncounterData(params));
 
       await waitFor(() => {
-        expect(mockEncounterService.searchEncounters).toHaveBeenCalledWith(
-          expect.objectContaining({
-            query: 'dragon encounter',
-          })
-        );
+        expectServiceCallWith(mockEncounterService, expect.objectContaining({
+          query: 'dragon encounter',
+        }));
       });
     });
 
@@ -202,15 +131,13 @@ describe('useEncounterData', () => {
       renderHook(() => useEncounterData(params));
 
       await waitFor(() => {
-        expect(mockEncounterService.searchEncounters).toHaveBeenCalledWith(
-          expect.objectContaining({
-            status: ['active', 'draft'],
-            difficulty: ['hard'],
-            targetLevelMin: 5,
-            targetLevelMax: 10,
-            tags: ['combat'],
-          })
-        );
+        expectServiceCallWith(mockEncounterService, expect.objectContaining({
+          status: ['active', 'draft'],
+          difficulty: ['hard'],
+          targetLevelMin: 5,
+          targetLevelMax: 10,
+          tags: ['combat'],
+        }));
       });
     });
 
@@ -228,12 +155,10 @@ describe('useEncounterData', () => {
       renderHook(() => useEncounterData(params));
 
       await waitFor(() => {
-        expect(mockEncounterService.searchEncounters).toHaveBeenCalledWith(
-          expect.objectContaining({
-            sortBy: 'name',
-            sortOrder: 'asc',
-          })
-        );
+        expectServiceCallWith(mockEncounterService, expect.objectContaining({
+          sortBy: 'name',
+          sortOrder: 'asc',
+        }));
       });
     });
   });
@@ -255,11 +180,9 @@ describe('useEncounterData', () => {
       });
 
       await waitFor(() => {
-        expect(mockEncounterService.searchEncounters).toHaveBeenCalledWith(
-          expect.objectContaining({
-            page: 3,
-          })
-        );
+        expectServiceCallWith(mockEncounterService, expect.objectContaining({
+          page: 3,
+        }));
       });
     });
 
@@ -274,27 +197,14 @@ describe('useEncounterData', () => {
       }));
 
       await waitFor(() => {
-        expect(mockEncounterService.searchEncounters).toHaveBeenCalledWith(
-          expect.objectContaining({
-            limit: 50,
-          })
-        );
+        expectServiceCallWith(mockEncounterService, expect.objectContaining({
+          limit: 50,
+        }));
       });
     });
 
     it('resets to page 1 when filters change', async () => {
-      mockEncounterService.searchEncounters.mockResolvedValue(
-        mockServiceResponses.searchSuccess()
-      );
-
-      const { result, rerender } = renderHook(
-        ({ params }) => useEncounterData(params),
-        { initialProps: { params: defaultParams } }
-      );
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
+      const { result, rerender } = await testParameterChanges(useEncounterData, defaultParams, mockEncounterService);
 
       // Go to page 2
       act(() => {
@@ -396,7 +306,7 @@ describe('useEncounterData', () => {
       const { result } = renderHook(() => useEncounterData(defaultParams));
 
       await waitFor(() => {
-        expect(result.current.error).toBe('Initial error');
+        expectErrorState(result, 'Initial error');
       });
 
       // Second call succeeds
@@ -416,18 +326,9 @@ describe('useEncounterData', () => {
 
   describe('Dependencies and Effects', () => {
     it('refetches when parameters change', async () => {
-      mockEncounterService.searchEncounters.mockResolvedValue(
-        mockServiceResponses.searchSuccess()
-      );
+      const { rerender } = await testParameterChanges(useEncounterData, defaultParams, mockEncounterService);
 
-      const { rerender } = renderHook(
-        ({ params }) => useEncounterData(params),
-        { initialProps: { params: defaultParams } }
-      );
-
-      await waitFor(() => {
-        expect(mockEncounterService.searchEncounters).toHaveBeenCalledTimes(1);
-      });
+      expect(mockEncounterService.searchEncounters).toHaveBeenCalledTimes(1);
 
       // Change search query
       rerender({
@@ -441,11 +342,9 @@ describe('useEncounterData', () => {
         expect(mockEncounterService.searchEncounters).toHaveBeenCalledTimes(2);
       });
 
-      expect(mockEncounterService.searchEncounters).toHaveBeenLastCalledWith(
-        expect.objectContaining({
-          query: 'new search',
-        })
-      );
+      expectServiceCallWith(mockEncounterService, expect.objectContaining({
+        query: 'new search',
+      }));
     });
   });
 });
