@@ -19,8 +19,10 @@ module.exports = [
       'plato_report/**/*'
     ]
   },
-  // Main configuration
-  ...compat.extends('next/core-web-vitals', 'prettier'),
+  // Next.js configuration - includes the plugin automatically
+  ...compat.extends('next/core-web-vitals'),
+  // Prettier configuration
+  ...compat.extends('prettier'),
   {
     rules: {
       'prefer-const': 'error',
