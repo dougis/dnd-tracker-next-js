@@ -158,7 +158,7 @@ describe('EncounterDetailClient', () => {
       await waitFor(() => {
         // Check the participant summary grid - look for the card with the title
         expect(screen.getByRole('heading', { name: 'Participants' })).toBeInTheDocument();
-        
+
         // Check participant counts in the grid
         expect(screen.getByText('2')).toBeInTheDocument(); // Total participants
         expect(screen.getByText('1')).toBeInTheDocument(); // PCs
