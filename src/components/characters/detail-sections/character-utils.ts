@@ -31,10 +31,14 @@ export const getAbilityScoreDisplay = (score: number): string => {
   return `${score} (${getAbilityModifier(score)})`;
 };
 
+// Generic helper for handling Map/Object data structures
+const getProficiencyValue = (data: Map<string, boolean> | Record<string, boolean> | undefined, key: string): boolean => {
+  if (!data) return false;
+  return data instanceof Map ? data.get(key) || false : data[key] || false;
+};
+
 const isProficientInSavingThrow = (character: ICharacter, ability: string): boolean => {
-  return character.savingThrows instanceof Map
-    ? character.savingThrows.get(ability) || false
-    : character.savingThrows?.[ability as keyof typeof character.savingThrows] || false;
+  return getProficiencyValue(character.savingThrows, ability);
 };
 
 export const getSavingThrowBonus = (character: ICharacter, ability: string, score: number): number => {
@@ -44,9 +48,7 @@ export const getSavingThrowBonus = (character: ICharacter, ability: string, scor
 };
 
 const isProficientInSkill = (character: ICharacter, skillName: string): boolean => {
-  return character.skills instanceof Map
-    ? character.skills.get(skillName) || false
-    : character.skills?.[skillName] || false;
+  return getProficiencyValue(character.skills, skillName);
 };
 
 export const getSkillBonus = (character: ICharacter, skillName: string, abilityScore: number): number => {
@@ -73,20 +75,24 @@ export const getOrdinalSuffix = (num: number): string => {
   return suffixes[lastDigit] || 'th';
 };
 
+// Generic helper for extracting entries from Map/Object structures
+const getDataEntries = (data: Map<string, any> | Record<string, any> | undefined): [string, any][] => {
+  if (!data) return [];
+  return data instanceof Map ? Array.from(data.entries()) : Object.entries(data);
+};
+
+// Generic helper for checking if Map/Object has any entries
+const hasAnyEntries = (data: Map<string, any> | Record<string, any> | undefined): boolean => {
+  if (!data) return false;
+  return data instanceof Map ? data.size > 0 : Object.keys(data).length > 0;
+};
+
 // Utility for extracting skill entries from character
 export const getSkillEntries = (character: ICharacter) => {
-  if (!character.skills) return [];
-
-  return character.skills instanceof Map
-    ? Array.from(character.skills.entries())
-    : Object.entries(character.skills);
+  return getDataEntries(character.skills);
 };
 
 // Utility to check if character has any skills
 export const hasAnySkills = (character: ICharacter): boolean => {
-  if (!character.skills) return false;
-
-  return character.skills instanceof Map
-    ? character.skills.size > 0
-    : Object.keys(character.skills).length > 0;
+  return hasAnyEntries(character.skills);
 };
