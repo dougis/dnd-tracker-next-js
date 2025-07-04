@@ -8,7 +8,7 @@ interface SettingRowProps {
   id: string;
   label: string;
   checked: boolean;
-  onChange: (checked: boolean) => void;
+  onChange: (_checked: boolean) => void;
 }
 
 /**

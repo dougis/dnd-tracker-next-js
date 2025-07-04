@@ -315,11 +315,11 @@ export const testPatterns = {
     }
     throw new Error('Element not found within timeout');
   },
-  
+
   expectElementToExist: (getText: () => HTMLElement) => {
     return expect(getText()).toBeInTheDocument();
   },
-  
+
   getByTextWithTimeout: async (screen: any, text: string) => {
     return testPatterns.waitForElement(() => screen.queryByText(text));
   },

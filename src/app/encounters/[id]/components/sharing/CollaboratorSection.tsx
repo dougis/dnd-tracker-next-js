@@ -18,7 +18,7 @@ interface CollaboratorSectionProps {
 interface CollaboratorItemProps {
   collaboratorId: Types.ObjectId;
   index: number;
-  onRemove: (id: string) => void;
+  onRemove: (_id: string) => void;
 }
 
 /**
@@ -41,7 +41,7 @@ function CollaboratorItem({ collaboratorId, index, onRemove }: CollaboratorItemP
 
 interface CollaboratorListProps {
   collaborators: Types.ObjectId[];
-  onRemoveCollaborator: (id: string) => void;
+  onRemoveCollaborator: (_id: string) => void;
 }
 
 /**
@@ -132,7 +132,7 @@ export function CollaboratorSection({
       )}
 
       {/* Current Collaborators */}
-      <CollaboratorList 
+      <CollaboratorList
         collaborators={encounter.sharedWith}
         onRemoveCollaborator={onRemoveCollaborator}
       />

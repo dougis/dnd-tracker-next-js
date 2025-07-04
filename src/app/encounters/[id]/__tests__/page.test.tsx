@@ -159,7 +159,7 @@ describe('EncounterDetailClient', () => {
         // Check for the participants card content
         expect(screen.getByText('Player Character')).toBeInTheDocument();
         expect(screen.getByText('Non-Player Character')).toBeInTheDocument();
-        
+
         // Check participant counts - need to be more specific with selectors
         const participantSummary = screen.getByText('Player Character').closest('.grid');
         expect(participantSummary).toBeInTheDocument();
@@ -203,10 +203,10 @@ describe('EncounterDetailClient', () => {
 
       const autoRollToggle = screen.getByLabelText('Auto-roll Initiative');
       expect(autoRollToggle).toBeInTheDocument();
-      
+
       // Check initial state
       expect(autoRollToggle).toHaveAttribute('data-state', 'checked');
-      
+
       await user.click(autoRollToggle);
 
       // The actual state change happens via handleSettingChange which just logs
@@ -412,7 +412,7 @@ describe('EncounterDetailClient', () => {
         expect(screen.getByText('Edit Encounter')).toBeInTheDocument();
         // Dropdown menu button (icon only)
         const dropdownButtons = screen.getAllByRole('button');
-        const dropdownButton = dropdownButtons.find(button => 
+        const dropdownButton = dropdownButtons.find(button =>
           button.getAttribute('aria-haspopup') === 'menu'
         );
         expect(dropdownButton).toBeInTheDocument();
