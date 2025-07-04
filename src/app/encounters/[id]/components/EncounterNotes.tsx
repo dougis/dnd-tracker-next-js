@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { PenIcon, SaveIcon, XIcon } from 'lucide-react';
+import { useEditableContent } from '@/lib/hooks/useEditableContent';
+import { EditableDescription } from './notes/EditableDescription';
+import { DescriptionDisplay, DescriptionHeader } from './notes/DescriptionDisplay';
+import { NotesSection } from './notes/NotesSection';
 import type { IEncounter } from '@/lib/models/encounter/interfaces';
 
 interface EncounterNotesProps {
@@ -15,82 +16,51 @@ interface EncounterNotesProps {
  * Display and allow editing of encounter notes and description
  */
 export function EncounterNotes({ encounter, isEditing, onToggleEdit }: EncounterNotesProps) {
-  const [editedDescription, setEditedDescription] = useState(encounter.description || '');
-  const [isSaving, setIsSaving] = useState(false);
+  const {
+    editedValue,
+    isSaving,
+    handleSave,
+    handleCancel,
+    handleChange,
+  } = useEditableContent(encounter.description || '');
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      // TODO: Implement save functionality
-      console.log('Saving description:', editedDescription);
-      onToggleEdit();
-    } catch (error) {
-      console.error('Failed to save description:', error);
-    } finally {
-      setIsSaving(false);
-    }
+  const handleSaveAndClose = async () => {
+    await handleSave();
+    onToggleEdit();
   };
 
-  const handleCancel = () => {
-    setEditedDescription(encounter.description || '');
+  const handleCancelAndClose = () => {
+    handleCancel();
     onToggleEdit();
   };
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Description</CardTitle>
-          {!isEditing && (
-            <Button variant="outline" size="sm" onClick={onToggleEdit}>
-              <PenIcon className="h-4 w-4 mr-1" />
-              Edit
-            </Button>
+        <CardTitle>
+          {isEditing ? (
+            'Description'
+          ) : (
+            <DescriptionHeader onEdit={onToggleEdit} />
           )}
-        </div>
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {isEditing ? (
-          <div className="space-y-3">
-            <Textarea
-              value={editedDescription}
-              onChange={(e) => setEditedDescription(e.target.value)}
-              placeholder="Enter encounter description..."
-              rows={6}
-              className="resize-none"
-            />
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" size="sm" onClick={handleCancel}>
-                <XIcon className="h-4 w-4 mr-1" />
-                Cancel
-              </Button>
-              <Button size="sm" onClick={handleSave} disabled={isSaving}>
-                <SaveIcon className="h-4 w-4 mr-1" />
-                {isSaving ? 'Saving...' : 'Save'}
-              </Button>
-            </div>
-          </div>
+          <EditableDescription
+            value={editedValue}
+            isSaving={isSaving}
+            onChange={handleChange}
+            onSave={handleSaveAndClose}
+            onCancel={handleCancelAndClose}
+          />
         ) : (
-          <div>
-            {encounter.description ? (
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                {encounter.description}
-              </p>
-            ) : (
-              <p className="text-sm text-muted-foreground italic">
-                No description provided. Click Edit to add one.
-              </p>
-            )}
-          </div>
+          <DescriptionDisplay
+            description={encounter.description}
+            onEdit={onToggleEdit}
+          />
         )}
-
-        {/* Notes Section */}
-        <div className="pt-4 border-t">
-          <h4 className="text-sm font-medium mb-2">Notes</h4>
-          <div className="text-sm text-muted-foreground">
-            <p>Additional notes and reminders can be added here for the DM&apos;s reference during the encounter.</p>
-          </div>
-        </div>
+        <NotesSection />
       </CardContent>
     </Card>
   );

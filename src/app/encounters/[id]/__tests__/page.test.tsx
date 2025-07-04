@@ -5,7 +5,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
-import EncounterDetailPage from '../page';
+import { EncounterDetailClient } from '../EncounterDetailClient';
 import { EncounterService } from '@/lib/services/EncounterService';
 import { createTestEncounter, createTestParticipant } from './test-helpers';
 
@@ -19,7 +19,7 @@ jest.mock('@/lib/services/EncounterService');
 const mockEncounterService = EncounterService as jest.Mocked<typeof EncounterService>;
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 
-describe('EncounterDetailPage', () => {
+describe('EncounterDetailClient', () => {
   const mockRouterPush = jest.fn();
   const mockRouterBack = jest.fn();
 
@@ -65,7 +65,7 @@ describe('EncounterDetailPage', () => {
         new Promise(() => {}) // Never resolves to simulate loading
       );
 
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       expect(screen.getByText('Loading encounter...')).toBeInTheDocument();
     });
@@ -76,7 +76,7 @@ describe('EncounterDetailPage', () => {
         error: 'Encounter not found',
       });
 
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'invalid-id' })} />);
+      render(<EncounterDetailClient encounterId="invalid-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Encounter not found')).toBeInTheDocument();
@@ -93,7 +93,7 @@ describe('EncounterDetailPage', () => {
     });
 
     it('should display encounter basic information', async () => {
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: 'Goblin Ambush' })).toBeInTheDocument();
@@ -105,7 +105,7 @@ describe('EncounterDetailPage', () => {
     });
 
     it('should display encounter tags', async () => {
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('forest')).toBeInTheDocument();
@@ -114,7 +114,7 @@ describe('EncounterDetailPage', () => {
     });
 
     it('should display encounter status badge', async () => {
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Draft')).toBeInTheDocument();
@@ -131,7 +131,7 @@ describe('EncounterDetailPage', () => {
     });
 
     it('should display participant list with basic stats', async () => {
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Aragorn')).toBeInTheDocument();
@@ -144,7 +144,7 @@ describe('EncounterDetailPage', () => {
     });
 
     it('should display participant type indicators', async () => {
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('PC')).toBeInTheDocument();
@@ -153,7 +153,7 @@ describe('EncounterDetailPage', () => {
     });
 
     it('should show participant count summary', async () => {
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         // Check the participant summary grid
@@ -175,7 +175,7 @@ describe('EncounterDetailPage', () => {
     });
 
     it('should display encounter settings section', async () => {
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Encounter Settings')).toBeInTheDocument();
@@ -183,7 +183,7 @@ describe('EncounterDetailPage', () => {
     });
 
     it('should show combat configuration options', async () => {
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Auto-roll Initiative')).toBeInTheDocument();
@@ -194,7 +194,7 @@ describe('EncounterDetailPage', () => {
 
     it('should allow toggling settings', async () => {
       const user = userEvent.setup();
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Encounter Settings')).toBeInTheDocument();
@@ -217,7 +217,7 @@ describe('EncounterDetailPage', () => {
     });
 
     it('should display encounter description section', async () => {
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Description')).toBeInTheDocument();
@@ -229,7 +229,7 @@ describe('EncounterDetailPage', () => {
 
     it('should allow editing description when in edit mode', async () => {
       const user = userEvent.setup();
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Edit')).toBeInTheDocument();
@@ -242,7 +242,7 @@ describe('EncounterDetailPage', () => {
     });
 
     it('should display notes section', async () => {
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Notes')).toBeInTheDocument();
@@ -259,7 +259,7 @@ describe('EncounterDetailPage', () => {
     });
 
     it('should display preparation checklist', async () => {
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Preparation Checklist')).toBeInTheDocument();
@@ -271,7 +271,7 @@ describe('EncounterDetailPage', () => {
 
     it('should allow checking off preparation items', async () => {
       const user = userEvent.setup();
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Preparation Checklist')).toBeInTheDocument();
@@ -284,7 +284,7 @@ describe('EncounterDetailPage', () => {
     });
 
     it('should show preparation progress', async () => {
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Preparation Progress')).toBeInTheDocument();
@@ -302,7 +302,7 @@ describe('EncounterDetailPage', () => {
     });
 
     it('should display sharing section', async () => {
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Share Encounter')).toBeInTheDocument();
@@ -311,7 +311,7 @@ describe('EncounterDetailPage', () => {
 
     it('should show share link generation', async () => {
       const user = userEvent.setup();
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Generate Share Link')).toBeInTheDocument();
@@ -326,7 +326,7 @@ describe('EncounterDetailPage', () => {
 
     it('should allow adding collaborators', async () => {
       const user = userEvent.setup();
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Add Collaborator')).toBeInTheDocument();
@@ -347,7 +347,7 @@ describe('EncounterDetailPage', () => {
     });
 
     it('should display readiness status', async () => {
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Combat Readiness')).toBeInTheDocument();
@@ -355,7 +355,7 @@ describe('EncounterDetailPage', () => {
     });
 
     it('should show readiness indicators for each category', async () => {
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         // Check that readiness categories are displayed
@@ -381,7 +381,7 @@ describe('EncounterDetailPage', () => {
         data: readyEncounter,
       });
 
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Ready for Combat')).toBeInTheDocument();
@@ -398,7 +398,7 @@ describe('EncounterDetailPage', () => {
     });
 
     it('should display primary action buttons', async () => {
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         // Check for action buttons - they should exist somewhere in the document
@@ -411,7 +411,7 @@ describe('EncounterDetailPage', () => {
 
     it('should navigate to edit page when edit button is clicked', async () => {
       const user = userEvent.setup();
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Edit Encounter')).toBeInTheDocument();
@@ -424,7 +424,7 @@ describe('EncounterDetailPage', () => {
 
     it('should show start combat confirmation', async () => {
       const user = userEvent.setup();
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Start Combat')).toBeInTheDocument();
@@ -444,7 +444,7 @@ describe('EncounterDetailPage', () => {
         error: 'Database connection failed',
       });
 
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Error loading encounter')).toBeInTheDocument();
@@ -464,7 +464,7 @@ describe('EncounterDetailPage', () => {
         });
 
       const user = userEvent.setup();
-      render(<EncounterDetailPage params={Promise.resolve({ id: 'test-id' })} />);
+      render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
         expect(screen.getByText('Retry')).toBeInTheDocument();
