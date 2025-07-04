@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
 import { EncounterService } from '@/lib/services/EncounterService';
 import type { IEncounter } from '@/lib/models/encounter/interfaces';
+import { handleServiceOperation } from '../utils/serviceOperationUtils';
 
 interface ParticipantFormData {
   name: string;
@@ -23,78 +23,64 @@ export const useParticipantOperations = (
 ) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleServiceResult = useCallback((result: any, successMessage: string, onSuccess: () => void) => {
-    if (result.success) {
-      toast.success(successMessage);
-      onUpdate?.(result.data!);
-      onSuccess();
-    } else {
-      toast.error(typeof result.error === 'string' ? result.error : 'Operation failed');
-    }
-  }, [onUpdate]);
-
   const createParticipantData = useCallback((data: ParticipantFormData) => ({
     ...data,
     characterId: new Date().getTime().toString(),
     currentHitPoints: data.maxHitPoints,
   }), []);
 
+  const executeWithLoading = useCallback(async (operation: () => Promise<void>) => {
+    setIsLoading(true);
+    try {
+      await operation();
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const addParticipant = useCallback(async (
     formData: ParticipantFormData,
     onSuccess: () => void
   ) => {
-    try {
-      setIsLoading(true);
+    await executeWithLoading(async () => {
       const participantData = createParticipantData(formData);
-      const result = await EncounterService.addParticipant(
-        encounter._id.toString(),
-        participantData
+      await handleServiceOperation(
+        () => EncounterService.addParticipant(encounter._id.toString(), participantData),
+        'Participant added successfully',
+        (data) => {
+          onUpdate?.(data!);
+          onSuccess();
+        }
       );
-      handleServiceResult(result, 'Participant added successfully', onSuccess);
-    } catch (error) {
-      toast.error('An error occurred while adding participant');
-      console.error('Add participant error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [encounter._id, createParticipantData, handleServiceResult]);
+    });
+  }, [encounter._id, createParticipantData, executeWithLoading, onUpdate]);
 
   const updateParticipant = useCallback(async (
     participantId: string,
     formData: ParticipantFormData,
     onSuccess: () => void
   ) => {
-    try {
-      setIsLoading(true);
-      const result = await EncounterService.updateParticipant(
-        encounter._id.toString(),
-        participantId,
-        formData
+    await executeWithLoading(async () => {
+      await handleServiceOperation(
+        () => EncounterService.updateParticipant(encounter._id.toString(), participantId, formData),
+        'Participant updated successfully',
+        (data) => {
+          onUpdate?.(data!);
+          onSuccess();
+        }
       );
-      handleServiceResult(result, 'Participant updated successfully', onSuccess);
-    } catch (error) {
-      toast.error('An error occurred while updating participant');
-      console.error('Update participant error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [encounter._id, handleServiceResult]);
+    });
+  }, [encounter._id, executeWithLoading, onUpdate]);
 
   const removeParticipant = useCallback(async (participantId: string) => {
-    try {
-      setIsLoading(true);
-      const result = await EncounterService.removeParticipant(
-        encounter._id.toString(),
-        participantId
+    await executeWithLoading(async () => {
+      await handleServiceOperation(
+        () => EncounterService.removeParticipant(encounter._id.toString(), participantId),
+        'Participant removed successfully',
+        (data) => onUpdate?.(data!)
       );
-      handleServiceResult(result, 'Participant removed successfully', () => {});
-    } catch (error) {
-      toast.error('An error occurred while removing participant');
-      console.error('Remove participant error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [encounter._id, handleServiceResult]);
+    });
+  }, [encounter._id, executeWithLoading, onUpdate]);
 
   return {
     isLoading,
