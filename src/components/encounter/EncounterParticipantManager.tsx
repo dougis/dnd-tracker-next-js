@@ -1,20 +1,11 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import type {
-  IEncounter,
-  IParticipantReference,
-} from '@/lib/models/encounter/interfaces';
-import { ParticipantItem } from './ParticipantItem';
+import { Card, CardContent } from '@/components/ui/card';
+import type { IEncounter, IParticipantReference } from '@/lib/models/encounter/interfaces';
+import { ParticipantList } from './ParticipantList';
+import { ParticipantHeader } from './ParticipantHeader';
 import { EmptyParticipantsState } from './EmptyParticipantsState';
-import { BatchSelectionBar } from './BatchSelectionBar';
 import { AddParticipantDialog, EditParticipantDialog, ImportParticipantDialog } from './ParticipantDialogs';
 import { useParticipantOperations } from './hooks/useParticipantOperations';
 import { useParticipantForm } from './hooks/useParticipantForm';
@@ -24,49 +15,35 @@ interface EncounterParticipantManagerProps {
   onUpdate?: (_updatedEncounter: IEncounter) => void;
 }
 
-
 export function EncounterParticipantManager({
   encounter,
   onUpdate,
 }: EncounterParticipantManagerProps) {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-  const [editingParticipant, setEditingParticipant] = useState<IParticipantReference | null>(null);
+  // State management
   const [selectedParticipants, setSelectedParticipants] = useState<Set<string>>(new Set());
+  const [dialogState, setDialogState] = useState({
+    isAddOpen: false,
+    isEditOpen: false,
+    isImportOpen: false,
+    editingParticipant: null as IParticipantReference | null,
+  });
 
+  // Hooks
   const { isLoading, addParticipant, updateParticipant, removeParticipant } = useParticipantOperations(encounter, onUpdate);
   const { formData, setFormData, formErrors, resetForm, loadParticipantData, isFormValid } = useParticipantForm();
 
-
-  const handleAddParticipant = useCallback(async () => {
-    if (!isFormValid(formData)) return;
-
-    await addParticipant(formData, () => {
-      setIsAddDialogOpen(false);
-      resetForm();
+  // Selection handlers
+  const handleParticipantSelection = useCallback((participantId: string, checked: boolean) => {
+    setSelectedParticipants(prev => {
+      const newSelection = new Set(prev);
+      if (checked) {
+        newSelection.add(participantId);
+      } else {
+        newSelection.delete(participantId);
+      }
+      return newSelection;
     });
-  }, [formData, isFormValid, addParticipant, resetForm]);
-
-  const handleEditParticipant = useCallback((participant: IParticipantReference) => {
-    setEditingParticipant(participant);
-    loadParticipantData(participant);
-    setIsEditDialogOpen(true);
-  }, [loadParticipantData]);
-
-  const handleUpdateParticipant = useCallback(async () => {
-    if (!editingParticipant || !isFormValid(formData)) return;
-
-    await updateParticipant(editingParticipant.characterId.toString(), formData, () => {
-      setIsEditDialogOpen(false);
-      setEditingParticipant(null);
-      resetForm();
-    });
-  }, [editingParticipant, formData, isFormValid, updateParticipant, resetForm]);
-
-  const handleRemoveParticipant = useCallback(async (participantId: string) => {
-    await removeParticipant(participantId);
-  }, [removeParticipant]);
+  }, []);
 
   const handleBatchRemove = useCallback(async () => {
     for (const participantId of Array.from(selectedParticipants)) {
@@ -75,35 +52,94 @@ export function EncounterParticipantManager({
     setSelectedParticipants(new Set());
   }, [selectedParticipants, removeParticipant]);
 
-  const handleParticipantSelection = useCallback((participantId: string, checked: boolean) => {
-    const newSelection = new Set(selectedParticipants);
-    if (checked) {
-      newSelection.add(participantId);
-    } else {
-      newSelection.delete(participantId);
-    }
-    setSelectedParticipants(newSelection);
-  }, [selectedParticipants]);
+  // Dialog handlers
+  const openAddDialog = useCallback(() => {
+    setDialogState(prev => ({ ...prev, isAddOpen: true }));
+  }, []);
 
-
-  const handleEditCancel = useCallback(() => {
-    setIsEditDialogOpen(false);
-    setEditingParticipant(null);
+  const closeAddDialog = useCallback(() => {
+    setDialogState(prev => ({ ...prev, isAddOpen: false }));
     resetForm();
   }, [resetForm]);
 
-  const _handleAddCancel = useCallback(() => {
-    setIsAddDialogOpen(false);
+  const openEditDialog = useCallback((participant: IParticipantReference) => {
+    setDialogState(prev => ({
+      ...prev,
+      isEditOpen: true,
+      editingParticipant: participant
+    }));
+    loadParticipantData(participant);
+  }, [loadParticipantData]);
+
+  const closeEditDialog = useCallback(() => {
+    setDialogState(prev => ({
+      ...prev,
+      isEditOpen: false,
+      editingParticipant: null
+    }));
     resetForm();
   }, [resetForm]);
 
+  // Participant operations
+  const handleAddParticipant = useCallback(async () => {
+    if (!isFormValid(formData)) return;
+    await addParticipant(formData, closeAddDialog);
+  }, [formData, isFormValid, addParticipant, closeAddDialog]);
+
+  const handleUpdateParticipant = useCallback(async () => {
+    if (!dialogState.editingParticipant || !isFormValid(formData)) return;
+    await updateParticipant(
+      dialogState.editingParticipant.characterId.toString(),
+      formData,
+      closeEditDialog
+    );
+  }, [dialogState.editingParticipant, formData, isFormValid, updateParticipant, closeEditDialog]);
+
+  const handleRemoveParticipant = useCallback(async (participantId: string) => {
+    await removeParticipant(participantId);
+  }, [removeParticipant]);
+
+  // Render helpers
+  const renderActionButtons = useCallback(() => (
+    <>
+      <AddParticipantDialog
+        isAddDialogOpen={dialogState.isAddOpen}
+        onAddDialogOpenChange={(open) => open ? openAddDialog() : closeAddDialog()}
+        onAddParticipant={handleAddParticipant}
+        isLoading={isLoading}
+        formData={formData}
+        formErrors={formErrors}
+        onFormDataChange={setFormData}
+        onResetForm={resetForm}
+      />
+      <ImportParticipantDialog
+        isImportDialogOpen={dialogState.isImportOpen}
+        onImportDialogOpenChange={(open) =>
+          setDialogState(prev => ({ ...prev, isImportOpen: open }))
+        }
+      />
+    </>
+  ), [
+    dialogState.isAddOpen,
+    dialogState.isImportOpen,
+    openAddDialog,
+    closeAddDialog,
+    handleAddParticipant,
+    isLoading,
+    formData,
+    formErrors,
+    setFormData,
+    resetForm,
+  ]);
+
+  // Empty state
   if (encounter.participants.length === 0) {
     return (
       <EmptyParticipantsState
         renderAddDialog={() => (
           <AddParticipantDialog
-            isAddDialogOpen={isAddDialogOpen}
-            onAddDialogOpenChange={setIsAddDialogOpen}
+            isAddDialogOpen={dialogState.isAddOpen}
+            onAddDialogOpenChange={(open) => open ? openAddDialog() : closeAddDialog()}
             onAddParticipant={handleAddParticipant}
             isLoading={isLoading}
             formData={formData}
@@ -114,72 +150,44 @@ export function EncounterParticipantManager({
         )}
         renderImportDialog={() => (
           <ImportParticipantDialog
-            isImportDialogOpen={isImportDialogOpen}
-            onImportDialogOpenChange={setIsImportDialogOpen}
+            isImportDialogOpen={dialogState.isImportOpen}
+            onImportDialogOpenChange={(open) =>
+              setDialogState(prev => ({ ...prev, isImportOpen: open }))
+            }
           />
         )}
       />
     );
   }
 
+  // Main content
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Encounter Participants</CardTitle>
-            <CardDescription>
-              Manage characters and NPCs in this encounter
-            </CardDescription>
-          </div>
-          <div className="flex space-x-2">
-            <AddParticipantDialog
-              isAddDialogOpen={isAddDialogOpen}
-              onAddDialogOpenChange={setIsAddDialogOpen}
-              onAddParticipant={handleAddParticipant}
-              isLoading={isLoading}
-              formData={formData}
-              formErrors={formErrors}
-              onFormDataChange={setFormData}
-              onResetForm={resetForm}
-            />
-            <ImportParticipantDialog
-              isImportDialogOpen={isImportDialogOpen}
-              onImportDialogOpenChange={setIsImportDialogOpen}
-            />
-          </div>
-        </div>
-
-        <BatchSelectionBar
-          selectedCount={selectedParticipants.size}
-          onBatchRemove={handleBatchRemove}
-        />
-      </CardHeader>
+      <ParticipantHeader
+        selectedCount={selectedParticipants.size}
+        onBatchRemove={handleBatchRemove}
+        renderActions={renderActionButtons}
+      />
 
       <CardContent>
-        <div className="space-y-4">
-          {encounter.participants.map((participant) => (
-            <ParticipantItem
-              key={participant.characterId.toString()}
-              participant={participant}
-              isSelected={selectedParticipants.has(participant.characterId.toString())}
-              onSelectionChange={handleParticipantSelection}
-              onEdit={handleEditParticipant}
-              onRemove={handleRemoveParticipant}
-            />
-          ))}
-        </div>
+        <ParticipantList
+          participants={encounter.participants}
+          selectedParticipants={selectedParticipants}
+          onSelectionChange={handleParticipantSelection}
+          onEdit={openEditDialog}
+          onRemove={handleRemoveParticipant}
+        />
       </CardContent>
 
       <EditParticipantDialog
-        isEditDialogOpen={isEditDialogOpen}
-        onEditDialogOpenChange={setIsEditDialogOpen}
+        isEditDialogOpen={dialogState.isEditOpen}
+        onEditDialogOpenChange={(open) => open ? undefined : closeEditDialog()}
         onUpdateParticipant={handleUpdateParticipant}
         isLoading={isLoading}
         formData={formData}
         formErrors={formErrors}
         onFormDataChange={setFormData}
-        onResetForm={handleEditCancel}
+        onResetForm={closeEditDialog}
       />
     </Card>
   );
