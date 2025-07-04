@@ -15,6 +15,67 @@ import { Plus, Download } from 'lucide-react';
 import { ParticipantForm } from './ParticipantForm';
 import type { ParticipantFormData } from './hooks/useParticipantForm';
 
+interface BaseDialogProps {
+  isOpen: boolean;
+  onOpenChange: (_open: boolean) => void;
+  onReset: () => void;
+}
+
+interface FormDialogProps extends BaseDialogProps {
+  title: string;
+  description: string;
+  onSubmit: () => void;
+  isLoading: boolean;
+  formData: ParticipantFormData;
+  formErrors: Record<string, string>;
+  onFormDataChange: (_data: ParticipantFormData) => void;
+  submitLabel: string;
+  loadingLabel: string;
+}
+
+const FormDialog = ({
+  isOpen,
+  onOpenChange,
+  onReset,
+  title,
+  description,
+  onSubmit,
+  isLoading,
+  formData,
+  formErrors,
+  onFormDataChange,
+  submitLabel,
+  loadingLabel,
+}: FormDialogProps) => (
+  <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>{title}</DialogTitle>
+        <DialogDescription>{description}</DialogDescription>
+      </DialogHeader>
+      <ParticipantForm
+        formData={formData}
+        formErrors={formErrors}
+        onFormDataChange={onFormDataChange}
+      />
+      <DialogFooter>
+        <Button
+          variant="outline"
+          onClick={() => {
+            onOpenChange(false);
+            onReset();
+          }}
+        >
+          Cancel
+        </Button>
+        <Button onClick={onSubmit} disabled={isLoading}>
+          {isLoading ? loadingLabel : submitLabel}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+);
+
 interface ParticipantDialogsProps {
   // Add dialog props
   isAddDialogOpen: boolean;
@@ -46,41 +107,30 @@ export function AddParticipantDialog({
   onResetForm,
 }: Pick<ParticipantDialogsProps, 'isAddDialogOpen' | 'onAddDialogOpenChange' | 'onAddParticipant' | 'isLoading' | 'formData' | 'formErrors' | 'onFormDataChange' | 'onResetForm'>) {
   return (
-    <Dialog open={isAddDialogOpen} onOpenChange={onAddDialogOpenChange}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Character
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add Participant</DialogTitle>
-          <DialogDescription>
-            Add a new character or NPC to the encounter
-          </DialogDescription>
-        </DialogHeader>
-        <ParticipantForm
-          formData={formData}
-          formErrors={formErrors}
-          onFormDataChange={onFormDataChange}
-        />
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => {
-              onAddDialogOpenChange(false);
-              onResetForm();
-            }}
-          >
-            Cancel
+    <>
+      <Dialog open={isAddDialogOpen} onOpenChange={onAddDialogOpenChange}>
+        <DialogTrigger asChild>
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Character
           </Button>
-          <Button onClick={onAddParticipant} disabled={isLoading}>
-            {isLoading ? 'Adding...' : 'Add Participant'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DialogTrigger>
+      </Dialog>
+      <FormDialog
+        isOpen={isAddDialogOpen}
+        onOpenChange={onAddDialogOpenChange}
+        onReset={onResetForm}
+        title="Add Participant"
+        description="Add a new character or NPC to the encounter"
+        onSubmit={onAddParticipant}
+        isLoading={isLoading}
+        formData={formData}
+        formErrors={formErrors}
+        onFormDataChange={onFormDataChange}
+        submitLabel="Add Participant"
+        loadingLabel="Adding..."
+      />
+    </>
   );
 }
 
@@ -95,35 +145,20 @@ export function EditParticipantDialog({
   onResetForm,
 }: Pick<ParticipantDialogsProps, 'isEditDialogOpen' | 'onEditDialogOpenChange' | 'onUpdateParticipant' | 'isLoading' | 'formData' | 'formErrors' | 'onFormDataChange' | 'onResetForm'>) {
   return (
-    <Dialog open={isEditDialogOpen} onOpenChange={onEditDialogOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit Participant</DialogTitle>
-          <DialogDescription>
-            Update the participant&apos;s information
-          </DialogDescription>
-        </DialogHeader>
-        <ParticipantForm
-          formData={formData}
-          formErrors={formErrors}
-          onFormDataChange={onFormDataChange}
-        />
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => {
-              onEditDialogOpenChange(false);
-              onResetForm();
-            }}
-          >
-            Cancel
-          </Button>
-          <Button onClick={onUpdateParticipant} disabled={isLoading}>
-            {isLoading ? 'Updating...' : 'Update Participant'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <FormDialog
+      isOpen={isEditDialogOpen}
+      onOpenChange={onEditDialogOpenChange}
+      onReset={onResetForm}
+      title="Edit Participant"
+      description="Update the participant's information"
+      onSubmit={onUpdateParticipant}
+      isLoading={isLoading}
+      formData={formData}
+      formErrors={formErrors}
+      onFormDataChange={onFormDataChange}
+      submitLabel="Update Participant"
+      loadingLabel="Updating..."
+    />
   );
 }
 

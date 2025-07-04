@@ -39,51 +39,57 @@ export const useParticipantOperations = (
     }
   }, []);
 
+  const executeServiceOperation = useCallback(async (
+    operation: () => Promise<any>,
+    successMessage: string,
+    onSuccess?: (_data: any) => void
+  ) => {
+    await executeWithLoading(async () => {
+      await handleServiceOperation(
+        operation,
+        successMessage,
+        (data?: IEncounter) => {
+          if (data) {
+            onUpdate?.(data);
+            onSuccess?.(data);
+          }
+        }
+      );
+    });
+  }, [executeWithLoading, onUpdate]);
+
   const addParticipant = useCallback(async (
     formData: ParticipantFormData,
     onSuccess: () => void
   ) => {
-    await executeWithLoading(async () => {
-      const participantData = createParticipantData(formData);
-      await handleServiceOperation(
-        () => EncounterService.addParticipant(encounter._id.toString(), participantData),
-        'Participant added successfully',
-        (data) => {
-          onUpdate?.(data!);
-          onSuccess();
-        }
-      );
-    });
-  }, [encounter._id, createParticipantData, executeWithLoading, onUpdate]);
+    const participantData = createParticipantData(formData);
+    await executeServiceOperation(
+      () => EncounterService.addParticipant(encounter._id.toString(), participantData),
+      'Participant added successfully',
+      () => onSuccess()
+    );
+  }, [encounter._id, createParticipantData, executeServiceOperation]);
 
   const updateParticipant = useCallback(async (
     participantId: string,
     formData: ParticipantFormData,
     onSuccess: () => void
   ) => {
-    await executeWithLoading(async () => {
-      // For updates, don't include characterId as it shouldn't be changed
-      const { characterId: _characterId, ...updateData } = createParticipantData(formData);
-      await handleServiceOperation(
-        () => EncounterService.updateParticipant(encounter._id.toString(), participantId, updateData),
-        'Participant updated successfully',
-        (data) => {
-          onUpdate?.(data!);
-          onSuccess();
-        }
-      );
-    });
-  }, [encounter._id, createParticipantData, executeWithLoading, onUpdate]);
+    // For updates, don't include characterId as it shouldn't be changed
+    const { characterId: _characterId, ...updateData } = createParticipantData(formData);
+    await executeServiceOperation(
+      () => EncounterService.updateParticipant(encounter._id.toString(), participantId, updateData),
+      'Participant updated successfully',
+      () => onSuccess()
+    );
+  }, [encounter._id, createParticipantData, executeServiceOperation]);
 
   const removeParticipant = useCallback(async (participantId: string) => {
-    await executeWithLoading(async () => {
-      await handleServiceOperation(
-        () => EncounterService.removeParticipant(encounter._id.toString(), participantId),
-        'Participant removed successfully',
-        (data) => onUpdate?.(data!)
-      );
-    });
-  }, [encounter._id, executeWithLoading, onUpdate]);
+    await executeServiceOperation(
+      () => EncounterService.removeParticipant(encounter._id.toString(), participantId),
+      'Participant removed successfully'
+    );
+  }, [encounter._id, executeServiceOperation]);
 
   return {
     isLoading,
