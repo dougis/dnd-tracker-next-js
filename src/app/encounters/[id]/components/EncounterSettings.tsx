@@ -4,6 +4,49 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import type { IEncounter } from '@/lib/models/encounter/interfaces';
 
+interface SettingRowProps {
+  id: string;
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}
+
+/**
+ * Reusable setting row component
+ */
+function SettingRow({ id, label, checked, onChange }: SettingRowProps) {
+  return (
+    <div className="flex items-center justify-between">
+      <Label htmlFor={id} className="text-sm">
+        {label}
+      </Label>
+      <Switch
+        id={id}
+        checked={checked}
+        onCheckedChange={onChange}
+      />
+    </div>
+  );
+}
+
+interface InfoRowProps {
+  label: string;
+  value: string | number;
+  suffix?: string;
+}
+
+/**
+ * Reusable info display row
+ */
+function InfoRow({ label, value, suffix = '' }: InfoRowProps) {
+  return (
+    <div className="flex justify-between">
+      <span className="text-sm text-muted-foreground">{label}:</span>
+      <span className="text-sm">{value}{suffix}</span>
+    </div>
+  );
+}
+
 interface EncounterSettingsProps {
   encounter: IEncounter;
 }
@@ -27,83 +70,54 @@ export function EncounterSettings({ encounter }: EncounterSettingsProps) {
       <CardContent className="space-y-4">
         {/* Combat Settings */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="auto-roll-initiative" className="text-sm">
-              Auto-roll Initiative
-            </Label>
-            <Switch
-              id="auto-roll-initiative"
-              checked={settings.autoRollInitiative}
-              onCheckedChange={(checked) => handleSettingChange('autoRollInitiative', checked)}
-            />
-          </div>
+          <SettingRow
+            id="auto-roll-initiative"
+            label="Auto-roll Initiative"
+            checked={settings.autoRollInitiative}
+            onChange={(checked) => handleSettingChange('autoRollInitiative', checked)}
+          />
 
-          <div className="flex items-center justify-between">
-            <Label htmlFor="track-resources" className="text-sm">
-              Track Resources
-            </Label>
-            <Switch
-              id="track-resources"
-              checked={settings.trackResources}
-              onCheckedChange={(checked) => handleSettingChange('trackResources', checked)}
-            />
-          </div>
+          <SettingRow
+            id="track-resources"
+            label="Track Resources"
+            checked={settings.trackResources}
+            onChange={(checked) => handleSettingChange('trackResources', checked)}
+          />
 
-          <div className="flex items-center justify-between">
-            <Label htmlFor="enable-lair-actions" className="text-sm">
-              Enable Lair Actions
-            </Label>
-            <Switch
-              id="enable-lair-actions"
-              checked={settings.enableLairActions}
-              onCheckedChange={(checked) => handleSettingChange('enableLairActions', checked)}
-            />
-          </div>
+          <SettingRow
+            id="enable-lair-actions"
+            label="Enable Lair Actions"
+            checked={settings.enableLairActions}
+            onChange={(checked) => handleSettingChange('enableLairActions', checked)}
+          />
 
-          <div className="flex items-center justify-between">
-            <Label htmlFor="player-visibility" className="text-sm">
-              Allow Player Visibility
-            </Label>
-            <Switch
-              id="player-visibility"
-              checked={settings.allowPlayerVisibility}
-              onCheckedChange={(checked) => handleSettingChange('allowPlayerVisibility', checked)}
-            />
-          </div>
+          <SettingRow
+            id="player-visibility"
+            label="Allow Player Visibility"
+            checked={settings.allowPlayerVisibility}
+            onChange={(checked) => handleSettingChange('allowPlayerVisibility', checked)}
+          />
 
-          <div className="flex items-center justify-between">
-            <Label htmlFor="grid-movement" className="text-sm">
-              Enable Grid Movement
-            </Label>
-            <Switch
-              id="grid-movement"
-              checked={settings.enableGridMovement}
-              onCheckedChange={(checked) => handleSettingChange('enableGridMovement', checked)}
-            />
-          </div>
+          <SettingRow
+            id="grid-movement"
+            label="Enable Grid Movement"
+            checked={settings.enableGridMovement}
+            onChange={(checked) => handleSettingChange('enableGridMovement', checked)}
+          />
         </div>
 
         {/* Additional Settings Information */}
         <div className="pt-3 border-t space-y-2">
           {settings.gridSize && (
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Grid Size:</span>
-              <span className="text-sm">{settings.gridSize} ft</span>
-            </div>
+            <InfoRow label="Grid Size" value={settings.gridSize} suffix=" ft" />
           )}
 
           {settings.lairActionInitiative && (
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Lair Action Initiative:</span>
-              <span className="text-sm">{settings.lairActionInitiative}</span>
-            </div>
+            <InfoRow label="Lair Action Initiative" value={settings.lairActionInitiative} />
           )}
 
           {settings.roundTimeLimit && (
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Round Time Limit:</span>
-              <span className="text-sm">{settings.roundTimeLimit}s</span>
-            </div>
+            <InfoRow label="Round Time Limit" value={settings.roundTimeLimit} suffix="s" />
           )}
         </div>
       </CardContent>

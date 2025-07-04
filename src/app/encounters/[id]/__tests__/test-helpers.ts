@@ -301,3 +301,26 @@ export const mockApiResponses = {
     error: `Validation failed for field: ${field}`
   }),
 };
+
+/**
+ * Common test patterns to reduce duplication
+ */
+export const testPatterns = {
+  waitForElement: async (getElement: () => HTMLElement | null, timeout = 1000) => {
+    const startTime = Date.now();
+    while (Date.now() - startTime < timeout) {
+      const element = getElement();
+      if (element) return element;
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    throw new Error('Element not found within timeout');
+  },
+  
+  expectElementToExist: (getText: () => HTMLElement) => {
+    return expect(getText()).toBeInTheDocument();
+  },
+  
+  getByTextWithTimeout: async (screen: any, text: string) => {
+    return testPatterns.waitForElement(() => screen.queryByText(text));
+  },
+};

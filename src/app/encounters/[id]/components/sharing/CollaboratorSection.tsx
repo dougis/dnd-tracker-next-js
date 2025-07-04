@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PlusIcon, XIcon } from 'lucide-react';
 import type { IEncounter } from '@/lib/models/encounter/interfaces';
+import type { Types } from 'mongoose';
 
 interface CollaboratorSectionProps {
   encounter: IEncounter;
@@ -12,6 +13,61 @@ interface CollaboratorSectionProps {
   onEmailChange: (_email: string) => void;
   onAddCollaborator: () => void;
   onRemoveCollaborator: (_collaboratorId: string) => void;
+}
+
+interface CollaboratorItemProps {
+  collaboratorId: Types.ObjectId;
+  index: number;
+  onRemove: (id: string) => void;
+}
+
+/**
+ * Individual collaborator item
+ */
+function CollaboratorItem({ collaboratorId, index, onRemove }: CollaboratorItemProps) {
+  return (
+    <div className="flex items-center justify-between p-2 border rounded">
+      <span className="text-sm">Collaborator {index + 1}</span>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => onRemove(collaboratorId.toString())}
+      >
+        <XIcon className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
+interface CollaboratorListProps {
+  collaborators: Types.ObjectId[];
+  onRemoveCollaborator: (id: string) => void;
+}
+
+/**
+ * List of current collaborators
+ */
+function CollaboratorList({ collaborators, onRemoveCollaborator }: CollaboratorListProps) {
+  if (!collaborators || collaborators.length === 0) {
+    return (
+      <p className="text-xs text-muted-foreground">
+        No collaborators added yet
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {collaborators.map((collaboratorId, index) => (
+        <CollaboratorItem
+          key={collaboratorId.toString()}
+          collaboratorId={collaboratorId}
+          index={index}
+          onRemove={onRemoveCollaborator}
+        />
+      ))}
+    </div>
+  );
 }
 
 /**
@@ -76,26 +132,10 @@ export function CollaboratorSection({
       )}
 
       {/* Current Collaborators */}
-      {encounter.sharedWith && encounter.sharedWith.length > 0 ? (
-        <div className="space-y-2">
-          {encounter.sharedWith.map((collaboratorId, index) => (
-            <div key={collaboratorId.toString()} className="flex items-center justify-between p-2 border rounded">
-              <span className="text-sm">Collaborator {index + 1}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onRemoveCollaborator(collaboratorId.toString())}
-              >
-                <XIcon className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-xs text-muted-foreground">
-          No collaborators added yet
-        </p>
-      )}
+      <CollaboratorList 
+        collaborators={encounter.sharedWith}
+        onRemoveCollaborator={onRemoveCollaborator}
+      />
     </div>
   );
 }
