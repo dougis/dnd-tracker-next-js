@@ -35,36 +35,6 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
   const [showDraftIndicator, setShowDraftIndicator] = useState(false);
   const autosaveTimer = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    loadCharacterData();
-  }, [loadCharacterData]);
-
-  // Autosave effect
-  useEffect(() => {
-    if (editMode && hasChanges()) {
-      // Clear existing timer
-      if (autosaveTimer.current) {
-        clearTimeout(autosaveTimer.current);
-      }
-
-      // Set new timer for 2 seconds
-      autosaveTimer.current = setTimeout(() => {
-        saveDraftChanges();
-      }, 2000);
-    }
-
-    return () => {
-      if (autosaveTimer.current) {
-        clearTimeout(autosaveTimer.current);
-      }
-    };
-  }, [editMode, editedCharacter, hasChanges, saveDraftChanges]);
-
-  // Load draft changes on mount
-  useEffect(() => {
-    loadDraftChanges();
-  }, [loadDraftChanges]);
-
   const hasChanges = useCallback(() => {
     if (!character) return false;
     return (
@@ -104,24 +74,6 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
     }
   }, [characterId, userId]);
 
-  const restoreDraftChanges = () => {
-    if (draftChanges) {
-      setEditedCharacter(draftChanges);
-      setEditMode(true);
-      setShowDraftIndicator(false);
-    }
-  };
-
-  const discardDraftChanges = async () => {
-    try {
-      await CharacterService.clearDraftChanges(characterId, userId);
-      setDraftChanges(null);
-      setShowDraftIndicator(false);
-    } catch {
-      // Silently fail clearing draft changes
-    }
-  };
-
   const loadCharacterData = useCallback(async () => {
     try {
       setLoading(true);
@@ -157,6 +109,54 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
       setLoading(false);
     }
   }, [characterId, userId]);
+
+  useEffect(() => {
+    loadCharacterData();
+  }, [loadCharacterData]);
+
+  // Autosave effect
+  useEffect(() => {
+    if (editMode && hasChanges()) {
+      // Clear existing timer
+      if (autosaveTimer.current) {
+        clearTimeout(autosaveTimer.current);
+      }
+
+      // Set new timer for 2 seconds
+      autosaveTimer.current = setTimeout(() => {
+        saveDraftChanges();
+      }, 2000);
+    }
+
+    return () => {
+      if (autosaveTimer.current) {
+        clearTimeout(autosaveTimer.current);
+      }
+    };
+  }, [editMode, editedCharacter, hasChanges, saveDraftChanges]);
+
+  // Load draft changes on mount
+  useEffect(() => {
+    loadDraftChanges();
+  }, [loadDraftChanges]);
+
+  const restoreDraftChanges = () => {
+    if (draftChanges) {
+      setEditedCharacter(draftChanges);
+      setEditMode(true);
+      setShowDraftIndicator(false);
+    }
+  };
+
+  const discardDraftChanges = async () => {
+    try {
+      await CharacterService.clearDraftChanges(characterId, userId);
+      setDraftChanges(null);
+      setShowDraftIndicator(false);
+    } catch {
+      // Silently fail clearing draft changes
+    }
+  };
 
   const handleSave = async () => {
     if (!character) return;

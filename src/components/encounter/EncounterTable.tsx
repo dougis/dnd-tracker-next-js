@@ -223,8 +223,8 @@ export function EncounterTable({
                 </td>
 
                 <td className="p-4">
-                  <span className={`font-medium capitalize ${getDifficultyColor(encounter.difficulty)}`}>
-                    {encounter.difficulty}
+                  <span className={`font-medium capitalize ${encounter.difficulty ? getDifficultyColor(encounter.difficulty) : ''}`}>
+                    {encounter.difficulty || 'N/A'}
                   </span>
                 </td>
 

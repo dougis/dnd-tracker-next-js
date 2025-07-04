@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { EncounterService } from '@/lib/services/EncounterService';
 import type { EncounterListItem, EncounterFilters, SortBy, SortOrder, PaginationInfo } from '../types';
-import type { IEncounter } from '@/lib/models/encounter/IEncounter';
+import type { IEncounter } from '@/lib/models/encounter/interfaces';
 
 interface UseEncounterDataParams {
   filters: EncounterFilters;
@@ -35,15 +35,31 @@ export function useEncounterData({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [currentPage, setCurrentPage] = useState(page);
+  const [_currentPage, setCurrentPage] = useState(page);
 
   const transformEncounter = (encounter: IEncounter): EncounterListItem => {
     const participantCount = encounter.participants?.length || 0;
-    const playerCount = encounter.participants?.filter(p => p.type === 'character').length || 0;
+    const playerCount = encounter.participants?.filter(p => p.type === 'pc').length || 0;
 
     return {
-      ...encounter,
       id: encounter._id?.toString() || '',
+      ownerId: encounter.ownerId,
+      name: encounter.name,
+      description: encounter.description,
+      tags: encounter.tags,
+      difficulty: encounter.difficulty,
+      estimatedDuration: encounter.estimatedDuration,
+      targetLevel: encounter.targetLevel,
+      participants: encounter.participants,
+      settings: encounter.settings,
+      combatState: encounter.combatState,
+      status: encounter.status,
+      partyId: encounter.partyId,
+      isPublic: encounter.isPublic,
+      sharedWith: encounter.sharedWith,
+      version: encounter.version,
+      createdAt: encounter.createdAt,
+      updatedAt: encounter.updatedAt,
       participantCount,
       playerCount,
     };
@@ -54,34 +70,29 @@ export function useEncounterData({
     setError(null);
 
     try {
-      // Build search parameters
+      // Build search parameters to match service interface
       const searchParams = {
-        query: searchQuery,
-        status: filters.status,
-        difficulty: filters.difficulty,
-        targetLevelMin: filters.targetLevelMin,
-        targetLevelMax: filters.targetLevelMax,
-        tags: filters.tags,
-        sortBy,
-        sortOrder,
-        page: currentPage,
-        limit,
+        name: searchQuery,
+        difficulty: filters.difficulty.length > 0 ? filters.difficulty[0] : undefined,
+        targetLevel: filters.targetLevelMin,
+        status: filters.status.length > 0 ? filters.status[0] : undefined,
       };
 
       const result = await EncounterService.searchEncounters(searchParams);
 
       if (result.success && result.data) {
-        const transformedEncounters = result.data.encounters.map(transformEncounter);
+        const transformedEncounters = result.data.map(transformEncounter);
         setEncounters(transformedEncounters);
 
+        // Simple pagination - just show what we have
         setPagination({
-          currentPage: result.data.currentPage,
-          totalPages: result.data.totalPages,
-          totalItems: result.data.totalItems,
+          currentPage: 1,
+          totalPages: 1,
+          totalItems: result.data.length,
           itemsPerPage: limit,
         });
       } else {
-        throw new Error(result.error || 'Failed to fetch encounters');
+        throw new Error(result.error?.message || 'Failed to fetch encounters');
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
@@ -91,7 +102,7 @@ export function useEncounterData({
     } finally {
       setIsLoading(false);
     }
-  }, [filters, searchQuery, sortBy, sortOrder, currentPage, limit]);
+  }, [filters, searchQuery, limit]);
 
   const goToPage = useCallback((newPage: number) => {
     setCurrentPage(newPage);

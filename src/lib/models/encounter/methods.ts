@@ -129,9 +129,9 @@ export function startCombat(
 }
 
 export function endCombat(_this: IEncounter): void {
-  this.combatState.isActive = false;
-  this.combatState.endedAt = new Date();
-  this.status = 'completed';
+  _this.combatState.isActive = false;
+  _this.combatState.endedAt = new Date();
+  _this.status = 'completed';
 
   // Calculate total duration
   if (this.combatState.startedAt) {
