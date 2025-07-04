@@ -46,7 +46,7 @@ describe('useEncounterFilters', () => {
       updateFilters(result, { status: ['active'] });
       updateFilters(result, { difficulty: ['hard'] });
 
-      expectFilters(result, {
+      expectFiltersChanged(result, {
         status: ['active'],
         difficulty: ['hard'],
       });

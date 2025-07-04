@@ -9,9 +9,7 @@ const executeServiceOperation = async <T>(
   if (result.success) {
     onSuccess(result.data);
   } else {
-    const errorMessage = typeof result.error === 'string' ? result.error : 'Operation failed';
     onError?.(result.error);
-    throw new Error(errorMessage);
   }
 
   return result;
@@ -28,16 +26,25 @@ export const createServiceOperationHandler = (toastFn: any) => {
     try {
       const result = await executeServiceOperation(operation, onSuccess, onError);
 
-      toastFn({
-        title: 'Success',
-        description: successMessage,
-      });
+      if (result.success) {
+        toastFn({
+          title: 'Success',
+          description: successMessage,
+        });
+      } else {
+        const errorMessage = typeof result.error === 'string' ? result.error : 'An unexpected error occurred';
+        toastFn({
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      }
 
       return result;
     } catch (error: any) {
       toastFn({
         title: 'Error',
-        description: error.message || 'An unexpected error occurred',
+        description: 'An unexpected error occurred',
         variant: 'destructive',
       });
       console.error('Service operation error:', error);
@@ -55,7 +62,14 @@ export const handleServiceOperation = async <T>(
 ) => {
   try {
     const result = await executeServiceOperation(operation, onSuccess, onError);
-    console.log(`[Success] ${successMessage}`);
+
+    if (result.success) {
+      console.log(`[Success] ${successMessage}`);
+    } else {
+      const errorMessage = typeof result.error === 'string' ? result.error : 'An unexpected error occurred';
+      console.error(`[Error] ${errorMessage}`);
+    }
+
     return result;
   } catch (error: any) {
     console.error(`[Error] ${error.message || 'An unexpected error occurred'}`);
