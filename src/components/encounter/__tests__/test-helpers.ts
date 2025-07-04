@@ -74,16 +74,16 @@ const createBaseProps = (baseProps: any, overrides: any = {}) => ({
 });
 
 export const createMockProps = {
-  encounterListView: (overrides = {}) => 
+  encounterListView: (overrides = {}) =>
     createBaseProps({}, overrides),
 
-  encounterCard: (overrides = {}) => 
+  encounterCard: (overrides = {}) =>
     createBaseProps({
       encounter: createMockEncounter(),
       isSelected: false,
     }, overrides),
 
-  encounterFilters: (overrides = {}) => 
+  encounterFilters: (overrides = {}) =>
     createBaseProps({
       filters: createMockFilters(),
       searchQuery: '',
@@ -91,14 +91,14 @@ export const createMockProps = {
       sortOrder: 'desc' as const,
     }, overrides),
 
-  encounterGrid: (overrides = {}) => 
+  encounterGrid: (overrides = {}) =>
     createBaseProps({
       encounters: createMockEncounters(),
       isLoading: false,
       selectedEncounters: [],
     }, overrides),
 
-  encounterTable: (overrides = {}) => 
+  encounterTable: (overrides = {}) =>
     createBaseProps({
       encounters: createMockEncounters(),
       isLoading: false,
@@ -108,7 +108,7 @@ export const createMockProps = {
       sortOrder: 'desc' as const,
     }, overrides),
 
-  batchActions: (overrides = {}) => 
+  batchActions: (overrides = {}) =>
     createBaseProps({
       selectedCount: 3,
     }, overrides),

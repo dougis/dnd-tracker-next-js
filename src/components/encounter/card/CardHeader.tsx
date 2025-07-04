@@ -5,12 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EncounterActionButtons } from '../EncounterActionButtons';
 import { getStatusVariant, getDifficultyVariant, getDifficultyColor } from './badgeUtils';
-import type { EncounterSummary } from '../types';
+import type { EncounterListItem } from '../types';
 
 interface CardHeaderProps {
-  encounter: EncounterSummary;
+  encounter: EncounterListItem;
   isSelected?: boolean;
-  onSelect?: (id: string) => void;
+  onSelect?: (_id: string) => void;
   onRefetch?: () => void;
 }
 

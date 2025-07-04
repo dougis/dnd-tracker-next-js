@@ -1,5 +1,4 @@
 import { render, RenderResult } from '@testing-library/react';
-import { ReactElement } from 'react';
 
 export interface StandardTestOptions {
   props?: any;
@@ -11,7 +10,7 @@ export const renderComponent = (
   Component: React.ComponentType<any>,
   props: any
 ): RenderResult => {
-  return render(<Component {...props} />);
+  return render(React.createElement(Component, props));
 };
 
 export const createStandardTests = (
@@ -27,7 +26,7 @@ export const createStandardTests = (
       const result = renderComponent(Component, defaultProps);
       expect(result.container).toBeInTheDocument();
     },
-    
+
     'displays required elements': (screen: any) => {
       renderComponent(Component, defaultProps);
       testConfig.requiredElements.forEach(element => {
@@ -35,8 +34,8 @@ export const createStandardTests = (
           .toBeInTheDocument();
       });
     },
-    
-    'handles props correctly': (customProps: any, screen: any) => {
+
+    'handles props correctly': (customProps: any, _screen: any) => {
       renderComponent(Component, { ...defaultProps, ...customProps });
       // This can be customized per component
     },

@@ -21,7 +21,7 @@ interface FilterDropdownProps {
   icon?: React.ReactNode;
   options: FilterOption[];
   selectedValues: string[];
-  onSelectionChange: (value: string) => void;
+  onSelectionChange: (_value: string) => void;
 }
 
 export function FilterDropdown({

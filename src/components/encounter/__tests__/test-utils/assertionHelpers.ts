@@ -1,7 +1,7 @@
 // Common assertion patterns used across tests
 
 export const expectElementToBeInDocument = (screen: any, selector: string | RegExp) => {
-  const element = typeof selector === 'string' 
+  const element = typeof selector === 'string'
     ? screen.getByText(selector) || screen.getByTestId(selector) || screen.getByPlaceholderText(selector)
     : screen.getByText(selector);
   expect(element).toBeInTheDocument();

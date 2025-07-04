@@ -32,7 +32,7 @@ const checkHasActiveFilters = (filters: Filters, searchQuery: string): boolean =
 
 const createToggleHandler = (
   currentValues: string[],
-  onFiltersChange: (filters: Partial<Filters>) => void,
+  onFiltersChange: (_filters: Partial<Filters>) => void,
   filterKey: keyof Filters
 ) => {
   return (value: string) => {
@@ -54,13 +54,13 @@ export function EncounterFilters({
   onClearFilters,
 }: EncounterFiltersProps) {
   const hasActiveFilters = checkHasActiveFilters(filters, searchQuery);
-  
+
   const handleStatusChange = createToggleHandler(
     filters.status,
     onFiltersChange,
     'status'
   );
-  
+
   const handleDifficultyChange = createToggleHandler(
     filters.difficulty,
     onFiltersChange,

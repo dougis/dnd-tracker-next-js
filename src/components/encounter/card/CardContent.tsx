@@ -4,13 +4,13 @@ import { CardContent as UICardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, Clock, Target, Calendar } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import type { EncounterSummary } from '../types';
+import type { EncounterListItem } from '../types';
 
 interface CardContentProps {
-  encounter: EncounterSummary;
+  encounter: EncounterListItem;
 }
 
-function ParticipantInfo({ encounter }: { encounter: EncounterSummary }) {
+function ParticipantInfo({ encounter }: { encounter: EncounterListItem }) {
   return (
     <div className="flex items-center text-sm text-muted-foreground">
       <Users className="h-4 w-4 mr-2" />
@@ -22,7 +22,9 @@ function ParticipantInfo({ encounter }: { encounter: EncounterSummary }) {
   );
 }
 
-function TargetLevelInfo({ targetLevel }: { targetLevel: number }) {
+function TargetLevelInfo({ targetLevel }: { targetLevel?: number }) {
+  if (!targetLevel) return null;
+
   return (
     <div className="flex items-center text-sm text-muted-foreground">
       <Target className="h-4 w-4 mr-2" />
@@ -33,7 +35,7 @@ function TargetLevelInfo({ targetLevel }: { targetLevel: number }) {
 
 function DurationInfo({ estimatedDuration }: { estimatedDuration?: number }) {
   if (!estimatedDuration) return null;
-  
+
   return (
     <div className="flex items-center text-sm text-muted-foreground">
       <Clock className="h-4 w-4 mr-2" />
@@ -42,12 +44,12 @@ function DurationInfo({ estimatedDuration }: { estimatedDuration?: number }) {
   );
 }
 
-function UpdatedAtInfo({ updatedAt }: { updatedAt: string }) {
+function UpdatedAtInfo({ updatedAt }: { updatedAt: Date }) {
   return (
     <div className="flex items-center text-sm text-muted-foreground">
       <Calendar className="h-4 w-4 mr-2" />
       <span>
-        {formatDistanceToNow(new Date(updatedAt), { addSuffix: true })}
+        {formatDistanceToNow(updatedAt, { addSuffix: true })}
       </span>
     </div>
   );

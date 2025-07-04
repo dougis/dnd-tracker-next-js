@@ -21,7 +21,7 @@ interface SortDropdownProps {
   sortBy: SortBy;
   sortOrder: SortOrder;
   options: SortOption[];
-  onSortChange: (sortBy: SortBy, sortOrder: SortOrder) => void;
+  onSortChange: (_sortBy: SortBy, _sortOrder: SortOrder) => void;
 }
 
 export function SortDropdown({

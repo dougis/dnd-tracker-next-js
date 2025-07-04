@@ -43,7 +43,7 @@ export function useEncounterData({
   const handleSuccessfulResponse = useCallback((data: any) => {
     const transformedEncounters = data.encounters.map(transformEncounter);
     setEncounters(transformedEncounters);
-    
+
     const paginationInfo = createPaginationInfo(
       data.currentPage,
       data.totalPages,
@@ -73,7 +73,7 @@ export function useEncounterData({
         currentPage,
         limit
       );
-      
+
       const result = await EncounterService.searchEncounters(searchParams);
 
       if (result.success && result.data) {
