@@ -32,8 +32,8 @@ export function findByStatus(
   return this.find({ status }).sort({ updatedAt: -1 });
 }
 
-export function findPublic(_this: any): Promise<IEncounter[]> {
-  return _this.find({ isPublic: true }).sort({ updatedAt: -1 });
+export function findPublic(this: any): Promise<IEncounter[]> {
+  return this.find({ isPublic: true }).sort({ updatedAt: -1 });
 }
 
 
@@ -62,8 +62,8 @@ export function findByTargetLevel(
   return this.find({ targetLevel: level }).sort({ updatedAt: -1 });
 }
 
-export function findActive(_this: any): Promise<IEncounter[]> {
-  return _this.find({ 'combatState.isActive': true }).sort({
+export function findActive(this: any): Promise<IEncounter[]> {
+  return this.find({ 'combatState.isActive': true }).sort({
     'combatState.startedAt': -1,
   });
 }

@@ -40,86 +40,26 @@ export class EncounterServiceSearch {
     totalItems: number;
   }>> {
     try {
-      const {
-        query,
-        name,
-        difficulty,
-        targetLevel,
-        targetLevelMin,
-        targetLevelMax,
-        status,
-        tags,
-        ownerId,
-        sortBy = 'updatedAt',
-        sortOrder = 'desc',
-        page = 1,
-        limit = 20,
-      } = criteria;
-
-      // Build MongoDB query
-      const mongoQuery: any = {};
-
-      if (query || name) {
-        mongoQuery.name = { $regex: query || name, $options: 'i' };
-      }
-
-      if (difficulty) {
-        if (Array.isArray(difficulty) && difficulty.length > 0) {
-          mongoQuery.difficulty = { $in: difficulty };
-        } else if (typeof difficulty === 'string') {
-          mongoQuery.difficulty = difficulty;
-        }
-      }
-
-      if (targetLevel) {
-        mongoQuery.targetLevel = targetLevel;
-      } else if (targetLevelMin !== undefined || targetLevelMax !== undefined) {
-        mongoQuery.targetLevel = {};
-        if (targetLevelMin !== undefined) {
-          mongoQuery.targetLevel.$gte = targetLevelMin;
-        }
-        if (targetLevelMax !== undefined) {
-          mongoQuery.targetLevel.$lte = targetLevelMax;
-        }
-      }
-
-      if (status) {
-        if (Array.isArray(status) && status.length > 0) {
-          mongoQuery.status = { $in: status };
-        } else if (typeof status === 'string') {
-          mongoQuery.status = status;
-        }
-      }
-
-      if (tags && Array.isArray(tags) && tags.length > 0) {
-        mongoQuery.tags = { $in: tags };
-      }
-
-      if (ownerId) {
-        mongoQuery.ownerId = ownerId;
-      }
-
-      // Execute query with pagination
-      const skip = (page - 1) * limit;
-      const sortOption: any = {};
-      sortOption[sortBy] = sortOrder === 'asc' ? 1 : -1;
+      const searchParams = this.normalizeSearchParams(criteria);
+      const mongoQuery = this.buildMongoQuery(searchParams);
+      const { sortOption, skip } = this.buildPaginationAndSort(searchParams);
 
       const [encounters, totalItems] = await Promise.all([
         Encounter.find(mongoQuery)
           .sort(sortOption)
           .skip(skip)
-          .limit(limit)
+          .limit(searchParams.limit)
           .exec(),
         Encounter.countDocuments(mongoQuery),
       ]);
 
-      const totalPages = Math.ceil(totalItems / limit);
+      const totalPages = Math.ceil(totalItems / searchParams.limit);
 
       return {
         success: true,
         data: {
           encounters,
-          currentPage: page,
+          currentPage: searchParams.page,
           totalPages,
           totalItems,
         },
@@ -131,6 +71,97 @@ export class EncounterServiceSearch {
         'ENCOUNTER_SEARCH_FAILED'
       );
     }
+  }
+
+  private static normalizeSearchParams(criteria: any) {
+    return {
+      query: criteria.query,
+      name: criteria.name,
+      difficulty: criteria.difficulty,
+      targetLevel: criteria.targetLevel,
+      targetLevelMin: criteria.targetLevelMin,
+      targetLevelMax: criteria.targetLevelMax,
+      status: criteria.status,
+      tags: criteria.tags,
+      ownerId: criteria.ownerId,
+      sortBy: criteria.sortBy || 'updatedAt',
+      sortOrder: criteria.sortOrder || 'desc',
+      page: criteria.page || 1,
+      limit: criteria.limit || 20,
+    };
+  }
+
+  private static buildMongoQuery(params: any): any {
+    const mongoQuery: any = {};
+
+    this.addTextSearchFilter(mongoQuery, params);
+    this.addDifficultyFilter(mongoQuery, params);
+    this.addTargetLevelFilter(mongoQuery, params);
+    this.addStatusFilter(mongoQuery, params);
+    this.addTagsFilter(mongoQuery, params);
+    this.addOwnerFilter(mongoQuery, params);
+
+    return mongoQuery;
+  }
+
+  private static addTextSearchFilter(mongoQuery: any, params: any): void {
+    if (params.query || params.name) {
+      mongoQuery.name = { $regex: params.query || params.name, $options: 'i' };
+    }
+  }
+
+  private static addDifficultyFilter(mongoQuery: any, params: any): void {
+    if (params.difficulty) {
+      if (Array.isArray(params.difficulty) && params.difficulty.length > 0) {
+        mongoQuery.difficulty = { $in: params.difficulty };
+      } else if (typeof params.difficulty === 'string') {
+        mongoQuery.difficulty = params.difficulty;
+      }
+    }
+  }
+
+  private static addTargetLevelFilter(mongoQuery: any, params: any): void {
+    if (params.targetLevel) {
+      mongoQuery.targetLevel = params.targetLevel;
+    } else if (params.targetLevelMin !== undefined || params.targetLevelMax !== undefined) {
+      mongoQuery.targetLevel = {};
+      if (params.targetLevelMin !== undefined) {
+        mongoQuery.targetLevel.$gte = params.targetLevelMin;
+      }
+      if (params.targetLevelMax !== undefined) {
+        mongoQuery.targetLevel.$lte = params.targetLevelMax;
+      }
+    }
+  }
+
+  private static addStatusFilter(mongoQuery: any, params: any): void {
+    if (params.status) {
+      if (Array.isArray(params.status) && params.status.length > 0) {
+        mongoQuery.status = { $in: params.status };
+      } else if (typeof params.status === 'string') {
+        mongoQuery.status = params.status;
+      }
+    }
+  }
+
+  private static addTagsFilter(mongoQuery: any, params: any): void {
+    if (params.tags && Array.isArray(params.tags) && params.tags.length > 0) {
+      mongoQuery.tags = { $in: params.tags };
+    }
+  }
+
+  private static addOwnerFilter(mongoQuery: any, params: any): void {
+    if (params.ownerId) {
+      mongoQuery.ownerId = params.ownerId;
+    }
+  }
+
+  private static buildPaginationAndSort(params: any) {
+    const skip = (params.page - 1) * params.limit;
+    const sortOption: any = {};
+    sortOption[params.sortBy] = params.sortOrder === 'asc' ? 1 : -1;
+    
+    return { sortOption, skip };
   }
 
   /**
