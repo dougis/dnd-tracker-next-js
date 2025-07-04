@@ -160,7 +160,7 @@ export class EncounterServiceSearch {
     const skip = (params.page - 1) * params.limit;
     const sortOption: any = {};
     sortOption[params.sortBy] = params.sortOrder === 'asc' ? 1 : -1;
-    
+
     return { sortOption, skip };
   }
 
