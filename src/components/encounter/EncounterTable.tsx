@@ -73,8 +73,8 @@ export function EncounterTable({
     if (sortBy !== column) {
       return <ArrowUpDown className="h-4 w-4" />;
     }
-    return sortOrder === 'asc' ? 
-      <ArrowUp className="h-4 w-4" /> : 
+    return sortOrder === 'asc' ?
+      <ArrowUp className="h-4 w-4" /> :
       <ArrowDown className="h-4 w-4" />;
   };
 
@@ -127,7 +127,7 @@ export function EncounterTable({
                   />
                 </div>
               </th>
-              
+
               <th className="p-4 text-left">
                 <Button
                   variant="ghost"
@@ -138,9 +138,9 @@ export function EncounterTable({
                   {getSortIcon('name')}
                 </Button>
               </th>
-              
+
               <th className="p-4 text-left">Status</th>
-              
+
               <th className="p-4 text-left">
                 <Button
                   variant="ghost"
@@ -151,7 +151,7 @@ export function EncounterTable({
                   {getSortIcon('difficulty')}
                 </Button>
               </th>
-              
+
               <th className="p-4 text-left">
                 <Button
                   variant="ghost"
@@ -162,7 +162,7 @@ export function EncounterTable({
                   {getSortIcon('participantCount')}
                 </Button>
               </th>
-              
+
               <th className="p-4 text-left">
                 <Button
                   variant="ghost"
@@ -173,7 +173,7 @@ export function EncounterTable({
                   {getSortIcon('targetLevel')}
                 </Button>
               </th>
-              
+
               <th className="p-4 text-left">
                 <Button
                   variant="ghost"
@@ -184,7 +184,7 @@ export function EncounterTable({
                   {getSortIcon('updatedAt')}
                 </Button>
               </th>
-              
+
               <th className="p-4 text-left w-12">Actions</th>
             </tr>
           </thead>
@@ -204,7 +204,7 @@ export function EncounterTable({
                     />
                   </div>
                 </td>
-                
+
                 <td className="p-4">
                   <div>
                     <div className="font-medium">{encounter.name}</div>
@@ -215,19 +215,19 @@ export function EncounterTable({
                     )}
                   </div>
                 </td>
-                
+
                 <td className="p-4">
                   <Badge variant={getStatusVariant(encounter.status)}>
                     {encounter.status}
                   </Badge>
                 </td>
-                
+
                 <td className="p-4">
                   <span className={`font-medium capitalize ${getDifficultyColor(encounter.difficulty)}`}>
                     {encounter.difficulty}
                   </span>
                 </td>
-                
+
                 <td className="p-4">
                   <div className="flex items-center space-x-1">
                     <Users className="h-4 w-4 text-muted-foreground" />
@@ -239,14 +239,14 @@ export function EncounterTable({
                     )}
                   </div>
                 </td>
-                
+
                 <td className="p-4">
                   <div className="flex items-center space-x-1">
                     <Target className="h-4 w-4 text-muted-foreground" />
                     <span>{encounter.targetLevel}</span>
                   </div>
                 </td>
-                
+
                 <td className="p-4">
                   <div className="text-sm text-muted-foreground">
                     {formatDistanceToNow(new Date(encounter.updatedAt), { addSuffix: true })}
@@ -258,7 +258,7 @@ export function EncounterTable({
                     </div>
                   )}
                 </td>
-                
+
                 <td className="p-4">
                   <div data-actions className="opacity-0 group-hover:opacity-100 transition-opacity">
                     <EncounterActionButtons

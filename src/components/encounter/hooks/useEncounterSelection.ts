@@ -53,7 +53,7 @@ export function useEncounterSelection(
 
   // Clear selection when encounters change (e.g., on filter change)
   useState(() => {
-    setSelectedEncounters(prev => 
+    setSelectedEncounters(prev =>
       prev.filter(id => encounters.some(encounter => encounter.id === id))
     );
   });

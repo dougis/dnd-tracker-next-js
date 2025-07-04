@@ -8,7 +8,7 @@ export interface EncounterFilters {
   tags: string[];
 }
 
-export type SortBy = 
+export type SortBy =
   | 'name'
   | 'createdAt'
   | 'updatedAt'

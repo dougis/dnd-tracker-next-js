@@ -98,7 +98,7 @@ export function BatchActions({
           <span className="text-sm font-medium">
             {selectedCount} encounter{selectedCount !== 1 ? 's' : ''} selected
           </span>
-          
+
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
@@ -108,7 +108,7 @@ export function BatchActions({
               <Copy className="h-4 w-4 mr-2" />
               Duplicate
             </Button>
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -117,7 +117,7 @@ export function BatchActions({
               <Archive className="h-4 w-4 mr-2" />
               Archive
             </Button>
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -129,7 +129,7 @@ export function BatchActions({
             </Button>
           </div>
         </div>
-        
+
         <Button
           variant="ghost"
           size="sm"
@@ -145,7 +145,7 @@ export function BatchActions({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Encounters</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {selectedCount} encounter{selectedCount !== 1 ? 's' : ''}? 
+              Are you sure you want to delete {selectedCount} encounter{selectedCount !== 1 ? 's' : ''}?
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

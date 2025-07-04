@@ -73,14 +73,14 @@ export function EncounterCard({
     console.log('View encounter:', encounter.id);
   };
 
-  const handleCheckboxChange = (checked: boolean) => {
+  const handleCheckboxChange = (_checked: boolean) => {
     if (onSelect) {
       onSelect(encounter.id);
     }
   };
 
   return (
-    <Card 
+    <Card
       className="hover:shadow-md transition-shadow cursor-pointer group"
       onClick={handleCardClick}
     >
@@ -101,12 +101,12 @@ export function EncounterCard({
                 {encounter.name}
               </h3>
             </div>
-            
+
             <div className="flex items-center space-x-2 mb-3">
               <Badge variant={getStatusVariant(encounter.status)}>
                 {encounter.status}
               </Badge>
-              <Badge 
+              <Badge
                 variant={getDifficultyVariant(encounter.difficulty)}
                 className={getDifficultyColor(encounter.difficulty)}
               >
@@ -114,7 +114,7 @@ export function EncounterCard({
               </Badge>
             </div>
           </div>
-          
+
           <div data-actions className="opacity-0 group-hover:opacity-100 transition-opacity">
             <EncounterActionButtons
               encounter={encounter}

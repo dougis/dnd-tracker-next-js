@@ -73,7 +73,7 @@ export function useEncounterData({
       if (result.success && result.data) {
         const transformedEncounters = result.data.encounters.map(transformEncounter);
         setEncounters(transformedEncounters);
-        
+
         setPagination({
           currentPage: result.data.currentPage,
           totalPages: result.data.totalPages,

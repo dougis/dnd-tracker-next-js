@@ -15,7 +15,7 @@ import { useEncounterSelection } from './hooks/useEncounterSelection';
 
 export function EncounterListView() {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
-  
+
   const {
     filters,
     searchQuery,
@@ -80,7 +80,7 @@ export function EncounterListView() {
           onSortChange={updateSort}
           onClearFilters={clearFilters}
         />
-        
+
         <div className="flex items-center space-x-4">
           <ViewModeToggle value={viewMode} onValueChange={setViewMode} />
           <Button onClick={handleCreateEncounter}>

@@ -8,9 +8,9 @@ interface UseEncounterFiltersReturn {
   searchQuery: string;
   sortBy: SortBy;
   sortOrder: SortOrder;
-  updateFilters: (newFilters: Partial<EncounterFilters>) => void;
-  updateSearchQuery: (query: string) => void;
-  updateSort: (sortBy: SortBy, sortOrder: SortOrder) => void;
+  updateFilters: (_newFilters: Partial<EncounterFilters>) => void;
+  updateSearchQuery: (_query: string) => void;
+  updateSort: (_sortBy: SortBy, _sortOrder: SortOrder) => void;
   clearFilters: () => void;
 }
 
