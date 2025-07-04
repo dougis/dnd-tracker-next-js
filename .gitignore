@@ -1,4 +1,3 @@
-
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
@@ -38,10 +37,16 @@ next-env.d.ts
 
 .idea/
 
-
 #Ignore vscode AI rules
 .github/copilot-instructions.md
 
-
 #Ignore vscode AI rules
 .github\copilot-instructions.md
+
+set-alpha.bat
+.env.local
+.env.development
+.env.alpha
+.env.stage
+.env.production
+.env
