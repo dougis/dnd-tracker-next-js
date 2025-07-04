@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { EncounterService } from '@/lib/services/EncounterService';
-import type { IEncounter, IParticipantReference } from '@/lib/models/encounter/interfaces';
+import type { IEncounter } from '@/lib/models/encounter/interfaces';
 
 interface ParticipantFormData {
   name: string;
@@ -19,7 +19,7 @@ interface ParticipantFormData {
 
 export const useParticipantOperations = (
   encounter: IEncounter,
-  onUpdate?: (updatedEncounter: IEncounter) => void
+  onUpdate?: (_updatedEncounter: IEncounter) => void
 ) => {
   const [isLoading, setIsLoading] = useState(false);
 

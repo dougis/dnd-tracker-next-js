@@ -28,7 +28,7 @@ export const useCharacterData = (id: string) => {
         console.error('Error fetching character:', err);
         setError(err instanceof Error ? err.message : 'Character not found');
       }
-      
+
       setLoading(false);
     };
 

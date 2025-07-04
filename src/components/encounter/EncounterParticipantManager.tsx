@@ -29,7 +29,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Plus, Download } from 'lucide-react';
-import { toast } from 'sonner';
 import type {
   IEncounter,
   IParticipantReference,
@@ -154,7 +153,7 @@ export function EncounterParticipantManager({
         </Select>
       </FormField>
     </div>
-  ), [FormField, formData, formErrors.name]);
+  ), [FormField, formData, formErrors.name, setFormData]);
 
   const renderStatFields = useCallback(() => (
     <div className="grid grid-cols-3 gap-4">
@@ -208,7 +207,7 @@ export function EncounterParticipantManager({
         />
       </FormField>
     </div>
-  ), [FormField, formData, formErrors]);
+  ), [FormField, formData, formErrors, setFormData]);
 
   const renderParticipantForm = useCallback(() => (
     <div className="space-y-4">
@@ -233,7 +232,7 @@ export function EncounterParticipantManager({
         <Label htmlFor="isVisible">Visible to players</Label>
       </div>
     </div>
-  ), [FormField, renderBasicFields, renderStatFields, formData]);
+  ), [FormField, renderBasicFields, renderStatFields, formData, setFormData]);
 
   const renderAddDialog = useCallback(() => (
     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>

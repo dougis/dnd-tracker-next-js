@@ -29,7 +29,6 @@ interface ParticipantItemProps {
 const ParticipantTypeBadge = ({ type }: { type: string }) => {
   const variants = { pc: 'default', npc: 'secondary', monster: 'destructive' } as const;
   const labels = { pc: 'PC', npc: 'NPC', monster: 'Monster' };
-  
   return (
     <Badge variant={variants[type as keyof typeof variants] || 'secondary'}>
       {labels[type as keyof typeof labels] || type}

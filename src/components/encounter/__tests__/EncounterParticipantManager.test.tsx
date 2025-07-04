@@ -89,7 +89,6 @@ describe('EncounterParticipantManager', () => {
 
     it('should add participant successfully', async () => {
       const user = await testPatterns.setupTest(() => renderComponent(mockEncounter));
-      
       await testPatterns.testServiceOperation(
         mockEncounterService,
         'addParticipant',
@@ -132,7 +131,7 @@ describe('EncounterParticipantManager', () => {
 
     it('should remove participant successfully', async () => {
       const user = await testPatterns.setupTest(() => renderComponent(mockEncounter));
-      
+
       await testPatterns.testServiceOperation(
         mockEncounterService,
         'removeParticipant',
@@ -155,7 +154,7 @@ describe('EncounterParticipantManager', () => {
 
     it('should update participant successfully', async () => {
       const user = await testPatterns.setupTest(() => renderComponent(mockEncounter));
-      
+
       await testPatterns.testServiceOperation(
         mockEncounterService,
         'updateParticipant',
@@ -233,7 +232,7 @@ describe('EncounterParticipantManager', () => {
 
     it('should perform batch removal', async () => {
       const user = await testPatterns.setupTest(() => renderComponent(mockEncounter));
-      
+
       await testPatterns.testServiceOperation(
         mockEncounterService,
         'removeParticipant',
