@@ -1,13 +1,14 @@
 import type { ICharacter } from '@/lib/models/Character';
+import { Types } from 'mongoose';
 
 export const createMockCharacter = (overrides: Partial<ICharacter> = {}): ICharacter => ({
-  _id: 'char1',
+  _id: new Types.ObjectId('char1') as any,
   name: 'Test Character',
   type: 'pc',
   level: 1,
   race: 'human',
   classes: [{ class: 'fighter', level: 1, subclass: '', hitDie: 10 }],
-  ownerId: 'user1',
+  ownerId: new Types.ObjectId('user1') as any,
   hitPoints: { current: 10, maximum: 10, temporary: 0 },
   armorClass: 16,
   createdAt: new Date('2024-01-01'),
@@ -26,7 +27,7 @@ const createCharacterWithClass = (
 ): ICharacter => {
   const hp = level * 8 + 5; // Simplified HP calculation
   return createMockCharacter({
-    _id: id,
+    _id: new Types.ObjectId(id) as any,
     name,
     level,
     race,
