@@ -61,8 +61,9 @@ export const useParticipantOperations = (
     onSuccess: () => void
   ) => {
     await executeWithLoading(async () => {
+      const participantData = createParticipantData(formData);
       await handleServiceOperation(
-        () => EncounterService.updateParticipant(encounter._id.toString(), participantId, formData),
+        () => EncounterService.updateParticipant(encounter._id.toString(), participantId, participantData),
         'Participant updated successfully',
         (data) => {
           onUpdate?.(data!);
@@ -70,7 +71,7 @@ export const useParticipantOperations = (
         }
       );
     });
-  }, [encounter._id, executeWithLoading, onUpdate]);
+  }, [encounter._id, createParticipantData, executeWithLoading, onUpdate]);
 
   const removeParticipant = useCallback(async (participantId: string) => {
     await executeWithLoading(async () => {
