@@ -10,13 +10,13 @@ interface ToastProps {
 export function useToast() {
   const toast = ({ title, description, variant = 'default' }: ToastProps) => {
     const message = `${title}${description ? ': ' + description : ''}`;
-    
+
     if (variant === 'destructive') {
       console.error('[Toast Error]', message);
     } else {
       console.log('[Toast]', message);
     }
-    
+
     // TODO: Replace with actual toast UI implementation
     // For now, we'll use browser alert as a fallback
     if (variant === 'destructive') {

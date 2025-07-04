@@ -19,14 +19,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { 
-  MoreHorizontal, 
-  Edit, 
-  Copy, 
-  Trash2, 
-  Play, 
+import {
+  MoreHorizontal,
+  Edit,
+  Copy,
+  Trash2,
+  Play,
   Share,
-  Eye 
+  Eye
 } from 'lucide-react';
 import { EncounterService } from '@/lib/services/EncounterService';
 import { useToast } from '@/hooks/use-toast';
@@ -127,12 +127,12 @@ export function EncounterActionButtons({
             <Eye className="h-4 w-4 mr-2" />
             View Details
           </DropdownMenuItem>
-          
+
           <DropdownMenuItem onClick={handleEdit}>
             <Edit className="h-4 w-4 mr-2" />
             Edit Encounter
           </DropdownMenuItem>
-          
+
           <DropdownMenuItem onClick={handleDuplicate}>
             <Copy className="h-4 w-4 mr-2" />
             Duplicate
@@ -151,8 +151,8 @@ export function EncounterActionButtons({
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
-          
-          <DropdownMenuItem 
+
+          <DropdownMenuItem
             onClick={() => setIsDeleteDialogOpen(true)}
             className="text-destructive"
           >
@@ -167,7 +167,7 @@ export function EncounterActionButtons({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Encounter</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{encounter.name}"? This action cannot be undone.
+              Are you sure you want to delete &ldquo;{encounter.name}&rdquo;? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
