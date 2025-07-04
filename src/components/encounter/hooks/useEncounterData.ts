@@ -5,8 +5,7 @@ import type { EncounterListItem, EncounterFilters, SortBy, SortOrder, Pagination
 import {
   fetchEncountersData,
   processSuccessfulResponse,
-  processErrorResponse,
-  createStateUpdaters
+  processErrorResponse
 } from './utils/dataFetchHelpers';
 
 interface UseEncounterDataParams {
@@ -41,25 +40,23 @@ export function useEncounterData({
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [currentPage, setCurrentPage] = useState(page);
 
-  const { updateSuccessState, updateErrorState, resetState } = createStateUpdaters(
-    setEncounters,
-    setPagination,
-    setError
-  );
-
   const handleSuccessfulResponse = useCallback((data: any) => {
     const { encounters, pagination } = processSuccessfulResponse(data, limit);
-    updateSuccessState(encounters, pagination);
-  }, [limit, updateSuccessState]);
+    setEncounters(encounters);
+    setPagination(pagination);
+    setError(null);
+  }, [limit]);
 
   const handleErrorResponse = useCallback((error: any) => {
     const { errorMessage } = processErrorResponse(error);
-    updateErrorState(errorMessage);
-  }, [updateErrorState]);
+    setError(errorMessage);
+    setEncounters([]);
+    setPagination(null);
+  }, []);
 
   const fetchEncounters = useCallback(async () => {
     setIsLoading(true);
-    resetState();
+    setError(null);
 
     try {
       const { data } = await fetchEncountersData(
@@ -76,7 +73,7 @@ export function useEncounterData({
     } finally {
       setIsLoading(false);
     }
-  }, [filters, searchQuery, sortBy, sortOrder, currentPage, limit, handleSuccessfulResponse, handleErrorResponse, resetState]);
+  }, [filters, searchQuery, sortBy, sortOrder, currentPage, limit, handleSuccessfulResponse, handleErrorResponse]);
 
   const goToPage = useCallback((newPage: number) => {
     setCurrentPage(newPage);
