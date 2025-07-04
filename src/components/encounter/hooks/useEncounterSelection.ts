@@ -6,7 +6,7 @@ import type { EncounterListItem } from '../types';
 interface UseEncounterSelectionReturn {
   selectedEncounters: string[];
   selectAll: () => void;
-  selectEncounter: (id: string) => void;
+  selectEncounter: (_id: string) => void;
   clearSelection: () => void;
   isAllSelected: boolean;
   hasSelection: boolean;

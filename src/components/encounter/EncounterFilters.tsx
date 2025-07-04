@@ -21,9 +21,9 @@ interface EncounterFiltersProps {
   searchQuery: string;
   sortBy: SortBy;
   sortOrder: SortOrder;
-  onFiltersChange: (filters: Partial<Filters>) => void;
-  onSearchChange: (query: string) => void;
-  onSortChange: (sortBy: SortBy, sortOrder: SortOrder) => void;
+  onFiltersChange: (_filters: Partial<Filters>) => void;
+  onSearchChange: (_query: string) => void;
+  onSortChange: (_sortBy: SortBy, _sortOrder: SortOrder) => void;
   onClearFilters: () => void;
 }
 

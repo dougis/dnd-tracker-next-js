@@ -19,7 +19,7 @@ interface UseEncounterDataReturn {
   isLoading: boolean;
   error: string | null;
   pagination: PaginationInfo | null;
-  goToPage: (page: number) => void;
+  goToPage: (_page: number) => void;
   refetch: () => void;
 }
 

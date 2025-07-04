@@ -7,7 +7,7 @@ interface PaginationProps {
   currentPage: number;
   totalPages: number;
   totalItems?: number;
-  onPageChange: (page: number) => void;
+  onPageChange: (_page: number) => void;
 }
 
 export function Pagination({

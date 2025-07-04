@@ -128,8 +128,7 @@ export function startCombat(
   }
 }
 
-// eslint-disable-next-line no-unused-vars
-export function endCombat(this: IEncounter): void {
+export function endCombat(_this: IEncounter): void {
   this.combatState.isActive = false;
   this.combatState.endedAt = new Date();
   this.status = 'completed';
@@ -150,8 +149,7 @@ export function endCombat(this: IEncounter): void {
   });
 }
 
-// eslint-disable-next-line no-unused-vars
-export function nextTurn(this: IEncounter): boolean {
+export function nextTurn(_this: IEncounter): boolean {
   if (
     !this.combatState.isActive ||
     this.combatState.initiativeOrder.length === 0
@@ -191,8 +189,7 @@ export function nextTurn(this: IEncounter): boolean {
   return true;
 }
 
-// eslint-disable-next-line no-unused-vars
-export function previousTurn(this: IEncounter): boolean {
+export function previousTurn(_this: IEncounter): boolean {
   if (
     !this.combatState.isActive ||
     this.combatState.initiativeOrder.length === 0
@@ -314,13 +311,12 @@ export function removeCondition(
 /**
  * Utility methods
  */
-// eslint-disable-next-line no-unused-vars
-export function getInitiativeOrder(this: IEncounter): IInitiativeEntry[] {
+export function getInitiativeOrder(_this: IEncounter): IInitiativeEntry[] {
   return [...this.combatState.initiativeOrder];
 }
 
 export function calculateDifficulty(
-  this: IEncounter // eslint-disable-line no-unused-vars
+  _this: IEncounter
 ): z.infer<typeof encounterDifficultySchema> {
   return calculateEncounterDifficulty(
     this.playerCount,
@@ -351,8 +347,7 @@ export function duplicateEncounter(
   return new (this.constructor as EncounterModel)(duplicateData);
 }
 
-// eslint-disable-next-line no-unused-vars
-export function toSummary(this: IEncounter): EncounterSummary {
+export function toSummary(_this: IEncounter): EncounterSummary {
   return {
     _id: this._id,
     name: this.name,
