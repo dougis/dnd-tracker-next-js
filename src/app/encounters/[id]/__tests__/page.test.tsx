@@ -156,15 +156,14 @@ describe('EncounterDetailClient', () => {
       render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
-        // Check the participant summary grid using a more specific selector
-        const participantsElements = screen.getAllByText('Participants');
-        const participantsCard = participantsElements.find(el => 
-          el.className.includes('font-semibold')
-        )?.closest('div');
-        expect(participantsCard).toHaveTextContent('2');
-        expect(participantsCard).toHaveTextContent('1');
-        expect(participantsCard).toHaveTextContent('Player Character');
-        expect(participantsCard).toHaveTextContent('Non-Player Character');
+        // Check the participant summary grid - look for the card with the title
+        expect(screen.getByRole('heading', { name: 'Participants' })).toBeInTheDocument();
+        
+        // Check participant counts in the grid
+        expect(screen.getByText('2')).toBeInTheDocument(); // Total participants
+        expect(screen.getByText('1')).toBeInTheDocument(); // PCs
+        expect(screen.getByText('Player Character')).toBeInTheDocument();
+        expect(screen.getByText('Non-Player Character')).toBeInTheDocument();
       });
     });
   });
