@@ -5,8 +5,10 @@ import type { Encounter, ParticipantReference } from '@/lib/validations/encounte
  * Test helper functions for encounter detail page tests
  */
 
+let participantCounter = 0;
+
 export const createTestParticipant = (overrides: Partial<ParticipantReference> = {}): ParticipantReference => ({
-  characterId: new Types.ObjectId().toString(),
+  characterId: new Types.ObjectId().toString() + (++participantCounter),
   name: 'Test Participant',
   type: 'pc' as const,
   maxHitPoints: 30,

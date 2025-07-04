@@ -2,9 +2,9 @@ import React from 'react';
 import { EncounterDetailClient } from './EncounterDetailClient';
 
 interface EncounterDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 /**
@@ -17,8 +17,9 @@ interface EncounterDetailPageProps {
  * - Combat readiness indicators
  * - Sharing and collaboration features
  */
-export default function EncounterDetailPage({ params }: EncounterDetailPageProps) {
-  return <EncounterDetailClient encounterId={params.id} />;
+export default async function EncounterDetailPage({ params }: EncounterDetailPageProps) {
+  const { id } = await params;
+  return <EncounterDetailClient encounterId={id} />;
 }
 
 export { type EncounterDetailPageProps };
