@@ -59,7 +59,7 @@ describe('useEncounterSelection', () => {
       const { result } = testUtils.renderSelection();
       testUtils.selectAll(result);
       expect(result.current.isAllSelected).toBe(true);
-      
+
       testUtils.selectAll(result);
       testUtils.expectNoSelection(result);
     });
@@ -68,10 +68,10 @@ describe('useEncounterSelection', () => {
       const { result } = testUtils.renderSelection();
       const partialIds = [mockEncounters[0].id, mockEncounters[1].id];
       testUtils.selectMultiple(result, partialIds);
-      
+
       expect(result.current.selectedEncounters).toHaveLength(2);
       expect(result.current.isAllSelected).toBe(false);
-      
+
       testUtils.selectAll(result);
       testUtils.expectAllSelected(result);
     });
@@ -82,9 +82,9 @@ describe('useEncounterSelection', () => {
       const { result } = testUtils.renderSelection();
       const selectedIds = [mockEncounters[0].id, mockEncounters[2].id];
       testUtils.selectMultiple(result, selectedIds);
-      
+
       expect(result.current.selectedEncounters).toHaveLength(2);
-      
+
       testUtils.clearSelection(result);
       testUtils.expectNoSelection(result);
     });
