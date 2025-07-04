@@ -2,10 +2,8 @@ import '@testing-library/jest-dom';
 
 // Extend Jest matchers to include jest-dom custom matchers
 declare global {
-  // eslint-disable-next-line no-unused-vars
-  namespace jest {
-    // eslint-disable-next-line no-unused-vars
-    interface Matchers<R> {
+  namespace _jest {
+    interface _Matchers<R> {
       toBeInTheDocument(): R;
       toHaveClass(_className: string): R;
       toHaveAttribute(_attr: string, _value?: string): R;
