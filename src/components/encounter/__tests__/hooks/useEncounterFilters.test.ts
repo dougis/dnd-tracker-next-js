@@ -1,10 +1,9 @@
 import { renderHook, act } from '@testing-library/react';
 import { useEncounterFilters } from '../../hooks/useEncounterFilters';
 import { createMockFilters } from '../test-helpers';
-import { 
-  actWrapper, 
+import {
+  actWrapper,
   createFilterStateExpectations,
-  expectStateShape 
 } from '../test-utils/commonTestHelpers';
 
 // Simple helpers to eliminate duplication

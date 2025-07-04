@@ -18,7 +18,7 @@ export const processSuccessfulResponse = (
     data.totalItems,
     limit
   );
-  
+
   return {
     encounters: transformedEncounters,
     pagination: paginationInfo,
@@ -60,9 +60,9 @@ export const fetchEncountersData = async (
 
 // State update helper factory
 export const createStateUpdaters = (
-  setEncounters: (encounters: EncounterListItem[]) => void,
-  setPagination: (pagination: PaginationInfo | null) => void,
-  setError: (error: string | null) => void
+  setEncounters: (_encounters: EncounterListItem[]) => void,
+  setPagination: (_pagination: PaginationInfo | null) => void,
+  setError: (_error: string | null) => void
 ) => {
   const updateSuccessState = (encounters: EncounterListItem[], pagination: PaginationInfo) => {
     setEncounters(encounters);

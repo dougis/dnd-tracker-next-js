@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useEncounterSelection } from '../../hooks/useEncounterSelection';
 import { createMockEncounters } from '../test-helpers';
 import { createSelectionTestUtils } from '../test-utils/selectionHelpers';
-import { actWrapper, createSelectionStateExpectations } from '../test-utils/commonTestHelpers';
+import { createSelectionStateExpectations } from '../test-utils/commonTestHelpers';
 
 describe('useEncounterSelection', () => {
   const mockEncounters = createMockEncounters(5);
@@ -27,7 +27,7 @@ describe('useEncounterSelection', () => {
 
   describe('Single Selection', () => {
     const { expectNoSelection, expectPartialSelection } = createSelectionStateExpectations(mockEncounters);
-    
+
     it('selects an encounter correctly', () => {
       const { result } = testUtils.renderSelection();
       testUtils.selectEncounter(result, mockEncounters[0].id);
@@ -53,7 +53,7 @@ describe('useEncounterSelection', () => {
 
   describe('Select All Functionality', () => {
     const { expectNoSelection, expectAllSelected } = createSelectionStateExpectations(mockEncounters);
-    
+
     it('selects all encounters when none are selected', () => {
       const { result } = testUtils.renderSelection();
       testUtils.selectAll(result);

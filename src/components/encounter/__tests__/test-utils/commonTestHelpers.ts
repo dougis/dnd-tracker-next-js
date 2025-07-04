@@ -16,12 +16,12 @@ export const expectEqual = (actual: any, expected: any) => {
 
 // Common test setup patterns
 export const createHookTestSetup = <T, P>(
-  hook: (params: P) => T,
+  hook: (_params: P) => T,
   defaultParams: P
 ) => {
-  const setup = (params?: Partial<P>) => 
-    renderHook(() => hook({ ...defaultParams, ...params }));
-  
+  const setup = (_params?: Partial<P>) =>
+    renderHook(() => hook({ ...defaultParams, ..._params }));
+
   return { setup };
 };
 
@@ -63,7 +63,7 @@ export const createSelectionStateExpectations = (encounters: EncounterListItem[]
       isAllSelected: false,
     });
   },
-  
+
   expectAllSelected: (result: any) => {
     expectStateShape(result.current, {
       selectedEncounters: encounters.map(e => e.id),
@@ -71,7 +71,7 @@ export const createSelectionStateExpectations = (encounters: EncounterListItem[]
       isAllSelected: true,
     });
   },
-  
+
   expectPartialSelection: (result: any, selectedIds: string[]) => {
     expectStateShape(result.current, {
       selectedEncounters: selectedIds,
@@ -91,7 +91,7 @@ export const createFilterStateExpectations = () => ({
       sortOrder: 'desc',
     });
   },
-  
+
   expectFiltersChanged: (result: any, expectedFilters: any) => {
     Object.entries(expectedFilters).forEach(([key, value]) => {
       expect(result.current.filters[key]).toEqual(value);

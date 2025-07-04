@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { EncounterListItem, EncounterFilters, SortBy, SortOrder, PaginationInfo } from '../types';
-import { 
-  fetchEncountersData, 
-  processSuccessfulResponse, 
+import {
+  fetchEncountersData,
+  processSuccessfulResponse,
   processErrorResponse,
-  createStateUpdaters 
+  createStateUpdaters
 } from './utils/dataFetchHelpers';
 
 interface UseEncounterDataParams {
