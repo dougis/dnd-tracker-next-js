@@ -156,8 +156,11 @@ describe('EncounterDetailClient', () => {
       render(<EncounterDetailClient encounterId="test-id" />);
 
       await waitFor(() => {
-        // Check the participant summary grid
-        const participantsCard = screen.getByText('Participants').closest('div');
+        // Check the participant summary grid using a more specific selector
+        const participantsElements = screen.getAllByText('Participants');
+        const participantsCard = participantsElements.find(el => 
+          el.className.includes('font-semibold')
+        )?.closest('div');
         expect(participantsCard).toHaveTextContent('2');
         expect(participantsCard).toHaveTextContent('1');
         expect(participantsCard).toHaveTextContent('Player Character');

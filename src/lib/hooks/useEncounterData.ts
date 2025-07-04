@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { EncounterService } from '@/lib/services/EncounterService';
 import type { IEncounter } from '@/lib/models/encounter/interfaces';
 
@@ -10,7 +10,7 @@ export function useEncounterData(encounterId: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadEncounter = async () => {
+  const loadEncounter = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -27,11 +27,11 @@ export function useEncounterData(encounterId: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [encounterId]);
 
   useEffect(() => {
     loadEncounter();
-  }, [encounterId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [encounterId, loadEncounter]);
 
   const handleRetry = () => {
     loadEncounter();
