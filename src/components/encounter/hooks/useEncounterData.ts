@@ -35,9 +35,9 @@ export function useEncounterData({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [_currentPage, setCurrentPage] = useState(page);
+  const [currentPage, setCurrentPage] = useState(page);
 
-  const transformEncounter = (encounter: IEncounter): EncounterListItem => {
+  const transformEncounter = useCallback((encounter: IEncounter): EncounterListItem => {
     const participantCount = encounter.participants?.length || 0;
     const playerCount = encounter.participants?.filter(p => p.type === 'pc').length || 0;
 
@@ -63,36 +63,37 @@ export function useEncounterData({
       participantCount,
       playerCount,
     };
-  };
+  }, []);
 
   const fetchEncounters = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // Build search parameters to match service interface
-      const searchParams = {
-        name: searchQuery,
-        difficulty: filters.difficulty.length > 0 ? filters.difficulty[0] : undefined,
-        targetLevel: filters.targetLevelMin,
-        status: filters.status.length > 0 ? filters.status[0] : undefined,
-      };
-
-      const result = await EncounterService.searchEncounters(searchParams);
+      const result = await EncounterService.searchEncounters({
+        query: searchQuery,
+        difficulty: filters.difficulty,
+        targetLevelMin: filters.targetLevelMin,
+        targetLevelMax: filters.targetLevelMax,
+        status: filters.status,
+        tags: filters.tags,
+        sortBy,
+        sortOrder,
+        page: currentPage,
+        limit,
+      });
 
       if (result.success && result.data) {
-        const transformedEncounters = result.data.map(transformEncounter);
+        const transformedEncounters = result.data.encounters.map(transformEncounter);
         setEncounters(transformedEncounters);
-
-        // Simple pagination - just show what we have
         setPagination({
-          currentPage: 1,
-          totalPages: 1,
-          totalItems: result.data.length,
+          currentPage: result.data.currentPage,
+          totalPages: result.data.totalPages,
+          totalItems: result.data.totalItems,
           itemsPerPage: limit,
         });
       } else {
-        throw new Error(result.error?.message || 'Failed to fetch encounters');
+        throw new Error(typeof result.error === 'string' ? result.error : 'Failed to fetch encounters');
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
@@ -102,7 +103,7 @@ export function useEncounterData({
     } finally {
       setIsLoading(false);
     }
-  }, [filters, searchQuery, limit]);
+  }, [filters, searchQuery, sortBy, sortOrder, currentPage, limit, transformEncounter]);
 
   const goToPage = useCallback((newPage: number) => {
     setCurrentPage(newPage);

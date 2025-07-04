@@ -331,8 +331,8 @@ describe('useEncounterData', () => {
         ...mockRawEncounters[0],
         _id: 'raw-id',
         participants: [
-          { type: 'character', name: 'Player 1' },
-          { type: 'character', name: 'Player 2' },
+          { type: 'pc', name: 'Player 1' },
+          { type: 'pc', name: 'Player 2' },
           { type: 'npc', name: 'Monster 1' },
         ],
       };

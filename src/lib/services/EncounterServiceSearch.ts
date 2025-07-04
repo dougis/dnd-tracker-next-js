@@ -20,26 +20,109 @@ export class EncounterServiceSearch {
    * Search encounters with various filters
    */
   static async searchEncounters(criteria: {
+    query?: string;
     name?: string;
-    difficulty?: string;
+    difficulty?: string | string[];
     targetLevel?: number;
-    status?: string;
+    targetLevelMin?: number;
+    targetLevelMax?: number;
+    status?: string | string[];
+    tags?: string[];
     ownerId?: string;
-  }): Promise<ServiceResult<IEncounter[]>> {
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    page?: number;
+    limit?: number;
+  }): Promise<ServiceResult<{
+    encounters: IEncounter[];
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+  }>> {
     try {
-      const searchMethods = [
-        { condition: criteria.name, method: () => Encounter.searchByName(criteria.name!) },
-        { condition: criteria.difficulty, method: () => Encounter.findByDifficulty(criteria.difficulty as any) },
-        { condition: criteria.targetLevel, method: () => Encounter.findByTargetLevel(criteria.targetLevel!) },
-        { condition: criteria.status, method: () => Encounter.findByStatus(criteria.status as any) },
-      ];
+      const {
+        query,
+        name,
+        difficulty,
+        targetLevel,
+        targetLevelMin,
+        targetLevelMax,
+        status,
+        tags,
+        ownerId,
+        sortBy = 'updatedAt',
+        sortOrder = 'desc',
+        page = 1,
+        limit = 20,
+      } = criteria;
 
-      const activeSearch = searchMethods.find(search => search.condition);
-      const encounters = activeSearch ? await activeSearch.method() : await Encounter.find({});
+      // Build MongoDB query
+      const mongoQuery: any = {};
+
+      if (query || name) {
+        mongoQuery.name = { $regex: query || name, $options: 'i' };
+      }
+
+      if (difficulty) {
+        if (Array.isArray(difficulty) && difficulty.length > 0) {
+          mongoQuery.difficulty = { $in: difficulty };
+        } else if (typeof difficulty === 'string') {
+          mongoQuery.difficulty = difficulty;
+        }
+      }
+
+      if (targetLevel) {
+        mongoQuery.targetLevel = targetLevel;
+      } else if (targetLevelMin !== undefined || targetLevelMax !== undefined) {
+        mongoQuery.targetLevel = {};
+        if (targetLevelMin !== undefined) {
+          mongoQuery.targetLevel.$gte = targetLevelMin;
+        }
+        if (targetLevelMax !== undefined) {
+          mongoQuery.targetLevel.$lte = targetLevelMax;
+        }
+      }
+
+      if (status) {
+        if (Array.isArray(status) && status.length > 0) {
+          mongoQuery.status = { $in: status };
+        } else if (typeof status === 'string') {
+          mongoQuery.status = status;
+        }
+      }
+
+      if (tags && Array.isArray(tags) && tags.length > 0) {
+        mongoQuery.tags = { $in: tags };
+      }
+
+      if (ownerId) {
+        mongoQuery.ownerId = ownerId;
+      }
+
+      // Execute query with pagination
+      const skip = (page - 1) * limit;
+      const sortOption: any = {};
+      sortOption[sortBy] = sortOrder === 'asc' ? 1 : -1;
+
+      const [encounters, totalItems] = await Promise.all([
+        Encounter.find(mongoQuery)
+          .sort(sortOption)
+          .skip(skip)
+          .limit(limit)
+          .exec(),
+        Encounter.countDocuments(mongoQuery),
+      ]);
+
+      const totalPages = Math.ceil(totalItems / limit);
 
       return {
         success: true,
-        data: encounters,
+        data: {
+          encounters,
+          currentPage: page,
+          totalPages,
+          totalItems,
+        },
       };
     } catch (error) {
       return handleEncounterServiceError(

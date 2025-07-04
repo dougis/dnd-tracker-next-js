@@ -25,44 +25,44 @@ import {
  * Participant management methods
  */
 export function addParticipant(
-  this: IEncounter,
+  _this: IEncounter,
   participant: Omit<IParticipantReference, 'characterId'> & {
     characterId: string;
   }
 ): void {
-  this.participants.push({
+  _this.participants.push({
     ...participant,
     characterId: new Types.ObjectId(participant.characterId),
   });
 }
 
 export function removeParticipant(
-  this: IEncounter,
+  _this: IEncounter,
   participantId: string
 ): boolean {
-  const index = this.participants.findIndex(
+  const index = _this.participants.findIndex(
     (p: IParticipantReference) => p.characterId.toString() === participantId
   );
 
   if (index === -1) return false;
 
-  this.participants.splice(index, 1);
+  _this.participants.splice(index, 1);
 
   // Remove from initiative order if present
-  const initIndex = this.combatState.initiativeOrder.findIndex(
+  const initIndex = _this.combatState.initiativeOrder.findIndex(
     (entry: IInitiativeEntry) =>
       entry.participantId.toString() === participantId
   );
 
   if (initIndex !== -1) {
-    this.combatState.initiativeOrder.splice(initIndex, 1);
+    _this.combatState.initiativeOrder.splice(initIndex, 1);
 
     // Adjust current turn if necessary
     if (
-      this.combatState.currentTurn >= initIndex &&
-      this.combatState.currentTurn > 0
+      _this.combatState.currentTurn >= initIndex &&
+      _this.combatState.currentTurn > 0
     ) {
-      this.combatState.currentTurn--;
+      _this.combatState.currentTurn--;
     }
   }
 
@@ -70,11 +70,11 @@ export function removeParticipant(
 }
 
 export function updateParticipant(
-  this: IEncounter,
+  _this: IEncounter,
   participantId: string,
   updates: Partial<IParticipantReference>
 ): boolean {
-  const participant = findParticipantById(this.participants, participantId);
+  const participant = findParticipantById(_this.participants, participantId);
   if (!participant) return false;
 
   Object.assign(participant, updates);
@@ -82,10 +82,10 @@ export function updateParticipant(
 }
 
 export function getParticipant(
-  this: IEncounter,
+  _this: IEncounter,
   participantId: string
 ): IParticipantReference | null {
-  return findParticipantById(this.participants, participantId);
+  return findParticipantById(_this.participants, participantId);
 }
 
 /**
@@ -93,19 +93,19 @@ export function getParticipant(
  */
 
 export function startCombat(
-  this: IEncounter,
+  _this: IEncounter,
   autoRollInitiative = false
 ): void {
-  this.combatState.isActive = true;
-  this.combatState.currentRound = 1;
-  this.combatState.currentTurn = 0;
-  this.combatState.startedAt = new Date();
-  this.combatState.pausedAt = undefined;
-  this.combatState.endedAt = undefined;
-  this.status = 'active';
+  _this.combatState.isActive = true;
+  _this.combatState.currentRound = 1;
+  _this.combatState.currentTurn = 0;
+  _this.combatState.startedAt = new Date();
+  _this.combatState.pausedAt = undefined;
+  _this.combatState.endedAt = undefined;
+  _this.status = 'active';
 
   // Initialize initiative order
-  this.combatState.initiativeOrder = this.participants.map(
+  _this.combatState.initiativeOrder = _this.participants.map(
     (participant: IParticipantReference) => ({
       participantId: participant.characterId,
       initiative: autoRollInitiative
@@ -118,13 +118,13 @@ export function startCombat(
   );
 
   // Sort initiative order
-  this.combatState.initiativeOrder = sortInitiativeOrder(
-    this.combatState.initiativeOrder
+  _this.combatState.initiativeOrder = sortInitiativeOrder(
+    _this.combatState.initiativeOrder
   );
 
   // Set first participant as active
-  if (this.combatState.initiativeOrder.length > 0) {
-    this.combatState.initiativeOrder[0].isActive = true;
+  if (_this.combatState.initiativeOrder.length > 0) {
+    _this.combatState.initiativeOrder[0].isActive = true;
   }
 }
 
@@ -191,34 +191,34 @@ export function nextTurn(_this: IEncounter): boolean {
 
 export function previousTurn(_this: IEncounter): boolean {
   if (
-    !this.combatState.isActive ||
-    this.combatState.initiativeOrder.length === 0
+    !_this.combatState.isActive ||
+    _this.combatState.initiativeOrder.length === 0
   ) {
     return false;
   }
 
   // Mark current participant as inactive
   const currentEntry =
-    this.combatState.initiativeOrder[this.combatState.currentTurn];
+    _this.combatState.initiativeOrder[_this.combatState.currentTurn];
   if (currentEntry) {
     currentEntry.isActive = false;
   }
 
   // Move to previous turn
-  this.combatState.currentTurn--;
+  _this.combatState.currentTurn--;
 
   // Check if we need to go to previous round
-  if (this.combatState.currentTurn < 0) {
-    this.combatState.currentTurn = this.combatState.initiativeOrder.length - 1;
-    this.combatState.currentRound = Math.max(
+  if (_this.combatState.currentTurn < 0) {
+    _this.combatState.currentTurn = _this.combatState.initiativeOrder.length - 1;
+    _this.combatState.currentRound = Math.max(
       1,
-      this.combatState.currentRound - 1
+      _this.combatState.currentRound - 1
     );
   }
 
   // Set previous participant as active
   const prevEntry =
-    this.combatState.initiativeOrder[this.combatState.currentTurn];
+    _this.combatState.initiativeOrder[_this.combatState.currentTurn];
   if (prevEntry) {
     prevEntry.isActive = true;
     prevEntry.hasActed = false;
@@ -231,13 +231,13 @@ export function previousTurn(_this: IEncounter): boolean {
  * Initiative and combat action methods
  */
 export function setInitiative(
-  this: IEncounter,
+  _this: IEncounter,
   participantId: string,
   initiative: number,
   dexterity: number
 ): boolean {
   const entry = findInitiativeEntryById(
-    this.combatState.initiativeOrder,
+    _this.combatState.initiativeOrder,
     participantId
   );
   if (!entry) return false;
@@ -246,16 +246,16 @@ export function setInitiative(
   entry.dexterity = dexterity;
 
   // Re-sort initiative order
-  this.combatState.initiativeOrder = sortInitiativeOrder(
-    this.combatState.initiativeOrder
+  _this.combatState.initiativeOrder = sortInitiativeOrder(
+    _this.combatState.initiativeOrder
   );
 
   // Update current turn index
-  const activeEntry = this.combatState.initiativeOrder.find(
+  const activeEntry = _this.combatState.initiativeOrder.find(
     (e: IInitiativeEntry) => e.isActive
   );
   if (activeEntry) {
-    this.combatState.currentTurn = this.combatState.initiativeOrder.findIndex(
+    _this.combatState.currentTurn = _this.combatState.initiativeOrder.findIndex(
       (e: IInitiativeEntry) =>
         e.participantId.toString() === activeEntry.participantId.toString()
     );
@@ -265,44 +265,44 @@ export function setInitiative(
 }
 
 export function applyDamage(
-  this: IEncounter,
+  _this: IEncounter,
   participantId: string,
   damage: number
 ): boolean {
-  const participant = this.getParticipant(participantId);
+  const participant = getParticipant(_this, participantId);
   if (!participant) return false;
 
   return applyDamageToParticipant(participant, damage);
 }
 
 export function applyHealing(
-  this: IEncounter,
+  _this: IEncounter,
   participantId: string,
   healing: number
 ): boolean {
-  const participant = this.getParticipant(participantId);
+  const participant = getParticipant(_this, participantId);
   if (!participant) return false;
 
   return healParticipant(participant, healing);
 }
 
 export function addCondition(
-  this: IEncounter,
+  _this: IEncounter,
   participantId: string,
   condition: string
 ): boolean {
-  const participant = this.getParticipant(participantId);
+  const participant = getParticipant(_this, participantId);
   if (!participant) return false;
 
   return addConditionToParticipant(participant, condition);
 }
 
 export function removeCondition(
-  this: IEncounter,
+  _this: IEncounter,
   participantId: string,
   condition: string
 ): boolean {
-  const participant = this.getParticipant(participantId);
+  const participant = getParticipant(_this, participantId);
   if (!participant) return false;
 
   return removeConditionFromParticipant(participant, condition);
@@ -312,28 +312,28 @@ export function removeCondition(
  * Utility methods
  */
 export function getInitiativeOrder(_this: IEncounter): IInitiativeEntry[] {
-  return [...this.combatState.initiativeOrder];
+  return [..._this.combatState.initiativeOrder];
 }
 
 export function calculateDifficulty(
   _this: IEncounter
 ): z.infer<typeof encounterDifficultySchema> {
   return calculateEncounterDifficulty(
-    this.playerCount,
-    this.participants.length
+    _this.playerCount,
+    _this.participants.length
   );
 }
 
 export function duplicateEncounter(
-  this: IEncounter,
+  _this: IEncounter,
   newName?: string
 ): IEncounter {
-  const duplicateData = this.toObject();
+  const duplicateData = _this.toObject();
   delete duplicateData._id;
   delete duplicateData.createdAt;
   delete duplicateData.updatedAt;
 
-  duplicateData.name = newName || `${this.name} (Copy)`;
+  duplicateData.name = newName || `${_this.name} (Copy)`;
   duplicateData.status = 'draft';
   duplicateData.combatState = {
     isActive: false,
@@ -344,24 +344,24 @@ export function duplicateEncounter(
   };
   duplicateData.version = 1;
 
-  return new (this.constructor as EncounterModel)(duplicateData);
+  return new (_this.constructor as EncounterModel)(duplicateData);
 }
 
 export function toSummary(_this: IEncounter): EncounterSummary {
   return {
-    _id: this._id,
-    name: this.name,
-    description: this.description,
-    tags: this.tags,
-    difficulty: this.difficulty,
-    estimatedDuration: this.estimatedDuration,
-    targetLevel: this.targetLevel,
-    status: this.status,
-    isPublic: this.isPublic,
-    participantCount: this.participantCount,
-    playerCount: this.playerCount,
-    isActive: this.isActive,
-    createdAt: this.createdAt,
-    updatedAt: this.updatedAt,
+    _id: _this._id,
+    name: _this.name,
+    description: _this.description,
+    tags: _this.tags,
+    difficulty: _this.difficulty,
+    estimatedDuration: _this.estimatedDuration,
+    targetLevel: _this.targetLevel,
+    status: _this.status,
+    isPublic: _this.isPublic,
+    participantCount: _this.participantCount,
+    playerCount: _this.playerCount,
+    isActive: _this.isActive,
+    createdAt: _this.createdAt,
+    updatedAt: _this.updatedAt,
   };
 }

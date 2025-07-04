@@ -23,6 +23,7 @@ jest.mock('@/lib/models/encounter', () => ({
     findByStatus: jest.fn(),
     findByOwnerId: jest.fn(),
     find: jest.fn(),
+    countDocuments: jest.fn(),
   },
 }));
 
@@ -308,42 +309,78 @@ describe('EncounterService', () => {
         const searchTerm = 'Dragon';
         const mockEncounters = [createTestEncounter()];
 
-        const mockSearchByName = jest.fn().mockResolvedValue(mockEncounters);
-        (Encounter.searchByName as jest.Mock) = mockSearchByName;
+        const mockFind = jest.fn().mockReturnValue({
+          sort: jest.fn().mockReturnValue({
+            skip: jest.fn().mockReturnValue({
+              limit: jest.fn().mockReturnValue({
+                exec: jest.fn().mockResolvedValue(mockEncounters),
+              }),
+            }),
+          }),
+        });
+        const mockCountDocuments = jest.fn().mockResolvedValue(1);
+        (Encounter.find as jest.Mock) = mockFind;
+        (Encounter.countDocuments as jest.Mock) = mockCountDocuments;
 
-        const result = await EncounterService.searchEncounters({ name: searchTerm });
+        const result = await EncounterService.searchEncounters({ query: searchTerm });
 
         expect(result.success).toBe(true);
-        expect(result.data).toEqual(mockEncounters);
-        expect(mockSearchByName).toHaveBeenCalledWith(searchTerm);
+        expect(result.data.encounters).toEqual(mockEncounters);
+        expect(result.data.currentPage).toBe(1);
+        expect(result.data.totalPages).toBe(1);
+        expect(result.data.totalItems).toBe(1);
       });
 
       it('should filter encounters by difficulty', async () => {
         const difficulty = 'hard';
         const mockEncounters = [createTestEncounter()];
 
-        const mockFindByDifficulty = jest.fn().mockResolvedValue(mockEncounters);
-        (Encounter.findByDifficulty as jest.Mock) = mockFindByDifficulty;
+        const mockFind = jest.fn().mockReturnValue({
+          sort: jest.fn().mockReturnValue({
+            skip: jest.fn().mockReturnValue({
+              limit: jest.fn().mockReturnValue({
+                exec: jest.fn().mockResolvedValue(mockEncounters),
+              }),
+            }),
+          }),
+        });
+        const mockCountDocuments = jest.fn().mockResolvedValue(1);
+        (Encounter.find as jest.Mock) = mockFind;
+        (Encounter.countDocuments as jest.Mock) = mockCountDocuments;
 
         const result = await EncounterService.searchEncounters({ difficulty });
 
         expect(result.success).toBe(true);
-        expect(result.data).toEqual(mockEncounters);
-        expect(mockFindByDifficulty).toHaveBeenCalledWith(difficulty);
+        expect(result.data.encounters).toEqual(mockEncounters);
+        expect(result.data.currentPage).toBe(1);
+        expect(result.data.totalPages).toBe(1);
+        expect(result.data.totalItems).toBe(1);
       });
 
       it('should filter encounters by target level', async () => {
         const targetLevel = 5;
         const mockEncounters = [createTestEncounter()];
 
-        const mockFindByTargetLevel = jest.fn().mockResolvedValue(mockEncounters);
-        (Encounter.findByTargetLevel as jest.Mock) = mockFindByTargetLevel;
+        const mockFind = jest.fn().mockReturnValue({
+          sort: jest.fn().mockReturnValue({
+            skip: jest.fn().mockReturnValue({
+              limit: jest.fn().mockReturnValue({
+                exec: jest.fn().mockResolvedValue(mockEncounters),
+              }),
+            }),
+          }),
+        });
+        const mockCountDocuments = jest.fn().mockResolvedValue(1);
+        (Encounter.find as jest.Mock) = mockFind;
+        (Encounter.countDocuments as jest.Mock) = mockCountDocuments;
 
         const result = await EncounterService.searchEncounters({ targetLevel });
 
         expect(result.success).toBe(true);
-        expect(result.data).toEqual(mockEncounters);
-        expect(mockFindByTargetLevel).toHaveBeenCalledWith(targetLevel);
+        expect(result.data.encounters).toEqual(mockEncounters);
+        expect(result.data.currentPage).toBe(1);
+        expect(result.data.totalPages).toBe(1);
+        expect(result.data.totalItems).toBe(1);
       });
     });
 
