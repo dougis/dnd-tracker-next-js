@@ -2,8 +2,8 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EncounterActionButtons } from '../EncounterActionButtons';
-import type { EncounterListItem } from '../types';
-import { Types } from 'mongoose';
+import { createMockEncounter } from './test-utils/mockFactories';
+import { createConsoleSpy, commonBeforeEach, commonAfterAll } from './test-utils/mockSetup';
 
 // Mock the toast hook
 const mockToast = jest.fn();
@@ -42,45 +42,7 @@ jest.mock('../actions/actionHandlers', () => ({
 }));
 
 // Mock console.log
-const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-
-const createMockEncounter = (overrides: Partial<EncounterListItem> = {}): EncounterListItem => ({
-  id: 'test-encounter-id',
-  ownerId: new Types.ObjectId(),
-  name: 'Test Encounter',
-  description: 'A test encounter',
-  tags: ['test'],
-  difficulty: 'medium',
-  estimatedDuration: 60,
-  targetLevel: 5,
-  participants: [],
-  settings: {
-    allowPlayerNotes: true,
-    autoRollInitiative: false,
-    trackResources: true,
-    enableTurnTimer: false,
-    turnTimerDuration: 300,
-    showInitiativeToPlayers: true,
-  },
-  combatState: {
-    isActive: false,
-    currentTurn: 0,
-    currentRound: 0,
-    startedAt: null,
-    endedAt: null,
-    history: [],
-  },
-  status: 'draft',
-  partyId: new Types.ObjectId(),
-  isPublic: false,
-  sharedWith: [],
-  version: 1,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  participantCount: 0,
-  playerCount: 0,
-  ...overrides,
-});
+const consoleSpy = createConsoleSpy();
 
 describe('EncounterActionButtons', () => {
   const defaultProps = {
@@ -88,13 +50,9 @@ describe('EncounterActionButtons', () => {
     onRefetch: jest.fn(),
   };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  beforeEach(commonBeforeEach);
 
-  afterAll(() => {
-    consoleSpy.mockRestore();
-  });
+  afterAll(() => commonAfterAll(consoleSpy));
 
   describe('Rendering', () => {
     it('should render dropdown trigger button', () => {

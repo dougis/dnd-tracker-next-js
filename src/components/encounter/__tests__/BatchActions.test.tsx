@@ -2,9 +2,10 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BatchActions } from '../BatchActions';
+import { createMockToast } from './test-utils/mockSetup';
 
 // Mock the toast hook
-const mockToast = jest.fn();
+const mockToast = createMockToast();
 jest.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
     toast: mockToast,
@@ -36,7 +37,9 @@ jest.mock('../actions/errorUtils', () => ({
 }));
 
 // Mock console.log
-const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+import { createConsoleSpy, commonBeforeEach, commonAfterAll } from './test-utils/mockSetup';
+
+const consoleSpy = createConsoleSpy();
 
 describe('BatchActions', () => {
   const defaultProps = {
@@ -45,13 +48,9 @@ describe('BatchActions', () => {
     onRefetch: jest.fn(),
   };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  beforeEach(commonBeforeEach);
 
-  afterAll(() => {
-    consoleSpy.mockRestore();
-  });
+  afterAll(() => commonAfterAll(consoleSpy));
 
   describe('Rendering', () => {
     it('should render with selected count', () => {

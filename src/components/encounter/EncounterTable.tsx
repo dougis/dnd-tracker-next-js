@@ -1,6 +1,7 @@
 'use client';
 
-import { LoadingCard } from '@/components/shared/LoadingCard';
+import { ListLoadingState } from './components/LoadingStates';
+import { EmptyState } from './components/EmptyState';
 import { TableHeader } from './table/TableHeader';
 import { TableRow } from './table/TableRow';
 import { createSortHandler } from './table/tableUtils';
@@ -27,26 +28,11 @@ export function EncounterTable({
   const handleSort = createSortHandler(sortBy, sortOrder, onSort);
 
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <LoadingCard key={i} className="h-16" />
-        ))}
-      </div>
-    );
+    return <ListLoadingState />;
   }
 
   if (encounters.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <div className="max-w-sm mx-auto">
-          <h3 className="text-lg font-medium mb-2">No encounters found</h3>
-          <p className="text-muted-foreground mb-6">
-            Create your first encounter to get started organizing your combat sessions.
-          </p>
-        </div>
-      </div>
-    );
+    return <EmptyState />;
   }
 
   return (

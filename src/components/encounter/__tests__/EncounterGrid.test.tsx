@@ -1,8 +1,9 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { EncounterGrid } from '../EncounterGrid';
-import type { EncounterListItem } from '../types';
-import { Types } from 'mongoose';
+import { createMockEncounter, createMockEncounters } from './test-utils/mockFactories';
+import { commonBeforeEach } from './test-utils/mockSetup';
+import { testLoadingState, testEmptyState } from './test-utils/testPatterns';
 
 // Mock the EncounterCard component
 jest.mock('../EncounterCard', () => ({
@@ -25,43 +26,6 @@ jest.mock('@/components/shared/LoadingCard', () => ({
   ),
 }));
 
-const createMockEncounter = (overrides: Partial<EncounterListItem> = {}): EncounterListItem => ({
-  id: 'test-encounter-id',
-  ownerId: new Types.ObjectId(),
-  name: 'Test Encounter',
-  description: 'A test encounter',
-  tags: ['test'],
-  difficulty: 'medium',
-  estimatedDuration: 60,
-  targetLevel: 5,
-  participants: [],
-  settings: {
-    allowPlayerNotes: true,
-    autoRollInitiative: false,
-    trackResources: true,
-    enableTurnTimer: false,
-    turnTimerDuration: 300,
-    showInitiativeToPlayers: true,
-  },
-  combatState: {
-    isActive: false,
-    currentTurn: 0,
-    currentRound: 0,
-    startedAt: null,
-    endedAt: null,
-    history: [],
-  },
-  status: 'draft',
-  partyId: new Types.ObjectId(),
-  isPublic: false,
-  sharedWith: [],
-  version: 1,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  participantCount: 0,
-  playerCount: 0,
-  ...overrides,
-});
 
 describe('EncounterGrid', () => {
   const defaultProps = {
@@ -72,16 +36,11 @@ describe('EncounterGrid', () => {
     onRefetch: jest.fn(),
   };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  beforeEach(commonBeforeEach);
 
   describe('Loading State', () => {
     it('should render loading cards when isLoading is true', () => {
-      render(<EncounterGrid {...defaultProps} isLoading={true} />);
-
-      const loadingCards = screen.getAllByTestId('loading-card');
-      expect(loadingCards).toHaveLength(8);
+      testLoadingState(<EncounterGrid {...defaultProps} isLoading={true} />, 8);
     });
 
     it('should render loading cards in a grid layout', () => {
@@ -115,9 +74,8 @@ describe('EncounterGrid', () => {
 
   describe('Empty State', () => {
     it('should render empty state when no encounters and not loading', () => {
+      testEmptyState(<EncounterGrid {...defaultProps} encounters={[]} isLoading={false} />, 'No encounters found');
       render(<EncounterGrid {...defaultProps} encounters={[]} isLoading={false} />);
-
-      expect(screen.getByText('No encounters found')).toBeInTheDocument();
       expect(screen.getByText(/Create your first encounter to get started/)).toBeInTheDocument();
     });
 
@@ -267,9 +225,7 @@ describe('EncounterGrid', () => {
     });
 
     it('should handle large number of encounters', () => {
-      const encounters = Array.from({ length: 50 }, (_, i) =>
-        createMockEncounter({ id: `encounter-${i}`, name: `Encounter ${i}` })
-      );
+      const encounters = createMockEncounters(50);
 
       render(<EncounterGrid {...defaultProps} encounters={encounters} />);
 

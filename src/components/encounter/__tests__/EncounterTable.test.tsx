@@ -2,8 +2,10 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EncounterTable } from '../EncounterTable';
-import type { EncounterListItem, TableSortConfig, TableSelectionConfig } from '../types';
-import { Types } from 'mongoose';
+import type { TableSortConfig, TableSelectionConfig } from '../types';
+import { createMockEncounter, createMockEncounters } from './test-utils/mockFactories';
+import { commonBeforeEach } from './test-utils/mockSetup';
+import { testLoadingState, testEmptyState } from './test-utils/testPatterns';
 
 // Mock the LoadingCard component
 jest.mock('@/components/shared/LoadingCard', () => ({
@@ -79,43 +81,6 @@ jest.mock('../table/tableUtils', () => ({
   }),
 }));
 
-const createMockEncounter = (overrides: Partial<EncounterListItem> = {}): EncounterListItem => ({
-  id: 'test-encounter-id',
-  ownerId: new Types.ObjectId(),
-  name: 'Test Encounter',
-  description: 'A test encounter',
-  tags: ['test'],
-  difficulty: 'medium',
-  estimatedDuration: 60,
-  targetLevel: 5,
-  participants: [],
-  settings: {
-    allowPlayerNotes: true,
-    autoRollInitiative: false,
-    trackResources: true,
-    enableTurnTimer: false,
-    turnTimerDuration: 300,
-    showInitiativeToPlayers: true,
-  },
-  combatState: {
-    isActive: false,
-    currentTurn: 0,
-    currentRound: 0,
-    startedAt: null,
-    endedAt: null,
-    history: [],
-  },
-  status: 'draft',
-  partyId: new Types.ObjectId(),
-  isPublic: false,
-  sharedWith: [],
-  version: 1,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  participantCount: 0,
-  playerCount: 0,
-  ...overrides,
-});
 
 const createMockSelectionConfig = (overrides: Partial<TableSelectionConfig> = {}): TableSelectionConfig => ({
   selectedEncounters: [],
@@ -141,16 +106,11 @@ describe('EncounterTable', () => {
     onRefetch: jest.fn(),
   };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  beforeEach(commonBeforeEach);
 
   describe('Loading State', () => {
     it('should render loading cards when isLoading is true', () => {
-      render(<EncounterTable {...defaultProps} isLoading={true} />);
-
-      const loadingCards = screen.getAllByTestId('loading-card');
-      expect(loadingCards).toHaveLength(5);
+      testLoadingState(<EncounterTable {...defaultProps} isLoading={true} />, 5);
     });
 
     it('should render loading cards with correct height class', () => {
@@ -187,9 +147,8 @@ describe('EncounterTable', () => {
 
   describe('Empty State', () => {
     it('should render empty state when no encounters and not loading', () => {
+      testEmptyState(<EncounterTable {...defaultProps} encounters={[]} isLoading={false} />, 'No encounters found');
       render(<EncounterTable {...defaultProps} encounters={[]} isLoading={false} />);
-
-      expect(screen.getByText('No encounters found')).toBeInTheDocument();
       expect(screen.getByText(/Create your first encounter to get started/)).toBeInTheDocument();
     });
 
@@ -412,9 +371,7 @@ describe('EncounterTable', () => {
 
   describe('Edge Cases', () => {
     it('should handle large number of encounters', () => {
-      const encounters = Array.from({ length: 100 }, (_, i) =>
-        createMockEncounter({ id: `encounter-${i}`, name: `Encounter ${i}` })
-      );
+      const encounters = createMockEncounters(100);
 
       render(<EncounterTable {...defaultProps} encounters={encounters} />);
 
