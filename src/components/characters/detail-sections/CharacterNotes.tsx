@@ -1,10 +1,16 @@
 import React from 'react';
 import type { ICharacter } from '@/lib/models/Character';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SectionCard } from './components/SectionCard';
 
 interface CharacterNotesProps {
   character: ICharacter;
 }
+
+const NoteSection = ({ title, content }: { title: string; content: string }) => (
+  <SectionCard title={title}>
+    <div className="whitespace-pre-wrap">{content}</div>
+  </SectionCard>
+);
 
 export function CharacterNotes({ character }: CharacterNotesProps) {
   const hasNotes = character.notes || character.backstory;
@@ -15,27 +21,8 @@ export function CharacterNotes({ character }: CharacterNotesProps) {
 
   return (
     <div className="space-y-6">
-      {character.notes && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="whitespace-pre-wrap">{character.notes}</div>
-          </CardContent>
-        </Card>
-      )}
-
-      {character.backstory && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Backstory</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="whitespace-pre-wrap">{character.backstory}</div>
-          </CardContent>
-        </Card>
-      )}
+      {character.notes && <NoteSection title="Notes" content={character.notes} />}
+      {character.backstory && <NoteSection title="Backstory" content={character.backstory} />}
     </div>
   );
 }
