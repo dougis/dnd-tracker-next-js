@@ -4,6 +4,7 @@ import {
   calculateProficiencyBonus,
   parseChallengeRating,
 } from '@/types/npc';
+import { DEFAULT_ABILITY_SCORES } from './__tests__/test-helpers';
 
 /**
  * Handles importing NPC templates from various external formats
@@ -38,16 +39,10 @@ export class NPCTemplateImporter {
 
   private static parseJSONImport(data: any): Omit<NPCTemplate, 'id'> {
     this.validateRequiredFields(data, ['name']);
-
-    if (data.challengeRating === undefined && data.challengeRating !== 0) {
-      throw new Error('challengeRating is required');
-    }
+    this.validateChallengeRating(data);
 
     return {
-      name: data.name,
-      category: data.creatureType || data.category || 'humanoid',
-      challengeRating: data.challengeRating,
-      size: data.size || 'medium',
+      ...this.extractBasicTemplateData(data),
       stats: this.createStatsFromData(data),
       equipment: this.parseEquipment(data.equipment),
       spells: data.spells || [],
@@ -57,10 +52,25 @@ export class NPCTemplateImporter {
     };
   }
 
+  private static validateChallengeRating(data: any): void {
+    if (data.challengeRating === undefined && data.challengeRating !== 0) {
+      throw new Error('challengeRating is required');
+    }
+  }
+
+  private static extractBasicTemplateData(data: any) {
+    return {
+      name: data.name,
+      category: data.creatureType || data.category || 'humanoid',
+      challengeRating: data.challengeRating,
+      size: data.size || 'medium',
+    };
+  }
+
   private static parseDnDBeyondImport(data: any): Omit<NPCTemplate, 'id'> {
     this.validateRequiredFields(data, ['name']);
 
-    const challengeRating = typeof data.cr === 'string' ? parseChallengeRating(data.cr) : data.cr;
+    const challengeRating = this.parseDnDBeyondChallengeRating(data);
 
     return {
       name: data.name,
@@ -73,6 +83,10 @@ export class NPCTemplateImporter {
       actions: [],
       isSystem: false,
     };
+  }
+
+  private static parseDnDBeyondChallengeRating(data: any): number {
+    return typeof data.cr === 'string' ? parseChallengeRating(data.cr) : data.cr;
   }
 
   private static parseRoll20Import(_data: any): Omit<NPCTemplate, 'id'> {
@@ -163,10 +177,7 @@ export class NPCTemplateImporter {
   }
 
   private static getDefaultAbilityScores() {
-    return {
-      strength: 10, dexterity: 10, constitution: 10,
-      intelligence: 10, wisdom: 10, charisma: 10,
-    };
+    return { ...DEFAULT_ABILITY_SCORES };
   }
 
   private static parseHitPoints(hitPoints: any) {

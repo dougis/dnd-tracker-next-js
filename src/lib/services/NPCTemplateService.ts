@@ -11,6 +11,7 @@ import { SYSTEM_TEMPLATES } from './NPCTemplateData';
 import { NPCTemplateFilters } from './NPCTemplateFilters';
 import { NPCTemplateVariants } from './NPCTemplateVariants';
 import { NPCTemplateImporter } from './NPCTemplateImporter';
+import { ServiceHelpers } from './ServiceHelpers';
 
 // In-memory store for custom templates (in production, this would be a database)
 const customTemplates: NPCTemplate[] = [];
@@ -128,45 +129,38 @@ export class NPCTemplateService {
    */
   static async createCustomTemplate(templateData: Omit<NPCTemplate, 'id'>): Promise<ServiceResult<NPCTemplate>> {
     try {
-      // Validate the template data
-      const validationResult = NPCTemplateSchema.omit({ id: true }).safeParse(templateData);
-
+      const validationResult = this.validateTemplateData(templateData);
       if (!validationResult.success) {
-        const errorMessage = validationResult.error.errors
-          .map(err => `${err.path.join('.')}: ${err.message}`)
-          .join(', ');
-
-        return {
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: errorMessage,
-          },
-        };
+        return validationResult;
       }
 
-      // Create new template with generated ID
-      const newTemplate: NPCTemplate = {
-        ...validationResult.data,
-        id: `custom-${nextCustomId++}`,
-        isSystem: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
+      const newTemplate = this.buildNewTemplate(validationResult.data);
       customTemplates.push(newTemplate);
 
       return { success: true, data: newTemplate };
     } catch (error) {
-      return {
-        success: false,
-        error: {
-          code: 'INTERNAL_ERROR',
-          message: 'Failed to create template',
-          details: { message: error instanceof Error ? error.message : 'Unknown error' },
-        },
-      };
+      return ServiceHelpers.createErrorResult('INTERNAL_ERROR', 'Failed to create template', error);
     }
+  }
+
+  private static validateTemplateData(templateData: Omit<NPCTemplate, 'id'>): ServiceResult<any> {
+    const validationResult = NPCTemplateSchema.omit({ id: true }).safeParse(templateData);
+
+    if (!validationResult.success) {
+      return ServiceHelpers.createValidationErrorResult(validationResult.error.errors);
+    }
+
+    return { success: true, data: validationResult.data };
+  }
+
+  private static buildNewTemplate(data: any): NPCTemplate {
+    return {
+      ...data,
+      id: `custom-${nextCustomId++}`,
+      isSystem: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
   }
 
   /**
@@ -174,67 +168,69 @@ export class NPCTemplateService {
    */
   static async updateTemplate(id: string, updateData: Partial<Omit<NPCTemplate, 'id' | 'isSystem'>>): Promise<ServiceResult<NPCTemplate>> {
     try {
-      const templateIndex = customTemplates.findIndex(t => t.id === id);
-
-      if (templateIndex === -1) {
-        return {
-          success: false,
-          error: {
-            code: 'NOT_FOUND',
-            message: 'Template not found',
-          },
-        };
+      const findResult = this.findAndValidateTemplate(id);
+      if (!findResult.success) {
+        return findResult;
       }
 
-      // Prevent updating system templates
-      if (customTemplates[templateIndex].isSystem) {
-        return {
-          success: false,
-          error: {
-            code: 'FORBIDDEN',
-            message: 'Cannot update system template',
-          },
-        };
-      }
-
-      // Validate update data
-      const partialSchema = NPCTemplateSchema.omit({ id: true, isSystem: true }).partial();
-      const validationResult = partialSchema.safeParse(updateData);
-
+      const validationResult = this.validateUpdateData(updateData);
       if (!validationResult.success) {
-        const errorMessage = validationResult.error.errors
-          .map(err => `${err.path.join('.')}: ${err.message}`)
-          .join(', ');
-
-        return {
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: errorMessage,
-          },
-        };
+        return validationResult;
       }
 
-      // Update template
-      const updatedTemplate = {
-        ...customTemplates[templateIndex],
-        ...validationResult.data,
-        updatedAt: new Date(),
-      };
-
-      customTemplates[templateIndex] = updatedTemplate;
-
+      const updatedTemplate = this.performTemplateUpdate(findResult.data.templateIndex, validationResult.data);
       return { success: true, data: updatedTemplate };
     } catch (error) {
+      return ServiceHelpers.createErrorResult('INTERNAL_ERROR', 'Failed to update template', error);
+    }
+  }
+
+  private static findAndValidateTemplate(id: string): ServiceResult<{ templateIndex: number }> {
+    const templateIndex = customTemplates.findIndex(t => t.id === id);
+
+    if (templateIndex === -1) {
       return {
         success: false,
         error: {
-          code: 'INTERNAL_ERROR',
-          message: 'Failed to update template',
-          details: { message: error instanceof Error ? error.message : 'Unknown error' },
+          code: 'NOT_FOUND',
+          message: 'Template not found',
         },
       };
     }
+
+    if (customTemplates[templateIndex].isSystem) {
+      return {
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'Cannot update system template',
+        },
+      };
+    }
+
+    return { success: true, data: { templateIndex } };
+  }
+
+  private static validateUpdateData(updateData: Partial<Omit<NPCTemplate, 'id' | 'isSystem'>>): ServiceResult<any> {
+    const partialSchema = NPCTemplateSchema.omit({ id: true, isSystem: true }).partial();
+    const validationResult = partialSchema.safeParse(updateData);
+
+    if (!validationResult.success) {
+      return ServiceHelpers.createValidationErrorResult(validationResult.error.errors);
+    }
+
+    return { success: true, data: validationResult.data };
+  }
+
+  private static performTemplateUpdate(templateIndex: number, data: any): NPCTemplate {
+    const updatedTemplate = {
+      ...customTemplates[templateIndex],
+      ...data,
+      updatedAt: new Date(),
+    };
+
+    customTemplates[templateIndex] = updatedTemplate;
+    return updatedTemplate;
   }
 
   /**
@@ -242,43 +238,48 @@ export class NPCTemplateService {
    */
   static async deleteTemplate(id: string): Promise<ServiceResult<void>> {
     try {
-      const templateIndex = customTemplates.findIndex(t => t.id === id);
-
-      if (templateIndex === -1) {
-        // Check if it's a system template
-        const systemTemplate = SYSTEM_TEMPLATES.find(t => t.id === id);
-        if (systemTemplate) {
-          return {
-            success: false,
-            error: {
-              code: 'FORBIDDEN',
-              message: 'Cannot delete system template',
-            },
-          };
-        }
-
-        return {
-          success: false,
-          error: {
-            code: 'NOT_FOUND',
-            message: 'Template not found',
-          },
-        };
+      const deleteResult = this.validateDeletion(id);
+      if (!deleteResult.success) {
+        return deleteResult;
       }
 
-      customTemplates.splice(templateIndex, 1);
-
+      customTemplates.splice(deleteResult.data.templateIndex, 1);
       return { success: true, data: undefined };
     } catch (error) {
+      return ServiceHelpers.createErrorResult('INTERNAL_ERROR', 'Failed to delete template', error);
+    }
+  }
+
+  private static validateDeletion(id: string): ServiceResult<{ templateIndex: number }> {
+    const templateIndex = customTemplates.findIndex(t => t.id === id);
+
+    if (templateIndex === -1) {
+      return this.handleMissingTemplate(id);
+    }
+
+    return { success: true, data: { templateIndex } };
+  }
+
+  private static handleMissingTemplate(id: string): ServiceResult<any> {
+    const systemTemplate = SYSTEM_TEMPLATES.find(t => t.id === id);
+
+    if (systemTemplate) {
       return {
         success: false,
         error: {
-          code: 'INTERNAL_ERROR',
-          message: 'Failed to delete template',
-          details: { message: error instanceof Error ? error.message : 'Unknown error' },
+          code: 'FORBIDDEN',
+          message: 'Cannot delete system template',
         },
       };
     }
+
+    return {
+      success: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: 'Template not found',
+      },
+    };
   }
 
   /**
