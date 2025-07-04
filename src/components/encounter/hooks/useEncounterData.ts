@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { EncounterService } from '@/lib/services/EncounterService';
 import type { EncounterListItem, EncounterFilters, SortBy, SortOrder, PaginationInfo } from '../types';
-import { transformEncounter } from './utils/encounterTransform';
-import { buildSearchParams } from './utils/searchParams';
-import { extractErrorMessage, handleServiceError } from './utils/errorHandling';
-import { createPaginationInfo } from './utils/paginationHelpers';
+import { 
+  fetchEncountersData, 
+  processSuccessfulResponse, 
+  processErrorResponse,
+  createStateUpdaters 
+} from './utils/dataFetchHelpers';
 
 interface UseEncounterDataParams {
   filters: EncounterFilters;
@@ -40,32 +41,28 @@ export function useEncounterData({
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [currentPage, setCurrentPage] = useState(page);
 
-  const handleSuccessfulResponse = useCallback((data: any) => {
-    const transformedEncounters = data.encounters.map(transformEncounter);
-    setEncounters(transformedEncounters);
+  const { updateSuccessState, updateErrorState, resetState } = createStateUpdaters(
+    setEncounters,
+    setPagination,
+    setError
+  );
 
-    const paginationInfo = createPaginationInfo(
-      data.currentPage,
-      data.totalPages,
-      data.totalItems,
-      limit
-    );
-    setPagination(paginationInfo);
-  }, [limit]);
+  const handleSuccessfulResponse = useCallback((data: any) => {
+    const { encounters, pagination } = processSuccessfulResponse(data, limit);
+    updateSuccessState(encounters, pagination);
+  }, [limit, updateSuccessState]);
 
   const handleErrorResponse = useCallback((error: any) => {
-    const errorMessage = extractErrorMessage(error);
-    setError(errorMessage);
-    setEncounters([]);
-    setPagination(null);
-  }, []);
+    const { errorMessage } = processErrorResponse(error);
+    updateErrorState(errorMessage);
+  }, [updateErrorState]);
 
   const fetchEncounters = useCallback(async () => {
     setIsLoading(true);
-    setError(null);
+    resetState();
 
     try {
-      const searchParams = buildSearchParams(
+      const { data } = await fetchEncountersData(
         filters,
         searchQuery,
         sortBy,
@@ -73,21 +70,13 @@ export function useEncounterData({
         currentPage,
         limit
       );
-
-      const result = await EncounterService.searchEncounters(searchParams);
-
-      if (result.success && result.data) {
-        handleSuccessfulResponse(result.data);
-      } else {
-        const errorMessage = handleServiceError(result);
-        throw new Error(errorMessage);
-      }
+      handleSuccessfulResponse(data);
     } catch (err) {
       handleErrorResponse(err);
     } finally {
       setIsLoading(false);
     }
-  }, [filters, searchQuery, sortBy, sortOrder, currentPage, limit, handleSuccessfulResponse, handleErrorResponse]);
+  }, [filters, searchQuery, sortBy, sortOrder, currentPage, limit, handleSuccessfulResponse, handleErrorResponse, resetState]);
 
   const goToPage = useCallback((newPage: number) => {
     setCurrentPage(newPage);

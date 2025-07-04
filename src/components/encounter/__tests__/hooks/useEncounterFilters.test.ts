@@ -1,17 +1,18 @@
 import { renderHook, act } from '@testing-library/react';
 import { useEncounterFilters } from '../../hooks/useEncounterFilters';
 import { createMockFilters } from '../test-helpers';
+import { 
+  actWrapper, 
+  createFilterStateExpectations,
+  expectStateShape 
+} from '../test-utils/commonTestHelpers';
 
 // Simple helpers to eliminate duplication
 const setup = () => renderHook(() => useEncounterFilters());
-const updateFilters = (result: any, filters: any) => act(() => result.current.updateFilters(filters));
-const updateSearch = (result: any, query: string) => act(() => result.current.updateSearchQuery(query));
-const updateSort = (result: any, sortBy: any, sortOrder: any) => act(() => result.current.updateSort(sortBy, sortOrder));
-const expectFilters = (result: any, expected: any) => {
-  Object.keys(expected).forEach(key => {
-    expect(result.current.filters[key]).toEqual(expected[key]);
-  });
-};
+const updateFilters = (result: any, filters: any) => actWrapper(() => result.current.updateFilters(filters));
+const updateSearch = (result: any, query: string) => actWrapper(() => result.current.updateSearchQuery(query));
+const updateSort = (result: any, sortBy: any, sortOrder: any) => actWrapper(() => result.current.updateSort(sortBy, sortOrder));
+const { expectInitialFilters, expectFiltersChanged } = createFilterStateExpectations();
 
 describe('useEncounterFilters', () => {
   beforeEach(() => {
@@ -21,11 +22,7 @@ describe('useEncounterFilters', () => {
   describe('Initial State', () => {
     it('returns initial state values', () => {
       const { result } = setup();
-
-      expect(result.current.filters).toEqual(createMockFilters());
-      expect(result.current.searchQuery).toBe('');
-      expect(result.current.sortBy).toBe('updatedAt');
-      expect(result.current.sortOrder).toBe('desc');
+      expectInitialFilters(result, createMockFilters());
     });
   });
 
@@ -38,7 +35,7 @@ describe('useEncounterFilters', () => {
         difficulty: ['hard'],
       });
 
-      expectFilters(result, {
+      expectFiltersChanged(result, {
         status: ['active', 'draft'],
         difficulty: ['hard'],
       });

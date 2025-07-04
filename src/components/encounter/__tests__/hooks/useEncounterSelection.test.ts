@@ -2,6 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useEncounterSelection } from '../../hooks/useEncounterSelection';
 import { createMockEncounters } from '../test-helpers';
 import { createSelectionTestUtils } from '../test-utils/selectionHelpers';
+import { actWrapper, createSelectionStateExpectations } from '../test-utils/commonTestHelpers';
 
 describe('useEncounterSelection', () => {
   const mockEncounters = createMockEncounters(5);
@@ -25,34 +26,38 @@ describe('useEncounterSelection', () => {
   });
 
   describe('Single Selection', () => {
+    const { expectNoSelection, expectPartialSelection } = createSelectionStateExpectations(mockEncounters);
+    
     it('selects an encounter correctly', () => {
       const { result } = testUtils.renderSelection();
       testUtils.selectEncounter(result, mockEncounters[0].id);
-      testUtils.expectSingleSelection(result, mockEncounters[0].id);
+      expectPartialSelection(result, [mockEncounters[0].id]);
     });
 
     it('deselects an already selected encounter', () => {
       const { result } = testUtils.renderSelection();
       testUtils.selectEncounter(result, mockEncounters[0].id);
-      testUtils.expectSingleSelection(result, mockEncounters[0].id);
+      expectPartialSelection(result, [mockEncounters[0].id]);
 
       testUtils.selectEncounter(result, mockEncounters[0].id);
-      testUtils.expectNoSelection(result);
+      expectNoSelection(result);
     });
 
     it('selects multiple encounters individually', () => {
       const { result } = testUtils.renderSelection();
       const selectedIds = [mockEncounters[0].id, mockEncounters[2].id];
       testUtils.selectMultiple(result, selectedIds);
-      testUtils.expectMultipleSelection(result, selectedIds);
+      expectPartialSelection(result, selectedIds);
     });
   });
 
   describe('Select All Functionality', () => {
+    const { expectNoSelection, expectAllSelected } = createSelectionStateExpectations(mockEncounters);
+    
     it('selects all encounters when none are selected', () => {
       const { result } = testUtils.renderSelection();
       testUtils.selectAll(result);
-      testUtils.expectAllSelected(result);
+      expectAllSelected(result);
     });
 
     it('deselects all encounters when all are selected', () => {
@@ -61,7 +66,7 @@ describe('useEncounterSelection', () => {
       expect(result.current.isAllSelected).toBe(true);
 
       testUtils.selectAll(result);
-      testUtils.expectNoSelection(result);
+      expectNoSelection(result);
     });
 
     it('selects all encounters when some are already selected', () => {
@@ -73,7 +78,7 @@ describe('useEncounterSelection', () => {
       expect(result.current.isAllSelected).toBe(false);
 
       testUtils.selectAll(result);
-      testUtils.expectAllSelected(result);
+      expectAllSelected(result);
     });
   });
 
