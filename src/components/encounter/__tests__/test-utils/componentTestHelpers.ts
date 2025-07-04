@@ -77,14 +77,14 @@ export const testFilterDropdown = async (
   headerText?: string
 ) => {
   const props = createMockProps.encounterFilters();
-  render(<Component {...props} />);
+  render(React.createElement(Component, props));
 
   await openDropdown(user, buttonText);
 
   if (headerText) {
     expectElementToBeInDocument(headerText);
   }
-  
+
   expectedOptions.forEach(option => {
     expectElementToBeInDocument(option);
   });
@@ -99,7 +99,7 @@ export const testFilterSelection = async (
   mockProps?: any
 ) => {
   const props = mockProps || createMockProps.encounterFilters();
-  render(<Component {...props} />);
+  render(React.createElement(Component, props));
 
   await openDropdown(user, buttonText);
   await selectDropdownOption(user, optionText);
@@ -115,7 +115,7 @@ export const testSearchInput = async (
   searchText: string
 ) => {
   const props = createMockProps.encounterFilters();
-  render(<Component {...props} />);
+  render(React.createElement(Component, props));
 
   await typeInSearch(user, placeholder, searchText);
 
@@ -124,7 +124,7 @@ export const testSearchInput = async (
     const expectedText = searchText.substring(0, index + 1);
     expect(props.callbacks.onSearchChange).toHaveBeenCalledWith(expectedText.slice(-1));
   });
-  
+
   expect(props.callbacks.onSearchChange).toHaveBeenCalledTimes(searchText.length);
 };
 
@@ -136,7 +136,7 @@ export const testSearchClear = async (
   const props = createMockProps.encounterFilters({
     searchQuery: initialValue,
   });
-  render(<Component {...props} />);
+  render(React.createElement(Component, props));
 
   await clearSearch(user, initialValue);
 
@@ -149,7 +149,7 @@ export const testBasicRendering = (
   expectedElements: string[]
 ) => {
   const props = createMockProps.encounterFilters();
-  render(<Component {...props} />);
+  render(React.createElement(Component, props));
 
   expectedElements.forEach(element => {
     expectElementToBeInDocument(element);
@@ -163,7 +163,7 @@ export const testConditionalRendering = (
   shouldNotRender?: { elements: string[], condition: string }
 ) => {
   const props = createMockProps.encounterFilters(mockPropsConfig);
-  render(<Component {...props} />);
+  render(React.createElement(Component, props));
 
   shouldRender.elements.forEach(element => {
     expectElementToBeInDocument(element);

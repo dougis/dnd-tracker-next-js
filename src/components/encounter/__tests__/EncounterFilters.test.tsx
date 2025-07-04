@@ -6,12 +6,8 @@ import { createMockProps, createMockFilters, setupTestEnvironment } from './test
 import {
   setupComponentTest,
   expectElementToBeInDocument,
-  expectElementNotToBeInDocument,
   expectPlaceholderToBeInDocument,
   expectDisplayValueToBeInDocument,
-  expectFilterBadge,
-  expectClearButton,
-  expectNoClearButton,
   testBasicRendering,
   testConditionalRendering,
   testFilterDropdown,
@@ -41,7 +37,7 @@ describe('EncounterFilters', () => {
     it('renders without errors', () => {
       testBasicRendering(EncounterFilters, [
         'Status',
-        'Difficulty', 
+        'Difficulty',
         'Sort'
       ]);
       expectPlaceholderToBeInDocument('Search encounters...');
@@ -125,7 +121,7 @@ describe('EncounterFilters', () => {
       const mockProps = createMockProps.encounterFilters({
         filters: createMockFilters({ status: ['draft', 'active'] }),
       });
-      
+
       await testFilterSelection(
         EncounterFilters,
         user,
@@ -200,7 +196,7 @@ describe('EncounterFilters', () => {
       render(<EncounterFilters {...props} />);
 
       await openDropdown(user, 'Sort');
-      
+
       const difficultyOption = screen.getByRole('menuitem', { name: 'Difficulty' });
       await user.click(difficultyOption);
 

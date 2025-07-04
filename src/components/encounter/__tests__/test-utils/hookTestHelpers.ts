@@ -1,4 +1,4 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import { EncounterService } from '@/lib/services/EncounterService';
 import { createMockFilters, mockServiceResponses, createMockEncounters } from '../test-helpers';
 
@@ -86,7 +86,7 @@ export const testSuccessfulDataFetch = async (hook: any, params: any, mockServic
 
   expectLoadedState(result, expectedCount);
   expectDefaultServiceCall(mockService);
-  
+
   return { result, mockEncounters };
 };
 
@@ -102,7 +102,7 @@ export const testErrorHandling = async (hook: any, params: any, mockService: any
   });
 
   expectErrorState(result, errorMessage);
-  
+
   return { result };
 };
 
@@ -118,7 +118,7 @@ export const testLoadingState = async (hook: any, params: any, mockService: any)
   await waitFor(() => {
     expect(result.current.isLoading).toBe(false);
   });
-  
+
   return { result };
 };
 
@@ -142,7 +142,7 @@ export const testPaginationFetch = async (hook: any, params: any, mockService: a
 
   expectLoadedState(result, 10);
   expectPaginationState(result, 2, 5, 50);
-  
+
   return { result, mockEncounters };
 };
 
