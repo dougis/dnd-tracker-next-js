@@ -3,6 +3,14 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { EncounterCard } from '../EncounterCard';
 import { createMockProps, createMockEncounter, setupTestEnvironment } from './test-helpers';
 
+// Simple helpers to eliminate duplication
+const renderCard = (overrides?: any) => {
+  const props = createMockProps.encounterCard(overrides);
+  render(<EncounterCard {...props} />);
+  return props;
+};
+const expectText = (text: string) => expect(screen.getByText(text)).toBeInTheDocument();
+
 // Mock child components
 jest.mock('../EncounterActionButtons', () => ({
   EncounterActionButtons: ({ encounter, onRefetch }: any) => (
@@ -34,10 +42,8 @@ describe('EncounterCard', () => {
 
   describe('Component Rendering', () => {
     it('renders without errors', () => {
-      const props = createMockProps.encounterCard();
-      render(<EncounterCard {...props} />);
-
-      expect(screen.getByText(props.encounter.name)).toBeInTheDocument();
+      const props = renderCard();
+      expectText(props.encounter.name);
     });
 
     it('displays encounter information correctly', () => {
@@ -53,52 +59,31 @@ describe('EncounterCard', () => {
         tags: ['dragon', 'lair'],
       });
 
-      const props = createMockProps.encounterCard({ encounter });
-      render(<EncounterCard {...props} />);
+      renderCard({ encounter });
 
-      expect(screen.getByText('Dragon Lair Encounter')).toBeInTheDocument();
-      expect(screen.getByText('A dangerous dragon encounter')).toBeInTheDocument();
-      expect(screen.getByText('draft')).toBeInTheDocument();
-      expect(screen.getByText('deadly')).toBeInTheDocument();
-      expect(screen.getByText('8 participants')).toBeInTheDocument();
-      expect(screen.getByText('(4 players)')).toBeInTheDocument();
-      expect(screen.getByText('Level 10')).toBeInTheDocument();
-      expect(screen.getByText('120 minutes')).toBeInTheDocument();
-      expect(screen.getByText('dragon')).toBeInTheDocument();
-      expect(screen.getByText('lair')).toBeInTheDocument();
+      ['Dragon Lair Encounter', 'A dangerous dragon encounter', 'draft', 'deadly', 
+       '8 participants', '(4 players)', 'Level 10', '120 minutes', 'dragon', 'lair'].forEach(expectText);
     });
 
     it('renders status badge with correct variant', () => {
       const activeEncounter = createMockEncounter({ status: 'active' });
-      const props = createMockProps.encounterCard({ encounter: activeEncounter });
-
-      render(<EncounterCard {...props} />);
-
-      const statusBadge = screen.getByText('active');
-      expect(statusBadge).toBeInTheDocument();
+      renderCard({ encounter: activeEncounter });
+      expectText('active');
     });
 
     it('renders difficulty with appropriate styling', () => {
       const deadlyEncounter = createMockEncounter({ difficulty: 'deadly' });
-      const props = createMockProps.encounterCard({ encounter: deadlyEncounter });
-
-      render(<EncounterCard {...props} />);
-
-      expect(screen.getByText('deadly')).toBeInTheDocument();
+      renderCard({ encounter: deadlyEncounter });
+      expectText('deadly');
     });
 
     it('displays tags with truncation for more than 3 tags', () => {
       const encounter = createMockEncounter({
         tags: ['combat', 'dungeon', 'magic', 'boss', 'outdoor'],
       });
-      const props = createMockProps.encounterCard({ encounter });
+      renderCard({ encounter });
 
-      render(<EncounterCard {...props} />);
-
-      expect(screen.getByText('combat')).toBeInTheDocument();
-      expect(screen.getByText('dungeon')).toBeInTheDocument();
-      expect(screen.getByText('magic')).toBeInTheDocument();
-      expect(screen.getByText('+2')).toBeInTheDocument();
+      ['combat', 'dungeon', 'magic', '+2'].forEach(expectText);
     });
 
     it('does not render optional fields when not provided', () => {
@@ -107,9 +92,7 @@ describe('EncounterCard', () => {
         estimatedDuration: undefined,
         tags: [],
       });
-      const props = createMockProps.encounterCard({ encounter });
-
-      render(<EncounterCard {...props} />);
+      renderCard({ encounter });
 
       expect(screen.queryByText('minutes')).not.toBeInTheDocument();
     });
@@ -117,9 +100,7 @@ describe('EncounterCard', () => {
 
   describe('Checkbox Selection', () => {
     it('renders checkbox when onSelect is provided', () => {
-      const props = createMockProps.encounterCard();
-      render(<EncounterCard {...props} />);
-
+      renderCard();
       expect(screen.getByRole('checkbox')).toBeInTheDocument();
     });
 
