@@ -6,6 +6,91 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { CreatureType, Size, ChallengeRating, VariantType, calculateProficiencyBonus } from '@/types/npc';
 
+const getVariantDescription = (variantType: VariantType): string => {
+  const descriptions: Record<VariantType, string> = {
+    elite: 'Elite variant increases challenge rating and enhances abilities.',
+    weak: 'Weak variant decreases challenge rating and reduces abilities.',
+    champion: 'Champion variant significantly increases power and may add legendary actions.',
+    minion: 'Minion variant creates a very weak creature with 1 hit point.',
+  };
+  return descriptions[variantType];
+};
+
+interface VariantSelectionSectionProps {
+  variantType?: VariantType;
+  onVariantTypeChange: (_value: string) => void;
+  onApplyVariant: () => void;
+  isTemplateSelected: boolean;
+}
+
+function VariantSelectionSection({
+  variantType,
+  onVariantTypeChange,
+  onApplyVariant,
+  isTemplateSelected,
+}: VariantSelectionSectionProps) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor="variant-type">Variant Type</Label>
+      <Select value={variantType} onValueChange={onVariantTypeChange}>
+        <SelectTrigger id="variant-type">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="elite">Elite (stronger stats, higher CR)</SelectItem>
+          <SelectItem value="weak">Weak (weaker stats, lower CR)</SelectItem>
+          <SelectItem value="champion">Champion (much stronger, legendary actions)</SelectItem>
+          <SelectItem value="minion">Minion (1 HP, very weak)</SelectItem>
+        </SelectContent>
+      </Select>
+      {variantType && (
+        <p className="text-sm text-muted-foreground">
+          {getVariantDescription(variantType)}
+        </p>
+      )}
+      <Button onClick={onApplyVariant} disabled={!isTemplateSelected} size="sm">
+        Apply Variant Modifiers
+      </Button>
+    </div>
+  );
+}
+
+interface CreatureTypeSectionProps {
+  value: CreatureType;
+  onChange: (_value: string) => void;
+  error?: string;
+}
+
+function CreatureTypeSection({ value, onChange, error }: CreatureTypeSectionProps) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor="creature-type">Creature Type *</Label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger id="creature-type" aria-required="true">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="humanoid">Humanoid</SelectItem>
+          <SelectItem value="beast">Beast</SelectItem>
+          <SelectItem value="undead">Undead</SelectItem>
+          <SelectItem value="fey">Fey</SelectItem>
+          <SelectItem value="fiend">Fiend</SelectItem>
+          <SelectItem value="celestial">Celestial</SelectItem>
+          <SelectItem value="elemental">Elemental</SelectItem>
+          <SelectItem value="construct">Construct</SelectItem>
+          <SelectItem value="dragon">Dragon</SelectItem>
+          <SelectItem value="giant">Giant</SelectItem>
+          <SelectItem value="monstrosity">Monstrosity</SelectItem>
+          <SelectItem value="ooze">Ooze</SelectItem>
+          <SelectItem value="plant">Plant</SelectItem>
+          <SelectItem value="aberration">Aberration</SelectItem>
+        </SelectContent>
+      </Select>
+      {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
+    </div>
+  );
+}
+
 interface NPCBasicInfoTabProps {
   formData: {
     name: string;
@@ -51,34 +136,11 @@ export function NPCBasicInfoTab({
           {errors.name && <p className="text-sm text-red-600" role="alert">{errors.name}</p>}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="creature-type">Creature Type *</Label>
-          <Select
-            value={formData.creatureType}
-            onValueChange={(value) => onUpdate({ creatureType: value as CreatureType })}
-          >
-            <SelectTrigger id="creature-type" aria-required="true">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="humanoid">Humanoid</SelectItem>
-              <SelectItem value="beast">Beast</SelectItem>
-              <SelectItem value="undead">Undead</SelectItem>
-              <SelectItem value="fey">Fey</SelectItem>
-              <SelectItem value="fiend">Fiend</SelectItem>
-              <SelectItem value="celestial">Celestial</SelectItem>
-              <SelectItem value="elemental">Elemental</SelectItem>
-              <SelectItem value="construct">Construct</SelectItem>
-              <SelectItem value="dragon">Dragon</SelectItem>
-              <SelectItem value="giant">Giant</SelectItem>
-              <SelectItem value="monstrosity">Monstrosity</SelectItem>
-              <SelectItem value="ooze">Ooze</SelectItem>
-              <SelectItem value="plant">Plant</SelectItem>
-              <SelectItem value="aberration">Aberration</SelectItem>
-            </SelectContent>
-          </Select>
-          {errors.creatureType && <p className="text-sm text-red-600" role="alert">{errors.creatureType}</p>}
-        </div>
+        <CreatureTypeSection
+          value={formData.creatureType}
+          onChange={(value) => onUpdate({ creatureType: value as CreatureType })}
+          error={errors.creatureType}
+        />
 
         <div className="space-y-2">
           <Label htmlFor="size">Size</Label>
@@ -129,34 +191,12 @@ export function NPCBasicInfoTab({
         </div>
 
         {formData.isVariant && (
-          <div className="space-y-2">
-            <Label htmlFor="variant-type">Variant Type</Label>
-            <Select
-              value={formData.variantType}
-              onValueChange={(value) => onUpdate({ variantType: value as VariantType })}
-            >
-              <SelectTrigger id="variant-type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="elite">Elite (stronger stats, higher CR)</SelectItem>
-                <SelectItem value="weak">Weak (weaker stats, lower CR)</SelectItem>
-                <SelectItem value="champion">Champion (much stronger, legendary actions)</SelectItem>
-                <SelectItem value="minion">Minion (1 HP, very weak)</SelectItem>
-              </SelectContent>
-            </Select>
-            {formData.variantType && (
-              <p className="text-sm text-muted-foreground">
-                {formData.variantType === 'elite' && 'Elite variant increases challenge rating and enhances abilities.'}
-                {formData.variantType === 'weak' && 'Weak variant decreases challenge rating and reduces abilities.'}
-                {formData.variantType === 'champion' && 'Champion variant significantly increases power and may add legendary actions.'}
-                {formData.variantType === 'minion' && 'Minion variant creates a very weak creature with 1 hit point.'}
-              </p>
-            )}
-            <Button onClick={onApplyVariant} disabled={!selectedTemplate} size="sm">
-              Apply Variant Modifiers
-            </Button>
-          </div>
+          <VariantSelectionSection
+            variantType={formData.variantType}
+            onVariantTypeChange={(value) => onUpdate({ variantType: value as VariantType })}
+            onApplyVariant={onApplyVariant}
+            isTemplateSelected={!!selectedTemplate}
+          />
         )}
       </div>
 

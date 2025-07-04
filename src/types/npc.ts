@@ -219,7 +219,7 @@ export function calculateProficiencyBonus(challengeRating: ChallengeRating): num
     { max: 24, bonus: 7 },
     { max: 28, bonus: 8 },
   ];
-  
+
   const threshold = bonusThresholds.find(t => challengeRating <= t.max);
   return threshold ? threshold.bonus : 9;
 }
