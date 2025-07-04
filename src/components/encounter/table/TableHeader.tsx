@@ -66,7 +66,7 @@ export function TableHeader({
         {TABLE_HEADERS.map(({ column, label, sortable }) => (
           <th key={column} className={CELL_CLASSES.default}>
             {sortable ? (
-              <SortableHeader column={column} sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>
+              <SortableHeader column={column as SortBy} sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>
                 {label}
               </SortableHeader>
             ) : (

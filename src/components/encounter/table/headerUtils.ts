@@ -3,7 +3,7 @@ import type { SortBy, SortOrder } from '../types';
 
 // Header configuration type
 export interface HeaderConfig {
-  column: SortBy;
+  column: SortBy | string;
   label: string;
   sortable?: boolean;
   className?: string;
