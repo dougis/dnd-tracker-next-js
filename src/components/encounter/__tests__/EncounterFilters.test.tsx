@@ -3,6 +3,25 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EncounterFilters } from '../EncounterFilters';
 import { createMockProps, createMockFilters, setupTestEnvironment } from './test-helpers';
+import {
+  setupComponentTest,
+  expectElementToBeInDocument,
+  expectElementNotToBeInDocument,
+  expectPlaceholderToBeInDocument,
+  expectDisplayValueToBeInDocument,
+  expectFilterBadge,
+  expectClearButton,
+  expectNoClearButton,
+  testBasicRendering,
+  testConditionalRendering,
+  testFilterDropdown,
+  testFilterSelection,
+  testSearchInput,
+  testSearchClear,
+  openDropdown,
+  openDropdownByRole,
+  selectDropdownOption,
+} from './test-utils/componentTestHelpers';
 
 describe('EncounterFilters', () => {
   const { cleanup } = setupTestEnvironment();
@@ -10,7 +29,8 @@ describe('EncounterFilters', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    user = userEvent.setup();
+    const setup = setupComponentTest();
+    user = setup.user;
   });
 
   afterEach(() => {
@@ -19,129 +39,101 @@ describe('EncounterFilters', () => {
 
   describe('Component Rendering', () => {
     it('renders without errors', () => {
-      const props = createMockProps.encounterFilters();
-      render(<EncounterFilters {...props} />);
-
-      expect(screen.getByPlaceholderText('Search encounters...')).toBeInTheDocument();
-      expect(screen.getByText('Status')).toBeInTheDocument();
-      expect(screen.getByText('Difficulty')).toBeInTheDocument();
-      expect(screen.getByText('Sort')).toBeInTheDocument();
+      testBasicRendering(EncounterFilters, [
+        'Status',
+        'Difficulty', 
+        'Sort'
+      ]);
+      expectPlaceholderToBeInDocument('Search encounters...');
     });
 
     it('displays current search query', () => {
-      const props = createMockProps.encounterFilters({
-        searchQuery: 'dragon encounter',
-      });
-      render(<EncounterFilters {...props} />);
-
-      const searchInput = screen.getByDisplayValue('dragon encounter');
-      expect(searchInput).toBeInTheDocument();
+      testConditionalRendering(
+        EncounterFilters,
+        { searchQuery: 'dragon encounter' },
+        { elements: [], condition: 'displays search value' }
+      );
+      expectDisplayValueToBeInDocument('dragon encounter');
     });
 
     it('shows filter badges when filters are active', () => {
-      const props = createMockProps.encounterFilters({
-        filters: createMockFilters({
-          status: ['active', 'draft'],
-          difficulty: ['hard'],
-        }),
-      });
-      render(<EncounterFilters {...props} />);
-
-      // Should show badge count for active filters
-      expect(screen.getByText('2')).toBeInTheDocument(); // Status count
-      expect(screen.getByText('1')).toBeInTheDocument(); // Difficulty count
+      testConditionalRendering(
+        EncounterFilters,
+        {
+          filters: createMockFilters({
+            status: ['active', 'draft'],
+            difficulty: ['hard'],
+          }),
+        },
+        { elements: ['2', '1'], condition: 'shows badge counts' }
+      );
     });
 
     it('shows clear filters button when filters are active', () => {
-      const props = createMockProps.encounterFilters({
-        searchQuery: 'test',
-        filters: createMockFilters({ status: ['active'] }),
-      });
-      render(<EncounterFilters {...props} />);
-
-      expect(screen.getByText('Clear')).toBeInTheDocument();
+      testConditionalRendering(
+        EncounterFilters,
+        {
+          searchQuery: 'test',
+          filters: createMockFilters({ status: ['active'] }),
+        },
+        { elements: ['Clear'], condition: 'shows clear button' }
+      );
     });
 
     it('does not show clear filters button when no filters are active', () => {
-      const props = createMockProps.encounterFilters();
-      render(<EncounterFilters {...props} />);
-
-      expect(screen.queryByText('Clear')).not.toBeInTheDocument();
+      testConditionalRendering(
+        EncounterFilters,
+        {},
+        { elements: [], condition: 'no filters active' },
+        { elements: ['Clear'], condition: 'should not show clear' }
+      );
     });
   });
 
   describe('Search Functionality', () => {
     it('calls onSearchChange when typing in search input', async () => {
-      const props = createMockProps.encounterFilters();
-      render(<EncounterFilters {...props} />);
-
-      const searchInput = screen.getByPlaceholderText('Search encounters...');
-      await user.type(searchInput, 'dr');
-
-      // Check that onSearchChange was called - user.type types character by character
-      expect(props.callbacks.onSearchChange).toHaveBeenCalledWith('d');
-      expect(props.callbacks.onSearchChange).toHaveBeenCalledWith('r');
-      expect(props.callbacks.onSearchChange).toHaveBeenCalledTimes(2);
+      await testSearchInput(EncounterFilters, user, 'Search encounters...', 'dr');
     });
 
     it('handles empty search input', async () => {
-      const props = createMockProps.encounterFilters({
-        searchQuery: 'existing query',
-      });
-      render(<EncounterFilters {...props} />);
-
-      const searchInput = screen.getByDisplayValue('existing query');
-      await user.clear(searchInput);
-
-      expect(props.callbacks.onSearchChange).toHaveBeenLastCalledWith('');
+      await testSearchClear(EncounterFilters, user, 'existing query');
     });
   });
 
   describe('Status Filter', () => {
     it('opens status filter dropdown', async () => {
-      const props = createMockProps.encounterFilters();
-      render(<EncounterFilters {...props} />);
-
-      const statusButton = screen.getByText('Status');
-      await user.click(statusButton);
-
-      expect(screen.getByText('Filter by Status')).toBeInTheDocument();
-      expect(screen.getByText('Draft')).toBeInTheDocument();
-      expect(screen.getByText('Active')).toBeInTheDocument();
-      expect(screen.getByText('Completed')).toBeInTheDocument();
-      expect(screen.getByText('Archived')).toBeInTheDocument();
+      await testFilterDropdown(
+        EncounterFilters,
+        user,
+        'Status',
+        ['Draft', 'Active', 'Completed', 'Archived'],
+        'Filter by Status'
+      );
     });
 
     it('toggles status filter selection', async () => {
-      const props = createMockProps.encounterFilters();
-      render(<EncounterFilters {...props} />);
-
-      const statusButton = screen.getByText('Status');
-      await user.click(statusButton);
-
-      const draftOption = screen.getByText('Draft');
-      await user.click(draftOption);
-
-      expect(props.callbacks.onFiltersChange).toHaveBeenCalledWith({
-        status: ['draft'],
-      });
+      await testFilterSelection(
+        EncounterFilters,
+        user,
+        'Status',
+        'Draft',
+        { status: ['draft'] }
+      );
     });
 
     it('removes status filter when already selected', async () => {
-      const props = createMockProps.encounterFilters({
+      const mockProps = createMockProps.encounterFilters({
         filters: createMockFilters({ status: ['draft', 'active'] }),
       });
-      render(<EncounterFilters {...props} />);
-
-      const statusButton = screen.getByText('Status');
-      await user.click(statusButton);
-
-      const draftOption = screen.getByText('Draft');
-      await user.click(draftOption);
-
-      expect(props.callbacks.onFiltersChange).toHaveBeenCalledWith({
-        status: ['active'],
-      });
+      
+      await testFilterSelection(
+        EncounterFilters,
+        user,
+        'Status',
+        'Draft',
+        { status: ['active'] },
+        mockProps
+      );
     });
   });
 
@@ -150,26 +142,20 @@ describe('EncounterFilters', () => {
       const props = createMockProps.encounterFilters();
       render(<EncounterFilters {...props} />);
 
-      const difficultyButton = screen.getByRole('button', { name: /difficulty/i });
-      await user.click(difficultyButton);
+      await openDropdownByRole(user, /difficulty/i);
 
-      expect(screen.getByText('Filter by Difficulty')).toBeInTheDocument();
-      expect(screen.getByText('Trivial')).toBeInTheDocument();
-      expect(screen.getByText('Easy')).toBeInTheDocument();
-      expect(screen.getByText('Medium')).toBeInTheDocument();
-      expect(screen.getByText('Hard')).toBeInTheDocument();
-      expect(screen.getByText('Deadly')).toBeInTheDocument();
+      expectElementToBeInDocument('Filter by Difficulty');
+      ['Trivial', 'Easy', 'Medium', 'Hard', 'Deadly'].forEach(difficulty => {
+        expectElementToBeInDocument(difficulty);
+      });
     });
 
     it('toggles difficulty filter selection', async () => {
       const props = createMockProps.encounterFilters();
       render(<EncounterFilters {...props} />);
 
-      const difficultyButton = screen.getByRole('button', { name: /difficulty/i });
-      await user.click(difficultyButton);
-
-      const hardOption = screen.getByText('Hard');
-      await user.click(hardOption);
+      await openDropdownByRole(user, /difficulty/i);
+      await selectDropdownOption(user, 'Hard');
 
       expect(props.callbacks.onFiltersChange).toHaveBeenCalledWith({
         difficulty: ['hard'],
@@ -179,19 +165,14 @@ describe('EncounterFilters', () => {
 
   describe('Sort Functionality', () => {
     it('opens sort dropdown', async () => {
-      const props = createMockProps.encounterFilters();
-      render(<EncounterFilters {...props} />);
-
-      const sortButton = screen.getByText('Sort');
-      await user.click(sortButton);
-
-      expect(screen.getByText('Sort by')).toBeInTheDocument();
-      expect(screen.getByText('Name')).toBeInTheDocument();
-      expect(screen.getByText('Created Date')).toBeInTheDocument();
-      expect(screen.getByText('Updated Date')).toBeInTheDocument();
+      await testFilterDropdown(
+        EncounterFilters,
+        user,
+        'Sort',
+        ['Name', 'Created Date', 'Updated Date', 'Participants', 'Target Level'],
+        'Sort by'
+      );
       expect(screen.getByRole('menuitem', { name: 'Difficulty' })).toBeInTheDocument();
-      expect(screen.getByText('Participants')).toBeInTheDocument();
-      expect(screen.getByText('Target Level')).toBeInTheDocument();
     });
 
     it('changes sort order when clicking same sort field', async () => {
@@ -203,11 +184,8 @@ describe('EncounterFilters', () => {
       });
       render(<EncounterFilters {...props} />);
 
-      const sortButton = screen.getByText('Sort');
-      await user.click(sortButton);
-
-      const nameOption = screen.getByText('Name');
-      await user.click(nameOption);
+      await openDropdown(user, 'Sort');
+      await selectDropdownOption(user, 'Name');
 
       expect(props.callbacks.onSortChange).toHaveBeenCalledWith('name', 'desc');
     });
@@ -221,9 +199,8 @@ describe('EncounterFilters', () => {
       });
       render(<EncounterFilters {...props} />);
 
-      const sortButton = screen.getByText('Sort');
-      await user.click(sortButton);
-
+      await openDropdown(user, 'Sort');
+      
       const difficultyOption = screen.getByRole('menuitem', { name: 'Difficulty' });
       await user.click(difficultyOption);
 
@@ -231,16 +208,7 @@ describe('EncounterFilters', () => {
     });
 
     it('displays sort button with correct icon', () => {
-      const props = createMockProps.encounterFilters({
-        sortConfig: {
-          sortBy: 'updatedAt',
-          sortOrder: 'asc',
-        },
-      });
-      render(<EncounterFilters {...props} />);
-
-      // Should show sort button
-      expect(screen.getByText('Sort')).toBeInTheDocument();
+      testBasicRendering(EncounterFilters, ['Sort']);
     });
   });
 
@@ -261,44 +229,48 @@ describe('EncounterFilters', () => {
 
   describe('Filter State Detection', () => {
     it('detects active filters correctly', () => {
-      const propsWithFilters = createMockProps.encounterFilters({
-        searchQuery: '',
-        filters: createMockFilters({ status: ['active'] }),
-      });
-      render(<EncounterFilters {...propsWithFilters} />);
-
-      expect(screen.getByText('Clear')).toBeInTheDocument();
+      testConditionalRendering(
+        EncounterFilters,
+        {
+          searchQuery: '',
+          filters: createMockFilters({ status: ['active'] }),
+        },
+        { elements: ['Clear'], condition: 'shows clear for active filters' }
+      );
     });
 
     it('detects search query as active filter', () => {
-      const props = createMockProps.encounterFilters({
-        searchQuery: 'test',
-        filters: createMockFilters(),
-      });
-      render(<EncounterFilters {...props} />);
-
-      expect(screen.getByText('Clear')).toBeInTheDocument();
+      testConditionalRendering(
+        EncounterFilters,
+        {
+          searchQuery: 'test',
+          filters: createMockFilters(),
+        },
+        { elements: ['Clear'], condition: 'shows clear for search query' }
+      );
     });
 
     it('detects target level filters as active', () => {
-      const props = createMockProps.encounterFilters({
-        filters: createMockFilters({
-          targetLevelMin: 1,
-          targetLevelMax: 10,
-        }),
-      });
-      render(<EncounterFilters {...props} />);
-
-      expect(screen.getByText('Clear')).toBeInTheDocument();
+      testConditionalRendering(
+        EncounterFilters,
+        {
+          filters: createMockFilters({
+            targetLevelMin: 1,
+            targetLevelMax: 10,
+          }),
+        },
+        { elements: ['Clear'], condition: 'shows clear for target level filters' }
+      );
     });
 
     it('detects tag filters as active', () => {
-      const props = createMockProps.encounterFilters({
-        filters: createMockFilters({ tags: ['combat'] }),
-      });
-      render(<EncounterFilters {...props} />);
-
-      expect(screen.getByText('Clear')).toBeInTheDocument();
+      testConditionalRendering(
+        EncounterFilters,
+        {
+          filters: createMockFilters({ tags: ['combat'] }),
+        },
+        { elements: ['Clear'], condition: 'shows clear for tag filters' }
+      );
     });
   });
 
