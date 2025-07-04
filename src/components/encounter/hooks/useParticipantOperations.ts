@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { EncounterService } from '@/lib/services/EncounterService';
 import type { IEncounter } from '@/lib/models/encounter/interfaces';
 
@@ -22,16 +22,24 @@ export const useParticipantOperations = (
   onUpdate?: (_updatedEncounter: IEncounter) => void
 ) => {
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleServiceResult = useCallback((result: any, successMessage: string, onSuccess: () => void) => {
     if (result.success) {
-      toast.success(successMessage);
+      toast({
+        title: 'Success',
+        description: successMessage,
+      });
       onUpdate?.(result.data!);
       onSuccess();
     } else {
-      toast.error(typeof result.error === 'string' ? result.error : 'Operation failed');
+      toast({
+        title: 'Error',
+        description: typeof result.error === 'string' ? result.error : 'Operation failed',
+        variant: 'destructive',
+      });
     }
-  }, [onUpdate]);
+  }, [onUpdate, toast]);
 
   const createParticipantData = useCallback((data: ParticipantFormData) => ({
     ...data,
@@ -52,12 +60,16 @@ export const useParticipantOperations = (
       );
       handleServiceResult(result, 'Participant added successfully', onSuccess);
     } catch (error) {
-      toast.error('An error occurred while adding participant');
+      toast({
+        title: 'Error',
+        description: 'An error occurred while adding participant',
+        variant: 'destructive',
+      });
       console.error('Add participant error:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [encounter._id, createParticipantData, handleServiceResult]);
+  }, [encounter._id, createParticipantData, handleServiceResult, toast]);
 
   const updateParticipant = useCallback(async (
     participantId: string,
@@ -73,12 +85,16 @@ export const useParticipantOperations = (
       );
       handleServiceResult(result, 'Participant updated successfully', onSuccess);
     } catch (error) {
-      toast.error('An error occurred while updating participant');
+      toast({
+        title: 'Error',
+        description: 'An error occurred while updating participant',
+        variant: 'destructive',
+      });
       console.error('Update participant error:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [encounter._id, handleServiceResult]);
+  }, [encounter._id, handleServiceResult, toast]);
 
   const removeParticipant = useCallback(async (participantId: string) => {
     try {
@@ -89,12 +105,16 @@ export const useParticipantOperations = (
       );
       handleServiceResult(result, 'Participant removed successfully', () => {});
     } catch (error) {
-      toast.error('An error occurred while removing participant');
+      toast({
+        title: 'Error',
+        description: 'An error occurred while removing participant',
+        variant: 'destructive',
+      });
       console.error('Remove participant error:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [encounter._id, handleServiceResult]);
+  }, [encounter._id, handleServiceResult, toast]);
 
   return {
     isLoading,

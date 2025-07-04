@@ -134,16 +134,16 @@ export function endCombat(_this: IEncounter): void {
   _this.status = 'completed';
 
   // Calculate total duration
-  if (this.combatState.startedAt) {
-    this.combatState.totalDuration = calculateCombatDuration(
-      this.combatState.startedAt,
-      this.combatState.endedAt,
-      this.combatState.pausedAt
+  if (_this.combatState.startedAt) {
+    _this.combatState.totalDuration = calculateCombatDuration(
+      _this.combatState.startedAt,
+      _this.combatState.endedAt,
+      _this.combatState.pausedAt
     );
   }
 
   // Reset all active states
-  this.combatState.initiativeOrder.forEach((entry: IInitiativeEntry) => {
+  _this.combatState.initiativeOrder.forEach((entry: IInitiativeEntry) => {
     entry.isActive = false;
     entry.hasActed = false;
   });
@@ -151,37 +151,37 @@ export function endCombat(_this: IEncounter): void {
 
 export function nextTurn(_this: IEncounter): boolean {
   if (
-    !this.combatState.isActive ||
-    this.combatState.initiativeOrder.length === 0
+    !_this.combatState.isActive ||
+    _this.combatState.initiativeOrder.length === 0
   ) {
     return false;
   }
 
   // Mark current participant as having acted
   const currentEntry =
-    this.combatState.initiativeOrder[this.combatState.currentTurn];
+    _this.combatState.initiativeOrder[_this.combatState.currentTurn];
   if (currentEntry) {
     currentEntry.hasActed = true;
     currentEntry.isActive = false;
   }
 
   // Move to next turn
-  this.combatState.currentTurn++;
+  _this.combatState.currentTurn++;
 
   // Check if we need to start a new round
-  if (this.combatState.currentTurn >= this.combatState.initiativeOrder.length) {
-    this.combatState.currentTurn = 0;
-    this.combatState.currentRound++;
+  if (_this.combatState.currentTurn >= _this.combatState.initiativeOrder.length) {
+    _this.combatState.currentTurn = 0;
+    _this.combatState.currentRound++;
 
     // Reset hasActed for new round
-    this.combatState.initiativeOrder.forEach((entry: IInitiativeEntry) => {
+    _this.combatState.initiativeOrder.forEach((entry: IInitiativeEntry) => {
       entry.hasActed = false;
     });
   }
 
   // Set next participant as active
   const nextEntry =
-    this.combatState.initiativeOrder[this.combatState.currentTurn];
+    _this.combatState.initiativeOrder[_this.combatState.currentTurn];
   if (nextEntry) {
     nextEntry.isActive = true;
   }
