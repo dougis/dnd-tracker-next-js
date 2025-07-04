@@ -1,4 +1,5 @@
 import { EncounterService } from '@/lib/services/EncounterService';
+import { createErrorHandler, createSuccessHandler, extractErrorMessage, type ToastFunction } from './errorUtils';
 import type { EncounterListItem } from '../types';
 
 export const createNavigationHandlers = (encounter: EncounterListItem) => {
@@ -28,26 +29,22 @@ export const createNavigationHandlers = (encounter: EncounterListItem) => {
 export const createServiceHandlers = (
   encounter: EncounterListItem,
   onRefetch?: () => void,
-  toast?: (_options: any) => void
+  toast?: ToastFunction
 ) => {
+  const showError = createErrorHandler(toast);
+  const showSuccess = createSuccessHandler(toast);
+
   const handleDuplicate = async () => {
     try {
       const result = await EncounterService.cloneEncounter(encounter.id);
       if (result.success) {
-        toast?.({
-          title: 'Encounter duplicated',
-          description: `"${encounter.name}" has been duplicated successfully.`,
-        });
+        showSuccess('duplicate', encounter.name);
         onRefetch?.();
       } else {
-        throw new Error(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to duplicate encounter');
+        throw new Error(extractErrorMessage(result.error) || 'Failed to duplicate encounter');
       }
     } catch {
-      toast?.({
-        title: 'Error',
-        description: 'Failed to duplicate encounter. Please try again.',
-        variant: 'destructive',
-      });
+      showError('duplicate', encounter.name);
     }
   };
 
@@ -55,21 +52,14 @@ export const createServiceHandlers = (
     try {
       const result = await EncounterService.deleteEncounter(encounter.id);
       if (result.success) {
-        toast?.({
-          title: 'Encounter deleted',
-          description: `"${encounter.name}" has been deleted.`,
-        });
+        showSuccess('delete', encounter.name);
         onRefetch?.();
         return true;
       } else {
-        throw new Error(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to delete encounter');
+        throw new Error(extractErrorMessage(result.error) || 'Failed to delete encounter');
       }
     } catch {
-      toast?.({
-        title: 'Error',
-        description: 'Failed to delete encounter. Please try again.',
-        variant: 'destructive',
-      });
+      showError('delete', encounter.name);
       return false;
     }
   };
