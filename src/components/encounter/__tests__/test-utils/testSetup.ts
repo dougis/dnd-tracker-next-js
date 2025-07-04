@@ -57,6 +57,22 @@ export const createMockActionHandlers = () => ({
   },
 });
 
+// Common table configuration mocks
+export const createMockSelectionConfig = (overrides = {}) => ({
+  selectedEncounters: [],
+  isAllSelected: false,
+  onSelectAll: jest.fn(),
+  onSelectEncounter: jest.fn(),
+  ...overrides,
+});
+
+export const createMockSortConfig = (overrides = {}) => ({
+  sortBy: 'name',
+  sortOrder: 'asc',
+  onSort: jest.fn(),
+  ...overrides,
+});
+
 // Common test expectations helper
 export const expectElementsToBeInDocument = (elements: string[]) => {
   const { screen } = require('@testing-library/react');

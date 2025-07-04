@@ -6,6 +6,9 @@ import type { TableSortConfig, TableSelectionConfig } from '../types';
 import { createMockEncounter, createMockEncounters } from './test-utils/mockFactories';
 import { commonBeforeEach } from './test-utils/mockSetup';
 import { testLoadingState } from './test-utils/testPatterns';
+import { createMockSelectionConfig, createMockSortConfig } from './test-utils/testSetup';
+import { clickCheckbox, expectFunctionToBeCalled } from './test-utils/interactionHelpers';
+import { assertLoadingState, assertEmptyState, assertTableStructure } from './test-utils/testAssertions';
 
 // Mock the LoadingCard component
 jest.mock('@/components/shared/LoadingCard', () => ({
@@ -82,20 +85,6 @@ jest.mock('../table/tableUtils', () => ({
 }));
 
 
-const createMockSelectionConfig = (overrides: Partial<TableSelectionConfig> = {}): TableSelectionConfig => ({
-  selectedEncounters: [],
-  isAllSelected: false,
-  onSelectAll: jest.fn(),
-  onSelectEncounter: jest.fn(),
-  ...overrides,
-});
-
-const createMockSortConfig = (overrides: Partial<TableSortConfig> = {}): TableSortConfig => ({
-  sortBy: 'name',
-  sortOrder: 'asc',
-  onSort: jest.fn(),
-  ...overrides,
-});
 
 describe('EncounterTable', () => {
   const defaultProps = {
@@ -113,13 +102,17 @@ describe('EncounterTable', () => {
       testLoadingState(<EncounterTable {...defaultProps} isLoading={true} />, 5);
     });
 
-    it('should render loading cards with correct height class', () => {
+    it('should render loading cards with correct styling', () => {
       render(<EncounterTable {...defaultProps} isLoading={true} />);
 
+      assertLoadingState(5);
       const loadingCards = screen.getAllByTestId('loading-card');
       loadingCards.forEach(card => {
         expect(card).toHaveClass('h-16');
       });
+
+      const container = loadingCards[0].parentElement;
+      expect(container).toHaveClass('space-y-4');
     });
 
     it('should not render table when loading', () => {
@@ -136,70 +129,65 @@ describe('EncounterTable', () => {
       expect(screen.queryByRole('table')).not.toBeInTheDocument();
       expect(screen.queryByTestId('table-header')).not.toBeInTheDocument();
     });
-
-    it('should render loading cards in a space-y-4 container', () => {
-      render(<EncounterTable {...defaultProps} isLoading={true} />);
-
-      const container = screen.getAllByTestId('loading-card')[0].parentElement;
-      expect(container).toHaveClass('space-y-4');
-    });
   });
 
   describe('Empty State', () => {
+    const renderEmptyState = (isLoading = false) => {
+      render(<EncounterTable {...defaultProps} encounters={[]} isLoading={isLoading} />);
+    };
+
     it('should render empty state when no encounters and not loading', () => {
-      render(<EncounterTable {...defaultProps} encounters={[]} isLoading={false} />);
-      expect(screen.getByText('No encounters found')).toBeInTheDocument();
-      expect(screen.getByText(/Create your first encounter to get started/)).toBeInTheDocument();
+      renderEmptyState(false);
+      assertEmptyState('No encounters found', 'Create your first encounter to get started');
     });
 
     it('should render empty state in centered layout', () => {
-      render(<EncounterTable {...defaultProps} encounters={[]} isLoading={false} />);
+      renderEmptyState(false);
 
       const emptyContainer = screen.getByText('No encounters found').closest('div');
       expect(emptyContainer?.parentElement).toHaveClass('text-center', 'py-12');
     });
 
     it('should not render empty state when loading', () => {
-      render(<EncounterTable {...defaultProps} encounters={[]} isLoading={true} />);
-
+      renderEmptyState(true);
       expect(screen.queryByText('No encounters found')).not.toBeInTheDocument();
     });
 
     it('should not render table when showing empty state', () => {
-      render(<EncounterTable {...defaultProps} encounters={[]} isLoading={false} />);
-
+      renderEmptyState(false);
       expect(screen.queryByRole('table')).not.toBeInTheDocument();
     });
   });
 
   describe('Table Rendering', () => {
+    const renderTableWithEncounters = (encounters = [createMockEncounter()]) => {
+      render(<EncounterTable {...defaultProps} encounters={encounters} />);
+      return encounters;
+    };
+
     it('should render table with encounters', () => {
       const encounters = [
         createMockEncounter({ id: 'encounter-1', name: 'First Encounter' }),
         createMockEncounter({ id: 'encounter-2', name: 'Second Encounter' }),
       ];
 
-      render(<EncounterTable {...defaultProps} encounters={encounters} />);
+      renderTableWithEncounters(encounters);
 
-      expect(screen.getByRole('table')).toBeInTheDocument();
+      assertTableStructure();
       expect(screen.getByTestId('table-header')).toBeInTheDocument();
       expect(screen.getByTestId('table-row-encounter-1')).toBeInTheDocument();
       expect(screen.getByTestId('table-row-encounter-2')).toBeInTheDocument();
     });
 
     it('should render table with proper structure and classes', () => {
-      const encounters = [createMockEncounter()];
+      renderTableWithEncounters();
 
-      render(<EncounterTable {...defaultProps} encounters={encounters} />);
-
-      const scrollContainer = screen.getByRole('table').parentElement;
+      const table = screen.getByRole('table');
+      const scrollContainer = table.parentElement;
       expect(scrollContainer).toHaveClass('overflow-x-auto');
 
       const tableContainer = scrollContainer?.parentElement;
       expect(tableContainer).toHaveClass('border', 'rounded-md');
-
-      const table = screen.getByRole('table');
-      expect(table).toHaveClass('w-full');
     });
 
     it('should render encounters with correct data', () => {
@@ -208,7 +196,7 @@ describe('EncounterTable', () => {
         createMockEncounter({ id: 'test-2', name: 'Test Name 2' }),
       ];
 
-      render(<EncounterTable {...defaultProps} encounters={encounters} />);
+      renderTableWithEncounters(encounters);
 
       expect(screen.getByText('Mock Row: Test Name 1')).toBeInTheDocument();
       expect(screen.getByText('Mock Row: Test Name 2')).toBeInTheDocument();
@@ -216,30 +204,28 @@ describe('EncounterTable', () => {
   });
 
   describe('Selection Handling', () => {
+    const renderWithSelection = (selectionOverrides = {}, encounterOverrides = {}) => {
+      const encounters = [createMockEncounter({ id: 'encounter-1', ...encounterOverrides })];
+      const selection = createMockSelectionConfig(selectionOverrides);
+      render(<EncounterTable {...defaultProps} encounters={encounters} selection={selection} />);
+      return { encounters, selection };
+    };
+
     it('should pass selection props to TableHeader', () => {
-      const encounters = [createMockEncounter({ id: 'encounter-1' })];
-      const selection = createMockSelectionConfig({
+      renderWithSelection({
         isAllSelected: true,
         selectedEncounters: ['encounter-1'],
       });
-
-      render(<EncounterTable {...defaultProps} encounters={encounters} selection={selection} />);
 
       const selectAllCheckbox = screen.getByTestId('select-all-checkbox');
       expect(selectAllCheckbox).toBeChecked();
     });
 
     it('should call onSelectAll when select all checkbox is clicked', async () => {
-      const encounters = [createMockEncounter()];
-      const selection = createMockSelectionConfig();
-      const user = userEvent.setup();
+      const { selection } = renderWithSelection();
 
-      render(<EncounterTable {...defaultProps} encounters={encounters} selection={selection} />);
-
-      const selectAllCheckbox = screen.getByTestId('select-all-checkbox');
-      await user.click(selectAllCheckbox);
-
-      expect(selection.onSelectAll).toHaveBeenCalledTimes(1);
+      await clickCheckbox('select-all-checkbox');
+      expectFunctionToBeCalled(selection.onSelectAll);
     });
 
     it('should show selected state for selected encounters', () => {
@@ -251,13 +237,7 @@ describe('EncounterTable', () => {
         selectedEncounters: ['encounter-1'],
       });
 
-      render(
-        <EncounterTable
-          {...defaultProps}
-          encounters={encounters}
-          selection={selection}
-        />
-      );
+      render(<EncounterTable {...defaultProps} encounters={encounters} selection={selection} />);
 
       const checkbox1 = screen.getByTestId('select-encounter-1');
       const checkbox2 = screen.getByTestId('select-encounter-2');
@@ -267,22 +247,10 @@ describe('EncounterTable', () => {
     });
 
     it('should call onSelectEncounter when individual encounter is selected', async () => {
-      const encounters = [createMockEncounter({ id: 'test-encounter' })];
-      const selection = createMockSelectionConfig();
-      const user = userEvent.setup();
+      const { selection } = renderWithSelection({}, { id: 'test-encounter' });
 
-      render(
-        <EncounterTable
-          {...defaultProps}
-          encounters={encounters}
-          selection={selection}
-        />
-      );
-
-      const checkbox = screen.getByTestId('select-test-encounter');
-      await user.click(checkbox);
-
-      expect(selection.onSelectEncounter).toHaveBeenCalledWith('test-encounter');
+      await clickCheckbox('select-test-encounter');
+      expectFunctionToBeCalled(selection.onSelectEncounter, 1, 'test-encounter');
     });
   });
 
