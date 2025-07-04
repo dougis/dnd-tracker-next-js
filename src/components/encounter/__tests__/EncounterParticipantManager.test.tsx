@@ -254,16 +254,16 @@ describe('EncounterParticipantManager', () => {
 
     it('should perform batch removal', async () => {
       const user = userEvent.setup();
-      serviceHelpers.setupMock(mockEncounterService, 'removeParticipant', { success: true, data: mockEncounter });
+      serviceMocks.setup(mockEncounterService, 'removeParticipant', { success: true, data: mockEncounter });
 
       renderComponent(mockEncounter);
 
-      await workflowHelpers.selectMultiple(user, [0]);
+      await workflows.selectMultiple(user, [0]);
       await user.click(screen.getByText('Remove Selected'));
       await user.click(screen.getByText('Remove'));
 
       await waitFor(() => {
-        serviceHelpers.expectCall(mockEncounterService, 'removeParticipant', [
+        serviceMocks.expectCall(mockEncounterService, 'removeParticipant', [
           mockEncounter._id.toString(),
           '64a1b2c3d4e5f6789abcdef0'
         ]);
