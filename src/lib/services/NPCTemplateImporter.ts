@@ -38,11 +38,16 @@ export class NPCTemplateImporter {
   }
 
   private static parseJSONImport(data: any): Omit<NPCTemplate, 'id'> {
-    this.validateRequiredFields(data, ['name']);
-    this.validateChallengeRating(data);
+    if (!data.name) throw new Error('name is required');
+    if (data.challengeRating === undefined && data.challengeRating !== 0) {
+      throw new Error('challengeRating is required');
+    }
 
     return {
-      ...this.extractBasicTemplateData(data),
+      name: data.name,
+      category: data.creatureType || data.category || 'humanoid',
+      challengeRating: data.challengeRating,
+      size: data.size || 'medium',
       stats: this.createStatsFromData(data),
       equipment: this.parseEquipment(data.equipment),
       spells: data.spells || [],
@@ -52,29 +57,14 @@ export class NPCTemplateImporter {
     };
   }
 
-  private static validateChallengeRating(data: any): void {
-    if (data.challengeRating === undefined && data.challengeRating !== 0) {
-      throw new Error('challengeRating is required');
-    }
-  }
-
-  private static extractBasicTemplateData(data: any) {
-    return {
-      name: data.name,
-      category: data.creatureType || data.category || 'humanoid',
-      challengeRating: data.challengeRating,
-      size: data.size || 'medium',
-    };
-  }
-
   private static parseDnDBeyondImport(data: any): Omit<NPCTemplate, 'id'> {
-    this.validateRequiredFields(data, ['name']);
-
-    const challengeRating = this.parseDnDBeyondChallengeRating(data);
+    if (!data.name) throw new Error('name is required');
+    
+    const challengeRating = typeof data.cr === 'string' ? parseChallengeRating(data.cr) : data.cr;
 
     return {
       name: data.name,
-      category: 'humanoid', // Default, should be parsed from data
+      category: 'humanoid',
       challengeRating,
       size: 'medium',
       stats: this.createDnDBeyondStats(data, challengeRating),
@@ -85,10 +75,6 @@ export class NPCTemplateImporter {
     };
   }
 
-  private static parseDnDBeyondChallengeRating(data: any): number {
-    return typeof data.cr === 'string' ? parseChallengeRating(data.cr) : data.cr;
-  }
-
   private static parseRoll20Import(_data: any): Omit<NPCTemplate, 'id'> {
     throw new Error('Roll20 import not yet implemented');
   }
@@ -97,41 +83,15 @@ export class NPCTemplateImporter {
     throw new Error('Custom import not yet implemented');
   }
 
-  private static validateRequiredFields(data: any, requiredFields: string[]): void {
-    for (const field of requiredFields) {
-      if (!data[field]) {
-        throw new Error(`${field} is required`);
-      }
-    }
-  }
-
   private static createStatsFromData(data: any) {
     return {
-      ...this.createCoreStats(data),
-      ...this.createCombatStats(data),
-      ...this.createDefensiveStats(data),
-    };
-  }
-
-  private static createCoreStats(data: any) {
-    return {
-      abilityScores: data.abilityScores || this.getDefaultAbilityScores(),
-      hitPoints: this.parseHitPoints(data.hitPoints),
+      abilityScores: data.abilityScores || { ...DEFAULT_ABILITY_SCORES },
+      hitPoints: data.hitPoints ? { ...data.hitPoints, temporary: data.hitPoints.temporary || 0 } : { maximum: 1, current: 1, temporary: 0 },
       armorClass: data.armorClass || 10,
       speed: data.speed || 30,
       proficiencyBonus: calculateProficiencyBonus(data.challengeRating),
-    };
-  }
-
-  private static createCombatStats(data: any) {
-    return {
       savingThrows: data.savingThrows || {},
       skills: data.skills || {},
-    };
-  }
-
-  private static createDefensiveStats(data: any) {
-    return {
       damageVulnerabilities: data.damageVulnerabilities || [],
       damageResistances: data.damageResistances || [],
       damageImmunities: data.damageImmunities || [],
@@ -143,28 +103,18 @@ export class NPCTemplateImporter {
 
   private static createDnDBeyondStats(data: any, challengeRating: number) {
     return {
-      abilityScores: this.extractDnDBeyondAbilityScores(data),
+      abilityScores: {
+        strength: data.stats?.str || 10,
+        dexterity: data.stats?.dex || 10,
+        constitution: data.stats?.con || 10,
+        intelligence: data.stats?.int || 10,
+        wisdom: data.stats?.wis || 10,
+        charisma: data.stats?.cha || 10,
+      },
       hitPoints: { maximum: data.hp || 1, current: data.hp || 1, temporary: 0 },
       armorClass: data.ac || 10,
       speed: data.speed || 30,
       proficiencyBonus: calculateProficiencyBonus(challengeRating),
-      ...this.getEmptyDefensiveStats(),
-    };
-  }
-
-  private static extractDnDBeyondAbilityScores(data: any) {
-    return {
-      strength: data.stats?.str || 10,
-      dexterity: data.stats?.dex || 10,
-      constitution: data.stats?.con || 10,
-      intelligence: data.stats?.int || 10,
-      wisdom: data.stats?.wis || 10,
-      charisma: data.stats?.cha || 10,
-    };
-  }
-
-  private static getEmptyDefensiveStats() {
-    return {
       savingThrows: {},
       skills: {},
       damageVulnerabilities: [],
@@ -176,21 +126,8 @@ export class NPCTemplateImporter {
     };
   }
 
-  private static getDefaultAbilityScores() {
-    return { ...DEFAULT_ABILITY_SCORES };
-  }
-
-  private static parseHitPoints(hitPoints: any) {
-    return hitPoints
-      ? { ...hitPoints, temporary: hitPoints.temporary || 0 }
-      : { maximum: 1, current: 1, temporary: 0 };
-  }
-
   private static parseEquipment(equipment: any[]): any[] {
     if (!equipment) return [];
-
-    return equipment.map((item: any) =>
-      typeof item === 'string' ? { name: item } : item
-    );
+    return equipment.map((item: any) => typeof item === 'string' ? { name: item } : item);
   }
 }

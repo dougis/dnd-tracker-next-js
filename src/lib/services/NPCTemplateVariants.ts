@@ -127,22 +127,12 @@ export class NPCTemplateVariants {
     if (baseCR === 0) return multiplier > 1 ? 0.125 : 0;
 
     const adjusted = baseCR * multiplier;
-    return this.normalizeChallengeRating(adjusted);
-  }
-
-  private static normalizeChallengeRating(value: number): ChallengeRating {
-    if (value <= 0) return 0;
-    const fractionalThresholds = [
-      { max: 0.125, cr: 0.125 },
-      { max: 0.25, cr: 0.25 },
-      { max: 1, cr: 0.5 },
-    ];
-
-    for (const { max, cr } of fractionalThresholds) {
-      if (value <= max) return cr as ChallengeRating;
-    }
-
-    const rounded = Math.round(value);
+    if (adjusted <= 0) return 0;
+    if (adjusted <= 0.125) return 0.125;
+    if (adjusted <= 0.25) return 0.25;
+    if (adjusted <= 1) return 0.5;
+    
+    const rounded = Math.round(adjusted);
     return Math.min(30, Math.max(1, rounded)) as ChallengeRating;
   }
 }

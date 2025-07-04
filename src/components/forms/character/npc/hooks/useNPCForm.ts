@@ -87,42 +87,35 @@ export function useNPCForm() {
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    validateBasicFields(formData, newErrors);
-    validateAbilityScores(formData.abilityScores, newErrors);
-    validateHitPoints(formData.hitPoints, newErrors);
+    // Basic field validation
+    if (!formData.name.trim()) {
+      newErrors.name = 'NPC name is required';
+    }
+
+    if (!formData.creatureType) {
+      newErrors.creatureType = 'Creature type is required';
+    }
+
+    if (formData.challengeRating === undefined) {
+      newErrors.challengeRating = 'Challenge rating is required';
+    } else if (formData.challengeRating < 0 || formData.challengeRating > 30) {
+      newErrors.challengeRating = 'Challenge rating must be between 0 and 30';
+    }
+
+    // Ability scores validation
+    Object.entries(formData.abilityScores).forEach(([ability, score]) => {
+      if (score < 1 || score > 30) {
+        newErrors[ability] = `${ability.charAt(0).toUpperCase() + ability.slice(1)} must be between 1 and 30`;
+      }
+    });
+
+    // Hit points validation
+    if (formData.hitPoints.maximum < 1) {
+      newErrors.hitPoints = 'Hit points must be at least 1';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const validateBasicFields = (data: NPCFormData, errors: Record<string, string>) => {
-    if (!data.name.trim()) {
-      errors.name = 'NPC name is required';
-    }
-
-    if (!data.creatureType) {
-      errors.creatureType = 'Creature type is required';
-    }
-
-    if (data.challengeRating === undefined) {
-      errors.challengeRating = 'Challenge rating is required';
-    } else if (data.challengeRating < 0 || data.challengeRating > 30) {
-      errors.challengeRating = 'Challenge rating must be between 0 and 30';
-    }
-  };
-
-  const validateAbilityScores = (abilityScores: Record<string, number>, errors: Record<string, string>) => {
-    Object.entries(abilityScores).forEach(([ability, score]) => {
-      if (score < 1 || score > 30) {
-        errors[ability] = `${ability.charAt(0).toUpperCase() + ability.slice(1)} must be between 1 and 30`;
-      }
-    });
-  };
-
-  const validateHitPoints = (hitPoints: { maximum: number }, errors: Record<string, string>) => {
-    if (hitPoints.maximum < 1) {
-      errors.hitPoints = 'Hit points must be at least 1';
-    }
   };
 
   const resetForm = () => {

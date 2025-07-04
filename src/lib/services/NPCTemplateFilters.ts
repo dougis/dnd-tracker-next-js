@@ -55,36 +55,32 @@ export class NPCTemplateFilters {
   }
 
   /**
-   * Apply all filters in sequence
+   * Apply all filters in a single pass
    */
   static applyAllFilters(templates: NPCTemplate[], filters: TemplateFilter): NPCTemplate[] {
-    let filtered = [...templates];
-
-    if (filters.category) {
-      filtered = this.applyCategory(filtered, filters.category);
-    }
-
-    if (filters.minCR !== undefined) {
-      filtered = this.applyMinCR(filtered, filters.minCR);
-    }
-
-    if (filters.maxCR !== undefined) {
-      filtered = this.applyMaxCR(filtered, filters.maxCR);
-    }
-
-    if (filters.search) {
-      filtered = this.applySearch(filtered, filters.search);
-    }
-
-    if (filters.size) {
-      filtered = this.applySize(filtered, filters.size);
-    }
-
-    if (filters.isSystem !== undefined) {
-      filtered = this.applySystemFilter(filtered, filters.isSystem);
-    }
-
-    return filtered;
+    return templates.filter(template => {
+      // Category filter
+      if (filters.category && template.category !== filters.category) return false;
+      
+      // Challenge rating filters
+      if (filters.minCR !== undefined && template.challengeRating < filters.minCR) return false;
+      if (filters.maxCR !== undefined && template.challengeRating > filters.maxCR) return false;
+      
+      // Search filter
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        if (!template.name.toLowerCase().includes(searchLower) && 
+            !template.category.toLowerCase().includes(searchLower)) return false;
+      }
+      
+      // Size filter
+      if (filters.size && template.size !== filters.size) return false;
+      
+      // System filter
+      if (filters.isSystem !== undefined && template.isSystem !== filters.isSystem) return false;
+      
+      return true;
+    });
   }
 
   /**
