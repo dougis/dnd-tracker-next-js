@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EncounterListView } from '../EncounterListView';
 import type { EncounterListItem } from '../types';
@@ -90,10 +90,8 @@ jest.mock('../EncounterListView/ErrorFallback', () => ({
 
 jest.mock('../EncounterListView/ControlsSection', () => ({
   ControlsSection: ({
-    filters,
     searchQuery,
     sortConfig,
-    filterCallbacks,
     viewMode,
     onViewModeChange,
     onCreateEncounter,
@@ -163,7 +161,7 @@ const createMockEncounter = (overrides: Partial<EncounterListItem> = {}): Encoun
 describe('EncounterListView', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Reset hook return values to defaults
     Object.assign(mockUseEncounterFilters, {
       filters: {
@@ -204,7 +202,7 @@ describe('EncounterListView', () => {
   describe('Rendering', () => {
     it('should render the main container with proper structure', () => {
       render(<EncounterListView />);
-      
+
       expect(screen.getByTestId('controls-section')).toBeInTheDocument();
       expect(screen.getByTestId('content-section')).toBeInTheDocument();
       expect(screen.getByTestId('pagination')).toBeInTheDocument();
@@ -212,14 +210,14 @@ describe('EncounterListView', () => {
 
     it('should render with default grid view mode', () => {
       render(<EncounterListView />);
-      
+
       expect(screen.getByText('View Mode: grid')).toBeInTheDocument();
       expect(screen.getByText('Current View Mode: grid')).toBeInTheDocument();
     });
 
     it('should pass correct props to ControlsSection', () => {
       render(<EncounterListView />);
-      
+
       expect(screen.getByText('View Mode: grid')).toBeInTheDocument();
       expect(screen.getByText('Search Query:')).toBeInTheDocument();
       expect(screen.getByText('Sort By: name')).toBeInTheDocument();
@@ -228,9 +226,9 @@ describe('EncounterListView', () => {
     it('should pass correct props to ContentSection', () => {
       const encounters = [createMockEncounter(), createMockEncounter({ id: 'encounter-2' })];
       mockUseEncounterData.encounters = encounters;
-      
+
       render(<EncounterListView />);
-      
+
       expect(screen.getByText('Current View Mode: grid')).toBeInTheDocument();
       expect(screen.getByText('Encounters count: 2')).toBeInTheDocument();
       expect(screen.getByText('Loading: false')).toBeInTheDocument();
@@ -238,7 +236,7 @@ describe('EncounterListView', () => {
 
     it('should pass correct props to Pagination', () => {
       render(<EncounterListView />);
-      
+
       expect(screen.getByText('Page 1 of 5')).toBeInTheDocument();
       expect(screen.getByText('Total items: 50')).toBeInTheDocument();
     });
@@ -247,9 +245,9 @@ describe('EncounterListView', () => {
   describe('Error Handling', () => {
     it('should render ErrorFallback when error occurs', () => {
       mockUseEncounterData.error = 'Failed to load encounters';
-      
+
       render(<EncounterListView />);
-      
+
       expect(screen.getByTestId('error-fallback')).toBeInTheDocument();
       expect(screen.getByText('Error occurred')).toBeInTheDocument();
       expect(screen.queryByTestId('controls-section')).not.toBeInTheDocument();
@@ -259,12 +257,12 @@ describe('EncounterListView', () => {
     it('should call refetch when retry button is clicked in ErrorFallback', async () => {
       mockUseEncounterData.error = 'Failed to load encounters';
       const user = userEvent.setup();
-      
+
       render(<EncounterListView />);
-      
+
       const retryButton = screen.getByText('Retry');
       await user.click(retryButton);
-      
+
       expect(mockUseEncounterData.refetch).toHaveBeenCalledTimes(1);
     });
   });
@@ -273,12 +271,12 @@ describe('EncounterListView', () => {
     it('should switch to table view when table button is clicked', async () => {
       const user = userEvent.setup();
       render(<EncounterListView />);
-      
+
       expect(screen.getByText('Current View Mode: grid')).toBeInTheDocument();
-      
+
       const tableViewButton = screen.getByText('Table View');
       await user.click(tableViewButton);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Current View Mode: table')).toBeInTheDocument();
       });
@@ -287,19 +285,19 @@ describe('EncounterListView', () => {
     it('should switch back to grid view when grid button is clicked', async () => {
       const user = userEvent.setup();
       render(<EncounterListView />);
-      
+
       // Switch to table first
       const tableViewButton = screen.getByText('Table View');
       await user.click(tableViewButton);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Current View Mode: table')).toBeInTheDocument();
       });
-      
+
       // Switch back to grid
       const gridViewButton = screen.getByText('Grid View');
       await user.click(gridViewButton);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Current View Mode: grid')).toBeInTheDocument();
       });
@@ -309,18 +307,18 @@ describe('EncounterListView', () => {
   describe('Batch Actions', () => {
     it('should not render BatchActions when no selection exists', () => {
       mockUseEncounterSelection.hasSelection = false;
-      
+
       render(<EncounterListView />);
-      
+
       expect(screen.queryByTestId('batch-actions')).not.toBeInTheDocument();
     });
 
     it('should render BatchActions when selection exists', () => {
       mockUseEncounterSelection.hasSelection = true;
       mockUseEncounterSelection.selectedEncounters = ['encounter-1', 'encounter-2'];
-      
+
       render(<EncounterListView />);
-      
+
       expect(screen.getByTestId('batch-actions')).toBeInTheDocument();
       expect(screen.getByText('Selected: 2')).toBeInTheDocument();
     });
@@ -328,26 +326,26 @@ describe('EncounterListView', () => {
     it('should call clearSelection when clear button is clicked', async () => {
       mockUseEncounterSelection.hasSelection = true;
       mockUseEncounterSelection.selectedEncounters = ['encounter-1'];
-      
+
       const user = userEvent.setup();
       render(<EncounterListView />);
-      
+
       const clearButton = screen.getByText('Clear Selection');
       await user.click(clearButton);
-      
+
       expect(mockUseEncounterSelection.clearSelection).toHaveBeenCalledTimes(1);
     });
 
     it('should call refetch when refetch button is clicked in BatchActions', async () => {
       mockUseEncounterSelection.hasSelection = true;
       mockUseEncounterSelection.selectedEncounters = ['encounter-1'];
-      
+
       const user = userEvent.setup();
       render(<EncounterListView />);
-      
+
       const refetchButton = screen.getByText('Refetch');
       await user.click(refetchButton);
-      
+
       expect(mockUseEncounterData.refetch).toHaveBeenCalledTimes(1);
     });
   });
@@ -355,25 +353,25 @@ describe('EncounterListView', () => {
   describe('Pagination', () => {
     it('should render pagination when pagination data exists', () => {
       render(<EncounterListView />);
-      
+
       expect(screen.getByTestId('pagination')).toBeInTheDocument();
     });
 
     it('should not render pagination when pagination data is null', () => {
       mockUseEncounterData.pagination = null;
-      
+
       render(<EncounterListView />);
-      
+
       expect(screen.queryByTestId('pagination')).not.toBeInTheDocument();
     });
 
     it('should call goToPage when page change is triggered', async () => {
       const user = userEvent.setup();
       render(<EncounterListView />);
-      
+
       const pageButton = screen.getByText('Go to page 2');
       await user.click(pageButton);
-      
+
       expect(mockUseEncounterData.goToPage).toHaveBeenCalledWith(2);
     });
   });
@@ -382,10 +380,10 @@ describe('EncounterListView', () => {
     it('should log to console when create encounter button is clicked', async () => {
       const user = userEvent.setup();
       render(<EncounterListView />);
-      
+
       const createButton = screen.getByText('Create Encounter');
       await user.click(createButton);
-      
+
       expect(consoleSpy).toHaveBeenCalledWith('Create new encounter');
     });
   });
@@ -393,17 +391,17 @@ describe('EncounterListView', () => {
   describe('Loading States', () => {
     it('should pass loading state to ContentSection', () => {
       mockUseEncounterData.isLoading = true;
-      
+
       render(<EncounterListView />);
-      
+
       expect(screen.getByText('Loading: true')).toBeInTheDocument();
     });
 
     it('should pass non-loading state to ContentSection', () => {
       mockUseEncounterData.isLoading = false;
-      
+
       render(<EncounterListView />);
-      
+
       expect(screen.getByText('Loading: false')).toBeInTheDocument();
     });
   });
@@ -416,17 +414,17 @@ describe('EncounterListView', () => {
         createMockEncounter({ id: 'encounter-3' }),
       ];
       mockUseEncounterData.encounters = encounters;
-      
+
       render(<EncounterListView />);
-      
+
       expect(screen.getByText('Encounters count: 3')).toBeInTheDocument();
     });
 
     it('should handle empty encounters array', () => {
       mockUseEncounterData.encounters = [];
-      
+
       render(<EncounterListView />);
-      
+
       expect(screen.getByText('Encounters count: 0')).toBeInTheDocument();
     });
   });
@@ -435,9 +433,9 @@ describe('EncounterListView', () => {
     it('should pass filters data to ControlsSection', () => {
       mockUseEncounterFilters.searchQuery = 'test search';
       mockUseEncounterFilters.sortBy = 'createdAt';
-      
+
       render(<EncounterListView />);
-      
+
       expect(screen.getByText('Search Query: test search')).toBeInTheDocument();
       expect(screen.getByText('Sort By: createdAt')).toBeInTheDocument();
     });
@@ -445,9 +443,9 @@ describe('EncounterListView', () => {
     it('should handle different sort configurations', () => {
       mockUseEncounterFilters.sortBy = 'difficulty';
       mockUseEncounterFilters.sortOrder = 'desc';
-      
+
       render(<EncounterListView />);
-      
+
       expect(screen.getByText('Sort By: difficulty')).toBeInTheDocument();
     });
   });
@@ -458,9 +456,9 @@ describe('EncounterListView', () => {
       mockUseEncounterData.pagination = null;
       mockUseEncounterSelection.selectedEncounters = [];
       mockUseEncounterSelection.hasSelection = false;
-      
+
       render(<EncounterListView />);
-      
+
       expect(screen.getByTestId('controls-section')).toBeInTheDocument();
       expect(screen.getByTestId('content-section')).toBeInTheDocument();
       expect(screen.queryByTestId('batch-actions')).not.toBeInTheDocument();
@@ -470,15 +468,15 @@ describe('EncounterListView', () => {
     it('should handle rapid view mode changes', async () => {
       const user = userEvent.setup();
       render(<EncounterListView />);
-      
+
       // Rapid switching
       const tableButton = screen.getByText('Table View');
       const gridButton = screen.getByText('Grid View');
-      
+
       await user.click(tableButton);
       await user.click(gridButton);
       await user.click(tableButton);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Current View Mode: table')).toBeInTheDocument();
       });
@@ -486,11 +484,11 @@ describe('EncounterListView', () => {
 
     it('should maintain state consistency across re-renders', () => {
       const { rerender } = render(<EncounterListView />);
-      
+
       expect(screen.getByText('Current View Mode: grid')).toBeInTheDocument();
-      
+
       rerender(<EncounterListView />);
-      
+
       expect(screen.getByText('Current View Mode: grid')).toBeInTheDocument();
     });
   });
@@ -500,11 +498,11 @@ describe('EncounterListView', () => {
       // This test verifies that the component uses the config utilities
       // by checking that the appropriate props are passed to child components
       render(<EncounterListView />);
-      
+
       // Verify that ControlsSection receives the expected props
       expect(screen.getByTestId('controls-section')).toBeInTheDocument();
       expect(screen.getByTestId('content-section')).toBeInTheDocument();
-      
+
       // The actual config creation is tested in the configUtils tests
       // Here we just verify the component structure is correct
     });

@@ -79,14 +79,14 @@ describe('EncounterGrid', () => {
   describe('Loading State', () => {
     it('should render loading cards when isLoading is true', () => {
       render(<EncounterGrid {...defaultProps} isLoading={true} />);
-      
+
       const loadingCards = screen.getAllByTestId('loading-card');
       expect(loadingCards).toHaveLength(8);
     });
 
     it('should render loading cards in a grid layout', () => {
       render(<EncounterGrid {...defaultProps} isLoading={true} />);
-      
+
       const gridContainer = screen.getAllByTestId('loading-card')[0].parentElement;
       expect(gridContainer).toHaveClass(
         'grid',
@@ -100,15 +100,15 @@ describe('EncounterGrid', () => {
 
     it('should not render encounters when loading', () => {
       const encounters = [createMockEncounter()];
-      
+
       render(
-        <EncounterGrid 
-          {...defaultProps} 
-          encounters={encounters} 
-          isLoading={true} 
+        <EncounterGrid
+          {...defaultProps}
+          encounters={encounters}
+          isLoading={true}
         />
       );
-      
+
       expect(screen.queryByTestId('encounter-card-test-encounter-id')).not.toBeInTheDocument();
     });
   });
@@ -116,21 +116,21 @@ describe('EncounterGrid', () => {
   describe('Empty State', () => {
     it('should render empty state when no encounters and not loading', () => {
       render(<EncounterGrid {...defaultProps} encounters={[]} isLoading={false} />);
-      
+
       expect(screen.getByText('No encounters found')).toBeInTheDocument();
       expect(screen.getByText(/Create your first encounter to get started/)).toBeInTheDocument();
     });
 
     it('should render empty state in centered layout', () => {
       render(<EncounterGrid {...defaultProps} encounters={[]} isLoading={false} />);
-      
+
       const emptyContainer = screen.getByText('No encounters found').closest('div');
       expect(emptyContainer?.parentElement).toHaveClass('text-center', 'py-12');
     });
 
     it('should not render empty state when loading', () => {
       render(<EncounterGrid {...defaultProps} encounters={[]} isLoading={true} />);
-      
+
       expect(screen.queryByText('No encounters found')).not.toBeInTheDocument();
     });
   });
@@ -141,9 +141,9 @@ describe('EncounterGrid', () => {
         createMockEncounter({ id: 'encounter-1', name: 'First Encounter' }),
         createMockEncounter({ id: 'encounter-2', name: 'Second Encounter' }),
       ];
-      
+
       render(<EncounterGrid {...defaultProps} encounters={encounters} />);
-      
+
       expect(screen.getByTestId('encounter-card-encounter-1')).toBeInTheDocument();
       expect(screen.getByTestId('encounter-card-encounter-2')).toBeInTheDocument();
       expect(screen.getByText('Mock EncounterCard: First Encounter')).toBeInTheDocument();
@@ -152,9 +152,9 @@ describe('EncounterGrid', () => {
 
     it('should render encounters in grid layout', () => {
       const encounters = [createMockEncounter()];
-      
+
       render(<EncounterGrid {...defaultProps} encounters={encounters} />);
-      
+
       const gridContainer = screen.getByTestId('encounter-card-test-encounter-id').parentElement;
       expect(gridContainer).toHaveClass(
         'grid',
@@ -169,15 +169,15 @@ describe('EncounterGrid', () => {
     it('should pass correct props to EncounterCard', () => {
       const encounters = [createMockEncounter({ id: 'test-id', name: 'Test Name' })];
       const selectedEncounters = ['test-id'];
-      
+
       render(
-        <EncounterGrid 
-          {...defaultProps} 
+        <EncounterGrid
+          {...defaultProps}
           encounters={encounters}
           selectedEncounters={selectedEncounters}
         />
       );
-      
+
       expect(screen.getByText('Mock EncounterCard: Test Name')).toBeInTheDocument();
       expect(screen.getByText('Selected: true')).toBeInTheDocument();
     });
@@ -190,41 +190,41 @@ describe('EncounterGrid', () => {
         createMockEncounter({ id: 'encounter-2' }),
       ];
       const selectedEncounters = ['encounter-1'];
-      
+
       render(
-        <EncounterGrid 
-          {...defaultProps} 
+        <EncounterGrid
+          {...defaultProps}
           encounters={encounters}
           selectedEncounters={selectedEncounters}
         />
       );
-      
+
       const firstCard = screen.getByTestId('encounter-card-encounter-1');
       const secondCard = screen.getByTestId('encounter-card-encounter-2');
-      
+
       expect(firstCard).toHaveTextContent('Selected: true');
       expect(secondCard).toHaveTextContent('Selected: false');
     });
 
     it('should call onSelectEncounter when encounter is selected', () => {
       const encounters = [createMockEncounter({ id: 'test-id' })];
-      
+
       render(<EncounterGrid {...defaultProps} encounters={encounters} />);
-      
+
       const selectButton = screen.getByText('Select');
       selectButton.click();
-      
+
       expect(defaultProps.onSelectEncounter).toHaveBeenCalledWith('test-id');
     });
 
     it('should call onRefetch when refetch is triggered', () => {
       const encounters = [createMockEncounter()];
-      
+
       render(<EncounterGrid {...defaultProps} encounters={encounters} />);
-      
+
       const refetchButton = screen.getByText('Refetch');
       refetchButton.click();
-      
+
       expect(defaultProps.onRefetch).toHaveBeenCalledTimes(1);
     });
   });
@@ -232,15 +232,15 @@ describe('EncounterGrid', () => {
   describe('Edge Cases', () => {
     it('should handle empty selectedEncounters array', () => {
       const encounters = [createMockEncounter({ id: 'test-id' })];
-      
+
       render(
-        <EncounterGrid 
-          {...defaultProps} 
+        <EncounterGrid
+          {...defaultProps}
           encounters={encounters}
           selectedEncounters={[]}
         />
       );
-      
+
       expect(screen.getByText('Selected: false')).toBeInTheDocument();
     });
 
@@ -251,15 +251,15 @@ describe('EncounterGrid', () => {
         createMockEncounter({ id: 'encounter-3' }),
       ];
       const selectedEncounters = ['encounter-1', 'encounter-3'];
-      
+
       render(
-        <EncounterGrid 
-          {...defaultProps} 
+        <EncounterGrid
+          {...defaultProps}
           encounters={encounters}
           selectedEncounters={selectedEncounters}
         />
       );
-      
+
       const cards = screen.getAllByText(/Selected:/);
       expect(cards[0]).toHaveTextContent('Selected: true'); // encounter-1
       expect(cards[1]).toHaveTextContent('Selected: false'); // encounter-2
@@ -267,12 +267,12 @@ describe('EncounterGrid', () => {
     });
 
     it('should handle large number of encounters', () => {
-      const encounters = Array.from({ length: 50 }, (_, i) => 
+      const encounters = Array.from({ length: 50 }, (_, i) =>
         createMockEncounter({ id: `encounter-${i}`, name: `Encounter ${i}` })
       );
-      
+
       render(<EncounterGrid {...defaultProps} encounters={encounters} />);
-      
+
       // Check that all encounters are rendered
       encounters.forEach((encounter) => {
         expect(screen.getByTestId(`encounter-card-${encounter.id}`)).toBeInTheDocument();
@@ -282,26 +282,26 @@ describe('EncounterGrid', () => {
     it('should maintain selection state across re-renders', () => {
       const encounters = [createMockEncounter({ id: 'test-id' })];
       const selectedEncounters = ['test-id'];
-      
+
       const { rerender } = render(
-        <EncounterGrid 
-          {...defaultProps} 
+        <EncounterGrid
+          {...defaultProps}
           encounters={encounters}
           selectedEncounters={selectedEncounters}
         />
       );
-      
+
       expect(screen.getByText('Selected: true')).toBeInTheDocument();
-      
+
       // Re-render with same props
       rerender(
-        <EncounterGrid 
-          {...defaultProps} 
+        <EncounterGrid
+          {...defaultProps}
           encounters={encounters}
           selectedEncounters={selectedEncounters}
         />
       );
-      
+
       expect(screen.getByText('Selected: true')).toBeInTheDocument();
     });
   });
@@ -309,9 +309,9 @@ describe('EncounterGrid', () => {
   describe('Responsive Grid Layout', () => {
     it('should apply responsive grid classes', () => {
       const encounters = [createMockEncounter()];
-      
+
       render(<EncounterGrid {...defaultProps} encounters={encounters} />);
-      
+
       const gridContainer = screen.getByTestId('encounter-card-test-encounter-id').parentElement;
       expect(gridContainer).toHaveClass(
         'grid',
@@ -325,7 +325,7 @@ describe('EncounterGrid', () => {
 
     it('should apply same responsive classes for loading state', () => {
       render(<EncounterGrid {...defaultProps} isLoading={true} />);
-      
+
       const gridContainer = screen.getAllByTestId('loading-card')[0].parentElement;
       expect(gridContainer).toHaveClass(
         'grid',
@@ -344,9 +344,9 @@ describe('EncounterGrid', () => {
         createMockEncounter({ id: 'encounter-1' }),
         createMockEncounter({ id: 'encounter-2' }),
       ];
-      
+
       render(<EncounterGrid {...defaultProps} encounters={encounters} />);
-      
+
       // Verify unique testids are used (which indicates proper keys)
       expect(screen.getByTestId('encounter-card-encounter-1')).toBeInTheDocument();
       expect(screen.getByTestId('encounter-card-encounter-2')).toBeInTheDocument();

@@ -25,7 +25,7 @@ describe('BatchActions Utils', () => {
   describe('createBatchOperation', () => {
     it('should create operation object with correct properties', () => {
       const operation = createBatchOperation('delete', 3);
-      
+
       expect(operation).toEqual({
         action: 'delete',
         target: '3 encounters',
@@ -35,7 +35,7 @@ describe('BatchActions Utils', () => {
 
     it('should work with singular count', () => {
       const operation = createBatchOperation('duplicate', 1);
-      
+
       expect(operation).toEqual({
         action: 'duplicate',
         target: '1 encounter',
@@ -45,7 +45,7 @@ describe('BatchActions Utils', () => {
 
     it('should work with different actions', () => {
       const archiveOp = createBatchOperation('archive', 5);
-      
+
       expect(archiveOp).toEqual({
         action: 'archive',
         target: '5 encounters',
@@ -55,7 +55,7 @@ describe('BatchActions Utils', () => {
 
     it('should handle zero count', () => {
       const operation = createBatchOperation('delete', 0);
-      
+
       expect(operation).toEqual({
         action: 'delete',
         target: '0 encounters',

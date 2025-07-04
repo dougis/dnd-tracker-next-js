@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EncounterActionButtons } from '../EncounterActionButtons';
 import type { EncounterListItem } from '../types';
@@ -99,7 +99,7 @@ describe('EncounterActionButtons', () => {
   describe('Rendering', () => {
     it('should render dropdown trigger button', () => {
       render(<EncounterActionButtons {...defaultProps} />);
-      
+
       const button = screen.getByRole('button', { name: /open menu/i });
       expect(button).toBeInTheDocument();
     });
@@ -107,10 +107,10 @@ describe('EncounterActionButtons', () => {
     it('should show dropdown menu when triggered', async () => {
       const user = userEvent.setup();
       render(<EncounterActionButtons {...defaultProps} />);
-      
+
       const triggerButton = screen.getByRole('button', { name: /open menu/i });
       await user.click(triggerButton);
-      
+
       expect(screen.getByText('View Details')).toBeInTheDocument();
       expect(screen.getByText('Edit Encounter')).toBeInTheDocument();
       expect(screen.getByText('Duplicate')).toBeInTheDocument();
@@ -121,26 +121,26 @@ describe('EncounterActionButtons', () => {
     it('should show Start Combat option when combat is enabled', async () => {
       const { canStartCombat } = require('../actions/actionHandlers');
       canStartCombat.mockReturnValue(true);
-      
+
       const user = userEvent.setup();
       render(<EncounterActionButtons {...defaultProps} />);
-      
+
       const triggerButton = screen.getByRole('button', { name: /open menu/i });
       await user.click(triggerButton);
-      
+
       expect(screen.getByText('Start Combat')).toBeInTheDocument();
     });
 
     it('should not show Start Combat option when combat is disabled', async () => {
       const { canStartCombat } = require('../actions/actionHandlers');
       canStartCombat.mockReturnValue(false);
-      
+
       const user = userEvent.setup();
       render(<EncounterActionButtons {...defaultProps} />);
-      
+
       const triggerButton = screen.getByRole('button', { name: /open menu/i });
       await user.click(triggerButton);
-      
+
       expect(screen.queryByText('Start Combat')).not.toBeInTheDocument();
     });
   });
@@ -149,55 +149,55 @@ describe('EncounterActionButtons', () => {
     it('should handle view action', async () => {
       const user = userEvent.setup();
       render(<EncounterActionButtons {...defaultProps} />);
-      
+
       const triggerButton = screen.getByRole('button', { name: /open menu/i });
       await user.click(triggerButton);
-      
+
       const viewButton = screen.getByText('View Details');
       await user.click(viewButton);
-      
+
       expect(mockNavigationHandlers.handleView).toHaveBeenCalledTimes(1);
     });
 
     it('should handle edit action', async () => {
       const user = userEvent.setup();
       render(<EncounterActionButtons {...defaultProps} />);
-      
+
       const triggerButton = screen.getByRole('button', { name: /open menu/i });
       await user.click(triggerButton);
-      
+
       const editButton = screen.getByText('Edit Encounter');
       await user.click(editButton);
-      
+
       expect(mockNavigationHandlers.handleEdit).toHaveBeenCalledTimes(1);
     });
 
     it('should handle start combat action', async () => {
       const { canStartCombat } = require('../actions/actionHandlers');
       canStartCombat.mockReturnValue(true);
-      
+
       const user = userEvent.setup();
       render(<EncounterActionButtons {...defaultProps} />);
-      
+
       const triggerButton = screen.getByRole('button', { name: /open menu/i });
       await user.click(triggerButton);
-      
+
       const startCombatButton = screen.getByText('Start Combat');
       await user.click(startCombatButton);
-      
+
       expect(mockNavigationHandlers.handleStartCombat).toHaveBeenCalledTimes(1);
     });
 
     it('should handle share action', async () => {
       const user = userEvent.setup();
       render(<EncounterActionButtons {...defaultProps} />);
-      
+
       const triggerButton = screen.getByRole('button', { name: /open menu/i });
       await user.click(triggerButton);
-      
+
       const shareButton = screen.getByText('Share');
       await user.click(shareButton);
-      
+
       expect(mockNavigationHandlers.handleShare).toHaveBeenCalledTimes(1);
     });
   });
@@ -206,13 +206,13 @@ describe('EncounterActionButtons', () => {
     it('should handle duplicate action', async () => {
       const user = userEvent.setup();
       render(<EncounterActionButtons {...defaultProps} />);
-      
+
       const triggerButton = screen.getByRole('button', { name: /open menu/i });
       await user.click(triggerButton);
-      
+
       const duplicateButton = screen.getByText('Duplicate');
       await user.click(duplicateButton);
-      
+
       expect(mockServiceHandlers.handleDuplicate).toHaveBeenCalledTimes(1);
     });
   });
@@ -221,13 +221,13 @@ describe('EncounterActionButtons', () => {
     it('should open delete dialog when delete is clicked', async () => {
       const user = userEvent.setup();
       render(<EncounterActionButtons {...defaultProps} />);
-      
+
       const triggerButton = screen.getByRole('button', { name: /open menu/i });
       await user.click(triggerButton);
-      
+
       const deleteButton = screen.getByText('Delete');
       await user.click(deleteButton);
-      
+
       expect(screen.getByRole('alertdialog')).toBeInTheDocument();
       expect(screen.getByText('Delete Encounter')).toBeInTheDocument();
       expect(screen.getByText(/Are you sure you want to delete/)).toBeInTheDocument();
@@ -237,18 +237,18 @@ describe('EncounterActionButtons', () => {
     it('should close dialog when cancel is clicked', async () => {
       const user = userEvent.setup();
       render(<EncounterActionButtons {...defaultProps} />);
-      
+
       // Open dropdown and click delete
       const triggerButton = screen.getByRole('button', { name: /open menu/i });
       await user.click(triggerButton);
-      
+
       const deleteButton = screen.getByText('Delete');
       await user.click(deleteButton);
-      
+
       // Cancel the dialog
       const cancelButton = screen.getByRole('button', { name: /cancel/i });
       await user.click(cancelButton);
-      
+
       await waitFor(() => {
         expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
       });
@@ -256,23 +256,23 @@ describe('EncounterActionButtons', () => {
 
     it('should call handleDelete when confirmed', async () => {
       mockServiceHandlers.handleDelete.mockResolvedValue(true);
-      
+
       const user = userEvent.setup();
       render(<EncounterActionButtons {...defaultProps} />);
-      
+
       // Open dropdown and click delete
       const triggerButton = screen.getByRole('button', { name: /open menu/i });
       await user.click(triggerButton);
-      
+
       const deleteButton = screen.getByText('Delete');
       await user.click(deleteButton);
-      
+
       // Confirm the dialog
       const confirmButton = screen.getByRole('button', { name: 'Delete' });
       await user.click(confirmButton);
-      
+
       expect(mockServiceHandlers.handleDelete).toHaveBeenCalledTimes(1);
-      
+
       await waitFor(() => {
         expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
       });
@@ -281,14 +281,14 @@ describe('EncounterActionButtons', () => {
     it('should handle delete operation state management', async () => {
       const user = userEvent.setup();
       render(<EncounterActionButtons {...defaultProps} />);
-      
+
       // Open dropdown and click delete
       const triggerButton = screen.getByRole('button', { name: /open menu/i });
       await user.click(triggerButton);
-      
+
       const deleteButton = screen.getByText('Delete');
       await user.click(deleteButton);
-      
+
       // Confirm the dialog
       const confirmButton = screen.getByRole('button', { name: 'Delete' });
       expect(confirmButton).toBeInTheDocument();
@@ -297,21 +297,21 @@ describe('EncounterActionButtons', () => {
 
     it('should handle failed delete scenario', async () => {
       mockServiceHandlers.handleDelete.mockResolvedValue(false);
-      
+
       const user = userEvent.setup();
       render(<EncounterActionButtons {...defaultProps} />);
-      
+
       // Open dropdown and click delete
       const triggerButton = screen.getByRole('button', { name: /open menu/i });
       await user.click(triggerButton);
-      
+
       const deleteButton = screen.getByText('Delete');
       await user.click(deleteButton);
-      
+
       // Confirm the dialog
       const confirmButton = screen.getByRole('button', { name: 'Delete' });
       await user.click(confirmButton);
-      
+
       await waitFor(() => {
         expect(mockServiceHandlers.handleDelete).toHaveBeenCalledTimes(1);
       });
@@ -322,16 +322,16 @@ describe('EncounterActionButtons', () => {
     it('should stop propagation on dropdown trigger click', async () => {
       const user = userEvent.setup();
       const parentClickHandler = jest.fn();
-      
+
       render(
         <div onClick={parentClickHandler}>
           <EncounterActionButtons {...defaultProps} />
         </div>
       );
-      
+
       const triggerButton = screen.getByRole('button', { name: /open menu/i });
       await user.click(triggerButton);
-      
+
       expect(parentClickHandler).not.toHaveBeenCalled();
     });
   });
@@ -339,9 +339,9 @@ describe('EncounterActionButtons', () => {
   describe('Different Encounter States', () => {
     it('should render correctly for different encounter statuses', () => {
       const encounterWithActiveStatus = createMockEncounter({ status: 'active' });
-      
+
       render(<EncounterActionButtons encounter={encounterWithActiveStatus} />);
-      
+
       const button = screen.getByRole('button', { name: /open menu/i });
       expect(button).toBeInTheDocument();
     });
@@ -357,9 +357,9 @@ describe('EncounterActionButtons', () => {
           history: [],
         }
       });
-      
+
       render(<EncounterActionButtons encounter={encounterWithCombat} />);
-      
+
       const button = screen.getByRole('button', { name: /open menu/i });
       expect(button).toBeInTheDocument();
     });

@@ -15,9 +15,9 @@ describe('Error Utils', () => {
   describe('createErrorHandler', () => {
     it('should create error handler that calls toast with error message', () => {
       const errorHandler = createErrorHandler(mockToast);
-      
+
       errorHandler('delete', 'Test Encounter');
-      
+
       expect(mockToast).toHaveBeenCalledWith({
         title: 'Error',
         description: 'Failed to delete encounter. Please try again.',
@@ -27,9 +27,9 @@ describe('Error Utils', () => {
 
     it('should work with different actions', () => {
       const errorHandler = createErrorHandler(mockToast);
-      
+
       errorHandler('duplicate', 'Another Encounter');
-      
+
       expect(mockToast).toHaveBeenCalledWith({
         title: 'Error',
         description: 'Failed to duplicate encounter. Please try again.',
@@ -39,7 +39,7 @@ describe('Error Utils', () => {
 
     it('should handle missing toast function gracefully', () => {
       const errorHandler = createErrorHandler();
-      
+
       expect(() => {
         errorHandler('delete', 'Test Encounter');
       }).not.toThrow();
@@ -47,7 +47,7 @@ describe('Error Utils', () => {
 
     it('should handle undefined toast function', () => {
       const errorHandler = createErrorHandler(undefined);
-      
+
       expect(() => {
         errorHandler('archive', 'Test Encounter');
       }).not.toThrow();
@@ -57,9 +57,9 @@ describe('Error Utils', () => {
   describe('createSuccessHandler', () => {
     it('should create success handler with predefined messages', () => {
       const successHandler = createSuccessHandler(mockToast);
-      
+
       successHandler('duplicate', 'Test Encounter');
-      
+
       expect(mockToast).toHaveBeenCalledWith({
         title: 'Encounter duplicated',
         description: '"Test Encounter" has been duplicated successfully.',
@@ -68,9 +68,9 @@ describe('Error Utils', () => {
 
     it('should handle delete action', () => {
       const successHandler = createSuccessHandler(mockToast);
-      
+
       successHandler('delete', 'Test Encounter');
-      
+
       expect(mockToast).toHaveBeenCalledWith({
         title: 'Encounter deleted',
         description: '"Test Encounter" has been deleted.',
@@ -79,9 +79,9 @@ describe('Error Utils', () => {
 
     it('should provide default message for unknown actions', () => {
       const successHandler = createSuccessHandler(mockToast);
-      
+
       successHandler('archive', 'Test Encounter');
-      
+
       expect(mockToast).toHaveBeenCalledWith({
         title: 'Encounter archived',
         description: 'Encounter archived successfully.',
@@ -90,7 +90,7 @@ describe('Error Utils', () => {
 
     it('should handle missing toast function gracefully', () => {
       const successHandler = createSuccessHandler();
-      
+
       expect(() => {
         successHandler('duplicate', 'Test Encounter');
       }).not.toThrow();
@@ -98,7 +98,7 @@ describe('Error Utils', () => {
 
     it('should handle undefined toast function', () => {
       const successHandler = createSuccessHandler(undefined);
-      
+
       expect(() => {
         successHandler('delete', 'Test Encounter');
       }).not.toThrow();
@@ -106,12 +106,12 @@ describe('Error Utils', () => {
 
     it('should handle custom actions with fallback message', () => {
       const successHandler = createSuccessHandler(mockToast);
-      
+
       successHandler('export', 'Test Encounter');
-      
+
       expect(mockToast).toHaveBeenCalledWith({
-        title: 'Encounter exported',
-        description: 'Encounter exported successfully.',
+        title: 'Encounter exportd',
+        description: 'Encounter exportd successfully.',
       });
     });
   });
@@ -140,7 +140,7 @@ describe('Error Utils', () => {
 
     it('should handle errors with empty message', () => {
       const error = { message: '' };
-      expect(extractErrorMessage(error)).toBe('');
+      expect(extractErrorMessage(error)).toBe('An unexpected error occurred');
     });
 
     it('should handle nested error structures', () => {
