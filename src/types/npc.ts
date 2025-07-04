@@ -210,14 +210,18 @@ export type TemplateFilter = z.infer<typeof TemplateFilterSchema>;
 
 // Utility functions
 export function calculateProficiencyBonus(challengeRating: ChallengeRating): number {
-  if (challengeRating <= 4) return 2;
-  if (challengeRating <= 8) return 3;
-  if (challengeRating <= 12) return 4;
-  if (challengeRating <= 16) return 5;
-  if (challengeRating <= 20) return 6;
-  if (challengeRating <= 24) return 7;
-  if (challengeRating <= 28) return 8;
-  return 9;
+  const bonusThresholds = [
+    { max: 4, bonus: 2 },
+    { max: 8, bonus: 3 },
+    { max: 12, bonus: 4 },
+    { max: 16, bonus: 5 },
+    { max: 20, bonus: 6 },
+    { max: 24, bonus: 7 },
+    { max: 28, bonus: 8 },
+  ];
+  
+  const threshold = bonusThresholds.find(t => challengeRating <= t.max);
+  return threshold ? threshold.bonus : 9;
 }
 
 export function calculateAbilityModifier(score: number): number {
@@ -245,6 +249,10 @@ export function parseChallengeRating(crString: string): ChallengeRating {
     return crMap[normalized];
   }
 
+  return parseIntegerCR(crString);
+}
+
+function parseIntegerCR(crString: string): ChallengeRating {
   const parsed = parseInt(crString, 10);
   if (parsed >= 1 && parsed <= 30) return parsed;
   throw new Error(`Invalid challenge rating: ${crString}`);
