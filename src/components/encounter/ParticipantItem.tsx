@@ -26,25 +26,31 @@ interface ParticipantItemProps {
   onRemove: (_participantId: string) => void;
 }
 
-const getParticipantTypeBadge = (type: string) => {
-  const variants = {
-    pc: 'default',
-    npc: 'secondary',
-    monster: 'destructive',
-  } as const;
-
-  const labels = {
-    pc: 'PC',
-    npc: 'NPC',
-    monster: 'Monster',
-  };
-
+const ParticipantTypeBadge = ({ type }: { type: string }) => {
+  const variants = { pc: 'default', npc: 'secondary', monster: 'destructive' } as const;
+  const labels = { pc: 'PC', npc: 'NPC', monster: 'Monster' };
+  
   return (
     <Badge variant={variants[type as keyof typeof variants] || 'secondary'}>
       {labels[type as keyof typeof labels] || type}
     </Badge>
   );
 };
+
+const ParticipantInfo = ({ participant }: { participant: IParticipantReference }) => (
+  <div>
+    <div className="flex items-center space-x-2">
+      <h4 className="font-medium">{participant.name}</h4>
+      <ParticipantTypeBadge type={participant.type} />
+    </div>
+    <div className="flex items-center space-x-4 text-sm text-gray-500">
+      <span>HP: {participant.currentHitPoints}/{participant.maxHitPoints}</span>
+      <span>AC: {participant.armorClass}</span>
+      {participant.initiative && <span>Initiative: {participant.initiative}</span>}
+    </div>
+    {participant.notes && <p className="text-sm text-gray-600 mt-1">{participant.notes}</p>}
+  </div>
+);
 
 export function ParticipantItem({
   participant,
@@ -67,22 +73,7 @@ export function ParticipantItem({
           }
         />
 
-        <div>
-          <div className="flex items-center space-x-2">
-            <h4 className="font-medium">{participant.name}</h4>
-            {getParticipantTypeBadge(participant.type)}
-          </div>
-          <div className="flex items-center space-x-4 text-sm text-gray-500">
-            <span>HP: {participant.currentHitPoints}/{participant.maxHitPoints}</span>
-            <span>AC: {participant.armorClass}</span>
-            {participant.initiative && (
-              <span>Initiative: {participant.initiative}</span>
-            )}
-          </div>
-          {participant.notes && (
-            <p className="text-sm text-gray-600 mt-1">{participant.notes}</p>
-          )}
-        </div>
+        <ParticipantInfo participant={participant} />
       </div>
 
       <div className="flex items-center space-x-2">
