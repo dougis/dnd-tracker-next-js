@@ -1,5 +1,5 @@
 // Common test patterns and utilities to reduce code duplication
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import type { EncounterListItem } from '../../types';
 
 // Generic test action wrapper
@@ -110,4 +110,38 @@ export const expectErrorState = (result: any, errorMessage: string | null) => {
 
 export const expectDataState = (result: any, data: any[]) => {
   expect(result.current.encounters || result.current.data).toEqual(data);
+};
+
+// Parameter testing helper for hooks
+export const createParameterTestHelper = (hook: any, mockService: any, mockResponse: any) => {
+  return async (params: any, expectedCall: any) => {
+    mockService.searchEncounters.mockResolvedValue(mockResponse);
+    renderHook(() => hook(params));
+    await waitFor(() => {
+      expectMockCalledWith(mockService.searchEncounters, expect.objectContaining(expectedCall));
+    });
+  };
+};
+
+// Batch test generator for reducing test duplication
+export const createBatchParameterTests = (testHelper: any) => {
+  const tests = [
+    {
+      name: 'passes search query correctly',
+      params: (defaultParams: any) => ({ ...defaultParams, searchQuery: 'dragon encounter' }),
+      expectedCall: { query: 'dragon encounter' }
+    },
+    {
+      name: 'passes basic sort parameters correctly',
+      params: (defaultParams: any) => ({ ...defaultParams, sortBy: 'name', sortOrder: 'asc' }),
+      expectedCall: { sortBy: 'name', sortOrder: 'asc' }
+    }
+  ];
+
+  return tests.reduce((acc, test) => {
+    acc[test.name] = async (defaultParams: any) => {
+      await testHelper(test.params(defaultParams), test.expectedCall);
+    };
+    return acc;
+  }, {} as any);
 };
