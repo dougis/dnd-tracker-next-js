@@ -76,7 +76,7 @@ export const testExpectations = {
   },
 
   formElements() {
-    ['Character Name', 'Hit Points', 'Armor Class'].forEach(label => 
+    ['Character Name', 'Hit Points', 'Armor Class'].forEach(label =>
       expect(screen.getByLabelText(new RegExp(label, 'i'))).toBeInTheDocument()
     );
   },
