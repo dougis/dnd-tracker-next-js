@@ -2,6 +2,17 @@ import { renderHook, act } from '@testing-library/react';
 import { useEncounterFilters } from '../../hooks/useEncounterFilters';
 import { createMockFilters } from '../test-helpers';
 
+// Simple helpers to eliminate duplication
+const setup = () => renderHook(() => useEncounterFilters());
+const updateFilters = (result: any, filters: any) => act(() => result.current.updateFilters(filters));
+const updateSearch = (result: any, query: string) => act(() => result.current.updateSearchQuery(query));
+const updateSort = (result: any, sortBy: any, sortOrder: any) => act(() => result.current.updateSort(sortBy, sortOrder));
+const expectFilters = (result: any, expected: any) => {
+  Object.keys(expected).forEach(key => {
+    expect(result.current.filters[key]).toEqual(expected[key]);
+  });
+};
+
 describe('useEncounterFilters', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -9,7 +20,7 @@ describe('useEncounterFilters', () => {
 
   describe('Initial State', () => {
     it('returns initial state values', () => {
-      const { result } = renderHook(() => useEncounterFilters());
+      const { result } = setup();
 
       expect(result.current.filters).toEqual(createMockFilters());
       expect(result.current.searchQuery).toBe('');
@@ -20,44 +31,36 @@ describe('useEncounterFilters', () => {
 
   describe('Filter Management', () => {
     it('updates filters correctly', () => {
-      const { result } = renderHook(() => useEncounterFilters());
+      const { result } = setup();
 
-      act(() => {
-        result.current.updateFilters({
-          status: ['active', 'draft'],
-          difficulty: ['hard'],
-        });
+      updateFilters(result, {
+        status: ['active', 'draft'],
+        difficulty: ['hard'],
       });
 
-      expect(result.current.filters.status).toEqual(['active', 'draft']);
-      expect(result.current.filters.difficulty).toEqual(['hard']);
+      expectFilters(result, {
+        status: ['active', 'draft'],
+        difficulty: ['hard'],
+      });
     });
 
     it('merges filter updates with existing filters', () => {
-      const { result } = renderHook(() => useEncounterFilters());
+      const { result } = setup();
 
-      act(() => {
-        result.current.updateFilters({ status: ['active'] });
+      updateFilters(result, { status: ['active'] });
+      updateFilters(result, { difficulty: ['hard'] });
+
+      expectFilters(result, {
+        status: ['active'],
+        difficulty: ['hard'],
       });
-
-      act(() => {
-        result.current.updateFilters({ difficulty: ['hard'] });
-      });
-
-      expect(result.current.filters.status).toEqual(['active']);
-      expect(result.current.filters.difficulty).toEqual(['hard']);
     });
 
     it('overwrites specific filter arrays when updating', () => {
-      const { result } = renderHook(() => useEncounterFilters());
+      const { result } = setup();
 
-      act(() => {
-        result.current.updateFilters({ status: ['active', 'draft'] });
-      });
-
-      act(() => {
-        result.current.updateFilters({ status: ['completed'] });
-      });
+      updateFilters(result, { status: ['active', 'draft'] });
+      updateFilters(result, { status: ['completed'] });
 
       expect(result.current.filters.status).toEqual(['completed']);
     });
@@ -65,25 +68,18 @@ describe('useEncounterFilters', () => {
 
   describe('Search Query Management', () => {
     it('updates search query correctly', () => {
-      const { result } = renderHook(() => useEncounterFilters());
+      const { result } = setup();
 
-      act(() => {
-        result.current.updateSearchQuery('dragon encounter');
-      });
+      updateSearch(result, 'dragon encounter');
 
       expect(result.current.searchQuery).toBe('dragon encounter');
     });
 
     it('handles empty search query', () => {
-      const { result } = renderHook(() => useEncounterFilters());
+      const { result } = setup();
 
-      act(() => {
-        result.current.updateSearchQuery('test');
-      });
-
-      act(() => {
-        result.current.updateSearchQuery('');
-      });
+      updateSearch(result, 'test');
+      updateSearch(result, '');
 
       expect(result.current.searchQuery).toBe('');
     });
@@ -91,22 +87,18 @@ describe('useEncounterFilters', () => {
 
   describe('Sort Management', () => {
     it('updates sort correctly', () => {
-      const { result } = renderHook(() => useEncounterFilters());
+      const { result } = setup();
 
-      act(() => {
-        result.current.updateSort('name', 'asc');
-      });
+      updateSort(result, 'name', 'asc');
 
       expect(result.current.sortBy).toBe('name');
       expect(result.current.sortOrder).toBe('asc');
     });
 
     it('updates both sort field and order together', () => {
-      const { result } = renderHook(() => useEncounterFilters());
+      const { result } = setup();
 
-      act(() => {
-        result.current.updateSort('difficulty', 'desc');
-      });
+      updateSort(result, 'difficulty', 'desc');
 
       expect(result.current.sortBy).toBe('difficulty');
       expect(result.current.sortOrder).toBe('desc');
@@ -115,18 +107,16 @@ describe('useEncounterFilters', () => {
 
   describe('Clear Filters', () => {
     it('clears all filters and resets to initial state', () => {
-      const { result } = renderHook(() => useEncounterFilters());
+      const { result } = setup();
 
       // Set some filters and search
-      act(() => {
-        result.current.updateFilters({
-          status: ['active'],
-          difficulty: ['hard'],
-          tags: ['combat'],
-        });
-        result.current.updateSearchQuery('test search');
-        result.current.updateSort('name', 'asc');
+      updateFilters(result, {
+        status: ['active'],
+        difficulty: ['hard'],
+        tags: ['combat'],
       });
+      updateSearch(result, 'test search');
+      updateSort(result, 'name', 'asc');
 
       // Verify filters are set
       expect(result.current.filters.status).toEqual(['active']);
@@ -148,13 +138,11 @@ describe('useEncounterFilters', () => {
 
   describe('Complex Filter Scenarios', () => {
     it('handles target level range filters', () => {
-      const { result } = renderHook(() => useEncounterFilters());
+      const { result } = setup();
 
-      act(() => {
-        result.current.updateFilters({
-          targetLevelMin: 5,
-          targetLevelMax: 10,
-        });
+      updateFilters(result, {
+        targetLevelMin: 5,
+        targetLevelMax: 10,
       });
 
       expect(result.current.filters.targetLevelMin).toBe(5);
@@ -162,30 +150,24 @@ describe('useEncounterFilters', () => {
     });
 
     it('handles tag filters', () => {
-      const { result } = renderHook(() => useEncounterFilters());
+      const { result } = setup();
 
-      act(() => {
-        result.current.updateFilters({
-          tags: ['combat', 'dungeon', 'outdoor'],
-        });
+      updateFilters(result, {
+        tags: ['combat', 'dungeon', 'outdoor'],
       });
 
       expect(result.current.filters.tags).toEqual(['combat', 'dungeon', 'outdoor']);
     });
 
     it('maintains filter state independence', () => {
-      const { result } = renderHook(() => useEncounterFilters());
+      const { result } = setup();
 
-      act(() => {
-        result.current.updateFilters({ status: ['active'] });
-        result.current.updateSearchQuery('test');
-        result.current.updateSort('name', 'asc');
-      });
+      updateFilters(result, { status: ['active'] });
+      updateSearch(result, 'test');
+      updateSort(result, 'name', 'asc');
 
       // Update only filters, search and sort should remain unchanged
-      act(() => {
-        result.current.updateFilters({ difficulty: ['hard'] });
-      });
+      updateFilters(result, { difficulty: ['hard'] });
 
       expect(result.current.filters.status).toEqual(['active']);
       expect(result.current.filters.difficulty).toEqual(['hard']);
@@ -197,13 +179,11 @@ describe('useEncounterFilters', () => {
 
   describe('Edge Cases', () => {
     it('handles undefined values in filter updates', () => {
-      const { result } = renderHook(() => useEncounterFilters());
+      const { result } = setup();
 
-      act(() => {
-        result.current.updateFilters({
-          targetLevelMin: undefined,
-          targetLevelMax: undefined,
-        });
+      updateFilters(result, {
+        targetLevelMin: undefined,
+        targetLevelMax: undefined,
       });
 
       expect(result.current.filters.targetLevelMin).toBeUndefined();
@@ -211,14 +191,12 @@ describe('useEncounterFilters', () => {
     });
 
     it('handles empty arrays in filter updates', () => {
-      const { result } = renderHook(() => useEncounterFilters());
+      const { result } = setup();
 
-      act(() => {
-        result.current.updateFilters({
-          status: [],
-          difficulty: [],
-          tags: [],
-        });
+      updateFilters(result, {
+        status: [],
+        difficulty: [],
+        tags: [],
       });
 
       expect(result.current.filters.status).toEqual([]);
@@ -227,11 +205,9 @@ describe('useEncounterFilters', () => {
     });
 
     it('handles partial filter objects', () => {
-      const { result } = renderHook(() => useEncounterFilters());
+      const { result } = setup();
 
-      act(() => {
-        result.current.updateFilters({ status: ['active'] });
-      });
+      updateFilters(result, { status: ['active'] });
 
       expect(result.current.filters.status).toEqual(['active']);
       expect(result.current.filters.difficulty).toEqual([]);
