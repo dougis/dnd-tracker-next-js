@@ -2,6 +2,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import type { SortBy, SortOrder } from '../types';
+import { TABLE_HEADERS, CELL_CLASSES } from './headerUtils';
 
 interface TableHeaderProps {
   isAllSelected: boolean;
@@ -53,7 +54,7 @@ export function TableHeader({
   return (
     <thead>
       <tr className="border-b bg-muted/50">
-        <th className="p-4 text-left w-12">
+        <th className={CELL_CLASSES.checkbox}>
           <div data-checkbox>
             <Checkbox
               checked={isAllSelected}
@@ -62,39 +63,19 @@ export function TableHeader({
           </div>
         </th>
 
-        <th className="p-4 text-left">
-          <SortableHeader column="name" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>
-            Name
-          </SortableHeader>
-        </th>
+        {TABLE_HEADERS.map(({ column, label, sortable }) => (
+          <th key={column} className={CELL_CLASSES.default}>
+            {sortable ? (
+              <SortableHeader column={column} sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>
+                {label}
+              </SortableHeader>
+            ) : (
+              label
+            )}
+          </th>
+        ))}
 
-        <th className="p-4 text-left">Status</th>
-
-        <th className="p-4 text-left">
-          <SortableHeader column="difficulty" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>
-            Difficulty
-          </SortableHeader>
-        </th>
-
-        <th className="p-4 text-left">
-          <SortableHeader column="participantCount" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>
-            Participants
-          </SortableHeader>
-        </th>
-
-        <th className="p-4 text-left">
-          <SortableHeader column="targetLevel" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>
-            Level
-          </SortableHeader>
-        </th>
-
-        <th className="p-4 text-left">
-          <SortableHeader column="updatedAt" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>
-            Updated
-          </SortableHeader>
-        </th>
-
-        <th className="p-4 text-left w-12">Actions</th>
+        <th className={CELL_CLASSES.actions}>Actions</th>
       </tr>
     </thead>
   );

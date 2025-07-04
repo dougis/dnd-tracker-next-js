@@ -14,6 +14,11 @@ import {
   testPaginationFetch,
   testParameterChanges,
 } from '../test-utils/hookTestHelpers';
+import { 
+  expectLoadingState, 
+  expectErrorState as expectError, 
+  expectDataState 
+} from '../test-utils/commonTestHelpers';
 
 // Mock the EncounterService
 jest.mock('@/lib/services/EncounterService', () => ({
