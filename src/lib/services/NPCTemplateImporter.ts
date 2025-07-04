@@ -93,13 +93,31 @@ export class NPCTemplateImporter {
 
   private static createStatsFromData(data: any) {
     return {
+      ...this.createCoreStats(data),
+      ...this.createCombatStats(data),
+      ...this.createDefensiveStats(data),
+    };
+  }
+
+  private static createCoreStats(data: any) {
+    return {
       abilityScores: data.abilityScores || this.getDefaultAbilityScores(),
       hitPoints: this.parseHitPoints(data.hitPoints),
       armorClass: data.armorClass || 10,
       speed: data.speed || 30,
       proficiencyBonus: calculateProficiencyBonus(data.challengeRating),
+    };
+  }
+
+  private static createCombatStats(data: any) {
+    return {
       savingThrows: data.savingThrows || {},
       skills: data.skills || {},
+    };
+  }
+
+  private static createDefensiveStats(data: any) {
+    return {
       damageVulnerabilities: data.damageVulnerabilities || [],
       damageResistances: data.damageResistances || [],
       damageImmunities: data.damageImmunities || [],
@@ -111,18 +129,28 @@ export class NPCTemplateImporter {
 
   private static createDnDBeyondStats(data: any, challengeRating: number) {
     return {
-      abilityScores: {
-        strength: data.stats?.str || 10,
-        dexterity: data.stats?.dex || 10,
-        constitution: data.stats?.con || 10,
-        intelligence: data.stats?.int || 10,
-        wisdom: data.stats?.wis || 10,
-        charisma: data.stats?.cha || 10,
-      },
+      abilityScores: this.extractDnDBeyondAbilityScores(data),
       hitPoints: { maximum: data.hp || 1, current: data.hp || 1, temporary: 0 },
       armorClass: data.ac || 10,
       speed: data.speed || 30,
       proficiencyBonus: calculateProficiencyBonus(challengeRating),
+      ...this.getEmptyDefensiveStats(),
+    };
+  }
+
+  private static extractDnDBeyondAbilityScores(data: any) {
+    return {
+      strength: data.stats?.str || 10,
+      dexterity: data.stats?.dex || 10,
+      constitution: data.stats?.con || 10,
+      intelligence: data.stats?.int || 10,
+      wisdom: data.stats?.wis || 10,
+      charisma: data.stats?.cha || 10,
+    };
+  }
+
+  private static getEmptyDefensiveStats() {
+    return {
       savingThrows: {},
       skills: {},
       damageVulnerabilities: [],
