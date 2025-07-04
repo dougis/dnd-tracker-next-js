@@ -89,13 +89,20 @@ export function EncounterListView() {
 
       <ContentSection
         viewMode={viewMode}
-        encounters={encounters}
-        isLoading={isLoading}
-        selectedEncounters={selectedEncounters}
-        onSelectEncounter={selectEncounter}
-        tableSortConfig={tableSortConfig}
-        tableSelectionConfig={tableSelectionConfig}
-        onRefetch={refetch}
+        gridProps={{
+          encounters,
+          isLoading,
+          selectedEncounters,
+          onSelectEncounter: selectEncounter,
+          onRefetch: refetch,
+        }}
+        tableProps={{
+          encounters,
+          isLoading,
+          sortConfig: tableSortConfig,
+          selectionConfig: tableSelectionConfig,
+          onRefetch: refetch,
+        }}
       />
 
       {pagination && (

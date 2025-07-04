@@ -7,46 +7,52 @@ import type {
   TableSelectionConfig
 } from '../types';
 
-interface ContentSectionProps {
-  viewMode: 'grid' | 'table';
+interface GridProps {
   encounters: EncounterListItem[];
   isLoading: boolean;
   selectedEncounters: string[];
   onSelectEncounter: (_id: string) => void;
-  tableSortConfig: TableSortConfig;
-  tableSelectionConfig: TableSelectionConfig;
   onRefetch: () => void;
+}
+
+interface TableProps {
+  encounters: EncounterListItem[];
+  isLoading: boolean;
+  sortConfig: TableSortConfig;
+  selectionConfig: TableSelectionConfig;
+  onRefetch: () => void;
+}
+
+interface ContentSectionProps {
+  viewMode: 'grid' | 'table';
+  gridProps: GridProps;
+  tableProps: TableProps;
 }
 
 export function ContentSection({
   viewMode,
-  encounters,
-  isLoading,
-  selectedEncounters,
-  onSelectEncounter,
-  tableSortConfig,
-  tableSelectionConfig,
-  onRefetch,
+  gridProps,
+  tableProps,
 }: ContentSectionProps) {
   if (viewMode === 'grid') {
     return (
       <EncounterGrid
-        encounters={encounters}
-        isLoading={isLoading}
-        selectedEncounters={selectedEncounters}
-        onSelectEncounter={onSelectEncounter}
-        onRefetch={onRefetch}
+        encounters={gridProps.encounters}
+        isLoading={gridProps.isLoading}
+        selectedEncounters={gridProps.selectedEncounters}
+        onSelectEncounter={gridProps.onSelectEncounter}
+        onRefetch={gridProps.onRefetch}
       />
     );
   }
 
   return (
     <EncounterTable
-      encounters={encounters}
-      isLoading={isLoading}
-      selection={tableSelectionConfig}
-      sort={tableSortConfig}
-      onRefetch={onRefetch}
+      encounters={tableProps.encounters}
+      isLoading={tableProps.isLoading}
+      selection={tableProps.selectionConfig}
+      sort={tableProps.sortConfig}
+      onRefetch={tableProps.onRefetch}
     />
   );
 }
