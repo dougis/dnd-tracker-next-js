@@ -2,10 +2,10 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import type { Encounter } from '@/lib/validations/encounter';
+import type { IEncounter } from '@/lib/models/encounter/interfaces';
 
 interface EncounterSettingsProps {
-  encounter: Encounter;
+  encounter: IEncounter;
 }
 
 /**

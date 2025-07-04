@@ -15,10 +15,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Encounter } from '@/lib/validations/encounter';
+import type { IEncounter } from '@/lib/models/encounter/interfaces';
 
 interface EncounterActionsProps {
-  encounter: Encounter;
+  encounter: IEncounter;
   onEdit: () => void;
   onStartCombat: () => void;
   onClone: () => void;

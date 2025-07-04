@@ -1,10 +1,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { Encounter } from '@/lib/validations/encounter';
+import type { IEncounter } from '@/lib/models/encounter/interfaces';
 
 interface ParticipantOverviewProps {
-  encounter: Encounter;
+  encounter: IEncounter;
 }
 
 /**
@@ -56,7 +56,7 @@ export function ParticipantOverview({ encounter }: ParticipantOverviewProps) {
           <div className="space-y-3">
             {participants.map((participant, index) => (
               <div
-                key={participant.characterId || index}
+                key={participant.characterId?.toString() || index}
                 className="flex items-center justify-between p-3 border rounded-lg"
               >
                 <div className="flex items-center space-x-3">

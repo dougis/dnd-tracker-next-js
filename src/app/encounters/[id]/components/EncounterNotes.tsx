@@ -3,10 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { PenIcon, SaveIcon, XIcon } from 'lucide-react';
-import type { Encounter } from '@/lib/validations/encounter';
+import type { IEncounter } from '@/lib/models/encounter/interfaces';
 
 interface EncounterNotesProps {
-  encounter: Encounter;
+  encounter: IEncounter;
   isEditing: boolean;
   onToggleEdit: () => void;
 }

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { EncounterService } from '@/lib/services/EncounterService';
-import type { Encounter } from '@/lib/validations/encounter';
+import type { IEncounter } from '@/lib/models/encounter/interfaces';
 import { EncounterOverview } from './components/EncounterOverview';
 import { ParticipantOverview } from './components/ParticipantOverview';
 import { EncounterSettings } from './components/EncounterSettings';
@@ -24,7 +24,7 @@ interface EncounterDetailClientProps {
  */
 export function EncounterDetailClient({ encounterId }: EncounterDetailClientProps) {
   const router = useRouter();
-  const [encounter, setEncounter] = useState<Encounter | null>(null);
+  const [encounter, setEncounter] = useState<IEncounter | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -40,10 +40,10 @@ export function EncounterDetailClient({ encounterId }: EncounterDetailClientProp
 
       const result = await EncounterService.getEncounterById(encounterId);
 
-      if (result.success) {
+      if (result.success && result.data) {
         setEncounter(result.data);
       } else {
-        setError(result.error || 'Failed to load encounter');
+        setError(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to load encounter');
       }
     } catch {
       setError('An unexpected error occurred');
@@ -53,7 +53,7 @@ export function EncounterDetailClient({ encounterId }: EncounterDetailClientProp
   };
 
   const handleEditEncounter = () => {
-    router.push(`/encounters/${encounterId}/edit`);
+    router.push(`/encounters/${encounterId}/edit` as any);
   };
 
   const handleStartCombat = () => {

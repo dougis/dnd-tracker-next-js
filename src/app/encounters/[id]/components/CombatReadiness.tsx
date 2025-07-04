@@ -2,10 +2,10 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircleIcon, AlertCircleIcon, XCircleIcon } from 'lucide-react';
-import type { Encounter } from '@/lib/validations/encounter';
+import type { IEncounter } from '@/lib/models/encounter/interfaces';
 
 interface CombatReadinessProps {
-  encounter: Encounter;
+  encounter: IEncounter;
 }
 
 interface ReadinessCheck {

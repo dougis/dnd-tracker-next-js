@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ShareIcon, CopyIcon, PlusIcon, XIcon } from 'lucide-react';
-import type { Encounter } from '@/lib/validations/encounter';
+import type { IEncounter } from '@/lib/models/encounter/interfaces';
 
 interface SharingSectionProps {
-  encounter: Encounter;
+  encounter: IEncounter;
 }
 
 /**
@@ -148,12 +148,12 @@ export function SharingSection({ encounter }: SharingSectionProps) {
           {encounter.sharedWith && encounter.sharedWith.length > 0 ? (
             <div className="space-y-2">
               {encounter.sharedWith.map((collaboratorId, index) => (
-                <div key={collaboratorId} className="flex items-center justify-between p-2 border rounded">
+                <div key={collaboratorId.toString()} className="flex items-center justify-between p-2 border rounded">
                   <span className="text-sm">Collaborator {index + 1}</span>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleRemoveCollaborator(collaboratorId)}
+                    onClick={() => handleRemoveCollaborator(collaboratorId.toString())}
                   >
                     <XIcon className="h-4 w-4" />
                   </Button>
