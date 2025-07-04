@@ -62,8 +62,7 @@ export function EncounterActionButtons({
       } else {
         throw new Error(result.error || 'Failed to duplicate encounter');
       }
-    // eslint-disable-next-line no-unused-vars
-    } catch (_error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to duplicate encounter. Please try again.',
@@ -95,8 +94,7 @@ export function EncounterActionButtons({
       } else {
         throw new Error(result.error || 'Failed to delete encounter');
       }
-    // eslint-disable-next-line no-unused-vars
-    } catch (_error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to delete encounter. Please try again.',
