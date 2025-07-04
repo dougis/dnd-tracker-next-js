@@ -10,16 +10,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import {
   MoreHorizontal,
   Edit,
   Copy,
@@ -28,8 +18,9 @@ import {
   Share,
   Eye
 } from 'lucide-react';
-import { EncounterService } from '@/lib/services/EncounterService';
 import { useToast } from '@/hooks/use-toast';
+import { DeleteDialog } from './actions/DeleteDialog';
+import { createNavigationHandlers, createServiceHandlers, canStartCombat } from './actions/actionHandlers';
 import type { EncounterActionButtonsProps } from './types';
 
 export function EncounterActionButtons({
@@ -40,73 +31,19 @@ export function EncounterActionButtons({
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
-  const handleView = () => {
-    // TODO: Navigate to encounter detail view
-    console.log('View encounter:', encounter.id);
-  };
-
-  const handleEdit = () => {
-    // TODO: Navigate to encounter edit page
-    console.log('Edit encounter:', encounter.id);
-  };
-
-  const handleDuplicate = async () => {
-    try {
-      const result = await EncounterService.cloneEncounter(encounter.id);
-      if (result.success) {
-        toast({
-          title: 'Encounter duplicated',
-          description: `"${encounter.name}" has been duplicated successfully.`,
-        });
-        onRefetch?.();
-      } else {
-        throw new Error(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to duplicate encounter');
-      }
-    } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to duplicate encounter. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleStartCombat = () => {
-    // TODO: Navigate to combat interface with this encounter
-    console.log('Start combat for encounter:', encounter.id);
-  };
-
-  const handleShare = () => {
-    // TODO: Implement sharing functionality
-    console.log('Share encounter:', encounter.id);
-  };
+  const navigationHandlers = createNavigationHandlers(encounter);
+  const { handleDuplicate, handleDelete: deleteService } = createServiceHandlers(encounter, onRefetch, toast);
 
   const handleDelete = async () => {
     setIsDeleting(true);
-    try {
-      const result = await EncounterService.deleteEncounter(encounter.id);
-      if (result.success) {
-        toast({
-          title: 'Encounter deleted',
-          description: `"${encounter.name}" has been deleted.`,
-        });
-        onRefetch?.();
-      } else {
-        throw new Error(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to delete encounter');
-      }
-    } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete encounter. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsDeleting(false);
+    const success = await deleteService();
+    if (success) {
       setIsDeleteDialogOpen(false);
     }
+    setIsDeleting(false);
   };
 
-  const canStartCombat = encounter.status === 'draft' || encounter.status === 'completed';
+  const combatEnabled = canStartCombat(encounter);
 
   return (
     <>
@@ -123,12 +60,12 @@ export function EncounterActionButtons({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onClick={handleView}>
+          <DropdownMenuItem onClick={navigationHandlers.handleView}>
             <Eye className="h-4 w-4 mr-2" />
             View Details
           </DropdownMenuItem>
 
-          <DropdownMenuItem onClick={handleEdit}>
+          <DropdownMenuItem onClick={navigationHandlers.handleEdit}>
             <Edit className="h-4 w-4 mr-2" />
             Edit Encounter
           </DropdownMenuItem>
@@ -138,14 +75,14 @@ export function EncounterActionButtons({
             Duplicate
           </DropdownMenuItem>
 
-          {canStartCombat && (
-            <DropdownMenuItem onClick={handleStartCombat}>
+          {combatEnabled && (
+            <DropdownMenuItem onClick={navigationHandlers.handleStartCombat}>
               <Play className="h-4 w-4 mr-2" />
               Start Combat
             </DropdownMenuItem>
           )}
 
-          <DropdownMenuItem onClick={handleShare}>
+          <DropdownMenuItem onClick={navigationHandlers.handleShare}>
             <Share className="h-4 w-4 mr-2" />
             Share
           </DropdownMenuItem>
@@ -162,26 +99,13 @@ export function EncounterActionButtons({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Encounter</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete &ldquo;{encounter.name}&rdquo;? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteDialog
+        isOpen={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        encounter={encounter}
+        onConfirm={handleDelete}
+        isDeleting={isDeleting}
+      />
     </>
   );
 }

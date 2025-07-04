@@ -7,6 +7,7 @@ import { SearchInput } from './filters/SearchInput';
 import { FilterDropdown } from './filters/FilterDropdown';
 import { SortDropdown } from './filters/SortDropdown';
 import { statusOptions, difficultyOptions, sortOptions } from './filters/constants';
+import { checkHasActiveFilters, createFilterHandlers } from './filters/filterUtils';
 
 interface EncounterFiltersProps {
   filters: Filters;
@@ -19,30 +20,6 @@ interface EncounterFiltersProps {
   onClearFilters: () => void;
 }
 
-const checkHasActiveFilters = (filters: Filters, searchQuery: string): boolean => {
-  return !!(
-    searchQuery ||
-    filters.status.length > 0 ||
-    filters.difficulty.length > 0 ||
-    filters.targetLevelMin !== undefined ||
-    filters.targetLevelMax !== undefined ||
-    filters.tags.length > 0
-  );
-};
-
-const createToggleHandler = (
-  currentValues: string[],
-  onFiltersChange: (_filters: Partial<Filters>) => void,
-  filterKey: keyof Filters
-) => {
-  return (value: string) => {
-    const newValues = currentValues.includes(value)
-      ? currentValues.filter(v => v !== value)
-      : [...currentValues, value];
-    onFiltersChange({ [filterKey]: newValues });
-  };
-};
-
 export function EncounterFilters({
   filters,
   searchQuery,
@@ -54,18 +31,7 @@ export function EncounterFilters({
   onClearFilters,
 }: EncounterFiltersProps) {
   const hasActiveFilters = checkHasActiveFilters(filters, searchQuery);
-
-  const handleStatusChange = createToggleHandler(
-    filters.status,
-    onFiltersChange,
-    'status'
-  );
-
-  const handleDifficultyChange = createToggleHandler(
-    filters.difficulty,
-    onFiltersChange,
-    'difficulty'
-  );
+  const { handleStatusChange, handleDifficultyChange } = createFilterHandlers(filters, onFiltersChange);
 
   return (
     <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:space-y-0 lg:space-x-4">

@@ -1,9 +1,12 @@
 import { renderHook, act } from '@testing-library/react';
 import { useEncounterSelection } from '../../hooks/useEncounterSelection';
 import { createMockEncounters } from '../test-helpers';
+import { createSelectionTestUtils } from '../test-utils/selectionHelpers';
 
 describe('useEncounterSelection', () => {
   const mockEncounters = createMockEncounters(5);
+  const testUtils = createSelectionTestUtils(mockEncounters);
+  const emptyTestUtils = createSelectionTestUtils([]);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -11,201 +14,111 @@ describe('useEncounterSelection', () => {
 
   describe('Initial State', () => {
     it('returns initial state values', () => {
-      const { result } = renderHook(() => useEncounterSelection(mockEncounters));
-
-      expect(result.current.selectedEncounters).toEqual([]);
-      expect(result.current.isAllSelected).toBe(false);
-      expect(result.current.hasSelection).toBe(false);
+      const { result } = testUtils.renderSelection();
+      testUtils.expectInitialState(result);
     });
 
     it('handles empty encounters array', () => {
-      const { result } = renderHook(() => useEncounterSelection([]));
-
-      expect(result.current.selectedEncounters).toEqual([]);
-      expect(result.current.isAllSelected).toBe(false);
-      expect(result.current.hasSelection).toBe(false);
+      const { result } = emptyTestUtils.renderSelection();
+      emptyTestUtils.expectInitialState(result);
     });
   });
 
   describe('Single Selection', () => {
     it('selects an encounter correctly', () => {
-      const { result } = renderHook(() => useEncounterSelection(mockEncounters));
-
-      act(() => {
-        result.current.selectEncounter(mockEncounters[0].id);
-      });
-
-      expect(result.current.selectedEncounters).toEqual([mockEncounters[0].id]);
-      expect(result.current.hasSelection).toBe(true);
-      expect(result.current.isAllSelected).toBe(false);
+      const { result } = testUtils.renderSelection();
+      testUtils.selectEncounter(result, mockEncounters[0].id);
+      testUtils.expectSingleSelection(result, mockEncounters[0].id);
     });
 
     it('deselects an already selected encounter', () => {
-      const { result } = renderHook(() => useEncounterSelection(mockEncounters));
+      const { result } = testUtils.renderSelection();
+      testUtils.selectEncounter(result, mockEncounters[0].id);
+      testUtils.expectSingleSelection(result, mockEncounters[0].id);
 
-      act(() => {
-        result.current.selectEncounter(mockEncounters[0].id);
-      });
-
-      expect(result.current.selectedEncounters).toEqual([mockEncounters[0].id]);
-
-      act(() => {
-        result.current.selectEncounter(mockEncounters[0].id);
-      });
-
-      expect(result.current.selectedEncounters).toEqual([]);
-      expect(result.current.hasSelection).toBe(false);
+      testUtils.selectEncounter(result, mockEncounters[0].id);
+      testUtils.expectNoSelection(result);
     });
 
     it('selects multiple encounters individually', () => {
-      const { result } = renderHook(() => useEncounterSelection(mockEncounters));
-
-      act(() => {
-        result.current.selectEncounter(mockEncounters[0].id);
-      });
-
-      act(() => {
-        result.current.selectEncounter(mockEncounters[2].id);
-      });
-
-      expect(result.current.selectedEncounters).toEqual([
-        mockEncounters[0].id,
-        mockEncounters[2].id,
-      ]);
-      expect(result.current.hasSelection).toBe(true);
-      expect(result.current.isAllSelected).toBe(false);
+      const { result } = testUtils.renderSelection();
+      const selectedIds = [mockEncounters[0].id, mockEncounters[2].id];
+      testUtils.selectMultiple(result, selectedIds);
+      testUtils.expectMultipleSelection(result, selectedIds);
     });
   });
 
   describe('Select All Functionality', () => {
     it('selects all encounters when none are selected', () => {
-      const { result } = renderHook(() => useEncounterSelection(mockEncounters));
-
-      act(() => {
-        result.current.selectAll();
-      });
-
-      const expectedIds = mockEncounters.map(encounter => encounter.id);
-      expect(result.current.selectedEncounters).toEqual(expectedIds);
-      expect(result.current.isAllSelected).toBe(true);
-      expect(result.current.hasSelection).toBe(true);
+      const { result } = testUtils.renderSelection();
+      testUtils.selectAll(result);
+      testUtils.expectAllSelected(result);
     });
 
     it('deselects all encounters when all are selected', () => {
-      const { result } = renderHook(() => useEncounterSelection(mockEncounters));
-
-      // First select all
-      act(() => {
-        result.current.selectAll();
-      });
-
+      const { result } = testUtils.renderSelection();
+      testUtils.selectAll(result);
       expect(result.current.isAllSelected).toBe(true);
-
-      // Then select all again to deselect
-      act(() => {
-        result.current.selectAll();
-      });
-
-      expect(result.current.selectedEncounters).toEqual([]);
-      expect(result.current.isAllSelected).toBe(false);
-      expect(result.current.hasSelection).toBe(false);
+      
+      testUtils.selectAll(result);
+      testUtils.expectNoSelection(result);
     });
 
     it('selects all encounters when some are already selected', () => {
-      const { result } = renderHook(() => useEncounterSelection(mockEncounters));
-
-      // Select some encounters first
-      act(() => {
-        result.current.selectEncounter(mockEncounters[0].id);
-        result.current.selectEncounter(mockEncounters[1].id);
-      });
-
+      const { result } = testUtils.renderSelection();
+      const partialIds = [mockEncounters[0].id, mockEncounters[1].id];
+      testUtils.selectMultiple(result, partialIds);
+      
       expect(result.current.selectedEncounters).toHaveLength(2);
       expect(result.current.isAllSelected).toBe(false);
-
-      // Select all
-      act(() => {
-        result.current.selectAll();
-      });
-
-      const expectedIds = mockEncounters.map(encounter => encounter.id);
-      expect(result.current.selectedEncounters).toEqual(expectedIds);
-      expect(result.current.isAllSelected).toBe(true);
+      
+      testUtils.selectAll(result);
+      testUtils.expectAllSelected(result);
     });
   });
 
   describe('Clear Selection', () => {
     it('clears all selected encounters', () => {
-      const { result } = renderHook(() => useEncounterSelection(mockEncounters));
-
-      // Select some encounters
-      act(() => {
-        result.current.selectEncounter(mockEncounters[0].id);
-        result.current.selectEncounter(mockEncounters[2].id);
-      });
-
+      const { result } = testUtils.renderSelection();
+      const selectedIds = [mockEncounters[0].id, mockEncounters[2].id];
+      testUtils.selectMultiple(result, selectedIds);
+      
       expect(result.current.selectedEncounters).toHaveLength(2);
-
-      // Clear selection
-      act(() => {
-        result.current.clearSelection();
-      });
-
-      expect(result.current.selectedEncounters).toEqual([]);
-      expect(result.current.hasSelection).toBe(false);
-      expect(result.current.isAllSelected).toBe(false);
+      
+      testUtils.clearSelection(result);
+      testUtils.expectNoSelection(result);
     });
 
     it('has no effect when no encounters are selected', () => {
-      const { result } = renderHook(() => useEncounterSelection(mockEncounters));
-
-      act(() => {
-        result.current.clearSelection();
-      });
-
-      expect(result.current.selectedEncounters).toEqual([]);
-      expect(result.current.hasSelection).toBe(false);
+      const { result } = testUtils.renderSelection();
+      testUtils.clearSelection(result);
+      testUtils.expectNoSelection(result);
     });
   });
 
   describe('State Computations', () => {
     it('correctly computes isAllSelected when all encounters are selected', () => {
-      const { result } = renderHook(() => useEncounterSelection(mockEncounters));
-
-      // Select all encounters individually
-      act(() => {
-        mockEncounters.forEach(encounter => {
-          result.current.selectEncounter(encounter.id);
-        });
-      });
-
+      const { result } = testUtils.renderSelection();
+      const allIds = mockEncounters.map(e => e.id);
+      testUtils.selectMultiple(result, allIds);
       expect(result.current.isAllSelected).toBe(true);
     });
 
     it('correctly computes isAllSelected when not all encounters are selected', () => {
-      const { result } = renderHook(() => useEncounterSelection(mockEncounters));
-
-      act(() => {
-        result.current.selectEncounter(mockEncounters[0].id);
-        result.current.selectEncounter(mockEncounters[1].id);
-      });
-
+      const { result } = testUtils.renderSelection();
+      const partialIds = [mockEncounters[0].id, mockEncounters[1].id];
+      testUtils.selectMultiple(result, partialIds);
       expect(result.current.isAllSelected).toBe(false);
     });
 
     it('correctly computes hasSelection when encounters are selected', () => {
-      const { result } = renderHook(() => useEncounterSelection(mockEncounters));
-
-      act(() => {
-        result.current.selectEncounter(mockEncounters[0].id);
-      });
-
+      const { result } = testUtils.renderSelection();
+      testUtils.selectEncounter(result, mockEncounters[0].id);
       expect(result.current.hasSelection).toBe(true);
     });
 
     it('correctly computes hasSelection when no encounters are selected', () => {
-      const { result } = renderHook(() => useEncounterSelection(mockEncounters));
-
+      const { result } = testUtils.renderSelection();
       expect(result.current.hasSelection).toBe(false);
     });
   });
