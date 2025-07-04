@@ -3,7 +3,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { EncounterService } from '@/lib/services/EncounterService';
 import type { EncounterListItem, EncounterFilters, SortBy, SortOrder, PaginationInfo } from '../types';
-import type { IEncounter } from '@/lib/models/encounter/interfaces';
+import { transformEncounter } from './utils/encounterTransform';
+import { buildSearchParams } from './utils/searchParams';
+import { extractErrorMessage, handleServiceError } from './utils/errorHandling';
+import { createPaginationInfo } from './utils/paginationHelpers';
 
 interface UseEncounterDataParams {
   filters: EncounterFilters;
@@ -37,32 +40,24 @@ export function useEncounterData({
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [currentPage, setCurrentPage] = useState(page);
 
-  const transformEncounter = useCallback((encounter: IEncounter): EncounterListItem => {
-    const participantCount = encounter.participants?.length || 0;
-    const playerCount = encounter.participants?.filter(p => p.type === 'pc').length || 0;
+  const handleSuccessfulResponse = useCallback((data: any) => {
+    const transformedEncounters = data.encounters.map(transformEncounter);
+    setEncounters(transformedEncounters);
+    
+    const paginationInfo = createPaginationInfo(
+      data.currentPage,
+      data.totalPages,
+      data.totalItems,
+      limit
+    );
+    setPagination(paginationInfo);
+  }, [limit]);
 
-    return {
-      id: encounter._id?.toString() || '',
-      ownerId: encounter.ownerId,
-      name: encounter.name,
-      description: encounter.description,
-      tags: encounter.tags,
-      difficulty: encounter.difficulty,
-      estimatedDuration: encounter.estimatedDuration,
-      targetLevel: encounter.targetLevel,
-      participants: encounter.participants,
-      settings: encounter.settings,
-      combatState: encounter.combatState,
-      status: encounter.status,
-      partyId: encounter.partyId,
-      isPublic: encounter.isPublic,
-      sharedWith: encounter.sharedWith,
-      version: encounter.version,
-      createdAt: encounter.createdAt,
-      updatedAt: encounter.updatedAt,
-      participantCount,
-      playerCount,
-    };
+  const handleErrorResponse = useCallback((error: any) => {
+    const errorMessage = extractErrorMessage(error);
+    setError(errorMessage);
+    setEncounters([]);
+    setPagination(null);
   }, []);
 
   const fetchEncounters = useCallback(async () => {
@@ -70,41 +65,29 @@ export function useEncounterData({
     setError(null);
 
     try {
-      const result = await EncounterService.searchEncounters({
-        query: searchQuery,
-        difficulty: filters.difficulty,
-        targetLevelMin: filters.targetLevelMin,
-        targetLevelMax: filters.targetLevelMax,
-        status: filters.status,
-        tags: filters.tags,
+      const searchParams = buildSearchParams(
+        filters,
+        searchQuery,
         sortBy,
         sortOrder,
-        page: currentPage,
-        limit,
-      });
+        currentPage,
+        limit
+      );
+      
+      const result = await EncounterService.searchEncounters(searchParams);
 
       if (result.success && result.data) {
-        const transformedEncounters = result.data.encounters.map(transformEncounter);
-        setEncounters(transformedEncounters);
-
-        setPagination({
-          currentPage: result.data.currentPage,
-          totalPages: result.data.totalPages,
-          totalItems: result.data.totalItems,
-          itemsPerPage: limit,
-        });
+        handleSuccessfulResponse(result.data);
       } else {
-        throw new Error(typeof result.error === 'string' ? result.error : 'Failed to fetch encounters');
+        const errorMessage = handleServiceError(result);
+        throw new Error(errorMessage);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
-      setError(errorMessage);
-      setEncounters([]);
-      setPagination(null);
+      handleErrorResponse(err);
     } finally {
       setIsLoading(false);
     }
-  }, [filters, searchQuery, sortBy, sortOrder, currentPage, limit, transformEncounter]);
+  }, [filters, searchQuery, sortBy, sortOrder, currentPage, limit, handleSuccessfulResponse, handleErrorResponse]);
 
   const goToPage = useCallback((newPage: number) => {
     setCurrentPage(newPage);

@@ -52,82 +52,100 @@ export const createMockPagination = (overrides: Partial<PaginationInfo> = {}): P
   ...overrides,
 });
 
+// Helper to create standard mock functions
+const createMockFunctions = () => ({
+  onSelect: jest.fn(),
+  onRefetch: jest.fn(),
+  onFiltersChange: jest.fn(),
+  onSearchChange: jest.fn(),
+  onSortChange: jest.fn(),
+  onClearFilters: jest.fn(),
+  onSelectAll: jest.fn(),
+  onSelectEncounter: jest.fn(),
+  onSort: jest.fn(),
+  onClearSelection: jest.fn(),
+});
+
+// Base props generator
+const createBaseProps = (baseProps: any, overrides: any = {}) => ({
+  ...baseProps,
+  ...createMockFunctions(),
+  ...overrides,
+});
+
 export const createMockProps = {
-  encounterListView: (overrides = {}) => ({
-    // Mock props for EncounterListView
-    ...overrides,
-  }),
+  encounterListView: (overrides = {}) => 
+    createBaseProps({}, overrides),
 
-  encounterCard: (overrides = {}) => ({
-    encounter: createMockEncounter(),
-    isSelected: false,
-    onSelect: jest.fn(),
-    onRefetch: jest.fn(),
-    ...overrides,
-  }),
+  encounterCard: (overrides = {}) => 
+    createBaseProps({
+      encounter: createMockEncounter(),
+      isSelected: false,
+    }, overrides),
 
-  encounterFilters: (overrides = {}) => ({
-    filters: createMockFilters(),
-    searchQuery: '',
-    sortBy: 'updatedAt' as const,
-    sortOrder: 'desc' as const,
-    onFiltersChange: jest.fn(),
-    onSearchChange: jest.fn(),
-    onSortChange: jest.fn(),
-    onClearFilters: jest.fn(),
-    ...overrides,
-  }),
+  encounterFilters: (overrides = {}) => 
+    createBaseProps({
+      filters: createMockFilters(),
+      searchQuery: '',
+      sortBy: 'updatedAt' as const,
+      sortOrder: 'desc' as const,
+    }, overrides),
 
-  encounterGrid: (overrides = {}) => ({
-    encounters: createMockEncounters(),
-    isLoading: false,
-    selectedEncounters: [],
-    onSelectEncounter: jest.fn(),
-    onRefetch: jest.fn(),
-    ...overrides,
-  }),
+  encounterGrid: (overrides = {}) => 
+    createBaseProps({
+      encounters: createMockEncounters(),
+      isLoading: false,
+      selectedEncounters: [],
+    }, overrides),
 
-  encounterTable: (overrides = {}) => ({
-    encounters: createMockEncounters(),
-    isLoading: false,
-    selectedEncounters: [],
-    isAllSelected: false,
-    onSelectAll: jest.fn(),
-    onSelectEncounter: jest.fn(),
-    sortBy: 'updatedAt' as const,
-    sortOrder: 'desc' as const,
-    onSort: jest.fn(),
-    onRefetch: jest.fn(),
-    ...overrides,
-  }),
+  encounterTable: (overrides = {}) => 
+    createBaseProps({
+      encounters: createMockEncounters(),
+      isLoading: false,
+      selectedEncounters: [],
+      isAllSelected: false,
+      sortBy: 'updatedAt' as const,
+      sortOrder: 'desc' as const,
+    }, overrides),
 
-  batchActions: (overrides = {}) => ({
-    selectedCount: 3,
-    onClearSelection: jest.fn(),
-    onRefetch: jest.fn(),
-    ...overrides,
-  }),
+  batchActions: (overrides = {}) => 
+    createBaseProps({
+      selectedCount: 3,
+    }, overrides),
+};
+
+// Helper to check multiple expectations at once
+const expectMultiple = (checks: Array<{ actual: any, expected: any }>) => {
+  checks.forEach(({ actual, expected }) => {
+    expect(actual).toEqual(expected);
+  });
 };
 
 export const expectInitialState = {
   encounterData: (result: any) => {
-    expect(result.current.encounters).toEqual([]);
-    expect(result.current.isLoading).toBe(false);
-    expect(result.current.error).toBe(null);
-    expect(result.current.pagination).toBe(null);
+    expectMultiple([
+      { actual: result.current.encounters, expected: [] },
+      { actual: result.current.isLoading, expected: false },
+      { actual: result.current.error, expected: null },
+      { actual: result.current.pagination, expected: null },
+    ]);
   },
 
   encounterFilters: (result: any) => {
-    expect(result.current.filters).toEqual(createMockFilters());
-    expect(result.current.searchQuery).toBe('');
-    expect(result.current.sortBy).toBe('updatedAt');
-    expect(result.current.sortOrder).toBe('desc');
+    expectMultiple([
+      { actual: result.current.filters, expected: createMockFilters() },
+      { actual: result.current.searchQuery, expected: '' },
+      { actual: result.current.sortBy, expected: 'updatedAt' },
+      { actual: result.current.sortOrder, expected: 'desc' },
+    ]);
   },
 
   encounterSelection: (result: any) => {
-    expect(result.current.selectedEncounters).toEqual([]);
-    expect(result.current.isAllSelected).toBe(false);
-    expect(result.current.hasSelection).toBe(false);
+    expectMultiple([
+      { actual: result.current.selectedEncounters, expected: [] },
+      { actual: result.current.isAllSelected, expected: false },
+      { actual: result.current.hasSelection, expected: false },
+    ]);
   },
 };
 
