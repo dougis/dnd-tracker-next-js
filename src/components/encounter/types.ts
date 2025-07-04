@@ -34,7 +34,7 @@ export interface EncounterListItem extends Omit<IEncounter, '_id'> {
 export interface EncounterCardProps {
   encounter: EncounterListItem;
   isSelected?: boolean;
-  onSelect?: (id: string) => void;
+  onSelect?: (_id: string) => void;
   onRefetch?: () => void;
 }
 

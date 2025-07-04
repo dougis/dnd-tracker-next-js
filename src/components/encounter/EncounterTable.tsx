@@ -15,10 +15,10 @@ interface EncounterTableProps {
   selectedEncounters: string[];
   isAllSelected: boolean;
   onSelectAll: () => void;
-  onSelectEncounter: (id: string) => void;
+  onSelectEncounter: (_id: string) => void;
   sortBy: SortBy;
   sortOrder: SortOrder;
-  onSort: (sortBy: SortBy, sortOrder: SortOrder) => void;
+  onSort: (_sortBy: SortBy, _sortOrder: SortOrder) => void;
   onRefetch: () => void;
 }
 

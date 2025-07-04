@@ -6,7 +6,7 @@ export type ViewMode = 'grid' | 'table';
 
 interface ViewModeToggleProps {
   value: ViewMode;
-  onValueChange: (mode: ViewMode) => void;
+  onValueChange: (_mode: ViewMode) => void;
 }
 
 export function ViewModeToggle({ value, onValueChange }: ViewModeToggleProps) {

@@ -8,7 +8,7 @@ interface EncounterGridProps {
   encounters: EncounterListItem[];
   isLoading: boolean;
   selectedEncounters: string[];
-  onSelectEncounter: (id: string) => void;
+  onSelectEncounter: (_id: string) => void;
   onRefetch: () => void;
 }
 

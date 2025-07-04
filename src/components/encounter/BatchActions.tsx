@@ -40,7 +40,8 @@ export function BatchActions({
       });
       onClearSelection();
       onRefetch();
-    } catch (error) {
+    // eslint-disable-next-line no-unused-vars
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to duplicate encounters. Please try again.',
@@ -59,7 +60,8 @@ export function BatchActions({
       });
       onClearSelection();
       onRefetch();
-    } catch (error) {
+    // eslint-disable-next-line no-unused-vars
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to archive encounters. Please try again.',
@@ -79,7 +81,8 @@ export function BatchActions({
       });
       onClearSelection();
       onRefetch();
-    } catch (error) {
+    // eslint-disable-next-line no-unused-vars
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to delete encounters. Please try again.',
