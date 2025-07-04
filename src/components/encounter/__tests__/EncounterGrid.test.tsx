@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { EncounterGrid } from '../EncounterGrid';
 import { createMockEncounter, createMockEncounters } from './test-utils/mockFactories';
 import { commonBeforeEach } from './test-utils/mockSetup';
-import { testLoadingState, testEmptyState } from './test-utils/testPatterns';
+import { testLoadingState } from './test-utils/testPatterns';
 
 // Mock the EncounterCard component
 jest.mock('../EncounterCard', () => ({

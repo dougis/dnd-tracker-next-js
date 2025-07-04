@@ -5,7 +5,7 @@ import { EncounterTable } from '../EncounterTable';
 import type { TableSortConfig, TableSelectionConfig } from '../types';
 import { createMockEncounter, createMockEncounters } from './test-utils/mockFactories';
 import { commonBeforeEach } from './test-utils/mockSetup';
-import { testLoadingState, testEmptyState } from './test-utils/testPatterns';
+import { testLoadingState } from './test-utils/testPatterns';
 
 // Mock the LoadingCard component
 jest.mock('@/components/shared/LoadingCard', () => ({

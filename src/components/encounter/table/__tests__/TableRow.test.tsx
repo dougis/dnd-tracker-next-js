@@ -20,7 +20,7 @@ jest.mock('../TableCells', () => ({
   DifficultyCell: ({ encounter }: any) => <td data-testid="difficulty-cell">{encounter.difficulty}</td>,
   ParticipantsCell: ({ encounter }: any) => <td data-testid="participants-cell">{encounter.participantCount}</td>,
   TargetLevelCell: ({ encounter }: any) => <td data-testid="target-level-cell">{encounter.targetLevel}</td>,
-  UpdatedCell: ({ encounter }: any) => <td data-testid="updated-cell">Updated</td>,
+  UpdatedCell: () => <td data-testid="updated-cell">Updated</td>,
   ActionsCell: ({ encounter, onRefetch }: any) => (
     <td data-testid="actions-cell">
       Actions for {encounter.name}

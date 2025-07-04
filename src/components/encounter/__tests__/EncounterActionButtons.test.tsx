@@ -1,40 +1,26 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { EncounterActionButtons } from '../EncounterActionButtons';
 import { createMockEncounter } from './test-utils/mockFactories';
 import { createConsoleSpy, commonBeforeEach, commonAfterAll } from './test-utils/mockSetup';
+import { createMockServices, createMockActionHandlers } from './test-utils/testSetup';
+import { clickButton, openDropdown, expectFunctionToBeCalled } from './test-utils/interactionHelpers';
+
+// Setup shared mocks
+const { EncounterService, toast } = createMockServices();
+const { navigation: mockNavigationHandlers, service: mockServiceHandlers } = createMockActionHandlers();
 
 // Mock the toast hook
-const mockToast = jest.fn();
 jest.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({
-    toast: mockToast,
-  }),
+  useToast: () => ({ toast }),
 }));
 
 // Mock the EncounterService
-const mockEncounterService = {
-  cloneEncounter: jest.fn(),
-  deleteEncounter: jest.fn(),
-};
 jest.mock('@/lib/services/EncounterService', () => ({
-  EncounterService: mockEncounterService,
+  EncounterService,
 }));
 
 // Mock the action handlers
-const mockNavigationHandlers = {
-  handleView: jest.fn(),
-  handleEdit: jest.fn(),
-  handleStartCombat: jest.fn(),
-  handleShare: jest.fn(),
-};
-
-const mockServiceHandlers = {
-  handleDuplicate: jest.fn(),
-  handleDelete: jest.fn(),
-};
-
 jest.mock('../actions/actionHandlers', () => ({
   createNavigationHandlers: jest.fn(() => mockNavigationHandlers),
   createServiceHandlers: jest.fn(() => mockServiceHandlers),
@@ -63,28 +49,21 @@ describe('EncounterActionButtons', () => {
     });
 
     it('should show dropdown menu when triggered', async () => {
-      const user = userEvent.setup();
       render(<EncounterActionButtons {...defaultProps} />);
+      await openDropdown(/open menu/i);
 
-      const triggerButton = screen.getByRole('button', { name: /open menu/i });
-      await user.click(triggerButton);
-
-      expect(screen.getByText('View Details')).toBeInTheDocument();
-      expect(screen.getByText('Edit Encounter')).toBeInTheDocument();
-      expect(screen.getByText('Duplicate')).toBeInTheDocument();
-      expect(screen.getByText('Share')).toBeInTheDocument();
-      expect(screen.getByText('Delete')).toBeInTheDocument();
+      const menuItems = ['View Details', 'Edit Encounter', 'Duplicate', 'Share', 'Delete'];
+      menuItems.forEach(item => {
+        expect(screen.getByText(item)).toBeInTheDocument();
+      });
     });
 
     it('should show Start Combat option when combat is enabled', async () => {
       const { canStartCombat } = require('../actions/actionHandlers');
       canStartCombat.mockReturnValue(true);
 
-      const user = userEvent.setup();
       render(<EncounterActionButtons {...defaultProps} />);
-
-      const triggerButton = screen.getByRole('button', { name: /open menu/i });
-      await user.click(triggerButton);
+      await openDropdown(/open menu/i);
 
       expect(screen.getByText('Start Combat')).toBeInTheDocument();
     });
@@ -93,98 +72,63 @@ describe('EncounterActionButtons', () => {
       const { canStartCombat } = require('../actions/actionHandlers');
       canStartCombat.mockReturnValue(false);
 
-      const user = userEvent.setup();
       render(<EncounterActionButtons {...defaultProps} />);
-
-      const triggerButton = screen.getByRole('button', { name: /open menu/i });
-      await user.click(triggerButton);
+      await openDropdown(/open menu/i);
 
       expect(screen.queryByText('Start Combat')).not.toBeInTheDocument();
     });
   });
 
   describe('Navigation Actions', () => {
-    it('should handle view action', async () => {
-      const user = userEvent.setup();
+    const testNavigationAction = async (buttonText: string, handler: jest.Mock) => {
       render(<EncounterActionButtons {...defaultProps} />);
+      await openDropdown(/open menu/i);
+      await clickButton(buttonText);
+      expectFunctionToBeCalled(handler);
+    };
 
-      const triggerButton = screen.getByRole('button', { name: /open menu/i });
-      await user.click(triggerButton);
-
-      const viewButton = screen.getByText('View Details');
-      await user.click(viewButton);
-
-      expect(mockNavigationHandlers.handleView).toHaveBeenCalledTimes(1);
+    it('should handle view action', async () => {
+      await testNavigationAction('View Details', mockNavigationHandlers.handleView);
     });
 
     it('should handle edit action', async () => {
-      const user = userEvent.setup();
-      render(<EncounterActionButtons {...defaultProps} />);
-
-      const triggerButton = screen.getByRole('button', { name: /open menu/i });
-      await user.click(triggerButton);
-
-      const editButton = screen.getByText('Edit Encounter');
-      await user.click(editButton);
-
-      expect(mockNavigationHandlers.handleEdit).toHaveBeenCalledTimes(1);
+      await testNavigationAction('Edit Encounter', mockNavigationHandlers.handleEdit);
     });
 
     it('should handle start combat action', async () => {
       const { canStartCombat } = require('../actions/actionHandlers');
       canStartCombat.mockReturnValue(true);
 
-      const user = userEvent.setup();
-      render(<EncounterActionButtons {...defaultProps} />);
-
-      const triggerButton = screen.getByRole('button', { name: /open menu/i });
-      await user.click(triggerButton);
-
-      const startCombatButton = screen.getByText('Start Combat');
-      await user.click(startCombatButton);
-
-      expect(mockNavigationHandlers.handleStartCombat).toHaveBeenCalledTimes(1);
+      await testNavigationAction('Start Combat', mockNavigationHandlers.handleStartCombat);
     });
 
     it('should handle share action', async () => {
-      const user = userEvent.setup();
-      render(<EncounterActionButtons {...defaultProps} />);
-
-      const triggerButton = screen.getByRole('button', { name: /open menu/i });
-      await user.click(triggerButton);
-
-      const shareButton = screen.getByText('Share');
-      await user.click(shareButton);
-
-      expect(mockNavigationHandlers.handleShare).toHaveBeenCalledTimes(1);
+      await testNavigationAction('Share', mockNavigationHandlers.handleShare);
     });
   });
 
   describe('Service Actions', () => {
-    it('should handle duplicate action', async () => {
-      const user = userEvent.setup();
+    const testServiceAction = async (buttonText: string, handler: jest.Mock) => {
       render(<EncounterActionButtons {...defaultProps} />);
+      await openDropdown(/open menu/i);
+      await clickButton(buttonText);
+      expectFunctionToBeCalled(handler);
+    };
 
-      const triggerButton = screen.getByRole('button', { name: /open menu/i });
-      await user.click(triggerButton);
-
-      const duplicateButton = screen.getByText('Duplicate');
-      await user.click(duplicateButton);
-
-      expect(mockServiceHandlers.handleDuplicate).toHaveBeenCalledTimes(1);
+    it('should handle duplicate action', async () => {
+      await testServiceAction('Duplicate', mockServiceHandlers.handleDuplicate);
     });
   });
 
   describe('Delete Dialog', () => {
-    it('should open delete dialog when delete is clicked', async () => {
-      const user = userEvent.setup();
+    const openDeleteDialog = async () => {
       render(<EncounterActionButtons {...defaultProps} />);
+      await openDropdown(/open menu/i);
+      await clickButton('Delete');
+    };
 
-      const triggerButton = screen.getByRole('button', { name: /open menu/i });
-      await user.click(triggerButton);
-
-      const deleteButton = screen.getByText('Delete');
-      await user.click(deleteButton);
+    it('should open delete dialog when delete is clicked', async () => {
+      await openDeleteDialog();
 
       expect(screen.getByRole('alertdialog')).toBeInTheDocument();
       expect(screen.getByText('Delete Encounter')).toBeInTheDocument();
@@ -193,19 +137,10 @@ describe('EncounterActionButtons', () => {
     });
 
     it('should close dialog when cancel is clicked', async () => {
-      const user = userEvent.setup();
-      render(<EncounterActionButtons {...defaultProps} />);
-
-      // Open dropdown and click delete
-      const triggerButton = screen.getByRole('button', { name: /open menu/i });
-      await user.click(triggerButton);
-
-      const deleteButton = screen.getByText('Delete');
-      await user.click(deleteButton);
+      await openDeleteDialog();
 
       // Cancel the dialog
-      const cancelButton = screen.getByRole('button', { name: /cancel/i });
-      await user.click(cancelButton);
+      await clickButton(/cancel/i);
 
       await waitFor(() => {
         expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
@@ -215,21 +150,12 @@ describe('EncounterActionButtons', () => {
     it('should call handleDelete when confirmed', async () => {
       mockServiceHandlers.handleDelete.mockResolvedValue(true);
 
-      const user = userEvent.setup();
-      render(<EncounterActionButtons {...defaultProps} />);
-
-      // Open dropdown and click delete
-      const triggerButton = screen.getByRole('button', { name: /open menu/i });
-      await user.click(triggerButton);
-
-      const deleteButton = screen.getByText('Delete');
-      await user.click(deleteButton);
+      await openDeleteDialog();
 
       // Confirm the dialog
-      const confirmButton = screen.getByRole('button', { name: 'Delete' });
-      await user.click(confirmButton);
+      await clickButton('Delete');
 
-      expect(mockServiceHandlers.handleDelete).toHaveBeenCalledTimes(1);
+      expectFunctionToBeCalled(mockServiceHandlers.handleDelete);
 
       await waitFor(() => {
         expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
@@ -237,15 +163,7 @@ describe('EncounterActionButtons', () => {
     });
 
     it('should handle delete operation state management', async () => {
-      const user = userEvent.setup();
-      render(<EncounterActionButtons {...defaultProps} />);
-
-      // Open dropdown and click delete
-      const triggerButton = screen.getByRole('button', { name: /open menu/i });
-      await user.click(triggerButton);
-
-      const deleteButton = screen.getByText('Delete');
-      await user.click(deleteButton);
+      await openDeleteDialog();
 
       // Confirm the dialog
       const confirmButton = screen.getByRole('button', { name: 'Delete' });
@@ -256,29 +174,19 @@ describe('EncounterActionButtons', () => {
     it('should handle failed delete scenario', async () => {
       mockServiceHandlers.handleDelete.mockResolvedValue(false);
 
-      const user = userEvent.setup();
-      render(<EncounterActionButtons {...defaultProps} />);
-
-      // Open dropdown and click delete
-      const triggerButton = screen.getByRole('button', { name: /open menu/i });
-      await user.click(triggerButton);
-
-      const deleteButton = screen.getByText('Delete');
-      await user.click(deleteButton);
+      await openDeleteDialog();
 
       // Confirm the dialog
-      const confirmButton = screen.getByRole('button', { name: 'Delete' });
-      await user.click(confirmButton);
+      await clickButton('Delete');
 
       await waitFor(() => {
-        expect(mockServiceHandlers.handleDelete).toHaveBeenCalledTimes(1);
+        expectFunctionToBeCalled(mockServiceHandlers.handleDelete);
       });
     });
   });
 
   describe('Event Propagation', () => {
     it('should stop propagation on dropdown trigger click', async () => {
-      const user = userEvent.setup();
       const parentClickHandler = jest.fn();
 
       render(
@@ -287,8 +195,7 @@ describe('EncounterActionButtons', () => {
         </div>
       );
 
-      const triggerButton = screen.getByRole('button', { name: /open menu/i });
-      await user.click(triggerButton);
+      await clickButton(/open menu/i);
 
       expect(parentClickHandler).not.toHaveBeenCalled();
     });
