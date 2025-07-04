@@ -52,11 +52,7 @@ export function EncounterActionButtons({
 
   const handleDuplicate = async () => {
     try {
-<<<<<<< HEAD
       const result = await EncounterService.cloneEncounter(encounter.id);
-=======
-      const result = await EncounterService.duplicateEncounter(encounter.id);
->>>>>>> origin/feature/issue-29-encounter-list-interface
       if (result.success) {
         toast({
           title: 'Encounter duplicated',
@@ -64,11 +60,7 @@ export function EncounterActionButtons({
         });
         onRefetch?.();
       } else {
-<<<<<<< HEAD
-        throw new Error(result.error?.message || 'Failed to duplicate encounter');
-=======
-        throw new Error(result.error || 'Failed to duplicate encounter');
->>>>>>> origin/feature/issue-29-encounter-list-interface
+        throw new Error(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to duplicate encounter');
       }
     } catch {
       toast({
@@ -100,11 +92,7 @@ export function EncounterActionButtons({
         });
         onRefetch?.();
       } else {
-<<<<<<< HEAD
-        throw new Error(result.error?.message || 'Failed to delete encounter');
-=======
-        throw new Error(result.error || 'Failed to delete encounter');
->>>>>>> origin/feature/issue-29-encounter-list-interface
+        throw new Error(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to delete encounter');
       }
     } catch {
       toast({

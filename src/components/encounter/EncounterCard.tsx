@@ -106,7 +106,6 @@ export function EncounterCard({
               <Badge variant={getStatusVariant(encounter.status)}>
                 {encounter.status}
               </Badge>
-<<<<<<< HEAD
               {encounter.difficulty && (
                 <Badge
                   variant={getDifficultyVariant(encounter.difficulty)}
@@ -115,14 +114,6 @@ export function EncounterCard({
                   {encounter.difficulty}
                 </Badge>
               )}
-=======
-              <Badge
-                variant={getDifficultyVariant(encounter.difficulty)}
-                className={getDifficultyColor(encounter.difficulty)}
-              >
-                {encounter.difficulty}
-              </Badge>
->>>>>>> origin/feature/issue-29-encounter-list-interface
             </div>
           </div>
 
@@ -173,11 +164,7 @@ export function EncounterCard({
 
         {encounter.tags && encounter.tags.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-1">
-<<<<<<< HEAD
             {encounter.tags.slice(0, 3).map((tag: string) => (
-=======
-            {encounter.tags.slice(0, 3).map((tag) => (
->>>>>>> origin/feature/issue-29-encounter-list-interface
               <Badge key={tag} variant="outline" className="text-xs">
                 {tag}
               </Badge>

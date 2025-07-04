@@ -35,35 +35,42 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
   const [showDraftIndicator, setShowDraftIndicator] = useState(false);
   const autosaveTimer = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    loadCharacterData();
-  }, [loadCharacterData]);
+  const loadCharacterData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      setStatsError(null);
 
-  // Autosave effect
-  useEffect(() => {
-    if (editMode && hasChanges()) {
-      // Clear existing timer
-      if (autosaveTimer.current) {
-        clearTimeout(autosaveTimer.current);
+      // Load character data
+      const characterResult = await CharacterService.getCharacterById(characterId, userId);
+      if (!characterResult.success) {
+        setError(characterResult.error?.message || 'Failed to load character');
+        return;
       }
 
-      // Set new timer for 2 seconds
-      autosaveTimer.current = setTimeout(() => {
-        saveDraftChanges();
-      }, 2000);
+      setCharacter(characterResult.data);
+      // Initialize editedCharacter with just the editable fields
+      setEditedCharacter({
+        abilityScores: characterResult.data.abilityScores,
+        backstory: characterResult.data.backstory,
+        notes: characterResult.data.notes
+      });
+
+      // Load character stats
+      const statsResult = await CharacterService.calculateCharacterStats(characterId, userId);
+      if (!statsResult.success) {
+        setStatsError(statsResult.error?.message || 'Failed to calculate stats');
+        // Continue with character data even if stats fail
+      } else {
+        setStats(statsResult.data);
+      }
+    } catch {
+      setError('Unexpected error occurred');
+    } finally {
+      setLoading(false);
     }
+  }, [characterId, userId]);
 
-    return () => {
-      if (autosaveTimer.current) {
-        clearTimeout(autosaveTimer.current);
-      }
-    };
-  }, [editMode, editedCharacter, hasChanges, saveDraftChanges]);
-
-  // Load draft changes on mount
-  useEffect(() => {
-    loadDraftChanges();
-  }, [loadDraftChanges]);
   const hasChanges = useCallback(() => {
     if (!character) return false;
     return (
@@ -120,41 +127,36 @@ export function CharacterStatsManager({ characterId, userId }: CharacterStatsMan
       // Silently fail clearing draft changes
     }
   };
-  const loadCharacterData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      setStatsError(null);
 
-      // Load character data
-      const characterResult = await CharacterService.getCharacterById(characterId, userId);
-      if (!characterResult.success) {
-        setError(characterResult.error?.message || 'Failed to load character');
-        return;
+  useEffect(() => {
+    loadCharacterData();
+  }, [loadCharacterData]);
+
+  // Autosave effect
+  useEffect(() => {
+    if (editMode && hasChanges()) {
+      // Clear existing timer
+      if (autosaveTimer.current) {
+        clearTimeout(autosaveTimer.current);
       }
 
-      setCharacter(characterResult.data);
-      // Initialize editedCharacter with just the editable fields
-      setEditedCharacter({
-        abilityScores: characterResult.data.abilityScores,
-        backstory: characterResult.data.backstory,
-        notes: characterResult.data.notes
-      });
-
-      // Load character stats
-      const statsResult = await CharacterService.calculateCharacterStats(characterId, userId);
-      if (!statsResult.success) {
-        setStatsError(statsResult.error?.message || 'Failed to calculate stats');
-        // Continue with character data even if stats fail
-      } else {
-        setStats(statsResult.data);
-      }
-    } catch {
-      setError('Unexpected error occurred');
-    } finally {
-      setLoading(false);
+      // Set new timer for 2 seconds
+      autosaveTimer.current = setTimeout(() => {
+        saveDraftChanges();
+      }, 2000);
     }
-  }, [characterId, userId]);
+
+    return () => {
+      if (autosaveTimer.current) {
+        clearTimeout(autosaveTimer.current);
+      }
+    };
+  }, [editMode, editedCharacter, hasChanges, saveDraftChanges]);
+
+  // Load draft changes on mount
+  useEffect(() => {
+    loadDraftChanges();
+  }, [loadDraftChanges]);
 
   const handleSave = async () => {
     if (!character) return;
