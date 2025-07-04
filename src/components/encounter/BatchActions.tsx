@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { X, Trash2, Copy, Archive } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { createSuccessHandler, createErrorHandler } from './actions/errorUtils';
 
 interface BatchActionsProps {
   selectedCount: number;
@@ -30,60 +31,36 @@ export function BatchActions({
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
-  const handleBulkDuplicate = async () => {
+  const handleSuccess = createSuccessHandler(toast);
+  const handleError = createErrorHandler(toast);
+
+  const executeAction = async (action: string, operation: () => Promise<void> | void) => {
     try {
-      // TODO: Implement bulk duplicate functionality
-      console.log('Bulk duplicate encounters');
-      toast({
-        title: 'Encounters duplicated',
-        description: `${selectedCount} encounters have been duplicated.`,
-      });
+      await operation();
+      handleSuccess(action, `${selectedCount} encounters`);
       onClearSelection();
       onRefetch();
     } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to duplicate encounters. Please try again.',
-        variant: 'destructive',
-      });
+      handleError(action, `${selectedCount} encounters`);
     }
   };
 
-  const handleBulkArchive = async () => {
-    try {
-      // TODO: Implement bulk archive functionality
-      console.log('Bulk archive encounters');
-      toast({
-        title: 'Encounters archived',
-        description: `${selectedCount} encounters have been archived.`,
-      });
-      onClearSelection();
-      onRefetch();
-    } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to archive encounters. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
+  const handleBulkDuplicate = () => executeAction('duplicate', () => {
+    // TODO: Implement bulk duplicate functionality
+    console.log('Bulk duplicate encounters');
+  });
+
+  const handleBulkArchive = () => executeAction('archive', () => {
+    // TODO: Implement bulk archive functionality
+    console.log('Bulk archive encounters');
+  });
 
   const handleBulkDelete = async () => {
     setIsDeleting(true);
     try {
-      // TODO: Implement bulk delete functionality
-      console.log('Bulk delete encounters');
-      toast({
-        title: 'Encounters deleted',
-        description: `${selectedCount} encounters have been deleted.`,
-      });
-      onClearSelection();
-      onRefetch();
-    } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete encounters. Please try again.',
-        variant: 'destructive',
+      await executeAction('delete', () => {
+        // TODO: Implement bulk delete functionality
+        console.log('Bulk delete encounters');
       });
     } finally {
       setIsDeleting(false);
