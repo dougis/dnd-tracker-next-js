@@ -1,5 +1,4 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
-import { EncounterService } from '@/lib/services/EncounterService';
+import { renderHook, waitFor } from '@testing-library/react';
 import { mockServiceResponses } from '../test-helpers';
 
 // Mock setup helpers for hooks
@@ -67,7 +66,7 @@ export const testErrorHandling = async (hook: any, params: any, mockService: any
 
   expectErrorState(result, errorMessage);
 };export const testLoadingState = async (hook: any, params: any, mockService: any) => {
-  let resolveSearch: (value: any) => void;
+  let resolveSearch: (_value: any) => void;
   const searchPromise = new Promise((resolve) => {
     resolveSearch = resolve;
   });
@@ -75,7 +74,7 @@ export const testErrorHandling = async (hook: any, params: any, mockService: any
   mockService.searchEncounters.mockReturnValue(searchPromise);
 
   const { result } = renderHook(() => hook(params));
-  
+
   expect(result.current.isLoading).toBe(true);
 
   resolveSearch!(mockServiceResponses.searchSuccess());
