@@ -21,28 +21,41 @@ describe('TableCells', () => {
     jest.clearAllMocks();
   });
 
+  // Helper function to render table cells properly
+  const renderCell = (cell: React.ReactElement) => {
+    return render(
+      <table>
+        <tbody>
+          <tr>
+            {cell}
+          </tr>
+        </tbody>
+      </table>
+    );
+  };
+
   describe('NameCell', () => {
     it('should render encounter name', () => {
-      render(<NameCell encounter={mockEncounter} />);
+      renderCell(<NameCell encounter={mockEncounter} />);
       expect(screen.getByText('Test Encounter')).toBeInTheDocument();
     });
 
     it('should render custom encounter name', () => {
       const customEncounter = createMockEncounter({ name: 'Custom Name' });
-      render(<NameCell encounter={customEncounter} />);
+      renderCell(<NameCell encounter={customEncounter} />);
       expect(screen.getByText('Custom Name')).toBeInTheDocument();
     });
 
     it('should apply correct styling', () => {
-      render(<NameCell encounter={mockEncounter} />);
+      renderCell(<NameCell encounter={mockEncounter} />);
       const cell = screen.getByText('Test Encounter').closest('td');
-      expect(cell).toHaveClass('px-4', 'py-2');
+      expect(cell).toHaveClass('p-4');
     });
   });
 
   describe('DifficultyCell', () => {
     it('should render encounter difficulty', () => {
-      render(<DifficultyCell encounter={mockEncounter} />);
+      renderCell(<DifficultyCell encounter={mockEncounter} />);
       expect(screen.getByText('medium')).toBeInTheDocument();
     });
 
@@ -51,40 +64,40 @@ describe('TableCells', () => {
 
       difficulties.forEach(difficulty => {
         const encounter = createMockEncounter({ difficulty });
-        render(<DifficultyCell encounter={encounter} />);
+        renderCell(<DifficultyCell encounter={encounter} />);
         expect(screen.getByText(difficulty)).toBeInTheDocument();
       });
     });
 
     it('should apply correct styling', () => {
-      render(<DifficultyCell encounter={mockEncounter} />);
+      renderCell(<DifficultyCell encounter={mockEncounter} />);
       const cell = screen.getByText('medium').closest('td');
-      expect(cell).toHaveClass('px-4', 'py-2');
+      expect(cell).toHaveClass('p-4');
     });
   });
 
   describe('TargetLevelCell', () => {
     it('should render target level', () => {
-      render(<TargetLevelCell encounter={mockEncounter} />);
+      renderCell(<TargetLevelCell encounter={mockEncounter} />);
       expect(screen.getByText('5')).toBeInTheDocument();
     });
 
     it('should render different target levels', () => {
       const encounter = createMockEncounter({ targetLevel: 10 });
-      render(<TargetLevelCell encounter={encounter} />);
+      renderCell(<TargetLevelCell encounter={encounter} />);
       expect(screen.getByText('10')).toBeInTheDocument();
     });
 
     it('should apply correct styling', () => {
-      render(<TargetLevelCell encounter={mockEncounter} />);
+      renderCell(<TargetLevelCell encounter={mockEncounter} />);
       const cell = screen.getByText('5').closest('td');
-      expect(cell).toHaveClass('px-4', 'py-2');
+      expect(cell).toHaveClass('p-4');
     });
   });
 
   describe('StatusCell', () => {
     it('should render encounter status', () => {
-      render(<StatusCell encounter={mockEncounter} />);
+      renderCell(<StatusCell encounter={mockEncounter} />);
       expect(screen.getByText('draft')).toBeInTheDocument();
     });
 
@@ -93,46 +106,46 @@ describe('TableCells', () => {
 
       statuses.forEach(status => {
         const encounter = createMockEncounter({ status });
-        render(<StatusCell encounter={encounter} />);
+        renderCell(<StatusCell encounter={encounter} />);
         expect(screen.getByText(status)).toBeInTheDocument();
       });
     });
 
     it('should apply correct styling', () => {
-      render(<StatusCell encounter={mockEncounter} />);
+      renderCell(<StatusCell encounter={mockEncounter} />);
       const cell = screen.getByText('draft').closest('td');
-      expect(cell).toHaveClass('px-4', 'py-2');
+      expect(cell).toHaveClass('p-4');
     });
   });
 
   describe('ParticipantsCell', () => {
     it('should render participant count', () => {
-      render(<ParticipantsCell encounter={mockEncounter} />);
+      renderCell(<ParticipantsCell encounter={mockEncounter} />);
       expect(screen.getByText('0')).toBeInTheDocument();
     });
 
     it('should render different participant counts', () => {
       const encounter = createMockEncounter({ participantCount: 5 });
-      render(<ParticipantsCell encounter={encounter} />);
+      renderCell(<ParticipantsCell encounter={encounter} />);
       expect(screen.getByText('5')).toBeInTheDocument();
     });
 
     it('should apply correct styling', () => {
-      render(<ParticipantsCell encounter={mockEncounter} />);
+      renderCell(<ParticipantsCell encounter={mockEncounter} />);
       const cell = screen.getByText('0').closest('td');
-      expect(cell).toHaveClass('px-4', 'py-2');
+      expect(cell).toHaveClass('p-4');
     });
   });
 
   describe('ActionsCell', () => {
     it('should render action buttons', () => {
-      render(<ActionsCell encounter={mockEncounter} onRefetch={mockOnRefetch} />);
+      renderCell(<ActionsCell encounter={mockEncounter} onRefetch={mockOnRefetch} />);
       expect(screen.getByTestId('encounter-action-buttons')).toBeInTheDocument();
       expect(screen.getByText('Mock Actions for Test Encounter')).toBeInTheDocument();
     });
 
     it('should pass encounter and onRefetch to action buttons', () => {
-      render(<ActionsCell encounter={mockEncounter} onRefetch={mockOnRefetch} />);
+      renderCell(<ActionsCell encounter={mockEncounter} onRefetch={mockOnRefetch} />);
 
       const refetchButton = screen.getByText('Refetch');
       refetchButton.click();
@@ -141,14 +154,14 @@ describe('TableCells', () => {
     });
 
     it('should apply correct styling', () => {
-      render(<ActionsCell encounter={mockEncounter} onRefetch={mockOnRefetch} />);
+      renderCell(<ActionsCell encounter={mockEncounter} onRefetch={mockOnRefetch} />);
       const cell = screen.getByTestId('encounter-action-buttons').closest('td');
-      expect(cell).toHaveClass('px-4', 'py-2');
+      expect(cell).toHaveClass('p-4');
     });
 
     it('should work with different encounters', () => {
       const customEncounter = createMockEncounter({ name: 'Custom Encounter' });
-      render(<ActionsCell encounter={customEncounter} onRefetch={mockOnRefetch} />);
+      renderCell(<ActionsCell encounter={customEncounter} onRefetch={mockOnRefetch} />);
 
       expect(screen.getByText('Mock Actions for Custom Encounter')).toBeInTheDocument();
     });

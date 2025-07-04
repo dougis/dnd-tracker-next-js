@@ -147,8 +147,8 @@ describe('EncounterTable', () => {
 
   describe('Empty State', () => {
     it('should render empty state when no encounters and not loading', () => {
-      testEmptyState(<EncounterTable {...defaultProps} encounters={[]} isLoading={false} />, 'No encounters found');
       render(<EncounterTable {...defaultProps} encounters={[]} isLoading={false} />);
+      expect(screen.getByText('No encounters found')).toBeInTheDocument();
       expect(screen.getByText(/Create your first encounter to get started/)).toBeInTheDocument();
     });
 

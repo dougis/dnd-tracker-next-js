@@ -59,8 +59,16 @@ describe('dataFetchHelpers', () => {
       const result = processSuccessfulResponse(mockData, 10);
 
       expect(mockTransformEncounter).toHaveBeenCalledTimes(2);
-      expect(mockTransformEncounter).toHaveBeenCalledWith({ id: '1', name: 'Encounter 1' });
-      expect(mockTransformEncounter).toHaveBeenCalledWith({ id: '2', name: 'Encounter 2' });
+      expect(mockTransformEncounter).toHaveBeenCalledWith(
+        { id: '1', name: 'Encounter 1' },
+        0,
+        [{ id: '1', name: 'Encounter 1' }, { id: '2', name: 'Encounter 2' }]
+      );
+      expect(mockTransformEncounter).toHaveBeenCalledWith(
+        { id: '2', name: 'Encounter 2' },
+        1,
+        [{ id: '1', name: 'Encounter 1' }, { id: '2', name: 'Encounter 2' }]
+      );
 
       expect(mockCreatePaginationInfo).toHaveBeenCalledWith(1, 5, 50, 10);
 

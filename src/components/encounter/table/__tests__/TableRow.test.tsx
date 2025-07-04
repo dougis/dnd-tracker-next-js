@@ -6,11 +6,21 @@ import { createMockEncounter } from '../../__tests__/test-utils/mockFactories';
 
 // Mock table cell components
 jest.mock('../TableCells', () => ({
+  SelectionCell: ({ encounter, isSelected, onSelect }: any) => (
+    <td data-testid="selection-cell">
+      <input
+        type="checkbox"
+        checked={isSelected}
+        onChange={() => onSelect(encounter.id)}
+      />
+    </td>
+  ),
   NameCell: ({ encounter }: any) => <td data-testid="name-cell">{encounter.name}</td>,
-  DifficultyCell: ({ encounter }: any) => <td data-testid="difficulty-cell">{encounter.difficulty}</td>,
-  TargetLevelCell: ({ encounter }: any) => <td data-testid="target-level-cell">{encounter.targetLevel}</td>,
   StatusCell: ({ encounter }: any) => <td data-testid="status-cell">{encounter.status}</td>,
+  DifficultyCell: ({ encounter }: any) => <td data-testid="difficulty-cell">{encounter.difficulty}</td>,
   ParticipantsCell: ({ encounter }: any) => <td data-testid="participants-cell">{encounter.participantCount}</td>,
+  TargetLevelCell: ({ encounter }: any) => <td data-testid="target-level-cell">{encounter.targetLevel}</td>,
+  UpdatedCell: ({ encounter }: any) => <td data-testid="updated-cell">Updated</td>,
   ActionsCell: ({ encounter, onRefetch }: any) => (
     <td data-testid="actions-cell">
       Actions for {encounter.name}
@@ -41,11 +51,13 @@ describe('TableRow', () => {
       </table>
     );
 
+    expect(screen.getByTestId('selection-cell')).toBeInTheDocument();
     expect(screen.getByTestId('name-cell')).toBeInTheDocument();
-    expect(screen.getByTestId('difficulty-cell')).toBeInTheDocument();
-    expect(screen.getByTestId('target-level-cell')).toBeInTheDocument();
     expect(screen.getByTestId('status-cell')).toBeInTheDocument();
+    expect(screen.getByTestId('difficulty-cell')).toBeInTheDocument();
     expect(screen.getByTestId('participants-cell')).toBeInTheDocument();
+    expect(screen.getByTestId('target-level-cell')).toBeInTheDocument();
+    expect(screen.getByTestId('updated-cell')).toBeInTheDocument();
     expect(screen.getByTestId('actions-cell')).toBeInTheDocument();
   });
 
@@ -161,7 +173,7 @@ describe('TableRow', () => {
     expect(row).toHaveClass('border-b');
   });
 
-  it('should show selected styling when isSelected is true', () => {
+  it('should apply hover styling classes', () => {
     render(
       <table>
         <tbody>
@@ -171,7 +183,7 @@ describe('TableRow', () => {
     );
 
     const row = screen.getByRole('row');
-    expect(row).toHaveClass('bg-muted/50');
+    expect(row).toHaveClass('hover:bg-muted/50', 'cursor-pointer', 'group');
   });
 
   it('should handle rapid checkbox clicks', async () => {

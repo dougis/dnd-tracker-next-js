@@ -74,8 +74,8 @@ describe('EncounterGrid', () => {
 
   describe('Empty State', () => {
     it('should render empty state when no encounters and not loading', () => {
-      testEmptyState(<EncounterGrid {...defaultProps} encounters={[]} isLoading={false} />, 'No encounters found');
       render(<EncounterGrid {...defaultProps} encounters={[]} isLoading={false} />);
+      expect(screen.getByText('No encounters found')).toBeInTheDocument();
       expect(screen.getByText(/Create your first encounter to get started/)).toBeInTheDocument();
     });
 
