@@ -8,31 +8,31 @@ export const useCharacterData = (id: string) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchCharacter = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    if (!id) return;
 
+    const fetchCharacter = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
         // TODO: Get actual user ID from authentication
         const userId = 'temp-user-id';
         const result = await CharacterService.getCharacterById(id, userId);
 
-        if (!result.success) {
-          throw new Error(result.error.message);
+        if (result.success) {
+          setCharacter(result.data);
+        } else {
+          setError(result.error.message);
         }
-
-        setCharacter(result.data);
       } catch (err) {
         console.error('Error fetching character:', err);
         setError(err instanceof Error ? err.message : 'Character not found');
-      } finally {
-        setLoading(false);
       }
+      
+      setLoading(false);
     };
 
-    if (id) {
-      fetchCharacter();
-    }
+    fetchCharacter();
   }, [id]);
 
   return { character, loading, error };

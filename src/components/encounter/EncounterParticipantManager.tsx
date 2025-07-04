@@ -34,43 +34,17 @@ import type {
   IEncounter,
   IParticipantReference,
 } from '@/lib/models/encounter/interfaces';
-import { EncounterService } from '@/lib/services/EncounterService';
 import { ParticipantItem } from './ParticipantItem';
 import { EmptyParticipantsState } from './EmptyParticipantsState';
 import { BatchSelectionBar } from './BatchSelectionBar';
+import { useParticipantOperations } from './hooks/useParticipantOperations';
+import { useParticipantForm } from './hooks/useParticipantForm';
 
 interface EncounterParticipantManagerProps {
   encounter: IEncounter;
   onUpdate?: (_updatedEncounter: IEncounter) => void;
 }
 
-interface ParticipantFormData {
-  name: string;
-  type: 'pc' | 'npc' | 'monster';
-  maxHitPoints: number;
-  currentHitPoints: number;
-  temporaryHitPoints: number;
-  armorClass: number;
-  initiative?: number;
-  isPlayer: boolean;
-  isVisible: boolean;
-  notes: string;
-  conditions: string[];
-}
-
-const initialFormData: ParticipantFormData = {
-  name: '',
-  type: 'pc',
-  maxHitPoints: 1,
-  currentHitPoints: 1,
-  temporaryHitPoints: 0,
-  armorClass: 10,
-  initiative: undefined,
-  isPlayer: true,
-  isVisible: true,
-  notes: '',
-  conditions: [],
-};
 
 export function EncounterParticipantManager({
   encounter,
@@ -80,163 +54,47 @@ export function EncounterParticipantManager({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [editingParticipant, setEditingParticipant] = useState<IParticipantReference | null>(null);
-  const [formData, setFormData] = useState<ParticipantFormData>(initialFormData);
   const [selectedParticipants, setSelectedParticipants] = useState<Set<string>>(new Set());
-  const [isLoading, setIsLoading] = useState(false);
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  const validateForm = useCallback((data: ParticipantFormData): Record<string, string> => {
-    const errors: Record<string, string> = {};
+  const { isLoading, addParticipant, updateParticipant, removeParticipant } = useParticipantOperations(encounter, onUpdate);
+  const { formData, setFormData, formErrors, resetForm, loadParticipantData, isFormValid } = useParticipantForm();
 
-    if (!data.name.trim()) {
-      errors.name = 'Name is required';
-    }
-
-    if (data.maxHitPoints <= 0) {
-      errors.maxHitPoints = 'Hit Points must be greater than 0';
-    }
-
-    if (data.armorClass < 0) {
-      errors.armorClass = 'Armor Class cannot be negative';
-    }
-
-    return errors;
-  }, []);
-
-  const resetForm = useCallback(() => {
-    setFormData(initialFormData);
-    setFormErrors({});
-  }, []);
-
-  const createParticipantData = useCallback((data: ParticipantFormData) => ({
-    ...data,
-    characterId: new Date().getTime().toString(),
-    currentHitPoints: data.maxHitPoints,
-  }), []);
-
-  const handleServiceResult = useCallback((result: any, successMessage: string, onSuccess: () => void) => {
-    if (result.success) {
-      toast.success(successMessage);
-      onUpdate?.(result.data!);
-      onSuccess();
-    } else {
-      toast.error(typeof result.error === 'string' ? result.error : 'Operation failed');
-    }
-  }, [onUpdate]);
 
   const handleAddParticipant = useCallback(async () => {
-    try {
-      const errors = validateForm(formData);
-      if (Object.keys(errors).length > 0) {
-        setFormErrors(errors);
-        return;
-      }
+    if (!isFormValid(formData)) return;
 
-      setIsLoading(true);
-      const participantData = createParticipantData(formData);
-      const result = await EncounterService.addParticipant(
-        encounter._id.toString(),
-        participantData
-      );
-
-      handleServiceResult(result, 'Participant added successfully', () => {
-        setIsAddDialogOpen(false);
-        resetForm();
-      });
-    } catch (error) {
-      toast.error('An error occurred while adding participant');
-      console.error('Add participant error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [encounter._id, formData, validateForm, createParticipantData, handleServiceResult, resetForm]);
+    await addParticipant(formData, () => {
+      setIsAddDialogOpen(false);
+      resetForm();
+    });
+  }, [formData, isFormValid, addParticipant, resetForm]);
 
   const handleEditParticipant = useCallback((participant: IParticipantReference) => {
     setEditingParticipant(participant);
-    setFormData({
-      name: participant.name,
-      type: participant.type,
-      maxHitPoints: participant.maxHitPoints,
-      currentHitPoints: participant.currentHitPoints,
-      temporaryHitPoints: participant.temporaryHitPoints,
-      armorClass: participant.armorClass,
-      initiative: participant.initiative,
-      isPlayer: participant.isPlayer,
-      isVisible: participant.isVisible,
-      notes: participant.notes,
-      conditions: participant.conditions,
-    });
+    loadParticipantData(participant);
     setIsEditDialogOpen(true);
-  }, []);
+  }, [loadParticipantData]);
 
   const handleUpdateParticipant = useCallback(async () => {
-    if (!editingParticipant) return;
+    if (!editingParticipant || !isFormValid(formData)) return;
 
-    try {
-      const errors = validateForm(formData);
-      if (Object.keys(errors).length > 0) {
-        setFormErrors(errors);
-        return;
-      }
-
-      setIsLoading(true);
-      const result = await EncounterService.updateParticipant(
-        encounter._id.toString(),
-        editingParticipant.characterId.toString(),
-        formData
-      );
-
-      handleServiceResult(result, 'Participant updated successfully', () => {
-        setIsEditDialogOpen(false);
-        setEditingParticipant(null);
-        resetForm();
-      });
-    } catch (error) {
-      toast.error('An error occurred while updating participant');
-      console.error('Update participant error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [encounter._id, editingParticipant, formData, validateForm, handleServiceResult, resetForm]);
+    await updateParticipant(editingParticipant.characterId.toString(), formData, () => {
+      setIsEditDialogOpen(false);
+      setEditingParticipant(null);
+      resetForm();
+    });
+  }, [editingParticipant, formData, isFormValid, updateParticipant, resetForm]);
 
   const handleRemoveParticipant = useCallback(async (participantId: string) => {
-    try {
-      setIsLoading(true);
-      const result = await EncounterService.removeParticipant(
-        encounter._id.toString(),
-        participantId
-      );
-
-      handleServiceResult(result, 'Participant removed successfully', () => {});
-    } catch (error) {
-      toast.error('An error occurred while removing participant');
-      console.error('Remove participant error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [encounter._id, handleServiceResult]);
+    await removeParticipant(participantId);
+  }, [removeParticipant]);
 
   const handleBatchRemove = useCallback(async () => {
-    try {
-      setIsLoading(true);
-
-      for (const participantId of Array.from(selectedParticipants)) {
-        await EncounterService.removeParticipant(
-          encounter._id.toString(),
-          participantId
-        );
-      }
-
-      toast.success('Selected participants removed successfully');
-      setSelectedParticipants(new Set());
-      // Note: In a real implementation, we'd want to batch these operations
-    } catch (error) {
-      toast.error('An error occurred while removing participants');
-      console.error('Batch remove error:', error);
-    } finally {
-      setIsLoading(false);
+    for (const participantId of Array.from(selectedParticipants)) {
+      await removeParticipant(participantId);
     }
-  }, [encounter._id, selectedParticipants]);
+    setSelectedParticipants(new Set());
+  }, [selectedParticipants, removeParticipant]);
 
   const handleParticipantSelection = useCallback((participantId: string, checked: boolean) => {
     const newSelection = new Set(selectedParticipants);

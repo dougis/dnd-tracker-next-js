@@ -18,36 +18,21 @@ const DEFAULT_PARTICIPANT = {
 export const createTestParticipant = (overrides: any = {}) =>
   testDataFactories.createParticipant({ ...DEFAULT_PARTICIPANT, ...overrides });
 
-// Generic async helper for common operations
-const asyncHelper = {
-  async click(user: ReturnType<typeof userEvent.setup>, selector: any) {
-    await user.click(selector);
-  },
-
-  async waitForElement(text: string | RegExp) {
-    await waitFor(() => {
-      expect(screen.getByText(text)).toBeInTheDocument();
-    });
-  },
-
-  async fillInput(user: ReturnType<typeof userEvent.setup>, label: RegExp, value: string) {
-    const input = screen.getByLabelText(label) as HTMLInputElement;
-    fireEvent.change(input, { target: { value } });
-  }
+// Simplified helper utilities
+const waitForElement = async (text: string | RegExp) => {
+  await waitFor(() => {
+    expect(screen.getByText(text)).toBeInTheDocument();
+  });
 };
 
 // Form operations
 export const formActions = {
   async openDialog(user: ReturnType<typeof userEvent.setup>) {
-    await asyncHelper.click(user, screen.getByRole('button', { name: /add character/i }));
+    await user.click(screen.getByRole('button', { name: /add character/i }));
   },
 
   async fillForm(user: ReturnType<typeof userEvent.setup>, data: Record<string, string>) {
-    const fieldMap = {
-      name: /Character Name/i,
-      hitPoints: /Hit Points/i,
-      armorClass: /Armor Class/i
-    };
+    const fieldMap = { name: /Character Name/i, hitPoints: /Hit Points/i, armorClass: /Armor Class/i };
 
     for (const [key, value] of Object.entries(data)) {
       if (key === 'name' && value !== undefined) {
@@ -55,13 +40,14 @@ export const formActions = {
         await user.clear(input);
         if (value) await user.type(input, value);
       } else if (fieldMap[key as keyof typeof fieldMap]) {
-        await asyncHelper.fillInput(user, fieldMap[key as keyof typeof fieldMap], value);
+        const input = screen.getByLabelText(fieldMap[key as keyof typeof fieldMap]) as HTMLInputElement;
+        fireEvent.change(input, { target: { value } });
       }
     }
   },
 
   async submit(user: ReturnType<typeof userEvent.setup>, buttonName: string) {
-    await asyncHelper.click(user, screen.getByRole('button', { name: new RegExp(buttonName, 'i') }));
+    await user.click(screen.getByRole('button', { name: new RegExp(buttonName, 'i') }));
   }
 };
 
@@ -72,7 +58,7 @@ export const testExpectations = {
   },
 
   async elementVisible(text: string) {
-    await asyncHelper.waitForElement(text);
+    await waitForElement(text);
   },
 
   formElements() {
@@ -83,7 +69,7 @@ export const testExpectations = {
 
   async validationErrors(errors: string[]) {
     for (const error of errors) {
-      await asyncHelper.waitForElement(new RegExp(error, 'i'));
+      await waitForElement(new RegExp(error, 'i'));
     }
   },
 
@@ -101,6 +87,12 @@ export const serviceMocks = {
 
   expectCall(mockService: any, method: string, expectedArgs: any[]) {
     expect((mockService as any)[method]).toHaveBeenCalledWith(...expectedArgs);
+  },
+
+  async expectCallAfterWait(mockService: any, method: string, expectedArgs: any[]) {
+    await waitFor(() => {
+      expect((mockService as any)[method]).toHaveBeenCalledWith(...expectedArgs);
+    });
   }
 };
 
@@ -124,22 +116,43 @@ export const workflows = {
 
   async editParticipant(user: ReturnType<typeof userEvent.setup>, index: number, data: Record<string, string>) {
     const { editButtons } = getElements();
-    await asyncHelper.click(user, editButtons[index]);
-    await asyncHelper.waitForElement('Edit Participant');
+    await user.click(editButtons[index]);
+    await waitForElement('Edit Participant');
     await formActions.fillForm(user, data);
     await formActions.submit(user, 'update participant');
   },
 
   async removeParticipant(user: ReturnType<typeof userEvent.setup>, index: number) {
     const { removeButtons } = getElements();
-    await asyncHelper.click(user, removeButtons[index]);
-    await asyncHelper.click(user, screen.getByText('Remove'));
+    await user.click(removeButtons[index]);
+    await user.click(screen.getByText('Remove'));
   },
 
   async selectMultiple(user: ReturnType<typeof userEvent.setup>, indices: number[]) {
     const { checkboxes } = getElements();
     for (const index of indices) {
-      await asyncHelper.click(user, checkboxes[index]);
+      await user.click(checkboxes[index]);
     }
+  }
+};
+
+// High-level test patterns
+export const testPatterns = {
+  async setupTest(renderFn: () => void) {
+    const user = userEvent.setup();
+    renderFn();
+    return user;
+  },
+
+  async testServiceOperation(
+    mockService: any,
+    method: string,
+    mockResponse: any,
+    operation: () => Promise<void>,
+    expectedArgs: any[]
+  ) {
+    serviceMocks.setup(mockService, method, mockResponse);
+    await operation();
+    await serviceMocks.expectCallAfterWait(mockService, method, expectedArgs);
   }
 };

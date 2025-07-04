@@ -10,7 +10,8 @@ import {
   serviceMocks,
   testExpectations,
   getElements,
-  workflows
+  workflows,
+  testPatterns
 } from './participant-test-helpers';
 
 // Mock the EncounterService
@@ -87,19 +88,14 @@ describe('EncounterParticipantManager', () => {
     });
 
     it('should add participant successfully', async () => {
-      const user = userEvent.setup();
-      serviceMocks.setup(mockEncounterService, 'addParticipant', { success: true, data: mockEncounter });
-
-      renderComponent(mockEncounter);
-
-      await workflows.addParticipant(user, {
-        name: 'Legolas',
-        hitPoints: '42',
-        armorClass: '14',
-      });
-
-      await waitFor(() => {
-        serviceMocks.expectCall(mockEncounterService, 'addParticipant', [
+      const user = await testPatterns.setupTest(() => renderComponent(mockEncounter));
+      
+      await testPatterns.testServiceOperation(
+        mockEncounterService,
+        'addParticipant',
+        { success: true, data: mockEncounter },
+        () => workflows.addParticipant(user, { name: 'Legolas', hitPoints: '42', armorClass: '14' }),
+        [
           mockEncounter._id.toString(),
           expect.objectContaining({
             name: 'Legolas',
@@ -114,72 +110,58 @@ describe('EncounterParticipantManager', () => {
             notes: '',
             conditions: [],
           })
-        ]);
-      });
+        ]
+      );
     });
 
     it('should show validation errors for invalid input', async () => {
-      const user = userEvent.setup();
-      renderComponent(mockEncounter);
-
+      const user = await testPatterns.setupTest(() => renderComponent(mockEncounter));
       await workflows.addParticipant(user, { name: '', hitPoints: '0' });
-
       await testExpectations.validationErrors(['Name is required', 'Hit Points must be greater than 0']);
     });
   });
 
   describe('Removing Participants', () => {
     it('should show remove confirmation dialog', async () => {
-      const user = userEvent.setup();
-      renderComponent(mockEncounter);
-
+      const user = await testPatterns.setupTest(() => renderComponent(mockEncounter));
       const { removeButtons } = getElements();
       await user.click(removeButtons[0]);
-
-      expect(screen.getByText('Remove Participant')).toBeInTheDocument();
+      testExpectations.elementsVisible('Remove Participant');
       expect(screen.getByText(/Are you sure you want to remove Aragorn/i)).toBeInTheDocument();
     });
 
     it('should remove participant successfully', async () => {
-      const user = userEvent.setup();
-      serviceMocks.setup(mockEncounterService, 'removeParticipant', { success: true, data: mockEncounter });
-
-      renderComponent(mockEncounter);
-
-      await workflows.removeParticipant(user, 0);
-
-      await waitFor(() => {
-        serviceMocks.expectCall(mockEncounterService, 'removeParticipant', [
-          mockEncounter._id.toString(),
-          '64a1b2c3d4e5f6789abcdef0'
-        ]);
-      });
+      const user = await testPatterns.setupTest(() => renderComponent(mockEncounter));
+      
+      await testPatterns.testServiceOperation(
+        mockEncounterService,
+        'removeParticipant',
+        { success: true, data: mockEncounter },
+        () => workflows.removeParticipant(user, 0),
+        [mockEncounter._id.toString(), '64a1b2c3d4e5f6789abcdef0']
+      );
     });
   });
 
   describe('Editing Participants', () => {
     it('should show edit form when edit button is clicked', async () => {
-      const user = userEvent.setup();
-      renderComponent(mockEncounter);
-
+      const user = await testPatterns.setupTest(() => renderComponent(mockEncounter));
       const { editButtons } = getElements();
       await user.click(editButtons[0]);
-
-      expect(screen.getByText('Edit Participant')).toBeInTheDocument();
+      testExpectations.elementsVisible('Edit Participant');
       expect(screen.getByDisplayValue('Aragorn')).toBeInTheDocument();
       expect(screen.getByDisplayValue('45')).toBeInTheDocument();
     });
 
     it('should update participant successfully', async () => {
-      const user = userEvent.setup();
-      serviceMocks.setup(mockEncounterService, 'updateParticipant', { success: true, data: mockEncounter });
-
-      renderComponent(mockEncounter);
-
-      await workflows.editParticipant(user, 0, { hitPoints: '50' });
-
-      await waitFor(() => {
-        serviceMocks.expectCall(mockEncounterService, 'updateParticipant', [
+      const user = await testPatterns.setupTest(() => renderComponent(mockEncounter));
+      
+      await testPatterns.testServiceOperation(
+        mockEncounterService,
+        'updateParticipant',
+        { success: true, data: mockEncounter },
+        () => workflows.editParticipant(user, 0, { hitPoints: '50' }),
+        [
           mockEncounter._id.toString(),
           '64a1b2c3d4e5f6789abcdef0',
           expect.objectContaining({
@@ -195,8 +177,8 @@ describe('EncounterParticipantManager', () => {
             notes: 'Ranger',
             conditions: [],
           })
-        ]);
-      });
+        ]
+      );
     });
   });
 
@@ -244,30 +226,25 @@ describe('EncounterParticipantManager', () => {
 
   describe('Batch Operations', () => {
     it('should allow selecting multiple participants', async () => {
-      const user = userEvent.setup();
-      renderComponent(mockEncounter);
-
+      const user = await testPatterns.setupTest(() => renderComponent(mockEncounter));
       await workflows.selectMultiple(user, [0, 1]);
-
       testExpectations.batchSelection(2);
     });
 
     it('should perform batch removal', async () => {
-      const user = userEvent.setup();
-      serviceMocks.setup(mockEncounterService, 'removeParticipant', { success: true, data: mockEncounter });
-
-      renderComponent(mockEncounter);
-
-      await workflows.selectMultiple(user, [0]);
-      await user.click(screen.getByText('Remove Selected'));
-      await user.click(screen.getByText('Remove'));
-
-      await waitFor(() => {
-        serviceMocks.expectCall(mockEncounterService, 'removeParticipant', [
-          mockEncounter._id.toString(),
-          '64a1b2c3d4e5f6789abcdef0'
-        ]);
-      });
+      const user = await testPatterns.setupTest(() => renderComponent(mockEncounter));
+      
+      await testPatterns.testServiceOperation(
+        mockEncounterService,
+        'removeParticipant',
+        { success: true, data: mockEncounter },
+        async () => {
+          await workflows.selectMultiple(user, [0]);
+          await user.click(screen.getByText('Remove Selected'));
+          await user.click(screen.getByText('Remove'));
+        },
+        [mockEncounter._id.toString(), '64a1b2c3d4e5f6789abcdef0']
+      );
     });
   });
 
