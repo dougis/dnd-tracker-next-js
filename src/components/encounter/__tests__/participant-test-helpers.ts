@@ -25,23 +25,31 @@ const waitForElement = async (text: string | RegExp) => {
   });
 };
 
-// Form operations
+// Form operations - simplified and focused
 export const formActions = {
   async openDialog(user: ReturnType<typeof userEvent.setup>) {
     await user.click(screen.getByRole('button', { name: /add character/i }));
   },
 
-  async fillForm(user: ReturnType<typeof userEvent.setup>, data: Record<string, string>) {
-    const fieldMap = { name: /Character Name/i, hitPoints: /Hit Points/i, armorClass: /Armor Class/i };
+  async fillNameField(user: ReturnType<typeof userEvent.setup>, name: string) {
+    const input = screen.getByLabelText(/Character Name/i);
+    await user.clear(input);
+    if (name) await user.type(input, name);
+  },
 
+  async fillNumberField(labelPattern: RegExp, value: string) {
+    const input = screen.getByLabelText(labelPattern) as HTMLInputElement;
+    fireEvent.change(input, { target: { value } });
+  },
+
+  async fillForm(user: ReturnType<typeof userEvent.setup>, data: Record<string, string>) {
     for (const [key, value] of Object.entries(data)) {
       if (key === 'name' && value !== undefined) {
-        const input = screen.getByLabelText(fieldMap.name);
-        await user.clear(input);
-        if (value) await user.type(input, value);
-      } else if (fieldMap[key as keyof typeof fieldMap]) {
-        const input = screen.getByLabelText(fieldMap[key as keyof typeof fieldMap]) as HTMLInputElement;
-        fireEvent.change(input, { target: { value } });
+        await this.fillNameField(user, value);
+      } else if (key === 'hitPoints') {
+        await this.fillNumberField(/Hit Points/i, value);
+      } else if (key === 'armorClass') {
+        await this.fillNumberField(/Armor Class/i, value);
       }
     }
   },
@@ -106,7 +114,7 @@ export const getElements = () => ({
   participants: screen.getAllByTestId(/participant-item/i),
 });
 
-// Complex workflow operations
+// Simplified workflow operations
 export const workflows = {
   async addParticipant(user: ReturnType<typeof userEvent.setup>, data: Record<string, string>) {
     await formActions.openDialog(user);
@@ -136,7 +144,25 @@ export const workflows = {
   }
 };
 
-// High-level test patterns
+// Extracted simple element operations
+export const elementActions = {
+  async clickEditButton(user: ReturnType<typeof userEvent.setup>, index: number) {
+    const { editButtons } = getElements();
+    await user.click(editButtons[index]);
+  },
+
+  async clickRemoveButton(user: ReturnType<typeof userEvent.setup>, index: number) {
+    const { removeButtons } = getElements();
+    await user.click(removeButtons[index]);
+  },
+
+  async selectCheckbox(user: ReturnType<typeof userEvent.setup>, index: number) {
+    const { checkboxes } = getElements();
+    await user.click(checkboxes[index]);
+  }
+};
+
+// High-level test patterns - simplified
 export const testPatterns = {
   async setupTest(renderFn: () => void) {
     const user = userEvent.setup();
@@ -153,6 +179,18 @@ export const testPatterns = {
   ) {
     serviceMocks.setup(mockService, method, mockResponse);
     await operation();
+    await serviceMocks.expectCallAfterWait(mockService, method, expectedArgs);
+  }
+};
+
+// Extracted service test utilities
+export const serviceTestUtils = {
+  async setupAndExecute(mockService: any, method: string, mockResponse: any, operation: () => Promise<void>) {
+    serviceMocks.setup(mockService, method, mockResponse);
+    await operation();
+  },
+
+  async verifyServiceCall(mockService: any, method: string, expectedArgs: any[]) {
     await serviceMocks.expectCallAfterWait(mockService, method, expectedArgs);
   }
 };

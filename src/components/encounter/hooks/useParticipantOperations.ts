@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
+import { Types } from 'mongoose';
 import { EncounterService } from '@/lib/services/EncounterService';
 import type { IEncounter } from '@/lib/models/encounter/interfaces';
+import { handleServiceOperation } from '../utils/serviceOperationUtils';
 
 interface ParticipantFormData {
   name: string;
@@ -23,78 +24,72 @@ export const useParticipantOperations = (
 ) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleServiceResult = useCallback((result: any, successMessage: string, onSuccess: () => void) => {
-    if (result.success) {
-      toast.success(successMessage);
-      onUpdate?.(result.data!);
-      onSuccess();
-    } else {
-      toast.error(typeof result.error === 'string' ? result.error : 'Operation failed');
-    }
-  }, [onUpdate]);
-
   const createParticipantData = useCallback((data: ParticipantFormData) => ({
     ...data,
-    characterId: new Date().getTime().toString(),
+    characterId: new Types.ObjectId().toString(),
     currentHitPoints: data.maxHitPoints,
   }), []);
+
+  const executeWithLoading = useCallback(async (operation: () => Promise<void>) => {
+    setIsLoading(true);
+    try {
+      await operation();
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const executeServiceOperation = useCallback(async (
+    operation: () => Promise<any>,
+    successMessage: string,
+    onSuccess?: (_data: any) => void
+  ) => {
+    await executeWithLoading(async () => {
+      await handleServiceOperation(
+        operation,
+        successMessage,
+        (data?: IEncounter) => {
+          if (data) {
+            onUpdate?.(data);
+            onSuccess?.(data);
+          }
+        }
+      );
+    });
+  }, [executeWithLoading, onUpdate]);
 
   const addParticipant = useCallback(async (
     formData: ParticipantFormData,
     onSuccess: () => void
   ) => {
-    try {
-      setIsLoading(true);
-      const participantData = createParticipantData(formData);
-      const result = await EncounterService.addParticipant(
-        encounter._id.toString(),
-        participantData
-      );
-      handleServiceResult(result, 'Participant added successfully', onSuccess);
-    } catch (error) {
-      toast.error('An error occurred while adding participant');
-      console.error('Add participant error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [encounter._id, createParticipantData, handleServiceResult]);
+    const participantData = createParticipantData(formData);
+    await executeServiceOperation(
+      () => EncounterService.addParticipant(encounter._id.toString(), participantData),
+      'Participant added successfully',
+      () => onSuccess()
+    );
+  }, [encounter._id, createParticipantData, executeServiceOperation]);
 
   const updateParticipant = useCallback(async (
     participantId: string,
     formData: ParticipantFormData,
     onSuccess: () => void
   ) => {
-    try {
-      setIsLoading(true);
-      const result = await EncounterService.updateParticipant(
-        encounter._id.toString(),
-        participantId,
-        formData
-      );
-      handleServiceResult(result, 'Participant updated successfully', onSuccess);
-    } catch (error) {
-      toast.error('An error occurred while updating participant');
-      console.error('Update participant error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [encounter._id, handleServiceResult]);
+    // For updates, don't include characterId as it shouldn't be changed
+    const { characterId: _characterId, ...updateData } = createParticipantData(formData);
+    await executeServiceOperation(
+      () => EncounterService.updateParticipant(encounter._id.toString(), participantId, updateData),
+      'Participant updated successfully',
+      () => onSuccess()
+    );
+  }, [encounter._id, createParticipantData, executeServiceOperation]);
 
   const removeParticipant = useCallback(async (participantId: string) => {
-    try {
-      setIsLoading(true);
-      const result = await EncounterService.removeParticipant(
-        encounter._id.toString(),
-        participantId
-      );
-      handleServiceResult(result, 'Participant removed successfully', () => {});
-    } catch (error) {
-      toast.error('An error occurred while removing participant');
-      console.error('Remove participant error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [encounter._id, handleServiceResult]);
+    await executeServiceOperation(
+      () => EncounterService.removeParticipant(encounter._id.toString(), participantId),
+      'Participant removed successfully'
+    );
+  }, [encounter._id, executeServiceOperation]);
 
   return {
     isLoading,
