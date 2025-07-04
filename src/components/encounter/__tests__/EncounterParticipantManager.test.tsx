@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EncounterParticipantManager } from '../EncounterParticipantManager';
 import { EncounterService } from '@/lib/services/EncounterService';
@@ -9,34 +9,150 @@ import { testDataFactories } from '@/lib/services/__tests__/testDataFactories';
 jest.mock('@/lib/services/EncounterService');
 const mockEncounterService = EncounterService as jest.Mocked<typeof EncounterService>;
 
+// Test helper functions
+const createTestParticipant = (overrides: any = {}) =>
+  testDataFactories.createParticipant({
+    maxHitPoints: 45,
+    currentHitPoints: 45,
+    temporaryHitPoints: 0,
+    armorClass: 16,
+    isPlayer: true,
+    isVisible: true,
+    notes: 'Test notes',
+    conditions: [],
+    ...overrides,
+  });
+
+const openAddDialog = async (user: ReturnType<typeof userEvent.setup>) => {
+  await user.click(screen.getByRole('button', { name: /add character/i }));
+};
+
+const fillParticipantForm = async (
+  user: ReturnType<typeof userEvent.setup>,
+  data: { name?: string; hitPoints?: string; armorClass?: string } = {}
+) => {
+  if (data.name !== undefined) {
+    const nameInput = screen.getByLabelText(/Character Name/i);
+    await user.clear(nameInput);
+    if (data.name) await user.type(nameInput, data.name);
+  }
+  if (data.hitPoints) {
+    const hpInput = screen.getByLabelText(/Hit Points/i) as HTMLInputElement;
+    fireEvent.change(hpInput, { target: { value: data.hitPoints } });
+  }
+  if (data.armorClass) {
+    const acInput = screen.getByLabelText(/Armor Class/i) as HTMLInputElement;
+    fireEvent.change(acInput, { target: { value: data.armorClass } });
+  }
+};
+
+const submitForm = async (user: ReturnType<typeof userEvent.setup>, buttonName: string) => {
+  await user.click(screen.getByRole('button', { name: new RegExp(buttonName, 'i') }));
+};
+
+const setupMockService = (method: string, response: any) => {
+  (mockEncounterService as any)[method].mockResolvedValue(response);
+};
+
+const expectServiceCall = (method: string, expectedArgs: any[]) => {
+  expect((mockEncounterService as any)[method]).toHaveBeenCalledWith(...expectedArgs);
+};
+
+const waitForText = async (text: string | RegExp) => {
+  await waitFor(() => {
+    expect(screen.getByText(text)).toBeInTheDocument();
+  });
+};
+
+const waitForDialog = async (title: string) => {
+  await waitFor(() => {
+    expect(screen.getByText(title)).toBeInTheDocument();
+  });
+};
+
+const renderComponent = (encounter: any) => {
+  return render(<EncounterParticipantManager encounter={encounter} />);
+};
+
+const getParticipantElements = () => {
+  return {
+    addButton: screen.getByRole('button', { name: /add character/i }),
+    importButton: screen.getByRole('button', { name: /import from library/i }),
+    editButtons: screen.getAllByLabelText(/Edit participant/i),
+    removeButtons: screen.getAllByLabelText(/Remove participant/i),
+    checkboxes: screen.getAllByRole('checkbox'),
+    participants: screen.getAllByTestId(/participant-item/i),
+  };
+};
+
+const expectParticipantVisible = (name: string, hp: string, ac: string) => {
+  expect(screen.getByText(name)).toBeInTheDocument();
+  expect(screen.getByText(hp)).toBeInTheDocument();
+  expect(screen.getByText(ac)).toBeInTheDocument();
+};
+
+const expectFormElements = () => {
+  expect(screen.getByLabelText(/Character Name/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/Hit Points/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/Armor Class/i)).toBeInTheDocument();
+};
+
+const expectValidationErrors = async (errors: string[]) => {
+  for (const error of errors) {
+    await waitForText(new RegExp(error, 'i'));
+  }
+};
+
+const performAddParticipant = async (user: ReturnType<typeof userEvent.setup>, participantData: any) => {
+  await openAddDialog(user);
+  await fillParticipantForm(user, participantData);
+  await submitForm(user, 'add participant');
+};
+
+const performEditParticipant = async (user: ReturnType<typeof userEvent.setup>, index: number, newData: any) => {
+  const editButtons = screen.getAllByLabelText(/Edit participant/i);
+  await user.click(editButtons[index]);
+  await waitForDialog('Edit Participant');
+  await fillParticipantForm(user, newData);
+  await submitForm(user, 'update participant');
+};
+
+const performRemoveParticipant = async (user: ReturnType<typeof userEvent.setup>, index: number) => {
+  const removeButtons = screen.getAllByLabelText(/Remove participant/i);
+  await user.click(removeButtons[index]);
+  await user.click(screen.getByText('Remove'));
+};
+
+const performBatchSelection = async (user: ReturnType<typeof userEvent.setup>, indices: number[]) => {
+  const checkboxes = screen.getAllByRole('checkbox');
+  for (const index of indices) {
+    await user.click(checkboxes[index]);
+  }
+};
+
+const expectBatchSelectionState = (count: number) => {
+  expect(screen.getByText(`${count} participants selected`)).toBeInTheDocument();
+  expect(screen.getByText('Remove Selected')).toBeInTheDocument();
+};
+
 describe('EncounterParticipantManager', () => {
   const mockEncounter = testDataFactories.createEncounter({
     participants: [
-      testDataFactories.createParticipant({
+      createTestParticipant({
         characterId: '64a1b2c3d4e5f6789abcdef0',
         name: 'Aragorn',
         type: 'pc',
-        maxHitPoints: 45,
-        currentHitPoints: 45,
-        temporaryHitPoints: 0,
-        armorClass: 16,
-        isPlayer: true,
-        isVisible: true,
         notes: 'Ranger',
-        conditions: [],
       }),
-      testDataFactories.createParticipant({
+      createTestParticipant({
         characterId: '64a1b2c3d4e5f6789abcdef1',
         name: 'Goblin Scout',
         type: 'npc',
         maxHitPoints: 7,
         currentHitPoints: 7,
-        temporaryHitPoints: 0,
         armorClass: 15,
         isPlayer: false,
-        isVisible: true,
         notes: 'Weak enemy',
-        conditions: [],
       }),
     ],
   });
@@ -47,13 +163,11 @@ describe('EncounterParticipantManager', () => {
 
   describe('Rendering', () => {
     it('should render participant list correctly', () => {
-      render(<EncounterParticipantManager encounter={mockEncounter} />);
+      renderComponent(mockEncounter);
 
       expect(screen.getByText('Encounter Participants')).toBeInTheDocument();
-      expect(screen.getByText('Aragorn')).toBeInTheDocument();
-      expect(screen.getByText('Goblin Scout')).toBeInTheDocument();
-      expect(screen.getByText('HP: 45/45')).toBeInTheDocument();
-      expect(screen.getByText('AC: 16')).toBeInTheDocument();
+      expectParticipantVisible('Aragorn', 'HP: 45/45', 'AC: 16');
+      expectParticipantVisible('Goblin Scout', 'HP: 7/7', 'AC: 15');
     });
 
     it('should show empty state when no participants', () => {
@@ -61,14 +175,14 @@ describe('EncounterParticipantManager', () => {
         participants: [],
       });
 
-      render(<EncounterParticipantManager encounter={emptyEncounter} />);
+      renderComponent(emptyEncounter);
 
       expect(screen.getByText('No participants added yet')).toBeInTheDocument();
       expect(screen.getByText('Add Character')).toBeInTheDocument();
     });
 
     it('should display participant type badges correctly', () => {
-      render(<EncounterParticipantManager encounter={mockEncounter} />);
+      renderComponent(mockEncounter);
 
       expect(screen.getByText('PC')).toBeInTheDocument();
       expect(screen.getByText('NPC')).toBeInTheDocument();
@@ -78,71 +192,62 @@ describe('EncounterParticipantManager', () => {
   describe('Adding Participants', () => {
     it('should show add participant form when Add Character is clicked', async () => {
       const user = userEvent.setup();
-      render(<EncounterParticipantManager encounter={mockEncounter} />);
+      renderComponent(mockEncounter);
 
-      await user.click(screen.getByRole('button', { name: /add character/i }));
+      await openAddDialog(user);
 
       expect(screen.getByRole('dialog')).toBeInTheDocument();
-      expect(screen.getByLabelText(/Character Name/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Hit Points/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Armor Class/i)).toBeInTheDocument();
+      expectFormElements();
     });
 
     it('should add participant successfully', async () => {
       const user = userEvent.setup();
-      mockEncounterService.addParticipant.mockResolvedValue({
-        success: true,
-        data: mockEncounter,
+      setupMockService('addParticipant', { success: true, data: mockEncounter });
+
+      renderComponent(mockEncounter);
+
+      await performAddParticipant(user, {
+        name: 'Legolas',
+        hitPoints: '42',
+        armorClass: '14',
       });
 
-      render(<EncounterParticipantManager encounter={mockEncounter} />);
-
-      await user.click(screen.getByRole('button', { name: /add character/i }));
-
-      // Fill in form
-      await user.type(screen.getByLabelText(/Character Name/i), 'Legolas');
-      await user.clear(screen.getByLabelText(/Hit Points/i));
-      await user.type(screen.getByLabelText(/Hit Points/i), '42');
-      await user.clear(screen.getByLabelText(/Armor Class/i));
-      await user.type(screen.getByLabelText(/Armor Class/i), '14');
-
-      await user.click(screen.getByRole('button', { name: /add participant/i }));
-
       await waitFor(() => {
-        expect(mockEncounterService.addParticipant).toHaveBeenCalledWith(
+        expectServiceCall('addParticipant', [
           mockEncounter._id.toString(),
           expect.objectContaining({
             name: 'Legolas',
             maxHitPoints: 42,
+            currentHitPoints: 42,
             armorClass: 14,
             type: 'pc',
+            characterId: expect.any(String),
+            temporaryHitPoints: 0,
+            isPlayer: true,
+            isVisible: true,
+            notes: '',
+            conditions: [],
           })
-        );
+        ]);
       });
     });
 
     it('should show validation errors for invalid input', async () => {
       const user = userEvent.setup();
-      render(<EncounterParticipantManager encounter={mockEncounter} />);
+      renderComponent(mockEncounter);
 
-      await user.click(screen.getByRole('button', { name: /add character/i }));
-      await user.clear(screen.getByLabelText(/Hit Points/i));
-      await user.type(screen.getByLabelText(/Hit Points/i), '0');
-      await user.click(screen.getByRole('button', { name: /add participant/i }));
+      await performAddParticipant(user, { name: '', hitPoints: '0' });
 
-      await waitFor(() => {
-        expect(screen.getByText(/Name is required/i)).toBeInTheDocument();
-        expect(screen.getByText(/Hit Points must be greater than 0/i)).toBeInTheDocument();
-      });
+      await expectValidationErrors(['Name is required', 'Hit Points must be greater than 0']);
     });
   });
 
   describe('Removing Participants', () => {
     it('should show remove confirmation dialog', async () => {
       const user = userEvent.setup();
-      render(<EncounterParticipantManager encounter={mockEncounter} />);
+      renderComponent(mockEncounter);
 
-      const removeButtons = screen.getAllByLabelText(/Remove participant/i);
+      const { removeButtons } = getParticipantElements();
       await user.click(removeButtons[0]);
 
       expect(screen.getByText('Remove Participant')).toBeInTheDocument();
@@ -151,22 +256,17 @@ describe('EncounterParticipantManager', () => {
 
     it('should remove participant successfully', async () => {
       const user = userEvent.setup();
-      mockEncounterService.removeParticipant.mockResolvedValue({
-        success: true,
-        data: mockEncounter,
-      });
+      setupMockService('removeParticipant', { success: true, data: mockEncounter });
 
-      render(<EncounterParticipantManager encounter={mockEncounter} />);
+      renderComponent(mockEncounter);
 
-      const removeButtons = screen.getAllByLabelText(/Remove participant/i);
-      await user.click(removeButtons[0]);
-      await user.click(screen.getByText('Remove'));
+      await performRemoveParticipant(user, 0);
 
       await waitFor(() => {
-        expect(mockEncounterService.removeParticipant).toHaveBeenCalledWith(
+        expectServiceCall('removeParticipant', [
           mockEncounter._id.toString(),
           '64a1b2c3d4e5f6789abcdef0'
-        );
+        ]);
       });
     });
   });
@@ -174,9 +274,9 @@ describe('EncounterParticipantManager', () => {
   describe('Editing Participants', () => {
     it('should show edit form when edit button is clicked', async () => {
       const user = userEvent.setup();
-      render(<EncounterParticipantManager encounter={mockEncounter} />);
+      renderComponent(mockEncounter);
 
-      const editButtons = screen.getAllByLabelText(/Edit participant/i);
+      const { editButtons } = getParticipantElements();
       await user.click(editButtons[0]);
 
       expect(screen.getByText('Edit Participant')).toBeInTheDocument();
@@ -186,43 +286,39 @@ describe('EncounterParticipantManager', () => {
 
     it('should update participant successfully', async () => {
       const user = userEvent.setup();
-      mockEncounterService.updateParticipant.mockResolvedValue({
-        success: true,
-        data: mockEncounter,
-      });
+      setupMockService('updateParticipant', { success: true, data: mockEncounter });
 
-      render(<EncounterParticipantManager encounter={mockEncounter} />);
+      renderComponent(mockEncounter);
 
-      const editButtons = screen.getAllByLabelText(/Edit participant/i);
-      await user.click(editButtons[0]);
-
-      // Wait for the edit dialog to open
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-      });
-
-      const hpInput = screen.getByDisplayValue('45');
-      await user.clear(hpInput);
-      await user.type(hpInput, '50');
-      await user.click(screen.getByRole('button', { name: /update participant/i }));
+      await performEditParticipant(user, 0, { hitPoints: '50' });
 
       await waitFor(() => {
-        expect(mockEncounterService.updateParticipant).toHaveBeenCalledWith(
+        expectServiceCall('updateParticipant', [
           mockEncounter._id.toString(),
           '64a1b2c3d4e5f6789abcdef0',
           expect.objectContaining({
+            name: 'Aragorn',
+            type: 'pc',
             maxHitPoints: 50,
+            currentHitPoints: 50,
+            temporaryHitPoints: 0,
+            armorClass: 16,
+            initiative: 10,
+            isPlayer: true,
+            isVisible: true,
+            notes: 'Ranger',
+            conditions: [],
           })
-        );
+        ]);
       });
     });
   });
 
   describe('Participant Ordering', () => {
     it('should support drag and drop reordering', async () => {
-      render(<EncounterParticipantManager encounter={mockEncounter} />);
+      renderComponent(mockEncounter);
 
-      const participants = screen.getAllByTestId(/participant-item/i);
+      const { participants } = getParticipantElements();
       expect(participants).toHaveLength(2);
 
       // Mock drag and drop implementation would go here
@@ -235,32 +331,27 @@ describe('EncounterParticipantManager', () => {
   describe('Participant Role Assignment', () => {
     it('should allow changing participant roles', async () => {
       const user = userEvent.setup();
-      mockEncounterService.updateParticipant.mockResolvedValue({
-        success: true,
-        data: mockEncounter,
-      });
+      setupMockService('updateParticipant', { success: true, data: mockEncounter });
 
-      render(<EncounterParticipantManager encounter={mockEncounter} />);
+      renderComponent(mockEncounter);
 
-      const editButtons = screen.getAllByLabelText(/Edit participant/i);
+      const { editButtons } = getParticipantElements();
       await user.click(editButtons[1]); // Edit Goblin Scout
 
-      // Wait for the edit dialog to open
       await waitFor(() => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
-      // Note: Custom Select component interaction - using default value for now
-      await user.click(screen.getByRole('button', { name: /update participant/i }));
+      await submitForm(user, 'update participant');
 
       await waitFor(() => {
-        expect(mockEncounterService.updateParticipant).toHaveBeenCalledWith(
+        expectServiceCall('updateParticipant', [
           mockEncounter._id.toString(),
           '64a1b2c3d4e5f6789abcdef1',
           expect.objectContaining({
             type: 'npc', // Default type from participant
           })
-        );
+        ]);
       });
     });
   });
@@ -268,35 +359,28 @@ describe('EncounterParticipantManager', () => {
   describe('Batch Operations', () => {
     it('should allow selecting multiple participants', async () => {
       const user = userEvent.setup();
-      render(<EncounterParticipantManager encounter={mockEncounter} />);
+      renderComponent(mockEncounter);
 
-      const checkboxes = screen.getAllByRole('checkbox');
-      await user.click(checkboxes[0]);
-      await user.click(checkboxes[1]);
+      await performBatchSelection(user, [0, 1]);
 
-      expect(screen.getByText('2 participants selected')).toBeInTheDocument();
-      expect(screen.getByText('Remove Selected')).toBeInTheDocument();
+      expectBatchSelectionState(2);
     });
 
     it('should perform batch removal', async () => {
       const user = userEvent.setup();
-      mockEncounterService.removeParticipant.mockResolvedValue({
-        success: true,
-        data: mockEncounter,
-      });
+      setupMockService('removeParticipant', { success: true, data: mockEncounter });
 
-      render(<EncounterParticipantManager encounter={mockEncounter} />);
+      renderComponent(mockEncounter);
 
-      const checkboxes = screen.getAllByRole('checkbox');
-      await user.click(checkboxes[0]);
+      await performBatchSelection(user, [0]);
       await user.click(screen.getByText('Remove Selected'));
       await user.click(screen.getByText('Remove'));
 
       await waitFor(() => {
-        expect(mockEncounterService.removeParticipant).toHaveBeenCalledWith(
+        expectServiceCall('removeParticipant', [
           mockEncounter._id.toString(),
           '64a1b2c3d4e5f6789abcdef0'
-        );
+        ]);
       });
     });
   });
@@ -304,44 +388,24 @@ describe('EncounterParticipantManager', () => {
   describe('Character Import', () => {
     it('should show character import dialog', async () => {
       const user = userEvent.setup();
-      render(<EncounterParticipantManager encounter={mockEncounter} />);
+      renderComponent(mockEncounter);
 
-      await user.click(screen.getByRole('button', { name: /import from library/i }));
+      const { importButton } = getParticipantElements();
+      await user.click(importButton);
 
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-        expect(screen.getByText('Import Characters')).toBeInTheDocument();
-        expect(screen.getByText('Select characters from your library')).toBeInTheDocument();
-      });
+      await waitForText('Import Characters');
+      await waitForText('Select characters from your library to add to this encounter');
     });
   });
 
   describe('Error Handling', () => {
     it('should display error message when participant addition fails', async () => {
       const user = userEvent.setup();
-      mockEncounterService.addParticipant.mockResolvedValue({
-        success: false,
-        error: 'Failed to add participant',
-      });
+      setupMockService('addParticipant', { success: false, error: 'Failed to add participant' });
 
-      // Mock toast to capture error messages
-      const mockToastError = jest.fn();
-      jest.mock('sonner', () => ({
-        toast: {
-          success: jest.fn(),
-          error: mockToastError,
-        },
-      }));
+      renderComponent(mockEncounter);
 
-      render(<EncounterParticipantManager encounter={mockEncounter} />);
-
-      await user.click(screen.getByRole('button', { name: /add character/i }));
-      await user.type(screen.getByLabelText(/Character Name/i), 'Test');
-      await user.clear(screen.getByLabelText(/Hit Points/i));
-      await user.type(screen.getByLabelText(/Hit Points/i), '10');
-      await user.clear(screen.getByLabelText(/Armor Class/i));
-      await user.type(screen.getByLabelText(/Armor Class/i), '10');
-      await user.click(screen.getByRole('button', { name: /add participant/i }));
+      await performAddParticipant(user, { name: 'Test', hitPoints: '10', armorClass: '10' });
 
       await waitFor(() => {
         expect(mockEncounterService.addParticipant).toHaveBeenCalled();
@@ -352,15 +416,9 @@ describe('EncounterParticipantManager', () => {
       const user = userEvent.setup();
       mockEncounterService.addParticipant.mockRejectedValue(new Error('Network error'));
 
-      render(<EncounterParticipantManager encounter={mockEncounter} />);
+      renderComponent(mockEncounter);
 
-      await user.click(screen.getByRole('button', { name: /add character/i }));
-      await user.type(screen.getByLabelText(/Character Name/i), 'Test');
-      await user.clear(screen.getByLabelText(/Hit Points/i));
-      await user.type(screen.getByLabelText(/Hit Points/i), '10');
-      await user.clear(screen.getByLabelText(/Armor Class/i));
-      await user.type(screen.getByLabelText(/Armor Class/i), '10');
-      await user.click(screen.getByRole('button', { name: /add participant/i }));
+      await performAddParticipant(user, { name: 'Test', hitPoints: '10', armorClass: '10' });
 
       await waitFor(() => {
         expect(mockEncounterService.addParticipant).toHaveBeenCalled();
