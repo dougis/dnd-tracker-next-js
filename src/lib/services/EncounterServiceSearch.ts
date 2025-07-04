@@ -40,9 +40,9 @@ export class EncounterServiceSearch {
     totalItems: number;
   }>> {
     try {
-      const searchParams = this.normalizeSearchParams(criteria);
-      const mongoQuery = this.buildMongoQuery(searchParams);
-      const { sortOption, skip } = this.buildPaginationAndSort(searchParams);
+      const searchParams = EncounterServiceSearch.normalizeSearchParams(criteria);
+      const mongoQuery = EncounterServiceSearch.buildMongoQuery(searchParams);
+      const { sortOption, skip } = EncounterServiceSearch.buildPaginationAndSort(searchParams);
 
       const [encounters, totalItems] = await Promise.all([
         Encounter.find(mongoQuery)
@@ -94,12 +94,12 @@ export class EncounterServiceSearch {
   private static buildMongoQuery(params: any): any {
     const mongoQuery: any = {};
 
-    this.addTextSearchFilter(mongoQuery, params);
-    this.addDifficultyFilter(mongoQuery, params);
-    this.addTargetLevelFilter(mongoQuery, params);
-    this.addStatusFilter(mongoQuery, params);
-    this.addTagsFilter(mongoQuery, params);
-    this.addOwnerFilter(mongoQuery, params);
+    EncounterServiceSearch.addTextSearchFilter(mongoQuery, params);
+    EncounterServiceSearch.addDifficultyFilter(mongoQuery, params);
+    EncounterServiceSearch.addTargetLevelFilter(mongoQuery, params);
+    EncounterServiceSearch.addStatusFilter(mongoQuery, params);
+    EncounterServiceSearch.addTagsFilter(mongoQuery, params);
+    EncounterServiceSearch.addOwnerFilter(mongoQuery, params);
 
     return mongoQuery;
   }
