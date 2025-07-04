@@ -31,21 +31,27 @@ export const getAbilityScoreDisplay = (score: number): string => {
   return `${score} (${getAbilityModifier(score)})`;
 };
 
+const isProficientInSavingThrow = (character: ICharacter, ability: string): boolean => {
+  return character.savingThrows instanceof Map
+    ? character.savingThrows.get(ability) || false
+    : character.savingThrows?.[ability as keyof typeof character.savingThrows] || false;
+};
+
 export const getSavingThrowBonus = (character: ICharacter, ability: string, score: number): number => {
   const modifier = Math.floor((score - 10) / 2);
-  // Handle both Map and object for savingThrows
-  const isProficient = character.savingThrows instanceof Map
-    ? character.savingThrows.get(ability)
-    : character.savingThrows?.[ability as keyof typeof character.savingThrows] || false;
+  const isProficient = isProficientInSavingThrow(character, ability);
   return isProficient ? modifier + character.proficiencyBonus : modifier;
+};
+
+const isProficientInSkill = (character: ICharacter, skillName: string): boolean => {
+  return character.skills instanceof Map
+    ? character.skills.get(skillName) || false
+    : character.skills?.[skillName] || false;
 };
 
 export const getSkillBonus = (character: ICharacter, skillName: string, abilityScore: number): number => {
   const modifier = Math.floor((abilityScore - 10) / 2);
-  // Handle both Map and object for skills
-  const isProficient = character.skills instanceof Map
-    ? character.skills.get(skillName)
-    : character.skills?.[skillName] || false;
+  const isProficient = isProficientInSkill(character, skillName);
   return isProficient ? modifier + character.proficiencyBonus : modifier;
 };
 
@@ -54,16 +60,33 @@ export const formatBonus = (bonus: number): string => {
 };
 
 export const getOrdinalSuffix = (num: number): string => {
-  const j = num % 10;
-  const k = num % 100;
-  if (j === 1 && k !== 11) {
-    return 'st';
+  const lastDigit = num % 10;
+  const lastTwoDigits = num % 100;
+
+  // Handle special cases for 11th, 12th, 13th
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
+    return 'th';
   }
-  if (j === 2 && k !== 12) {
-    return 'nd';
-  }
-  if (j === 3 && k !== 13) {
-    return 'rd';
-  }
-  return 'th';
+
+  // Handle regular cases
+  const suffixes = ['th', 'st', 'nd', 'rd'];
+  return suffixes[lastDigit] || 'th';
+};
+
+// Utility for extracting skill entries from character
+export const getSkillEntries = (character: ICharacter) => {
+  if (!character.skills) return [];
+
+  return character.skills instanceof Map
+    ? Array.from(character.skills.entries())
+    : Object.entries(character.skills);
+};
+
+// Utility to check if character has any skills
+export const hasAnySkills = (character: ICharacter): boolean => {
+  if (!character.skills) return false;
+
+  return character.skills instanceof Map
+    ? character.skills.size > 0
+    : Object.keys(character.skills).length > 0;
 };
