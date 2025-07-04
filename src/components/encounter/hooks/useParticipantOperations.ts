@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { Types } from 'mongoose';
 import { EncounterService } from '@/lib/services/EncounterService';
 import type { IEncounter } from '@/lib/models/encounter/interfaces';
 import { handleServiceOperation } from '../utils/serviceOperationUtils';
@@ -25,7 +26,7 @@ export const useParticipantOperations = (
 
   const createParticipantData = useCallback((data: ParticipantFormData) => ({
     ...data,
-    characterId: new Date().getTime().toString(),
+    characterId: new Types.ObjectId().toString(),
     currentHitPoints: data.maxHitPoints,
   }), []);
 
@@ -61,9 +62,10 @@ export const useParticipantOperations = (
     onSuccess: () => void
   ) => {
     await executeWithLoading(async () => {
-      const participantData = createParticipantData(formData);
+      // For updates, don't include characterId as it shouldn't be changed
+      const { characterId: _characterId, ...updateData } = createParticipantData(formData);
       await handleServiceOperation(
-        () => EncounterService.updateParticipant(encounter._id.toString(), participantId, participantData),
+        () => EncounterService.updateParticipant(encounter._id.toString(), participantId, updateData),
         'Participant updated successfully',
         (data) => {
           onUpdate?.(data!);
