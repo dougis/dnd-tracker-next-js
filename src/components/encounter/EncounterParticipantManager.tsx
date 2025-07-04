@@ -37,7 +37,7 @@ import { ParticipantItem } from './ParticipantItem';
 import { EmptyParticipantsState } from './EmptyParticipantsState';
 import { BatchSelectionBar } from './BatchSelectionBar';
 import { useParticipantOperations } from './hooks/useParticipantOperations';
-import { useParticipantForm } from './hooks/useParticipantForm';
+import { useParticipantForm, type ParticipantFormData } from './hooks/useParticipantForm';
 
 interface EncounterParticipantManagerProps {
   encounter: IEncounter;
