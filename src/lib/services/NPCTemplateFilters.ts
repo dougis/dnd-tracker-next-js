@@ -61,24 +61,23 @@ export class NPCTemplateFilters {
     return templates.filter(template => {
       // Category filter
       if (filters.category && template.category !== filters.category) return false;
-      
+
       // Challenge rating filters
       if (filters.minCR !== undefined && template.challengeRating < filters.minCR) return false;
       if (filters.maxCR !== undefined && template.challengeRating > filters.maxCR) return false;
-      
+
       // Search filter
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
-        if (!template.name.toLowerCase().includes(searchLower) && 
+        if (!template.name.toLowerCase().includes(searchLower) &&
             !template.category.toLowerCase().includes(searchLower)) return false;
       }
-      
+
       // Size filter
       if (filters.size && template.size !== filters.size) return false;
-      
+
       // System filter
       if (filters.isSystem !== undefined && template.isSystem !== filters.isSystem) return false;
-      
       return true;
     });
   }

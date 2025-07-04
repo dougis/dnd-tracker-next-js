@@ -59,7 +59,6 @@ export class NPCTemplateImporter {
 
   private static parseDnDBeyondImport(data: any): Omit<NPCTemplate, 'id'> {
     if (!data.name) throw new Error('name is required');
-    
     const challengeRating = typeof data.cr === 'string' ? parseChallengeRating(data.cr) : data.cr;
 
     return {

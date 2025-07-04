@@ -131,7 +131,6 @@ export class NPCTemplateVariants {
     if (adjusted <= 0.125) return 0.125;
     if (adjusted <= 0.25) return 0.25;
     if (adjusted <= 1) return 0.5;
-    
     const rounded = Math.round(adjusted);
     return Math.min(30, Math.max(1, rounded)) as ChallengeRating;
   }
