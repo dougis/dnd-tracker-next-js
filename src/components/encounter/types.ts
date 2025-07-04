@@ -60,3 +60,28 @@ export interface EncounterActionButtonsProps {
   encounter: EncounterListItem;
   onRefetch?: () => void;
 }
+
+export interface SortConfig {
+  sortBy: SortBy;
+  sortOrder: SortOrder;
+}
+
+export interface FilterCallbacks {
+  onFiltersChange: (_filters: Partial<EncounterFilters>) => void;
+  onSearchChange: (_query: string) => void;
+  onSortChange: (_sortBy: SortBy, _sortOrder: SortOrder) => void;
+  onClearFilters: () => void;
+}
+
+export interface TableSortConfig {
+  sortBy: SortBy;
+  sortOrder: SortOrder;
+  onSort: (_sortBy: SortBy, _sortOrder: SortOrder) => void;
+}
+
+export interface TableSelectionConfig {
+  selectedEncounters: string[];
+  isAllSelected: boolean;
+  onSelectAll: () => void;
+  onSelectEncounter: (_id: string) => void;
+}

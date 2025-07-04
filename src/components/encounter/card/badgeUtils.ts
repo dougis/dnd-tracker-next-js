@@ -1,48 +1,41 @@
 export type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline';
 
+// Configuration objects for mapping values
+const STATUS_VARIANT_MAP: Record<string, BadgeVariant> = {
+  active: 'default',
+  completed: 'secondary',
+  archived: 'outline',
+} as const;
+
+const DIFFICULTY_VARIANT_MAP: Record<string, BadgeVariant> = {
+  trivial: 'secondary',
+  easy: 'default',
+  medium: 'secondary',
+  hard: 'destructive',
+  deadly: 'destructive',
+} as const;
+
+const DIFFICULTY_COLOR_MAP: Record<string, string> = {
+  trivial: 'text-gray-500',
+  easy: 'text-green-600',
+  medium: 'text-yellow-600',
+  hard: 'text-orange-600',
+  deadly: 'text-red-600',
+} as const;
+
+// Generic mapping function
+const getValueFromMap = <T>(map: Record<string, T>, key: string, defaultValue: T): T => {
+  return map[key] ?? defaultValue;
+};
+
 export const getStatusVariant = (status: string): BadgeVariant => {
-  switch (status) {
-    case 'active':
-      return 'default';
-    case 'completed':
-      return 'secondary';
-    case 'archived':
-      return 'outline';
-    default:
-      return 'secondary';
-  }
+  return getValueFromMap(STATUS_VARIANT_MAP, status, 'secondary');
 };
 
 export const getDifficultyVariant = (difficulty: string): BadgeVariant => {
-  switch (difficulty) {
-    case 'trivial':
-      return 'secondary';
-    case 'easy':
-      return 'default';
-    case 'medium':
-      return 'secondary';
-    case 'hard':
-      return 'destructive';
-    case 'deadly':
-      return 'destructive';
-    default:
-      return 'outline';
-  }
+  return getValueFromMap(DIFFICULTY_VARIANT_MAP, difficulty, 'outline');
 };
 
 export const getDifficultyColor = (difficulty: string): string => {
-  switch (difficulty) {
-    case 'trivial':
-      return 'text-gray-500';
-    case 'easy':
-      return 'text-green-600';
-    case 'medium':
-      return 'text-yellow-600';
-    case 'hard':
-      return 'text-orange-600';
-    case 'deadly':
-      return 'text-red-600';
-    default:
-      return 'text-gray-500';
-  }
+  return getValueFromMap(DIFFICULTY_COLOR_MAP, difficulty, 'text-gray-500');
 };

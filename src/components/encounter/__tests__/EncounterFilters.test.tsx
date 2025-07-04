@@ -79,9 +79,9 @@ describe('EncounterFilters', () => {
       await user.type(searchInput, 'dr');
 
       // Check that onSearchChange was called - user.type types character by character
-      expect(props.onSearchChange).toHaveBeenCalledWith('d');
-      expect(props.onSearchChange).toHaveBeenCalledWith('r');
-      expect(props.onSearchChange).toHaveBeenCalledTimes(2);
+      expect(props.callbacks.onSearchChange).toHaveBeenCalledWith('d');
+      expect(props.callbacks.onSearchChange).toHaveBeenCalledWith('r');
+      expect(props.callbacks.onSearchChange).toHaveBeenCalledTimes(2);
     });
 
     it('handles empty search input', async () => {
@@ -93,7 +93,7 @@ describe('EncounterFilters', () => {
       const searchInput = screen.getByDisplayValue('existing query');
       await user.clear(searchInput);
 
-      expect(props.onSearchChange).toHaveBeenLastCalledWith('');
+      expect(props.callbacks.onSearchChange).toHaveBeenLastCalledWith('');
     });
   });
 
@@ -122,7 +122,7 @@ describe('EncounterFilters', () => {
       const draftOption = screen.getByText('Draft');
       await user.click(draftOption);
 
-      expect(props.onFiltersChange).toHaveBeenCalledWith({
+      expect(props.callbacks.onFiltersChange).toHaveBeenCalledWith({
         status: ['draft'],
       });
     });
@@ -139,7 +139,7 @@ describe('EncounterFilters', () => {
       const draftOption = screen.getByText('Draft');
       await user.click(draftOption);
 
-      expect(props.onFiltersChange).toHaveBeenCalledWith({
+      expect(props.callbacks.onFiltersChange).toHaveBeenCalledWith({
         status: ['active'],
       });
     });
@@ -171,7 +171,7 @@ describe('EncounterFilters', () => {
       const hardOption = screen.getByText('Hard');
       await user.click(hardOption);
 
-      expect(props.onFiltersChange).toHaveBeenCalledWith({
+      expect(props.callbacks.onFiltersChange).toHaveBeenCalledWith({
         difficulty: ['hard'],
       });
     });
@@ -196,8 +196,10 @@ describe('EncounterFilters', () => {
 
     it('changes sort order when clicking same sort field', async () => {
       const props = createMockProps.encounterFilters({
-        sortBy: 'name',
-        sortOrder: 'asc',
+        sortConfig: {
+          sortBy: 'name',
+          sortOrder: 'asc',
+        },
       });
       render(<EncounterFilters {...props} />);
 
@@ -207,13 +209,15 @@ describe('EncounterFilters', () => {
       const nameOption = screen.getByText('Name');
       await user.click(nameOption);
 
-      expect(props.onSortChange).toHaveBeenCalledWith('name', 'desc');
+      expect(props.callbacks.onSortChange).toHaveBeenCalledWith('name', 'desc');
     });
 
     it('sets sort to ascending when clicking different sort field', async () => {
       const props = createMockProps.encounterFilters({
-        sortBy: 'name',
-        sortOrder: 'desc',
+        sortConfig: {
+          sortBy: 'name',
+          sortOrder: 'desc',
+        },
       });
       render(<EncounterFilters {...props} />);
 
@@ -223,12 +227,15 @@ describe('EncounterFilters', () => {
       const difficultyOption = screen.getByRole('menuitem', { name: 'Difficulty' });
       await user.click(difficultyOption);
 
-      expect(props.onSortChange).toHaveBeenCalledWith('difficulty', 'asc');
+      expect(props.callbacks.onSortChange).toHaveBeenCalledWith('difficulty', 'asc');
     });
 
     it('displays sort button with correct icon', () => {
       const props = createMockProps.encounterFilters({
-        sortOrder: 'asc',
+        sortConfig: {
+          sortBy: 'updatedAt',
+          sortOrder: 'asc',
+        },
       });
       render(<EncounterFilters {...props} />);
 
@@ -248,7 +255,7 @@ describe('EncounterFilters', () => {
       const clearButton = screen.getByText('Clear');
       await user.click(clearButton);
 
-      expect(props.onClearFilters).toHaveBeenCalled();
+      expect(props.callbacks.onClearFilters).toHaveBeenCalled();
     });
   });
 
@@ -319,7 +326,7 @@ describe('EncounterFilters', () => {
       await user.keyboard('{Enter}');
 
       // onFiltersChange should have been called
-      expect(props.onFiltersChange).toHaveBeenCalled();
+      expect(props.callbacks.onFiltersChange).toHaveBeenCalled();
     });
   });
 
@@ -343,8 +350,12 @@ describe('EncounterFilters', () => {
     it('handles empty callback functions', () => {
       const props = {
         ...createMockProps.encounterFilters(),
-        onFiltersChange: undefined as any,
-        onSearchChange: undefined as any,
+        callbacks: {
+          onFiltersChange: undefined as any,
+          onSearchChange: undefined as any,
+          onSortChange: undefined as any,
+          onClearFilters: undefined as any,
+        },
       };
 
       expect(() => {

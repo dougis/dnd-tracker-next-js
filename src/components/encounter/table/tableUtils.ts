@@ -1,34 +1,9 @@
 import type { SortBy, SortOrder } from '../types';
+import { getStatusVariant as getCardStatusVariant, getDifficultyColor as getCardDifficultyColor } from '../card/badgeUtils';
 
-export const getStatusVariant = (status: string) => {
-  switch (status) {
-    case 'active':
-      return 'default';
-    case 'completed':
-      return 'secondary';
-    case 'archived':
-      return 'outline';
-    default:
-      return 'secondary';
-  }
-};
-
-export const getDifficultyColor = (difficulty: string) => {
-  switch (difficulty) {
-    case 'trivial':
-      return 'text-gray-500';
-    case 'easy':
-      return 'text-green-600';
-    case 'medium':
-      return 'text-yellow-600';
-    case 'hard':
-      return 'text-orange-600';
-    case 'deadly':
-      return 'text-red-600';
-    default:
-      return 'text-gray-500';
-  }
-};
+// Re-export from badgeUtils to avoid duplication
+export const getStatusVariant = getCardStatusVariant;
+export const getDifficultyColor = getCardDifficultyColor;
 
 export const createSortHandler = (
   sortBy: SortBy,

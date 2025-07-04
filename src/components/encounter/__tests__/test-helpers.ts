@@ -83,13 +83,23 @@ export const createMockProps = {
       isSelected: false,
     }, overrides),
 
-  encounterFilters: (overrides = {}) =>
-    createBaseProps({
+  encounterFilters: (overrides = {}) => {
+    const mockFunctions = createMockFunctions();
+    return createBaseProps({
       filters: createMockFilters(),
       searchQuery: '',
-      sortBy: 'updatedAt' as const,
-      sortOrder: 'desc' as const,
-    }, overrides),
+      sortConfig: {
+        sortBy: 'updatedAt' as const,
+        sortOrder: 'desc' as const,
+      },
+      callbacks: {
+        onFiltersChange: mockFunctions.onFiltersChange,
+        onSearchChange: mockFunctions.onSearchChange,
+        onSortChange: mockFunctions.onSortChange,
+        onClearFilters: mockFunctions.onClearFilters,
+      },
+    }, overrides);
+  },
 
   encounterGrid: (overrides = {}) =>
     createBaseProps({
@@ -98,15 +108,24 @@ export const createMockProps = {
       selectedEncounters: [],
     }, overrides),
 
-  encounterTable: (overrides = {}) =>
-    createBaseProps({
+  encounterTable: (overrides = {}) => {
+    const mockFunctions = createMockFunctions();
+    return createBaseProps({
       encounters: createMockEncounters(),
       isLoading: false,
-      selectedEncounters: [],
-      isAllSelected: false,
-      sortBy: 'updatedAt' as const,
-      sortOrder: 'desc' as const,
-    }, overrides),
+      selection: {
+        selectedEncounters: [],
+        isAllSelected: false,
+        onSelectAll: mockFunctions.onSelectAll,
+        onSelectEncounter: mockFunctions.onSelectEncounter,
+      },
+      sort: {
+        sortBy: 'updatedAt' as const,
+        sortOrder: 'desc' as const,
+        onSort: mockFunctions.onSort,
+      },
+    }, overrides);
+  },
 
   batchActions: (overrides = {}) =>
     createBaseProps({

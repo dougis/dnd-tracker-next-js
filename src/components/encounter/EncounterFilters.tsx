@@ -2,34 +2,30 @@
 
 import { Button } from '@/components/ui/button';
 import { Filter, X } from 'lucide-react';
-import type { EncounterFilters as Filters, SortBy, SortOrder } from './types';
+import type { EncounterFilters as Filters, SortConfig, FilterCallbacks } from './types';
 import { SearchInput } from './filters/SearchInput';
 import { FilterDropdown } from './filters/FilterDropdown';
 import { SortDropdown } from './filters/SortDropdown';
 import { statusOptions, difficultyOptions, sortOptions } from './filters/constants';
 import { checkHasActiveFilters, createFilterHandlers } from './filters/filterUtils';
 
+
 interface EncounterFiltersProps {
   filters: Filters;
   searchQuery: string;
-  sortBy: SortBy;
-  sortOrder: SortOrder;
-  onFiltersChange: (_filters: Partial<Filters>) => void;
-  onSearchChange: (_query: string) => void;
-  onSortChange: (_sortBy: SortBy, _sortOrder: SortOrder) => void;
-  onClearFilters: () => void;
+  sortConfig: SortConfig;
+  callbacks: FilterCallbacks;
 }
 
 export function EncounterFilters({
   filters,
   searchQuery,
-  sortBy,
-  sortOrder,
-  onFiltersChange,
-  onSearchChange,
-  onSortChange,
-  onClearFilters,
+  sortConfig,
+  callbacks,
 }: EncounterFiltersProps) {
+  const { sortBy, sortOrder } = sortConfig;
+  const { onFiltersChange, onSearchChange, onSortChange, onClearFilters } = callbacks;
+
   const hasActiveFilters = checkHasActiveFilters(filters, searchQuery);
   const { handleStatusChange, handleDifficultyChange } = createFilterHandlers(filters, onFiltersChange);
 

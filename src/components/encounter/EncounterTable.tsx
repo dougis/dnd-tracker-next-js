@@ -4,33 +4,26 @@ import { LoadingCard } from '@/components/shared/LoadingCard';
 import { TableHeader } from './table/TableHeader';
 import { TableRow } from './table/TableRow';
 import { createSortHandler } from './table/tableUtils';
-import type { EncounterListItem, SortBy, SortOrder } from './types';
+import type { EncounterListItem, TableSortConfig, TableSelectionConfig } from './types';
+
 
 interface EncounterTableProps {
   encounters: EncounterListItem[];
   isLoading: boolean;
-  selectedEncounters: string[];
-  isAllSelected: boolean;
-  onSelectAll: () => void;
-  onSelectEncounter: (_id: string) => void;
-  sortBy: SortBy;
-  sortOrder: SortOrder;
-  onSort: (_sortBy: SortBy, _sortOrder: SortOrder) => void;
+  selection: TableSelectionConfig;
+  sort: TableSortConfig;
   onRefetch: () => void;
 }
 
 export function EncounterTable({
   encounters,
   isLoading,
-  selectedEncounters,
-  isAllSelected,
-  onSelectAll,
-  onSelectEncounter,
-  sortBy,
-  sortOrder,
-  onSort,
+  selection,
+  sort,
   onRefetch,
 }: EncounterTableProps) {
+  const { selectedEncounters, isAllSelected, onSelectAll, onSelectEncounter } = selection;
+  const { sortBy, sortOrder, onSort } = sort;
   const handleSort = createSortHandler(sortBy, sortOrder, onSort);
 
   if (isLoading) {
