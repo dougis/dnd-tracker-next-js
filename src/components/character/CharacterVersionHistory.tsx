@@ -29,6 +29,9 @@ export function CharacterVersionHistory({ characterId, userId }: CharacterVersio
   const [showRevertDialog, setShowRevertDialog] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<CharacterVersion | null>(null);
 
+  useEffect(() => {
+    loadVersionHistory();
+  }, [loadVersionHistory]);
   const loadVersionHistory = useCallback(async () => {
     try {
       setLoading(true);
@@ -47,10 +50,6 @@ export function CharacterVersionHistory({ characterId, userId }: CharacterVersio
       setLoading(false);
     }
   }, [characterId, userId]);
-
-  useEffect(() => {
-    loadVersionHistory();
-  }, [loadVersionHistory]);
 
   const handleRevertClick = (version: CharacterVersion) => {
     setSelectedVersion(version);

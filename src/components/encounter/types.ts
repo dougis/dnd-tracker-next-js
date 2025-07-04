@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 import type { IEncounter } from '@/lib/models/encounter/interfaces';
 import { Types } from 'mongoose';
+=======
+import type { IEncounter } from '@/lib/models/encounter/IEncounter';
+>>>>>>> origin/feature/issue-29-encounter-list-interface
 
 export interface EncounterFilters {
   status: string[];
@@ -26,6 +30,7 @@ export interface PaginationInfo {
   itemsPerPage: number;
 }
 
+<<<<<<< HEAD
 export interface EncounterListItem {
   id: string;
   ownerId: Types.ObjectId;
@@ -45,6 +50,10 @@ export interface EncounterListItem {
   version: number;
   createdAt: Date;
   updatedAt: Date;
+=======
+export interface EncounterListItem extends Omit<IEncounter, '_id'> {
+  id: string;
+>>>>>>> origin/feature/issue-29-encounter-list-interface
   participantCount: number;
   playerCount: number;
 }

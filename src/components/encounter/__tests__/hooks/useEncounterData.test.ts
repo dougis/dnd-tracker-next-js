@@ -331,8 +331,13 @@ describe('useEncounterData', () => {
         ...mockRawEncounters[0],
         _id: 'raw-id',
         participants: [
+<<<<<<< HEAD
           { type: 'pc', name: 'Player 1' },
           { type: 'pc', name: 'Player 2' },
+=======
+          { type: 'character', name: 'Player 1' },
+          { type: 'character', name: 'Player 2' },
+>>>>>>> origin/feature/issue-29-encounter-list-interface
           { type: 'npc', name: 'Monster 1' },
         ],
       };
