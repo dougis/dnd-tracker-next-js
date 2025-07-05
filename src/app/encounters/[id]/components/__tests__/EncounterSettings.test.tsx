@@ -6,7 +6,10 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EncounterSettings } from '../EncounterSettings';
 import { useEncounterSettings } from '@/lib/hooks/useEncounterSettings';
-import { createTestEncounter } from '../../__tests__/test-helpers';
+import {
+  createTestEncounter,
+  createMockHookReturn,
+} from '@/__test-utils__/encounter-settings-test-utils';
 import type { IEncounter } from '@/lib/models/encounter/interfaces';
 
 // Mock the useEncounterSettings hook
@@ -14,11 +17,7 @@ jest.mock('@/lib/hooks/useEncounterSettings');
 const mockUseEncounterSettings = useEncounterSettings as jest.MockedFunction<typeof useEncounterSettings>;
 
 describe('EncounterSettings', () => {
-  const mockUpdateSettings = jest.fn();
-  const mockRetry = jest.fn();
-
   const mockEncounter = createTestEncounter({
-    name: 'Test Encounter',
     settings: {
       allowPlayerVisibility: true,
       autoRollInitiative: false,
@@ -33,14 +32,7 @@ describe('EncounterSettings', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Default mock implementation
-    mockUseEncounterSettings.mockReturnValue({
-      loading: false,
-      error: null,
-      updateSettings: mockUpdateSettings,
-      retry: mockRetry,
-    });
+    mockUseEncounterSettings.mockReturnValue(createMockHookReturn());
   });
 
   it('renders encounter settings with current values', () => {
@@ -70,6 +62,9 @@ describe('EncounterSettings', () => {
   });
 
   it('calls updateSettings when switches are toggled', async () => {
+    const mockHook = createMockHookReturn();
+    mockUseEncounterSettings.mockReturnValue(mockHook);
+
     const user = userEvent.setup();
     render(<EncounterSettings encounter={mockEncounter} />);
 
@@ -77,12 +72,15 @@ describe('EncounterSettings', () => {
 
     await user.click(playerVisibilitySwitch);
 
-    expect(mockUpdateSettings).toHaveBeenCalledWith({
+    expect(mockHook.updateSettings).toHaveBeenCalledWith({
       allowPlayerVisibility: false,
     });
   });
 
   it('handles multiple setting changes independently', async () => {
+    const mockHook = createMockHookReturn();
+    mockUseEncounterSettings.mockReturnValue(mockHook);
+
     const user = userEvent.setup();
     render(<EncounterSettings encounter={mockEncounter} />);
 
@@ -90,7 +88,7 @@ describe('EncounterSettings', () => {
     const autoRollSwitch = screen.getByLabelText('Auto-roll Initiative');
     await user.click(autoRollSwitch);
 
-    expect(mockUpdateSettings).toHaveBeenCalledWith({
+    expect(mockHook.updateSettings).toHaveBeenCalledWith({
       autoRollInitiative: true,
     });
 
@@ -98,20 +96,17 @@ describe('EncounterSettings', () => {
     const lairActionsSwitch = screen.getByLabelText('Enable Lair Actions');
     await user.click(lairActionsSwitch);
 
-    expect(mockUpdateSettings).toHaveBeenCalledWith({
+    expect(mockHook.updateSettings).toHaveBeenCalledWith({
       enableLairActions: true,
     });
 
-    expect(mockUpdateSettings).toHaveBeenCalledTimes(2);
+    expect(mockHook.updateSettings).toHaveBeenCalledTimes(2);
   });
 
   it('shows loading state when settings are being updated', () => {
-    mockUseEncounterSettings.mockReturnValue({
-      loading: true,
-      error: null,
-      updateSettings: mockUpdateSettings,
-      retry: mockRetry,
-    });
+    mockUseEncounterSettings.mockReturnValue(
+      createMockHookReturn({ loading: true })
+    );
 
     render(<EncounterSettings encounter={mockEncounter} />);
 
@@ -122,12 +117,9 @@ describe('EncounterSettings', () => {
   });
 
   it('displays error state when update fails', () => {
-    mockUseEncounterSettings.mockReturnValue({
-      loading: false,
-      error: 'Failed to update settings',
-      updateSettings: mockUpdateSettings,
-      retry: mockRetry,
-    });
+    mockUseEncounterSettings.mockReturnValue(
+      createMockHookReturn({ error: 'Failed to update settings' })
+    );
 
     render(<EncounterSettings encounter={mockEncounter} />);
 
@@ -137,20 +129,15 @@ describe('EncounterSettings', () => {
 
   it('calls retry when retry button is clicked', async () => {
     const user = userEvent.setup();
-
-    mockUseEncounterSettings.mockReturnValue({
-      loading: false,
-      error: 'Network error occurred',
-      updateSettings: mockUpdateSettings,
-      retry: mockRetry,
-    });
+    const mockHook = createMockHookReturn({ error: 'Network error occurred' });
+    mockUseEncounterSettings.mockReturnValue(mockHook);
 
     render(<EncounterSettings encounter={mockEncounter} />);
 
     const retryButton = screen.getByText('Retry');
     await user.click(retryButton);
 
-    expect(mockRetry).toHaveBeenCalledTimes(1);
+    expect(mockHook.retry).toHaveBeenCalledTimes(1);
   });
 
   it('hides optional settings when not present', () => {
@@ -205,26 +192,17 @@ describe('EncounterSettings', () => {
   });
 
   it('clears error state when settings update successfully', async () => {
-
     // Start with error state
-    mockUseEncounterSettings.mockReturnValue({
-      loading: false,
-      error: 'Previous error',
-      updateSettings: mockUpdateSettings,
-      retry: mockRetry,
-    });
+    mockUseEncounterSettings.mockReturnValue(
+      createMockHookReturn({ error: 'Previous error' })
+    );
 
     const { rerender } = render(<EncounterSettings encounter={mockEncounter} />);
 
     expect(screen.getByText('Previous error')).toBeInTheDocument();
 
     // Update to success state
-    mockUseEncounterSettings.mockReturnValue({
-      loading: false,
-      error: null,
-      updateSettings: mockUpdateSettings,
-      retry: mockRetry,
-    });
+    mockUseEncounterSettings.mockReturnValue(createMockHookReturn());
 
     rerender(<EncounterSettings encounter={mockEncounter} />);
 
