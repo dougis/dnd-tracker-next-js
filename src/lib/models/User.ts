@@ -21,6 +21,12 @@ export interface IUser extends Document {
   passwordResetToken?: string;
   passwordResetExpires?: Date;
   lastLoginAt?: Date;
+  displayName?: string;
+  timezone?: string;
+  dndEdition?: string;
+  experienceLevel?: 'new' | 'beginner' | 'intermediate' | 'experienced' | 'veteran';
+  primaryRole?: 'dm' | 'player' | 'both';
+  profileSetupCompleted: boolean;
   preferences: {
     theme: 'light' | 'dark' | 'system';
     emailNotifications: boolean;
@@ -227,6 +233,33 @@ const userSchema = new Schema<IUser, UserModel>(
     lastLoginAt: {
       type: Date,
       index: { background: true },
+    },
+    displayName: {
+      type: String,
+      trim: true,
+      maxlength: [100, 'Display name cannot exceed 100 characters'],
+    },
+    timezone: {
+      type: String,
+      default: 'UTC',
+    },
+    dndEdition: {
+      type: String,
+      trim: true,
+      maxlength: [50, 'D&D edition cannot exceed 50 characters'],
+      default: '5th Edition',
+    },
+    experienceLevel: {
+      type: String,
+      enum: ['new', 'beginner', 'intermediate', 'experienced', 'veteran'],
+    },
+    primaryRole: {
+      type: String,
+      enum: ['dm', 'player', 'both'],
+    },
+    profileSetupCompleted: {
+      type: Boolean,
+      default: false,
     },
     preferences: {
       theme: {

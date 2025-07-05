@@ -26,7 +26,7 @@ type FormState = {
 export default function SignInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const callbackUrl = searchParams.get('callbackUrl') || searchParams.get('next') || '/dashboard';
   const error = searchParams.get('error');
 
   const [formState, setFormState] = useState<FormState>({
