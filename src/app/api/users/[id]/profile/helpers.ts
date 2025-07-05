@@ -37,7 +37,7 @@ export function handleServiceError(result: any, defaultMessage: string, defaultS
     {
       success: false,
       message: result.error?.message || defaultMessage,
-      ...(defaultStatus === 400 && { 
+      ...(defaultStatus === 400 && {
         errors: result.error?.details || [
           { field: '', message: result.error?.message || 'Unknown error' },
         ],

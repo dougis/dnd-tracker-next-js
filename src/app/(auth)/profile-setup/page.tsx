@@ -9,7 +9,7 @@ import { LoadingState, SuccessState, ProfileForm } from './components';
 export default function ProfileSetupPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  
+
   const {
     formState,
     formData,

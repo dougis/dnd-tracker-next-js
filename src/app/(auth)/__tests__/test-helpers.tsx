@@ -1,5 +1,3 @@
-import React from 'react';
-import { render } from '@testing-library/react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import userEvent from '@testing-library/user-event';
@@ -73,10 +71,10 @@ export const submitForm = async () => {
 export const setupMocksForTest = () => {
   const mockRouter = createMockRouter();
   const mockSession = createMockSession();
-  
+
   mockRouterHook(mockRouter);
   mockSessionHook(mockSession);
   createSuccessfulFetchMock();
-  
+
   return { mockRouter, mockSession };
 };

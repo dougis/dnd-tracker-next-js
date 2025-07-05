@@ -21,7 +21,7 @@ type ProfileFormData = {
 
 export function useProfileForm(initialDisplayName: string = '', userId?: string) {
   const router = useRouter();
-  
+
   const [formState, setFormState] = useState<FormState>({
     success: false,
     errors: [],
@@ -69,7 +69,7 @@ export function useProfileForm(initialDisplayName: string = '', userId?: string)
 
   const handleSubmit = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    
+
     if (!userId) {
       setError([{ field: '', message: 'User session not found' }]);
       return;

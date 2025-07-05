@@ -29,9 +29,9 @@ type SuccessStateProps = {
   // No props needed
 };
 
-export function SuccessState({}: SuccessStateProps) {
+export function SuccessState(_props: SuccessStateProps) {
   const router = useRouter();
-  
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-4">

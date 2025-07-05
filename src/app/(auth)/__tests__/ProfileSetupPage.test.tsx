@@ -1,16 +1,10 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import ProfileSetupPage from '../profile-setup/page';
 import {
   setupMocksForTest,
-  mockSessionHook,
-  mockRouterHook,
-  createMockRouter,
-  createMockSession,
-  createSuccessfulFetchMock,
   createFailedFetchMock,
 } from './test-helpers';
 
@@ -28,14 +22,12 @@ jest.mock('next-auth/react', () => ({
 global.fetch = jest.fn();
 
 describe('ProfileSetupPage Component', () => {
-  let mockRouter: ReturnType<typeof createMockRouter>;
-  let mockSession: ReturnType<typeof createMockSession>;
+  let mockRouter: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
     const mocks = setupMocksForTest();
     mockRouter = mocks.mockRouter;
-    mockSession = mocks.mockSession;
   });
 
   it('renders the profile setup form correctly', () => {
