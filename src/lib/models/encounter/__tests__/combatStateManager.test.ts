@@ -10,6 +10,9 @@ import {
   loadCombatState,
   getCombatPhase,
   validateCombatState,
+  enhancedStartCombat,
+  enhancedEndCombat,
+  enhancedNextTurn,
 } from '../combatStateManager';
 import { IEncounter, IParticipantReference } from '../interfaces';
 
@@ -84,6 +87,37 @@ const _createMockParticipant = (): IParticipantReference => ({
   notes: '',
   conditions: [],
 });
+
+// Test helper functions to reduce duplication
+const createValidationTestParticipant = (overrides: any = {}) => ({
+  participantId: new Types.ObjectId('507f1f77bcf86cd799439011'),
+  initiative: 15,
+  dexterity: 14,
+  isActive: false,
+  hasActed: false,
+  ...overrides,
+});
+
+const setupActiveEncounter = (encounter: IEncounter) => {
+  encounter.combatState.isActive = true;
+  encounter.combatState.currentRound = 2;
+  encounter.combatState.currentTurn = 0;
+  encounter.combatState.initiativeOrder = [
+    createValidationTestParticipant({
+      participantId: new Types.ObjectId('507f1f77bcf86cd799439011'),
+      initiative: 20,
+      dexterity: 15,
+      isActive: true,
+    }),
+    createValidationTestParticipant({
+      participantId: new Types.ObjectId('507f1f77bcf86cd799439012'),
+      initiative: 15,
+      dexterity: 12,
+    }),
+  ];
+};
+
+// Helper function for creating test data that helps reduce code duplication
 
 describe('Combat State Manager', () => {
   let encounter: IEncounter;
@@ -454,6 +488,350 @@ describe('Combat State Manager', () => {
       const result = validateCombatState(encounter);
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('Current round cannot be negative');
+    });
+
+    it('should detect negative turn number', () => {
+      encounter.combatState.currentTurn = -1;
+
+      const result = validateCombatState(encounter);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('Current turn cannot be negative');
+    });
+
+    it('should detect no active participant during active combat', () => {
+      encounter.combatState.isActive = true;
+      encounter.combatState.initiativeOrder = [
+        {
+          participantId: new Types.ObjectId('507f1f77bcf86cd799439011'),
+          initiative: 15,
+          dexterity: 14,
+          isActive: false,
+          hasActed: false,
+        },
+      ];
+
+      const result = validateCombatState(encounter);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('No participant marked as active during active combat');
+    });
+
+    it('should detect negative initiative values', () => {
+      encounter.combatState.initiativeOrder = [
+        createValidationTestParticipant({ initiative: -5 }),
+      ];
+
+      const result = validateCombatState(encounter);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('Participant 507f1f77bcf86cd799439011 has negative initiative');
+    });
+
+    it('should detect negative dexterity values', () => {
+      encounter.combatState.initiativeOrder = [
+        createValidationTestParticipant({ dexterity: -2 }),
+      ];
+
+      const result = validateCombatState(encounter);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('Participant 507f1f77bcf86cd799439011 has negative dexterity');
+    });
+
+    it('should detect duplicate participants in initiative order', () => {
+      const participantId = new Types.ObjectId('507f1f77bcf86cd799439011');
+      encounter.combatState.initiativeOrder = [
+        createValidationTestParticipant({ participantId }),
+        createValidationTestParticipant({ participantId, initiative: 12, dexterity: 10 }),
+      ];
+
+      const result = validateCombatState(encounter);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('Duplicate participants found in initiative order');
+    });
+
+    it('should detect invalid timestamp combinations', () => {
+      const now = new Date();
+      const later = new Date(now.getTime() + 60000);
+
+      encounter.combatState.startedAt = later;
+      encounter.combatState.endedAt = now;
+
+      const result = validateCombatState(encounter);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('Start time cannot be after end time');
+    });
+
+    it('should detect invalid pause timestamp', () => {
+      const now = new Date();
+      const later = new Date(now.getTime() + 60000);
+
+      encounter.combatState.startedAt = later;
+      encounter.combatState.pausedAt = now;
+
+      const result = validateCombatState(encounter);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('Start time cannot be after pause time');
+    });
+  });
+
+  describe('Storage Integration', () => {
+    it('should handle localStorage parse errors gracefully', () => {
+      const originalWindow = global.window;
+      global.window = {
+        localStorage: {
+          getItem: jest.fn().mockReturnValue('invalid json{'),
+          setItem: jest.fn(),
+          removeItem: jest.fn(),
+        }
+      } as any;
+
+      const result = loadCombatState(encounter);
+      expect(result).toBe(false);
+
+      global.window = originalWindow;
+    });
+
+    it('should cover localStorage access paths in loadCombatState', () => {
+      // Test the localStorage path when memory store is empty
+      clearCombatState(encounter._id.toString());
+
+      const originalWindow = global.window;
+      global.window = {
+        localStorage: {
+          getItem: jest.fn().mockReturnValue(null),
+          setItem: jest.fn(),
+          removeItem: jest.fn(),
+        }
+      } as any;
+
+      const result = loadCombatState(encounter);
+      expect(result).toBe(false);
+
+      global.window = originalWindow;
+    });
+
+    it('should cover localStorage paths in saveCombatState', () => {
+      encounter.combatState.isActive = true;
+      encounter.combatState.currentRound = 2;
+
+      const originalWindow = global.window;
+      const mockSetItem = jest.fn();
+      global.window = {
+        localStorage: {
+          getItem: jest.fn(),
+          setItem: mockSetItem,
+          removeItem: jest.fn(),
+        }
+      } as any;
+
+      const result = saveCombatState(encounter);
+      expect(result).toBe(true);
+
+      global.window = originalWindow;
+    });
+
+    it('should cover localStorage paths in clearCombatState', () => {
+      const originalWindow = global.window;
+      const mockRemoveItem = jest.fn();
+      global.window = {
+        localStorage: {
+          getItem: jest.fn(),
+          setItem: jest.fn(),
+          removeItem: mockRemoveItem,
+        }
+      } as any;
+
+      clearCombatState(encounter._id.toString());
+
+      global.window = originalWindow;
+    });
+  });
+
+  describe('Enhanced Combat Functions', () => {
+    describe('enhancedStartCombat', () => {
+      it('should clear previous history and log combat start', () => {
+        // Add some existing history first
+        logCombatAction(encounter._id.toString(), {
+          action: 'turn_start',
+          round: 1,
+          turn: 0,
+        });
+
+        enhancedStartCombat(encounter, true);
+
+        const history = getCombatHistory(encounter._id.toString());
+        expect(history).toHaveLength(1);
+        expect(history[0].action).toBe('combat_started');
+        expect(history[0].details?.autoRollInitiative).toBe(true);
+        expect(history[0].details?.participantCount).toBe(encounter.participants.length);
+      });
+
+      it('should handle default parameters', () => {
+        enhancedStartCombat(encounter);
+
+        const history = getCombatHistory(encounter._id.toString());
+        expect(history[0].details?.autoRollInitiative).toBe(false);
+      });
+    });
+
+    describe('enhancedEndCombat', () => {
+      it('should log combat end with details', () => {
+        encounter.combatState.currentRound = 5;
+        encounter.combatState.currentTurn = 2;
+        encounter.combatState.totalDuration = 3600;
+
+        enhancedEndCombat(encounter);
+
+        const history = getCombatHistory(encounter._id.toString());
+        expect(history).toHaveLength(1);
+        expect(history[0].action).toBe('combat_ended');
+        expect(history[0].details?.totalRounds).toBe(5);
+        expect(history[0].details?.totalDuration).toBe(3600);
+      });
+
+      it('should clear saved state after combat ends', () => {
+        // First save a state
+        saveCombatState(encounter);
+
+        enhancedEndCombat(encounter);
+
+        // Check that state is cleared from memory by trying to load it
+        clearCombatHistory(encounter._id.toString()); // Clear history to test state loading
+        const result = loadCombatState(encounter);
+        expect(result).toBe(false); // Should be false because state was cleared
+      });
+    });
+
+    describe('enhancedNextTurn', () => {
+      beforeEach(() => {
+        setupActiveEncounter(encounter);
+      });
+
+      it('should log turn end for current participant', () => {
+        enhancedNextTurn(encounter);
+
+        const history = getCombatHistory(encounter._id.toString());
+        const turnEndLog = history.find(h => h.action === 'turn_end');
+        expect(turnEndLog).toBeDefined();
+        expect(turnEndLog?.participantId?.toString()).toBe('507f1f77bcf86cd799439011');
+        expect(turnEndLog?.round).toBe(2);
+        expect(turnEndLog?.turn).toBe(0);
+      });
+
+      it('should log turn start for next participant', () => {
+        enhancedNextTurn(encounter);
+
+        const history = getCombatHistory(encounter._id.toString());
+        const turnStartLog = history.find(h => h.action === 'turn_start');
+        expect(turnStartLog).toBeDefined();
+        expect(turnStartLog?.participantId?.toString()).toBe('507f1f77bcf86cd799439012');
+        expect(turnStartLog?.round).toBe(2);
+        expect(turnStartLog?.turn).toBe(1);
+      });
+
+      it('should log round transitions when advancing to new round', () => {
+        encounter.combatState.currentTurn = 1; // Last participant
+
+        enhancedNextTurn(encounter);
+
+        const history = getCombatHistory(encounter._id.toString());
+        const roundEndLog = history.find(h => h.action === 'round_end');
+        const roundStartLog = history.find(h => h.action === 'round_start');
+
+        expect(roundEndLog).toBeDefined();
+        expect(roundEndLog?.round).toBe(2);
+        expect(roundEndLog?.turn).toBe(1);
+
+        expect(roundStartLog).toBeDefined();
+        expect(roundStartLog?.round).toBe(3);
+        expect(roundStartLog?.turn).toBe(0);
+      });
+
+      it('should handle empty initiative order gracefully', () => {
+        encounter.combatState.initiativeOrder = [];
+
+        const result = enhancedNextTurn(encounter);
+        expect(result).toBe(true);
+
+        const history = getCombatHistory(encounter._id.toString());
+        // Should not log turn start/end for non-existent participants
+        expect(history.filter(h => h.action === 'turn_start' || h.action === 'turn_end')).toHaveLength(0);
+      });
+
+      it('should return true on successful execution', () => {
+        const result = enhancedNextTurn(encounter);
+        expect(result).toBe(true);
+      });
+    });
+  });
+
+  describe('Edge Cases and Error Handling', () => {
+    const testWithoutWindow = (testFn: () => void) => {
+      const originalWindow = global.window;
+      delete (global as any).window;
+      try {
+        testFn();
+      } finally {
+        global.window = originalWindow;
+      }
+    };
+
+    it('should handle window undefined when loading state', () => {
+      testWithoutWindow(() => {
+        const result = loadCombatState(encounter);
+        expect(result).toBe(false);
+      });
+    });
+
+    it('should handle window undefined when saving state', () => {
+      testWithoutWindow(() => {
+        encounter.combatState.isActive = true;
+        const result = saveCombatState(encounter);
+        expect(result).toBe(true); // Should still work with memory store
+      });
+    });
+
+    it('should handle window undefined when clearing state', () => {
+      testWithoutWindow(() => {
+        expect(() => clearCombatState(encounter._id.toString())).not.toThrow();
+      });
+    });
+
+    it('should validate edge case with empty combat state', () => {
+      const emptyEncounter = {
+        ...encounter,
+        combatState: {
+          isActive: false,
+          currentRound: 0,
+          currentTurn: 0,
+          initiativeOrder: [],
+          totalDuration: 0,
+        },
+      };
+
+      const result = validateCombatState(emptyEncounter);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should return correct phase for various encounter states', () => {
+      // Test inactive phase
+      encounter.combatState.isActive = false;
+      encounter.combatState.pausedAt = undefined;
+      encounter.combatState.endedAt = undefined;
+      expect(getCombatPhase(encounter)).toBe('inactive');
+
+      // Test active phase
+      encounter.combatState.isActive = true;
+      expect(getCombatPhase(encounter)).toBe('active');
+
+      // Test ended phase with endedAt
+      encounter.combatState.isActive = false;
+      encounter.combatState.endedAt = new Date();
+      expect(getCombatPhase(encounter)).toBe('ended');
+
+      // Test ended phase with completed status
+      encounter.combatState.endedAt = undefined;
+      encounter.status = 'completed';
+      expect(getCombatPhase(encounter)).toBe('ended');
     });
   });
 });
