@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EncounterSettings } from '../EncounterSettings';
 import { useEncounterSettings } from '@/lib/hooks/useEncounterSettings';
@@ -33,7 +33,7 @@ describe('EncounterSettings', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Default mock implementation
     mockUseEncounterSettings.mockReturnValue({
       loading: false,
@@ -47,7 +47,7 @@ describe('EncounterSettings', () => {
     render(<EncounterSettings encounter={mockEncounter} />);
 
     expect(screen.getByText('Encounter Settings')).toBeInTheDocument();
-    
+
     // Check that switches reflect current settings
     expect(screen.getByLabelText('Allow Player Visibility')).toBeChecked();
     expect(screen.getByLabelText('Auto-roll Initiative')).not.toBeChecked();
@@ -61,10 +61,10 @@ describe('EncounterSettings', () => {
 
     expect(screen.getByText('Grid Size:')).toBeInTheDocument();
     expect(screen.getByText('5 ft')).toBeInTheDocument();
-    
+
     expect(screen.getByText('Lair Action Initiative:')).toBeInTheDocument();
     expect(screen.getByText('20')).toBeInTheDocument();
-    
+
     expect(screen.getByText('Round Time Limit:')).toBeInTheDocument();
     expect(screen.getByText('60s')).toBeInTheDocument();
   });
@@ -74,7 +74,7 @@ describe('EncounterSettings', () => {
     render(<EncounterSettings encounter={mockEncounter} />);
 
     const playerVisibilitySwitch = screen.getByLabelText('Allow Player Visibility');
-    
+
     await user.click(playerVisibilitySwitch);
 
     expect(mockUpdateSettings).toHaveBeenCalledWith({
@@ -137,7 +137,7 @@ describe('EncounterSettings', () => {
 
   it('calls retry when retry button is clicked', async () => {
     const user = userEvent.setup();
-    
+
     mockUseEncounterSettings.mockReturnValue({
       loading: false,
       error: 'Network error occurred',
@@ -194,8 +194,6 @@ describe('EncounterSettings', () => {
   });
 
   it('handles numerical input changes', async () => {
-    const user = userEvent.setup();
-    
     // Mock an enhanced version that would have numerical inputs
     // For now, we're testing the current read-only display
     render(<EncounterSettings encounter={mockEncounter} />);
@@ -207,8 +205,7 @@ describe('EncounterSettings', () => {
   });
 
   it('clears error state when settings update successfully', async () => {
-    const user = userEvent.setup();
-    
+
     // Start with error state
     mockUseEncounterSettings.mockReturnValue({
       loading: false,

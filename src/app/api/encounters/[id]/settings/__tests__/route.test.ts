@@ -29,7 +29,7 @@ describe('PATCH /api/encounters/[id]/settings', () => {
     experienceThreshold: 4,
   };
 
-  const createMockRequest = (body: any, params?: any) => {
+  const createMockRequest = (body: any) => {
     const req = new NextRequest('https://example.com');
     // Use the mocked json method
     (req.json as jest.Mock).mockResolvedValue(body);
@@ -51,7 +51,7 @@ describe('PATCH /api/encounters/[id]/settings', () => {
     });
 
     const request = createMockRequest(mockValidSettings);
-    const response = await PATCH(request, { params: { id: mockEncounterId } });
+    const response = await PATCH(request, { params: Promise.resolve({ id: mockEncounterId }) });
     const responseData = await response.json();
 
     expect(response.status).toBe(200);
@@ -75,7 +75,7 @@ describe('PATCH /api/encounters/[id]/settings', () => {
     };
 
     const request = createMockRequest(invalidData);
-    const response = await PATCH(request, { params: { id: mockEncounterId } });
+    const response = await PATCH(request, { params: Promise.resolve({ id: mockEncounterId }) });
     const responseData = await response.json();
 
     expect(response.status).toBe(400);
@@ -89,7 +89,7 @@ describe('PATCH /api/encounters/[id]/settings', () => {
   it('returns error for invalid encounter ID format', async () => {
     const invalidId = 'invalid-id';
     const request = createMockRequest(mockValidSettings);
-    const response = await PATCH(request, { params: { id: invalidId } });
+    const response = await PATCH(request, { params: Promise.resolve({ id: invalidId }) });
     const responseData = await response.json();
 
     expect(response.status).toBe(400);
@@ -113,7 +113,7 @@ describe('PATCH /api/encounters/[id]/settings', () => {
     EncounterService.updateEncounter = jest.fn().mockResolvedValue(mockError);
 
     const request = createMockRequest(mockValidSettings);
-    const response = await PATCH(request, { params: { id: mockEncounterId } });
+    const response = await PATCH(request, { params: Promise.resolve({ id: mockEncounterId }) });
     const responseData = await response.json();
 
     expect(response.status).toBe(404);
@@ -142,7 +142,7 @@ describe('PATCH /api/encounters/[id]/settings', () => {
     EncounterService.updateEncounter = jest.fn().mockResolvedValue(mockError);
 
     const request = createMockRequest(mockValidSettings);
-    const response = await PATCH(request, { params: { id: mockEncounterId } });
+    const response = await PATCH(request, { params: Promise.resolve({ id: mockEncounterId }) });
     const responseData = await response.json();
 
     expect(response.status).toBe(500);
@@ -164,7 +164,7 @@ describe('PATCH /api/encounters/[id]/settings', () => {
       .mockRejectedValue(new Error('Unexpected error'));
 
     const request = createMockRequest(mockValidSettings);
-    const response = await PATCH(request, { params: { id: mockEncounterId } });
+    const response = await PATCH(request, { params: Promise.resolve({ id: mockEncounterId }) });
     const responseData = await response.json();
 
     expect(response.status).toBe(500);
@@ -195,7 +195,7 @@ describe('PATCH /api/encounters/[id]/settings', () => {
     });
 
     const request = createMockRequest(partialSettings);
-    const response = await PATCH(request, { params: { id: mockEncounterId } });
+    const response = await PATCH(request, { params: Promise.resolve({ id: mockEncounterId }) });
     const responseData = await response.json();
 
     expect(response.status).toBe(200);
@@ -214,8 +214,8 @@ describe('PATCH /api/encounters/[id]/settings', () => {
     };
 
     const request = createMockRequest(invalidLairSettings);
-    const response = await PATCH(request, { params: { id: mockEncounterId } });
-    const responseData = await response.json();
+    const response = await PATCH(request, { params: Promise.resolve({ id: mockEncounterId }) });
+    await response.json();
 
     // This should still be valid as the schema allows optional lairActionInitiative
     // The business logic for enforcing the dependency should be in the service layer

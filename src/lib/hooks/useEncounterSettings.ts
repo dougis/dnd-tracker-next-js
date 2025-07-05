@@ -15,26 +15,17 @@ interface UseEncounterSettingsReturn {
   loading: boolean;
   error: string | null;
   updateSettings: (
-    settings: Partial<IEncounterSettings>,
-    options?: UpdateOptions
+    _settings: Partial<IEncounterSettings>,
+    _options?: UpdateOptions
   ) => Promise<void>;
   retry: () => Promise<void>;
 }
 
-/**
- * Extract error message from API response or error object
- */
-const extractErrorMessage = (error: unknown): string => {
-  if (typeof error === 'string') return error;
-  if (error && typeof error === 'object' && 'message' in error) {
-    return (error as { message: string }).message;
-  }
-  return 'Failed to update encounter settings';
-};
+// Removed extractErrorMessage function as it's not used in the current implementation
 
 /**
  * Custom hook for managing encounter settings updates
- * 
+ *
  * Provides functionality to update encounter settings with loading states,
  * error handling, and optional optimistic updates.
  */

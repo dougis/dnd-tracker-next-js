@@ -6,9 +6,12 @@ import { ZodError } from 'zod';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ): Promise<Response> {
   try {
+    // Await params as it's a Promise in Next.js 15
+    const params = await context.params;
+
     // Validate encounter ID format
     const encounterIdValidation = objectIdSchema.safeParse(params.id);
     if (!encounterIdValidation.success) {
@@ -30,7 +33,7 @@ export async function PATCH(
 
     if (!settingsValidation.success) {
       const zodError = settingsValidation.error as ZodError;
-      const errors = zodError.errors.map((error) => 
+      const errors = zodError.errors.map((error) =>
         `${error.path.join('.')}: ${error.message}`
       );
 

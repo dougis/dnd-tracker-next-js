@@ -234,7 +234,7 @@ describe('useEncounterSettings', () => {
   describe('validation', () => {
     it('validates encounter ID format', () => {
       const invalidId = 'invalid-id';
-      
+
       const { result } = renderHook(() => useEncounterSettings(invalidId));
 
       expect(result.current.updateSettings).toBeDefined();
