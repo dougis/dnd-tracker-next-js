@@ -7,21 +7,31 @@ interface ToastProps {
   variant?: 'default' | 'destructive';
 }
 
+const formatMessage = (title: string, description?: string): string => {
+  return `${title}${description ? ': ' + description : ''}`;
+};
+
+const logMessage = (message: string, isError: boolean): void => {
+  if (isError) {
+    console.error('[Toast Error]', message);
+  } else {
+    console.log('[Toast]', message);
+  }
+};
+
+const showAlert = (message: string, isError: boolean): void => {
+  if (isError) {
+    alert(`Error: ${message}`);
+  }
+};
+
 export function useToast() {
   const toast = ({ title, description, variant = 'default' }: ToastProps) => {
-    const message = `${title}${description ? ': ' + description : ''}`;
+    const message = formatMessage(title, description);
+    const isError = variant === 'destructive';
 
-    if (variant === 'destructive') {
-      console.error('[Toast Error]', message);
-    } else {
-      console.log('[Toast]', message);
-    }
-
-    // TODO: Replace with actual toast UI implementation
-    // For now, we'll use browser alert as a fallback
-    if (variant === 'destructive') {
-      alert(`Error: ${message}`);
-    }
+    logMessage(message, isError);
+    showAlert(message, isError);
   };
 
   return { toast };

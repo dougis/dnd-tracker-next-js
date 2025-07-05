@@ -1,17 +1,25 @@
 // Common assertion patterns used across tests
 
+const findElementBySelector = (screen: any, selector: string) => {
+  return screen.getByText(selector) || screen.getByTestId(selector) || screen.getByPlaceholderText(selector);
+};
+
+const queryElementBySelector = (screen: any, selector: string) => {
+  return screen.queryByText(selector) || screen.queryByTestId(selector) || screen.queryByPlaceholderText(selector);
+};
+
 export const expectElementToBeInDocument = (screen: any, selector: string | RegExp) => {
   const element = typeof selector === 'string'
-    ? screen.getByText(selector) || screen.getByTestId(selector) || screen.getByPlaceholderText(selector)
+    ? findElementBySelector(screen, selector)
     : screen.getByText(selector);
   expect(element).toBeInTheDocument();
 };
 
 export const expectElementNotToBeInDocument = (screen: any, selector: string | RegExp) => {
-  const queryFn = typeof selector === 'string'
-    ? () => screen.queryByText(selector) || screen.queryByTestId(selector) || screen.queryByPlaceholderText(selector)
-    : () => screen.queryByText(selector);
-  expect(queryFn()).not.toBeInTheDocument();
+  const element = typeof selector === 'string'
+    ? queryElementBySelector(screen, selector)
+    : screen.queryByText(selector);
+  expect(element).not.toBeInTheDocument();
 };
 
 export const expectMockToHaveBeenCalledWith = (mockFn: jest.Mock, ...args: any[]) => {

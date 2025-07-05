@@ -10,48 +10,54 @@ interface CardContentProps {
   encounter: EncounterListItem;
 }
 
-function ParticipantInfo({ encounter }: { encounter: EncounterListItem }) {
+interface InfoItemProps {
+  icon: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+}
+
+function InfoItem({ icon: Icon, children }: InfoItemProps) {
   return (
     <div className="flex items-center text-sm text-muted-foreground">
-      <Users className="h-4 w-4 mr-2" />
+      <Icon className="h-4 w-4 mr-2" />
+      {children}
+    </div>
+  );
+}
+
+function ParticipantInfo({ encounter }: { encounter: EncounterListItem }) {
+  return (
+    <InfoItem icon={Users}>
       <span>{encounter.participantCount} participants</span>
       {encounter.playerCount > 0 && (
         <span className="ml-2">({encounter.playerCount} players)</span>
       )}
-    </div>
+    </InfoItem>
   );
 }
 
 function TargetLevelInfo({ targetLevel }: { targetLevel?: number }) {
   if (!targetLevel) return null;
-
   return (
-    <div className="flex items-center text-sm text-muted-foreground">
-      <Target className="h-4 w-4 mr-2" />
+    <InfoItem icon={Target}>
       <span>Level {targetLevel}</span>
-    </div>
+    </InfoItem>
   );
 }
 
 function DurationInfo({ estimatedDuration }: { estimatedDuration?: number }) {
   if (!estimatedDuration) return null;
-
   return (
-    <div className="flex items-center text-sm text-muted-foreground">
-      <Clock className="h-4 w-4 mr-2" />
+    <InfoItem icon={Clock}>
       <span>{estimatedDuration} minutes</span>
-    </div>
+    </InfoItem>
   );
 }
 
 function UpdatedAtInfo({ updatedAt }: { updatedAt: Date }) {
   return (
-    <div className="flex items-center text-sm text-muted-foreground">
-      <Calendar className="h-4 w-4 mr-2" />
-      <span>
-        {formatDistanceToNow(updatedAt, { addSuffix: true })}
-      </span>
-    </div>
+    <InfoItem icon={Calendar}>
+      <span>{formatDistanceToNow(updatedAt, { addSuffix: true })}</span>
+    </InfoItem>
   );
 }
 

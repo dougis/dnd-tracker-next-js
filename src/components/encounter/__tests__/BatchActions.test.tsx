@@ -3,14 +3,11 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { BatchActions } from '../BatchActions';
 import { createMockToast, createConsoleSpy, commonBeforeEach, commonAfterAll } from './test-utils/mockSetup';
 import { clickButton, expectFunctionToBeCalled } from './test-utils/interactionHelpers';
+import { mockToastModule, createErrorHandlerMocks, mockErrorUtilsModule } from './test-utils/commonMocks';
 
 // Mock the toast hook
 const mockToast = createMockToast();
-jest.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({
-    toast: mockToast,
-  }),
-}));
+mockToastModule(mockToast);
 
 // Mock the utils
 jest.mock('../BatchActions/utils', () => ({
@@ -20,21 +17,8 @@ jest.mock('../BatchActions/utils', () => ({
 }));
 
 // Mock the error utils
-jest.mock('../actions/errorUtils', () => ({
-  createSuccessHandler: jest.fn((toast) => jest.fn((action, target) => {
-    toast({
-      title: `Encounter ${action}d`,
-      description: `"${target}" has been ${action}d successfully.`,
-    });
-  })),
-  createErrorHandler: jest.fn((toast) => jest.fn((action) => {
-    toast({
-      title: 'Error',
-      description: `Failed to ${action} encounter. Please try again.`,
-      variant: 'destructive',
-    });
-  })),
-}));
+const errorHandlerMocks = createErrorHandlerMocks();
+mockErrorUtilsModule(errorHandlerMocks);
 
 const consoleSpy = createConsoleSpy();
 

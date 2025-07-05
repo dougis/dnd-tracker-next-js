@@ -34,34 +34,40 @@ export const createServiceHandlers = (
   const showError = createErrorHandler(toast);
   const showSuccess = createSuccessHandler(toast);
 
-  const handleDuplicate = async () => {
+  const handleServiceOperation = async (
+    operation: () => Promise<any>,
+    action: string,
+    defaultErrorMsg: string
+  ): Promise<boolean> => {
     try {
-      const result = await EncounterService.cloneEncounter(encounter.id);
+      const result = await operation();
       if (result.success) {
-        showSuccess('duplicate', encounter.name);
-        onRefetch?.();
-      } else {
-        throw new Error(extractErrorMessage(result.error) || 'Failed to duplicate encounter');
-      }
-    } catch {
-      showError('duplicate', encounter.name);
-    }
-  };
-
-  const handleDelete = async () => {
-    try {
-      const result = await EncounterService.deleteEncounter(encounter.id);
-      if (result.success) {
-        showSuccess('delete', encounter.name);
+        showSuccess(action, encounter.name);
         onRefetch?.();
         return true;
       } else {
-        throw new Error(extractErrorMessage(result.error) || 'Failed to delete encounter');
+        throw new Error(extractErrorMessage(result.error) || defaultErrorMsg);
       }
     } catch {
-      showError('delete', encounter.name);
+      showError(action, encounter.name);
       return false;
     }
+  };
+
+  const handleDuplicate = async () => {
+    return handleServiceOperation(
+      () => EncounterService.cloneEncounter(encounter.id),
+      'duplicate',
+      'Failed to duplicate encounter'
+    );
+  };
+
+  const handleDelete = async () => {
+    return handleServiceOperation(
+      () => EncounterService.deleteEncounter(encounter.id),
+      'delete',
+      'Failed to delete encounter'
+    );
   };
 
   return { handleDuplicate, handleDelete };

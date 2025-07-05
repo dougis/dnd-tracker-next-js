@@ -62,18 +62,20 @@ export function EncounterListView() {
     return <ErrorFallback onRetry={refetch} />;
   }
 
-  const sortConfig = createSortConfig(sortBy, sortOrder);
-  const filterCallbacks = createFilterCallbacks(updateFilters, updateSearchQuery, updateSort, clearFilters);
-  const tableSortConfig = createTableSortConfig(sortBy, sortOrder, updateSort);
-  const tableSelectionConfig = createTableSelectionConfig(selectedEncounters, isAllSelected, selectAll, selectEncounter);
+  const configs = {
+    sort: createSortConfig(sortBy, sortOrder),
+    filterCallbacks: createFilterCallbacks(updateFilters, updateSearchQuery, updateSort, clearFilters),
+    tableSort: createTableSortConfig(sortBy, sortOrder, updateSort),
+    tableSelection: createTableSelectionConfig(selectedEncounters, isAllSelected, selectAll, selectEncounter),
+  };
 
   return (
     <div className="space-y-6">
       <ControlsSection
         filters={filters}
         searchQuery={searchQuery}
-        sortConfig={sortConfig}
-        filterCallbacks={filterCallbacks}
+        sortConfig={configs.sort}
+        filterCallbacks={configs.filterCallbacks}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         onCreateEncounter={handleCreateEncounter}
@@ -99,8 +101,8 @@ export function EncounterListView() {
         tableProps={{
           encounters,
           isLoading,
-          sortConfig: tableSortConfig,
-          selectionConfig: tableSelectionConfig,
+          sortConfig: configs.tableSort,
+          selectionConfig: configs.tableSelection,
           onRefetch: refetch,
         }}
       />

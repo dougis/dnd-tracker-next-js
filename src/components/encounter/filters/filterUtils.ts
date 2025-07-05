@@ -1,14 +1,28 @@
 import type { EncounterFilters as Filters } from '../types';
 
+const hasSearchQuery = (searchQuery: string): boolean => !!searchQuery;
+
+const hasStatusFilters = (filters: Filters): boolean => filters.status.length > 0;
+
+const hasDifficultyFilters = (filters: Filters): boolean => filters.difficulty.length > 0;
+
+const hasLevelFilters = (filters: Filters): boolean =>
+  filters.targetLevelMin !== undefined || filters.targetLevelMax !== undefined;
+
+const hasTagFilters = (filters: Filters): boolean => filters.tags.length > 0;
+
 export const checkHasActiveFilters = (filters: Filters, searchQuery: string): boolean => {
-  return !!(
-    searchQuery ||
-    filters.status.length > 0 ||
-    filters.difficulty.length > 0 ||
-    filters.targetLevelMin !== undefined ||
-    filters.targetLevelMax !== undefined ||
-    filters.tags.length > 0
-  );
+  return hasSearchQuery(searchQuery) ||
+    hasStatusFilters(filters) ||
+    hasDifficultyFilters(filters) ||
+    hasLevelFilters(filters) ||
+    hasTagFilters(filters);
+};
+
+const toggleFilterValue = (currentValues: string[], value: string): string[] => {
+  return currentValues.includes(value)
+    ? currentValues.filter(v => v !== value)
+    : [...currentValues, value];
 };
 
 export const createToggleHandler = (
@@ -17,9 +31,7 @@ export const createToggleHandler = (
   filterKey: keyof Filters
 ) => {
   return (value: string) => {
-    const newValues = currentValues.includes(value)
-      ? currentValues.filter(v => v !== value)
-      : [...currentValues, value];
+    const newValues = toggleFilterValue(currentValues, value);
     onFiltersChange({ [filterKey]: newValues });
   };
 };

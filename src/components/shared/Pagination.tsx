@@ -18,14 +18,17 @@ export function Pagination({
 }: PaginationProps) {
   if (totalPages <= 1) return null;
 
+  const canGoPrevious = currentPage > 1;
+  const canGoNext = currentPage < totalPages;
+
   const onPreviousPage = () => {
-    if (currentPage > 1) {
+    if (canGoPrevious) {
       onPageChange(currentPage - 1);
     }
   };
 
   const onNextPage = () => {
-    if (currentPage < totalPages) {
+    if (canGoNext) {
       onPageChange(currentPage + 1);
     }
   };
@@ -42,7 +45,7 @@ export function Pagination({
         <Button
           variant="outline"
           size="sm"
-          disabled={currentPage <= 1}
+          disabled={!canGoPrevious}
           onClick={onPreviousPage}
         >
           <ChevronLeft className="h-4 w-4 mr-2" />
@@ -51,7 +54,7 @@ export function Pagination({
         <Button
           variant="outline"
           size="sm"
-          disabled={currentPage >= totalPages}
+          disabled={!canGoNext}
           onClick={onNextPage}
         >
           Next
