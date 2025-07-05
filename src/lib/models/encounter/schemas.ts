@@ -10,7 +10,11 @@ import {
 } from './interfaces';
 import {
   getStandardSchemaOptions,
-  mongooseObjectIdField
+  mongooseObjectIdField,
+  commonFields,
+  dndFields,
+  commonIndexes,
+  DND_VALIDATION_RANGES,
 } from '../shared/schema-utils';
 
 /**
@@ -38,12 +42,7 @@ export const positionSchema = new Schema<IPosition>(
 export const participantReferenceSchema = new Schema<IParticipantReference>(
   {
     characterId: mongooseObjectIdField('Character'),
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-      maxlength: 100,
-    },
+    name: commonFields.name,
     type: {
       type: String,
       enum: ['pc', 'npc', 'monster'],
@@ -53,29 +52,20 @@ export const participantReferenceSchema = new Schema<IParticipantReference>(
     maxHitPoints: {
       type: Number,
       required: true,
-      min: 1,
+      ...DND_VALIDATION_RANGES.HIT_POINTS_MAX,
     },
     currentHitPoints: {
       type: Number,
       required: true,
-      min: 0,
+      ...DND_VALIDATION_RANGES.HIT_POINTS,
     },
     temporaryHitPoints: {
       type: Number,
       default: 0,
-      min: 0,
+      ...DND_VALIDATION_RANGES.HIT_POINTS,
     },
-    armorClass: {
-      type: Number,
-      required: true,
-      min: 1,
-      max: 30,
-    },
-    initiative: {
-      type: Number,
-      min: -10,
-      max: 30,
-    },
+    armorClass: dndFields.armorClass,
+    initiative: dndFields.initiative,
     isPlayer: {
       type: Boolean,
       default: false,
@@ -85,11 +75,7 @@ export const participantReferenceSchema = new Schema<IParticipantReference>(
       type: Boolean,
       default: true,
     },
-    notes: {
-      type: String,
-      default: '',
-      maxlength: 500,
-    },
+    notes: commonFields.notes,
     conditions: [
       {
         type: String,
@@ -111,14 +97,12 @@ export const initiativeEntrySchema = new Schema<IInitiativeEntry>(
     initiative: {
       type: Number,
       required: true,
-      min: -10,
-      max: 30,
+      ...DND_VALIDATION_RANGES.INITIATIVE,
     },
     dexterity: {
       type: Number,
       required: true,
-      min: 1,
-      max: 30,
+      ...DND_VALIDATION_RANGES.ABILITY_SCORE,
     },
     isActive: {
       type: Boolean,
@@ -153,11 +137,7 @@ export const encounterSettingsSchema = new Schema<IEncounterSettings>(
       type: Boolean,
       default: false,
     },
-    lairActionInitiative: {
-      type: Number,
-      min: -10,
-      max: 30,
-    },
+    lairActionInitiative: dndFields.initiative,
     enableGridMovement: {
       type: Boolean,
       default: false,
@@ -175,8 +155,8 @@ export const encounterSettingsSchema = new Schema<IEncounterSettings>(
     },
     experienceThreshold: {
       type: Number,
+      ...DND_VALIDATION_RANGES.CHARACTER_LEVEL,
       min: 0,
-      max: 30,
     },
   },
   { _id: false }
@@ -229,24 +209,18 @@ export const encounterSchema = new Schema<IEncounter, EncounterModel>(
   {
     ownerId: mongooseObjectIdField('User'),
     name: {
-      type: String,
-      required: true,
-      trim: true,
-      maxlength: 100,
+      ...commonFields.name,
       index: 'text',
     },
-    description: {
-      type: String,
-      default: '',
-      maxlength: 1000,
-    },
-    tags: [
-      {
-        type: String,
-        trim: true,
-        maxlength: 30,
+    description: commonFields.description,
+    tags: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: (tags: string[]) => tags.length <= 10 && tags.every(tag => tag.length <= 30),
+        message: 'Cannot have more than 10 tags, each max 30 characters',
       },
-    ],
+    },
     difficulty: {
       type: String,
       enum: ['trivial', 'easy', 'medium', 'hard', 'deadly'],
@@ -257,12 +231,7 @@ export const encounterSchema = new Schema<IEncounter, EncounterModel>(
       min: 1,
       max: 480,
     },
-    targetLevel: {
-      type: Number,
-      min: 1,
-      max: 20,
-      index: true,
-    },
+    targetLevel: dndFields.targetLevel,
     participants: [participantReferenceSchema],
     settings: {
       type: encounterSettingsSchema,
@@ -279,27 +248,23 @@ export const encounterSchema = new Schema<IEncounter, EncounterModel>(
       index: true,
     },
     partyId: mongooseObjectIdField('Party', false),
-    isPublic: {
-      type: Boolean,
-      default: false,
-      index: true,
-    },
+    isPublic: commonFields.isPublic,
     sharedWith: [mongooseObjectIdField('User', false, false)],
-    version: {
-      type: Number,
-      default: 1,
-      min: 1,
-    },
+    version: commonFields.version,
   },
   getStandardSchemaOptions()
 );
 
-// Add indexes for performance optimization
+// Apply common indexes
+commonIndexes.ownerBased(encounterSchema);
+commonIndexes.publicContent(encounterSchema);
+commonIndexes.temporal(encounterSchema);
+commonIndexes.dndContent(encounterSchema);
+
+// Encounter-specific indexes
 encounterSchema.index({ ownerId: 1, status: 1 });
-encounterSchema.index({ ownerId: 1, updatedAt: -1 });
 encounterSchema.index({ isPublic: 1, difficulty: 1 });
 encounterSchema.index({ targetLevel: 1, difficulty: 1 });
-encounterSchema.index({ tags: 1 });
 encounterSchema.index({ 'combatState.isActive': 1 });
 encounterSchema.index({ sharedWith: 1 });
 

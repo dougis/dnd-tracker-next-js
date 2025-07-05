@@ -1,7 +1,7 @@
-// Types import removed as it's not used in this file
 import { z } from 'zod';
 import { encounterDifficultySchema } from '../../validations/encounter';
 import { IInitiativeEntry, IParticipantReference } from './interfaces';
+import { hitPointsUtils, validationHelpers } from '../shared/schema-utils';
 
 /**
  * Utility functions for encounter operations
@@ -83,20 +83,16 @@ export function applyDamageToParticipant(
 ): boolean {
   if (damage < 0) return false;
 
-  // Apply damage to temporary HP first
-  if (participant.temporaryHitPoints > 0) {
-    const tempDamage = Math.min(damage, participant.temporaryHitPoints);
-    participant.temporaryHitPoints -= tempDamage;
-    damage -= tempDamage;
-  }
+  const hitPoints = {
+    maximum: participant.maxHitPoints,
+    current: participant.currentHitPoints,
+    temporary: participant.temporaryHitPoints,
+  };
 
-  // Apply remaining damage to current HP
-  if (damage > 0) {
-    participant.currentHitPoints = Math.max(
-      0,
-      participant.currentHitPoints - damage
-    );
-  }
+  hitPointsUtils.takeDamage(hitPoints, damage);
+
+  participant.currentHitPoints = hitPoints.current;
+  participant.temporaryHitPoints = hitPoints.temporary;
 
   return true;
 }
@@ -110,10 +106,15 @@ export function healParticipant(
 ): boolean {
   if (healing < 0) return false;
 
-  participant.currentHitPoints = Math.min(
-    participant.maxHitPoints,
-    participant.currentHitPoints + healing
-  );
+  const hitPoints = {
+    maximum: participant.maxHitPoints,
+    current: participant.currentHitPoints,
+    temporary: participant.temporaryHitPoints,
+  };
+
+  hitPointsUtils.heal(hitPoints, healing);
+
+  participant.currentHitPoints = hitPoints.current;
 
   return true;
 }
@@ -195,10 +196,72 @@ export function createDefaultCombatState() {
 export function validateParticipantHP(
   participant: IParticipantReference
 ): void {
-  if (participant.currentHitPoints > participant.maxHitPoints) {
-    participant.currentHitPoints = participant.maxHitPoints;
+  const hitPoints = {
+    maximum: participant.maxHitPoints,
+    current: participant.currentHitPoints,
+    temporary: participant.temporaryHitPoints,
+  };
+
+  // Ensure current HP doesn't exceed maximum
+  if (hitPoints.current > hitPoints.maximum) {
+    hitPoints.current = hitPoints.maximum;
   }
-  if (participant.temporaryHitPoints < 0) {
-    participant.temporaryHitPoints = 0;
+
+  // Ensure temporary HP is not negative
+  if (hitPoints.temporary < 0) {
+    hitPoints.temporary = 0;
   }
+
+  participant.currentHitPoints = hitPoints.current;
+  participant.temporaryHitPoints = hitPoints.temporary;
+}
+
+/**
+ * Check if participant is alive using shared logic
+ */
+export function isParticipantAlive(participant: IParticipantReference): boolean {
+  const hitPoints = {
+    maximum: participant.maxHitPoints,
+    current: participant.currentHitPoints,
+    temporary: participant.temporaryHitPoints,
+  };
+  return hitPointsUtils.isAlive(hitPoints);
+}
+
+/**
+ * Check if participant is unconscious using shared logic
+ */
+export function isParticipantUnconscious(participant: IParticipantReference): boolean {
+  const hitPoints = {
+    maximum: participant.maxHitPoints,
+    current: participant.currentHitPoints,
+    temporary: participant.temporaryHitPoints,
+  };
+  return hitPointsUtils.isUnconscious(hitPoints);
+}
+
+/**
+ * Get participant's effective HP using shared logic
+ */
+export function getParticipantEffectiveHP(participant: IParticipantReference): number {
+  const hitPoints = {
+    maximum: participant.maxHitPoints,
+    current: participant.currentHitPoints,
+    temporary: participant.temporaryHitPoints,
+  };
+  return hitPointsUtils.getEffectiveHP(hitPoints);
+}
+
+/**
+ * Validate initiative value using shared validation
+ */
+export function isValidInitiativeValue(initiative: number): boolean {
+  return validationHelpers.isValidInitiative(initiative);
+}
+
+/**
+ * Validate armor class using shared validation
+ */
+export function isValidArmorClassValue(ac: number): boolean {
+  return validationHelpers.isValidArmorClass(ac);
 }
