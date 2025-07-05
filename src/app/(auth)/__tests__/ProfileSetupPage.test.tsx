@@ -4,6 +4,15 @@ import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import ProfileSetupPage from '../profile-setup/page';
+import {
+  setupMocksForTest,
+  mockSessionHook,
+  mockRouterHook,
+  createMockRouter,
+  createMockSession,
+  createSuccessfulFetchMock,
+  createFailedFetchMock,
+} from './test-helpers';
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
@@ -19,33 +28,14 @@ jest.mock('next-auth/react', () => ({
 global.fetch = jest.fn();
 
 describe('ProfileSetupPage Component', () => {
-  const mockRouter = {
-    push: jest.fn(),
-  };
-
-  const mockSession = {
-    user: {
-      id: '123',
-      email: 'test@example.com',
-      name: 'John Doe',
-    },
-  };
+  let mockRouter: ReturnType<typeof createMockRouter>;
+  let mockSession: ReturnType<typeof createMockSession>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (useRouter as jest.Mock).mockReturnValue(mockRouter);
-    (useSession as jest.Mock).mockReturnValue({
-      data: mockSession,
-      status: 'authenticated',
-    });
-    (global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({
-        success: true,
-        message: 'Profile updated successfully',
-        user: { id: '123', displayName: 'John Doe' },
-      }),
-    });
+    const mocks = setupMocksForTest();
+    mockRouter = mocks.mockRouter;
+    mockSession = mocks.mockSession;
   });
 
   it('renders the profile setup form correctly', () => {
@@ -184,16 +174,7 @@ describe('ProfileSetupPage Component', () => {
   });
 
   it('handles server errors gracefully', async () => {
-    // Mock fetch to return an error
-    (global.fetch as jest.Mock).mockResolvedValue({
-      ok: false,
-      status: 400,
-      json: jest.fn().mockResolvedValue({
-        success: false,
-        message: 'Profile update failed',
-        errors: [{ field: 'displayName', message: 'Display name is required' }],
-      }),
-    });
+    createFailedFetchMock(400, [{ field: 'displayName', message: 'Display name is required' }]);
 
     render(<ProfileSetupPage />);
 
@@ -206,22 +187,12 @@ describe('ProfileSetupPage Component', () => {
     );
 
     await waitFor(() => {
-      // Check the API call was made
       expect(global.fetch).toHaveBeenCalledWith(
         '/api/users/123/profile',
-        expect.objectContaining({
-          method: 'PATCH',
-        })
+        expect.objectContaining({ method: 'PATCH' })
       );
-
-      // User should not be redirected after error
       expect(mockRouter.push).not.toHaveBeenCalledWith('/dashboard');
-
-      // The submit button should be enabled again (not in loading state)
-      const submitButton = screen.getByRole('button', {
-        name: /Complete Setup/i,
-      });
-      expect(submitButton).toBeEnabled();
+      expect(screen.getByRole('button', { name: /Complete Setup/i })).toBeEnabled();
     });
   });
 
