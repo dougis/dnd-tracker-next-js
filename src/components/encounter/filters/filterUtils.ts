@@ -11,12 +11,15 @@ const hasLevelFilters = (filters: Filters): boolean =>
 
 const hasTagFilters = (filters: Filters): boolean => filters.tags.length > 0;
 
-export const checkHasActiveFilters = (filters: Filters, searchQuery: string): boolean => {
-  return hasSearchQuery(searchQuery) ||
-    hasStatusFilters(filters) ||
+const hasAnyFilter = (filters: Filters): boolean => {
+  return hasStatusFilters(filters) ||
     hasDifficultyFilters(filters) ||
     hasLevelFilters(filters) ||
     hasTagFilters(filters);
+};
+
+export const checkHasActiveFilters = (filters: Filters, searchQuery: string): boolean => {
+  return hasSearchQuery(searchQuery) || hasAnyFilter(filters);
 };
 
 const toggleFilterValue = (currentValues: string[], value: string): string[] => {
