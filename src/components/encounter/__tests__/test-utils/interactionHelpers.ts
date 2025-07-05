@@ -59,3 +59,12 @@ export const expectFunctionToBeCalled = (mockFn: jest.Mock, times: number = 1, w
     expect(mockFn).toHaveBeenCalledWith(withArgs);
   }
 };
+
+// Common helper for dialog interaction patterns
+export const openDialogAndPerformAction = async (
+  openButtonText: string | RegExp,
+  actionButtonText: string | RegExp
+) => {
+  await clickButton(openButtonText);
+  await clickButton(actionButtonText);
+};

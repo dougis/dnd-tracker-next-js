@@ -2,7 +2,6 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EncounterTable } from '../EncounterTable';
-import type { TableSortConfig, TableSelectionConfig } from '../types';
 import { createMockEncounter, createMockEncounters } from './test-utils/mockFactories';
 import { commonBeforeEach } from './test-utils/mockSetup';
 import { testLoadingState } from './test-utils/testPatterns';
@@ -83,8 +82,6 @@ jest.mock('../table/tableUtils', () => ({
     };
   }),
 }));
-
-
 
 describe('EncounterTable', () => {
   const defaultProps = {
