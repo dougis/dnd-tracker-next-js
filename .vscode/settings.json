@@ -17,5 +17,8 @@
   "cSpell.words": ["amondnet", "combatlogs", "mgmt", "multiclass", "TTRPG"],
   "[dockerfile]": {
     "editor.defaultFormatter": "ms-azuretools.vscode-containers"
+  },
+  "[dotenv]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
   }
 }
