@@ -67,4 +67,22 @@ console.log(`   - Google OAuth: ${process.env.GOOGLE_ID ? 'Yes' : 'No'}`);
 
 console.log('🚀 Starting Next.js application...');
 
-// The actual application start will be handled by the CMD in Dockerfile
+const { spawn } = require('child_process');
+
+const command = process.argv[2];
+const args = process.argv.slice(3);
+
+const appProcess = spawn(command, args, {
+  stdio: 'inherit',
+  shell: true
+});
+
+appProcess.on('close', (code) => {
+  console.log(`Next.js application exited with code ${code}`);
+  process.exit(code);
+});
+
+appProcess.on('error', (err) => {
+  console.error('Failed to start Next.js application:', err);
+  process.exit(1);
+});
