@@ -1,7 +1,7 @@
 # syntax = docker/dockerfile:1
 
 # Base stage with Node.js
-ARG NODE_VERSION=24.3.0
+ARG NODE_VERSION=22.17.0
 FROM node:${NODE_VERSION}-slim AS base
 WORKDIR /app
 
@@ -11,7 +11,7 @@ LABEL fly_launch_runtime="Next.js"
 
 # Install build dependencies
 RUN apt-get update -qq && \
-  apt-get install --no-install-recommends -y build-essential pkg-config python3
+    apt-get install --no-install-recommends -y build-essential pkg-config python3
 
 # Install all Node.js dependencies (including devDependencies)
 COPY package-lock.json package.json ./
@@ -19,6 +19,7 @@ RUN npm ci
 
 # Copy application code and build the application
 COPY . .
+ENV MONGODB_URI=mongodb://localhost:27017/dnd-tracker-build
 RUN npm run build
 
 # Production stage
