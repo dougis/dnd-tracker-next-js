@@ -155,7 +155,7 @@ export function PreparationTools({ encounter: _encounter }: PreparationToolsProp
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Progress Overview */}
-        <ProgressDisplay 
+        <ProgressDisplay
           completedItems={completedItems}
           totalItems={totalItems}
           progressPercentage={progressPercentage}
@@ -166,10 +166,10 @@ export function PreparationTools({ encounter: _encounter }: PreparationToolsProp
         {/* Checklist Items */}
         <div className="space-y-3">
           {checklist.map((item) => (
-            <ChecklistItem 
-              key={item.id} 
-              item={item} 
-              onToggle={toggleItem} 
+            <ChecklistItem
+              key={item.id}
+              item={item}
+              onToggle={toggleItem}
             />
           ))}
         </div>

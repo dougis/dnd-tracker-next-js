@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 import type { Encounter, ParticipantReference } from '@/lib/validations/encounter';
 
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { EncounterDetailClient } from '../EncounterDetailClient';
 
 /**

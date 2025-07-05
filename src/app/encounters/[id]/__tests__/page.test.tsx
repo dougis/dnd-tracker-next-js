@@ -7,13 +7,11 @@ import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
 import { EncounterDetailClient } from '../EncounterDetailClient';
 import { EncounterService } from '@/lib/services/EncounterService';
-import { 
-  createTestEncounter, 
+import {
+  createTestEncounter,
   createTestParticipant,
   renderHelpers,
-  mockHelpers,
-  interactionHelpers,
-  mockEncounterStates
+  mockHelpers
 } from './test-helpers';
 
 // Mock dependencies

@@ -43,22 +43,22 @@ interface CombatSummaryProps {
 function CombatSummary({ encounter }: CombatSummaryProps) {
   return (
     <div className="space-y-2">
-      <SettingDisplay 
-        label="Participants" 
-        value={encounter.participants.length} 
+      <SettingDisplay
+        label="Participants"
+        value={encounter.participants.length}
       />
-      <SettingDisplay 
-        label="Auto-roll Initiative" 
-        value={encounter.settings.autoRollInitiative ? 'Yes' : 'No'} 
+      <SettingDisplay
+        label="Auto-roll Initiative"
+        value={encounter.settings.autoRollInitiative ? 'Yes' : 'No'}
       />
-      <SettingDisplay 
-        label="Track Resources" 
-        value={encounter.settings.trackResources ? 'Yes' : 'No'} 
+      <SettingDisplay
+        label="Track Resources"
+        value={encounter.settings.trackResources ? 'Yes' : 'No'}
       />
       {encounter.settings.enableLairActions && (
-        <SettingDisplay 
-          label="Lair Actions" 
-          value={`Initiative ${encounter.settings.lairActionInitiative || 20}`} 
+        <SettingDisplay
+          label="Lair Actions"
+          value={`Initiative ${encounter.settings.lairActionInitiative || 20}`}
         />
       )}
     </div>
