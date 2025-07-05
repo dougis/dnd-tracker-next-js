@@ -23,7 +23,6 @@ export const useParticipantOperations = (
   onUpdate?: (_updatedEncounter: IEncounter) => void
 ) => {
   const [isLoading, setIsLoading] = useState(false);
-
   const createParticipantData = useCallback((data: ParticipantFormData) => ({
     ...data,
     characterId: new Types.ObjectId().toString(),

@@ -114,7 +114,7 @@ describe('Encounter Methods', () => {
           conditions: [],
         };
 
-        addParticipant.call(encounter, participantData);
+        addParticipant(encounter, participantData);
         expect(encounter.participants).toHaveLength(1);
         expect(encounter.participants[0].name).toBe('Test Character');
       });
@@ -125,7 +125,7 @@ describe('Encounter Methods', () => {
         const participant = createMockParticipant();
         encounter.participants = [participant];
 
-        const result = removeParticipant.call(
+        const result = removeParticipant(
           encounter,
           participant.characterId.toString()
         );
@@ -134,7 +134,7 @@ describe('Encounter Methods', () => {
       });
 
       it('should return false for non-existent participant', () => {
-        const result = removeParticipant.call(
+        const result = removeParticipant(
           encounter,
           new Types.ObjectId().toString()
         );
@@ -155,7 +155,7 @@ describe('Encounter Methods', () => {
         ];
         encounter.combatState.currentTurn = 1;
 
-        removeParticipant.call(encounter, participant.characterId.toString());
+        removeParticipant(encounter, participant.characterId.toString());
         expect(encounter.combatState.initiativeOrder).toHaveLength(0);
         expect(encounter.combatState.currentTurn).toBe(0);
       });
@@ -166,7 +166,7 @@ describe('Encounter Methods', () => {
         const participant = createMockParticipant();
         encounter.participants = [participant];
 
-        const result = updateParticipant.call(
+        const result = updateParticipant(
           encounter,
           participant.characterId.toString(),
           {
@@ -178,7 +178,7 @@ describe('Encounter Methods', () => {
       });
 
       it('should return false for non-existent participant', () => {
-        const result = updateParticipant.call(
+        const result = updateParticipant(
           encounter,
           new Types.ObjectId().toString(),
           {
@@ -194,7 +194,7 @@ describe('Encounter Methods', () => {
         const participant = createMockParticipant();
         encounter.participants = [participant];
 
-        const result = getParticipant.call(
+        const result = getParticipant(
           encounter,
           participant.characterId.toString()
         );
@@ -202,7 +202,7 @@ describe('Encounter Methods', () => {
       });
 
       it('should return null if not found', () => {
-        const result = getParticipant.call(
+        const result = getParticipant(
           encounter,
           new Types.ObjectId().toString()
         );
@@ -217,7 +217,7 @@ describe('Encounter Methods', () => {
         const participant = createMockParticipant();
         encounter.participants = [participant];
 
-        startCombat.call(encounter);
+        startCombat(encounter);
         expect(encounter.combatState.isActive).toBe(true);
         expect(encounter.combatState.currentRound).toBe(1);
         expect(encounter.combatState.currentTurn).toBe(0);
@@ -229,7 +229,7 @@ describe('Encounter Methods', () => {
         const participant = createMockParticipant();
         encounter.participants = [participant];
 
-        startCombat.call(encounter, true);
+        startCombat(encounter, true);
         expect(
           encounter.combatState.initiativeOrder[0].initiative
         ).toBeGreaterThan(0);
@@ -242,7 +242,7 @@ describe('Encounter Methods', () => {
         const participant = createMockParticipant();
         encounter.participants = [participant];
 
-        startCombat.call(encounter);
+        startCombat(encounter);
         expect(encounter.combatState.initiativeOrder[0].isActive).toBe(true);
       });
     });
@@ -261,7 +261,7 @@ describe('Encounter Methods', () => {
           },
         ];
 
-        endCombat.call(encounter);
+        endCombat(encounter);
         expect(encounter.combatState.isActive).toBe(false);
         expect(encounter.combatState.endedAt).toBeDefined();
         expect(encounter.status).toBe('completed');
@@ -292,7 +292,7 @@ describe('Encounter Methods', () => {
       });
 
       it('should advance to next participant', () => {
-        const result = nextTurn.call(encounter);
+        const result = nextTurn(encounter);
         expect(result).toBe(true);
         expect(encounter.combatState.currentTurn).toBe(1);
         expect(encounter.combatState.initiativeOrder[0].hasActed).toBe(true);
@@ -303,7 +303,7 @@ describe('Encounter Methods', () => {
       it('should start new round when reaching end', () => {
         encounter.combatState.currentTurn = 1;
 
-        const result = nextTurn.call(encounter);
+        const result = nextTurn(encounter);
         expect(result).toBe(true);
         expect(encounter.combatState.currentTurn).toBe(0);
         expect(encounter.combatState.currentRound).toBe(1);
@@ -313,7 +313,7 @@ describe('Encounter Methods', () => {
 
       it('should return false when combat not active', () => {
         encounter.combatState.isActive = false;
-        const result = nextTurn.call(encounter);
+        const result = nextTurn(encounter);
         expect(result).toBe(false);
       });
     });
@@ -342,7 +342,7 @@ describe('Encounter Methods', () => {
       });
 
       it('should go back to previous participant', () => {
-        const result = previousTurn.call(encounter);
+        const result = previousTurn(encounter);
         expect(result).toBe(true);
         expect(encounter.combatState.currentTurn).toBe(0);
         expect(encounter.combatState.initiativeOrder[1].isActive).toBe(false);
@@ -353,7 +353,7 @@ describe('Encounter Methods', () => {
       it('should go to previous round when at start', () => {
         encounter.combatState.currentTurn = 0;
 
-        const result = previousTurn.call(encounter);
+        const result = previousTurn(encounter);
         expect(result).toBe(true);
         expect(encounter.combatState.currentTurn).toBe(1);
         expect(encounter.combatState.currentRound).toBe(1);
@@ -361,7 +361,7 @@ describe('Encounter Methods', () => {
 
       it('should return false when combat not active', () => {
         encounter.combatState.isActive = false;
-        const result = previousTurn.call(encounter);
+        const result = previousTurn(encounter);
         expect(result).toBe(false);
       });
     });
@@ -388,7 +388,7 @@ describe('Encounter Methods', () => {
           },
         ];
 
-        const result = setInitiative.call(
+        const result = setInitiative(
           encounter,
           participantId.toString(),
           20,
@@ -402,7 +402,7 @@ describe('Encounter Methods', () => {
       });
 
       it('should return false for non-existent participant', () => {
-        const result = setInitiative.call(
+        const result = setInitiative(
           encounter,
           new Types.ObjectId().toString(),
           15,
@@ -416,9 +416,8 @@ describe('Encounter Methods', () => {
       it('should apply damage to participant', () => {
         const participant = createMockParticipant();
         encounter.participants = [participant];
-        encounter.getParticipant = jest.fn().mockReturnValue(participant);
 
-        const result = applyDamage.call(
+        const result = applyDamage(
           encounter,
           participant.characterId.toString(),
           20
@@ -427,8 +426,8 @@ describe('Encounter Methods', () => {
       });
 
       it('should return false for non-existent participant', () => {
-        encounter.getParticipant = jest.fn().mockReturnValue(null);
-        const result = applyDamage.call(
+        encounter.participants = [];
+        const result = applyDamage(
           encounter,
           new Types.ObjectId().toString(),
           20
@@ -441,9 +440,8 @@ describe('Encounter Methods', () => {
       it('should apply healing to participant', () => {
         const participant = createMockParticipant();
         encounter.participants = [participant];
-        encounter.getParticipant = jest.fn().mockReturnValue(participant);
 
-        const result = applyHealing.call(
+        const result = applyHealing(
           encounter,
           participant.characterId.toString(),
           20
@@ -452,8 +450,8 @@ describe('Encounter Methods', () => {
       });
 
       it('should return false for non-existent participant', () => {
-        encounter.getParticipant = jest.fn().mockReturnValue(null);
-        const result = applyHealing.call(
+        encounter.participants = [];
+        const result = applyHealing(
           encounter,
           new Types.ObjectId().toString(),
           20
@@ -465,9 +463,9 @@ describe('Encounter Methods', () => {
     describe('addCondition', () => {
       it('should add condition to participant', () => {
         const participant = createMockParticipant();
-        encounter.getParticipant = jest.fn().mockReturnValue(participant);
+        encounter.participants = [participant];
 
-        const result = addCondition.call(
+        const result = addCondition(
           encounter,
           participant.characterId.toString(),
           'poisoned'
@@ -476,8 +474,8 @@ describe('Encounter Methods', () => {
       });
 
       it('should return false for non-existent participant', () => {
-        encounter.getParticipant = jest.fn().mockReturnValue(null);
-        const result = addCondition.call(
+        encounter.participants = [];
+        const result = addCondition(
           encounter,
           new Types.ObjectId().toString(),
           'poisoned'
@@ -490,9 +488,9 @@ describe('Encounter Methods', () => {
       it('should remove condition from participant', () => {
         const participant = createMockParticipant();
         participant.conditions = ['poisoned'];
-        encounter.getParticipant = jest.fn().mockReturnValue(participant);
+        encounter.participants = [participant];
 
-        const result = removeCondition.call(
+        const result = removeCondition(
           encounter,
           participant.characterId.toString(),
           'poisoned'
@@ -501,8 +499,8 @@ describe('Encounter Methods', () => {
       });
 
       it('should return false for non-existent participant', () => {
-        encounter.getParticipant = jest.fn().mockReturnValue(null);
-        const result = removeCondition.call(
+        encounter.participants = [];
+        const result = removeCondition(
           encounter,
           new Types.ObjectId().toString(),
           'poisoned'
@@ -526,7 +524,7 @@ describe('Encounter Methods', () => {
         ];
         encounter.combatState.initiativeOrder = initiativeOrder;
 
-        const result = getInitiativeOrder.call(encounter);
+        const result = getInitiativeOrder(encounter);
         expect(result).toEqual(initiativeOrder);
         expect(result).not.toBe(initiativeOrder);
       });
@@ -546,7 +544,7 @@ describe('Encounter Methods', () => {
           createMockParticipant(),
         ];
 
-        const result = calculateDifficulty.call(encounter);
+        const result = calculateDifficulty(encounter);
         expect(result).toBe('easy');
       });
     });
@@ -565,7 +563,7 @@ describe('Encounter Methods', () => {
         const MockConstructor = jest.fn().mockImplementation(data => data);
         encounter.constructor = MockConstructor;
 
-        duplicateEncounter.call(encounter, 'New Name');
+        duplicateEncounter(encounter, 'New Name');
         expect(MockConstructor).toHaveBeenCalledWith(
           expect.objectContaining({
             name: 'New Name',
@@ -582,7 +580,7 @@ describe('Encounter Methods', () => {
         const MockConstructor = jest.fn().mockImplementation(data => data);
         encounter.constructor = MockConstructor;
 
-        duplicateEncounter.call(encounter);
+        duplicateEncounter(encounter);
         expect(MockConstructor).toHaveBeenCalledWith(
           expect.objectContaining({
             name: 'Test Encounter (Copy)',
@@ -593,7 +591,7 @@ describe('Encounter Methods', () => {
 
     describe('toSummary', () => {
       it('should return encounter summary', () => {
-        const result = toSummary.call(encounter);
+        const result = toSummary(encounter);
         expect(result).toEqual({
           _id: encounter._id,
           name: encounter.name,
