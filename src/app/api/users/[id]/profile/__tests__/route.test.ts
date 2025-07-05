@@ -51,13 +51,13 @@ describe('/api/users/[id]/profile', () => {
         primaryRole: 'dm',
       };
 
-      const request = new NextRequest('http://localhost:3000/api/users/123/profile', {
+      const request = {
+        json: jest.fn().mockResolvedValue(requestBody),
         method: 'PATCH',
-        body: JSON.stringify(requestBody),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+        headers: new Headers({
+          'content-type': 'application/json',
+        }),
+      } as unknown as NextRequest;
 
       const response = await PATCH(request, { params: mockParams });
       const data = await response.json();
@@ -78,13 +78,13 @@ describe('/api/users/[id]/profile', () => {
     it('should return 401 when user is not authenticated', async () => {
       mockAuth.mockResolvedValue(null);
 
-      const request = new NextRequest('http://localhost:3000/api/users/123/profile', {
+      const request = {
+        json: jest.fn().mockResolvedValue({ displayName: 'Test' }),
         method: 'PATCH',
-        body: JSON.stringify({ displayName: 'Test' }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+        headers: new Headers({
+          'content-type': 'application/json',
+        }),
+      } as unknown as NextRequest;
 
       const response = await PATCH(request, { params: mockParams });
       const data = await response.json();
@@ -102,13 +102,13 @@ describe('/api/users/[id]/profile', () => {
       const otherUserId = '507f1f77bcf86cd799439012';
       const otherParams = Promise.resolve({ id: otherUserId });
 
-      const request = new NextRequest('http://localhost:3000/api/users/123/profile', {
+      const request = {
+        json: jest.fn().mockResolvedValue({ displayName: 'Test' }),
         method: 'PATCH',
-        body: JSON.stringify({ displayName: 'Test' }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+        headers: new Headers({
+          'content-type': 'application/json',
+        }),
+      } as unknown as NextRequest;
 
       const response = await PATCH(request, { params: otherParams });
       const data = await response.json();
@@ -123,16 +123,16 @@ describe('/api/users/[id]/profile', () => {
     });
 
     it('should return 400 for validation errors', async () => {
-      const request = new NextRequest('http://localhost:3000/api/users/123/profile', {
-        method: 'PATCH',
-        body: JSON.stringify({
+      const request = {
+        json: jest.fn().mockResolvedValue({
           displayName: '', // Invalid - empty string
           experienceLevel: 'invalid', // Invalid enum value
         }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+        method: 'PATCH',
+        headers: new Headers({
+          'content-type': 'application/json',
+        }),
+      } as unknown as NextRequest;
 
       const response = await PATCH(request, { params: mockParams });
       const data = await response.json();
@@ -154,13 +154,13 @@ describe('/api/users/[id]/profile', () => {
         },
       });
 
-      const request = new NextRequest('http://localhost:3000/api/users/123/profile', {
+      const request = {
+        json: jest.fn().mockResolvedValue({ displayName: 'Test' }),
         method: 'PATCH',
-        body: JSON.stringify({ displayName: 'Test' }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+        headers: new Headers({
+          'content-type': 'application/json',
+        }),
+      } as unknown as NextRequest;
 
       const response = await PATCH(request, { params: mockParams });
       const data = await response.json();
@@ -191,9 +191,10 @@ describe('/api/users/[id]/profile', () => {
         data: mockUser,
       });
 
-      const request = new NextRequest('http://localhost:3000/api/users/123/profile', {
+      const request = {
         method: 'GET',
-      });
+        headers: new Headers(),
+      } as unknown as NextRequest;
 
       const response = await GET(request, { params: mockParams });
       const data = await response.json();
@@ -210,9 +211,10 @@ describe('/api/users/[id]/profile', () => {
     it('should return 401 when user is not authenticated', async () => {
       mockAuth.mockResolvedValue(null);
 
-      const request = new NextRequest('http://localhost:3000/api/users/123/profile', {
+      const request = {
         method: 'GET',
-      });
+        headers: new Headers(),
+      } as unknown as NextRequest;
 
       const response = await GET(request, { params: mockParams });
       const data = await response.json();
@@ -230,9 +232,10 @@ describe('/api/users/[id]/profile', () => {
       const otherUserId = '507f1f77bcf86cd799439012';
       const otherParams = Promise.resolve({ id: otherUserId });
 
-      const request = new NextRequest('http://localhost:3000/api/users/123/profile', {
+      const request = {
         method: 'GET',
-      });
+        headers: new Headers(),
+      } as unknown as NextRequest;
 
       const response = await GET(request, { params: otherParams });
       const data = await response.json();
@@ -255,9 +258,10 @@ describe('/api/users/[id]/profile', () => {
         },
       });
 
-      const request = new NextRequest('http://localhost:3000/api/users/123/profile', {
+      const request = {
         method: 'GET',
-      });
+        headers: new Headers(),
+      } as unknown as NextRequest;
 
       const response = await GET(request, { params: mockParams });
       const data = await response.json();

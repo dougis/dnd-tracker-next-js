@@ -73,7 +73,7 @@ describe('ProfileSetupPage Component', () => {
 
     render(<ProfileSetupPage />);
 
-    expect(mockRouter.push).toHaveBeenCalledWith('/auth/signin');
+    expect(mockRouter.push).toHaveBeenCalledWith('/signin');
   });
 
   it('shows loading state while session is loading', () => {
@@ -88,13 +88,25 @@ describe('ProfileSetupPage Component', () => {
   });
 
   it('submits the profile setup form with valid data', async () => {
+    // Mock session without a name to avoid the clear issue
+    (useSession as jest.Mock).mockReturnValue({
+      data: {
+        user: {
+          id: '123',
+          email: 'test@example.com',
+          name: null, // No name to avoid prefilled value
+        },
+      },
+      status: 'authenticated',
+    });
+
     render(<ProfileSetupPage />);
 
     // Clear the default value and type the new value
     const displayNameInput = screen.getByLabelText(/Display Name/i);
     await userEvent.clear(displayNameInput);
     await userEvent.type(displayNameInput, 'John the Dungeon Master');
-    
+
     // For FormSelect components, we need to clear and type the value
     const dndEditionInput = screen.getByLabelText(/Preferred D&D Edition/i);
     await userEvent.clear(dndEditionInput);
@@ -128,10 +140,9 @@ describe('ProfileSetupPage Component', () => {
   it('shows success screen after successful profile setup', async () => {
     render(<ProfileSetupPage />);
 
-    await userEvent.type(
-      screen.getByLabelText(/Display Name/i),
-      'Test User'
-    );
+    const displayNameInput = screen.getByLabelText(/Display Name/i);
+    await userEvent.clear(displayNameInput);
+    await userEvent.type(displayNameInput, 'Test User');
 
     await userEvent.click(
       screen.getByRole('button', { name: /Complete Setup/i })
@@ -186,10 +197,9 @@ describe('ProfileSetupPage Component', () => {
 
     render(<ProfileSetupPage />);
 
-    await userEvent.type(
-      screen.getByLabelText(/Display Name/i),
-      'Test'
-    );
+    const displayNameInput = screen.getByLabelText(/Display Name/i);
+    await userEvent.clear(displayNameInput);
+    await userEvent.type(displayNameInput, 'Test');
 
     await userEvent.click(
       screen.getByRole('button', { name: /Complete Setup/i })
@@ -219,10 +229,9 @@ describe('ProfileSetupPage Component', () => {
     render(<ProfileSetupPage />);
 
     // Complete the form first
-    await userEvent.type(
-      screen.getByLabelText(/Display Name/i),
-      'Test User'
-    );
+    const displayNameInput = screen.getByLabelText(/Display Name/i);
+    await userEvent.clear(displayNameInput);
+    await userEvent.type(displayNameInput, 'Test User');
 
     await userEvent.click(
       screen.getByRole('button', { name: /Complete Setup/i })

@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
@@ -38,18 +37,32 @@ const timezoneOptions = [
 export default function ProfileSetupPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  
+
   const [formState, setFormState] = useState<FormState>({
     success: false,
     errors: [],
     isSubmitting: false,
   });
 
+  // Form field state
+  const [displayName, setDisplayName] = useState(session?.user?.name || '');
+  const [timezone, setTimezone] = useState('UTC');
+  const [dndEdition, setDndEdition] = useState('5th Edition');
+  const [experienceLevel, setExperienceLevel] = useState('');
+  const [primaryRole, setPrimaryRole] = useState('');
+
+  // Update display name when session is loaded
+  useEffect(() => {
+    if (session?.user?.name && !displayName) {
+      setDisplayName(session.user.name);
+    }
+  }, [session, displayName]);
+
   // Redirect if user is not authenticated
   useEffect(() => {
     if (status === 'loading') return;
     if (!session) {
-      router.push('/auth/signin');
+      router.push('/signin' as any);
       return;
     }
   }, [session, status, router]);
@@ -60,8 +73,14 @@ export default function ProfileSetupPage() {
     setFormState(prev => ({ ...prev, isSubmitting: true, errors: [] }));
 
     try {
-      const formData = new FormData(event.currentTarget);
-      const data = Object.fromEntries(formData.entries());
+      // Create data object from state
+      const data = {
+        displayName: displayName || undefined,
+        timezone: timezone || undefined,
+        dndEdition: dndEdition || undefined,
+        experienceLevel: experienceLevel || undefined,
+        primaryRole: primaryRole || undefined,
+      };
 
       // Validate the form data with Zod
       const validatedData = userProfileUpdateSchema.parse(data);
@@ -134,7 +153,7 @@ export default function ProfileSetupPage() {
 
   const handleSkip = () => {
     // Allow users to skip profile setup for now
-    router.push('/dashboard');
+    router.push('/dashboard' as any);
   };
 
   const getFieldError = (field: string) => {
@@ -168,7 +187,7 @@ export default function ProfileSetupPage() {
             Welcome to D&D Encounter Tracker! Your profile has been set up successfully.
           </p>
           <div className="pt-2">
-            <Button onClick={() => router.push('/dashboard')}>
+            <Button onClick={() => router.push('/dashboard' as any)}>
               Continue to Dashboard
             </Button>
           </div>
@@ -203,17 +222,17 @@ export default function ProfileSetupPage() {
         <div className="grid grid-cols-2 gap-4">
           <FormInput
             label="Display Name"
-            name="displayName"
             placeholder="How should we display your name?"
-            defaultValue={session?.user?.name || ''}
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
             error={getFieldError('displayName')}
             helperText="This is how others will see your name in shared encounters"
           />
           <FormSelect
             label="Timezone"
-            name="timezone"
             options={timezoneOptions}
-            defaultValue="UTC"
+            value={timezone}
+            onValueChange={setTimezone}
             error={getFieldError('timezone')}
             helperText="Used for scheduling encounters and notifications"
           />
@@ -221,16 +240,15 @@ export default function ProfileSetupPage() {
 
         <FormInput
           label="Preferred D&D Edition"
-          name="dndEdition"
           placeholder="e.g., 5th Edition, Pathfinder 2e"
-          defaultValue="5th Edition"
+          value={dndEdition}
+          onChange={(e) => setDndEdition(e.target.value)}
           error={getFieldError('dndEdition')}
           helperText="Helps us customize features for your preferred game system"
         />
 
         <FormSelect
           label="Experience Level"
-          name="experienceLevel"
           options={[
             { value: 'new', label: 'New to D&D' },
             { value: 'beginner', label: 'Beginner (0-2 years)' },
@@ -238,31 +256,34 @@ export default function ProfileSetupPage() {
             { value: 'experienced', label: 'Experienced (5+ years)' },
             { value: 'veteran', label: 'Veteran (10+ years)' },
           ]}
+          value={experienceLevel}
+          onValueChange={setExperienceLevel}
           error={getFieldError('experienceLevel')}
           helperText="Helps us provide appropriate content and tips"
         />
 
         <FormSelect
           label="Primary Role"
-          name="primaryRole"
           options={[
             { value: 'dm', label: 'Dungeon Master' },
             { value: 'player', label: 'Player' },
             { value: 'both', label: 'Both DM and Player' },
           ]}
+          value={primaryRole}
+          onValueChange={setPrimaryRole}
           error={getFieldError('primaryRole')}
           helperText="How do you primarily engage with D&D?"
         />
 
         <div className="flex gap-3 pt-4">
-          <FormSubmitButton 
+          <FormSubmitButton
             loadingText="Setting up profile..."
             className="flex-1"
           >
             Complete Setup
           </FormSubmitButton>
-          
-          <Button 
+
+          <Button
             type="button"
             variant="outline"
             onClick={handleSkip}

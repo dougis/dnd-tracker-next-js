@@ -178,7 +178,7 @@ export default function SignInPage() {
         <div className="text-center text-sm">
           Don&apos;t have an account?{' '}
           <Link
-            href={'/auth/signup' as any}
+            href={'/signup' as any}
             className="text-primary hover:underline"
           >
             Sign up
