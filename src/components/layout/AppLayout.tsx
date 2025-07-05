@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { MobileMenu } from './MobileMenu';
 import { Breadcrumbs } from './Breadcrumbs';
+import { Footer } from './Footer';
 import { ThemeToggle } from '@/components/theme-toggle';
 
 interface AppLayoutProps {
@@ -92,6 +93,9 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         {/* Page content */}
         <main className="flex-1 overflow-auto">{children}</main>
+
+        {/* Footer */}
+        <Footer />
       </div>
     </div>
   );
