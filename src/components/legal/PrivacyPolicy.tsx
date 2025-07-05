@@ -1,16 +1,4 @@
-interface LegalSectionProps {
-  title: string;
-  children: React.ReactNode;
-}
-
-function LegalSection({ title, children }: LegalSectionProps) {
-  return (
-    <section className="mb-8">
-      <h2>{title}</h2>
-      {children}
-    </section>
-  );
-}
+import { LegalSection, ContactSection } from './LegalComponents';
 
 function PrivacyHeader() {
   return (
@@ -124,15 +112,10 @@ function PolicyChangesAndContactSections() {
         </p>
       </LegalSection>
 
-      <LegalSection title="Contact Information">
-        <p>
-          If you have any questions about this Privacy Policy, please contact us at:
-        </p>
-        <p>
-          Email: privacy@dndtracker.com<br />
-          Website: https://dndtracker.com
-        </p>
-      </LegalSection>
+      <ContactSection
+        email="privacy@dndtracker.com"
+        description="If you have any questions about this Privacy Policy, please contact us at:"
+      />
     </>
   );
 }

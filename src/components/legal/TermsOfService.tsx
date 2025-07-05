@@ -1,16 +1,4 @@
-interface LegalSectionProps {
-  title: string;
-  children: React.ReactNode;
-}
-
-function LegalSection({ title, children }: LegalSectionProps) {
-  return (
-    <section className="mb-8">
-      <h2>{title}</h2>
-      {children}
-    </section>
-  );
-}
+import { LegalSection, ContactSection } from './LegalComponents';
 
 function TermsHeader() {
   return (
@@ -98,15 +86,10 @@ function LegalAndContactSections() {
         </p>
       </LegalSection>
 
-      <LegalSection title="Contact Information">
-        <p>
-          If you have any questions about these Terms of Service, please contact us at:
-        </p>
-        <p>
-          Email: support@dndtracker.com<br />
-          Website: https://dndtracker.com
-        </p>
-      </LegalSection>
+      <ContactSection
+        email="support@dndtracker.com"
+        description="If you have any questions about these Terms of Service, please contact us at:"
+      />
     </>
   );
 }
