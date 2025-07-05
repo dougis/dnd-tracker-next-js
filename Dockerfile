@@ -19,6 +19,7 @@ RUN npm ci
 
 # Copy application code and build the application
 COPY . .
+ENV MONGODB_URI=mongodb://localhost:27017/dnd-tracker-build
 RUN npm run build
 
 # Production stage
