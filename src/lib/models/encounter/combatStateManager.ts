@@ -182,65 +182,81 @@ export function saveCombatState(encounter: IEncounter): boolean {
 }
 
 /**
+ * Loads saved state from storage
+ */
+function loadSavedState(encounterId: string): ICombatState | null {
+  // First try to load from memory store
+  if (combatStateStore.has(encounterId)) {
+    return combatStateStore.get(encounterId)!;
+  }
+
+  // Fall back to localStorage if available
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const saved = localStorage.getItem(`combat_state_${encounterId}`);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (parseError) {
+        console.warn('Failed to parse saved combat state:', parseError);
+        return null;
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Validates saved state structure
+ */
+function isValidSavedState(savedState: any): savedState is ICombatState {
+  return (
+    typeof savedState === 'object' &&
+    typeof savedState.isActive === 'boolean' &&
+    typeof savedState.currentRound === 'number' &&
+    typeof savedState.currentTurn === 'number' &&
+    Array.isArray(savedState.initiativeOrder)
+  );
+}
+
+/**
+ * Applies saved state to encounter
+ */
+function applySavedState(encounter: IEncounter, savedState: ICombatState): void {
+  encounter.combatState.isActive = savedState.isActive;
+  encounter.combatState.currentRound = savedState.currentRound;
+  encounter.combatState.currentTurn = savedState.currentTurn;
+  encounter.combatState.initiativeOrder = savedState.initiativeOrder;
+  encounter.combatState.startedAt = savedState.startedAt;
+  encounter.combatState.pausedAt = savedState.pausedAt;
+  encounter.combatState.endedAt = savedState.endedAt;
+  encounter.combatState.totalDuration = savedState.totalDuration;
+}
+
+/**
  * Loads combat state from persistent storage
  */
 export function loadCombatState(encounter: IEncounter): boolean {
   try {
-    let savedState: ICombatState | null = null;
-
-    // First try to load from memory store
-    if (combatStateStore.has(encounter._id.toString())) {
-      savedState = combatStateStore.get(encounter._id.toString())!;
-    }
-    // Fall back to localStorage if available
-    else if (typeof window !== 'undefined' && window.localStorage) {
-      const saved = localStorage.getItem(`combat_state_${encounter._id}`);
-      if (saved) {
-        try {
-          savedState = JSON.parse(saved);
-        } catch (parseError) {
-          console.warn('Failed to parse saved combat state:', parseError);
-          return false;
-        }
-      }
-    }
-
+    const savedState = loadSavedState(encounter._id.toString());
     if (!savedState) {
       return false;
     }
 
-    // Basic validation of saved state structure
-    if (typeof savedState !== 'object' ||
-        typeof savedState.isActive !== 'boolean' ||
-        typeof savedState.currentRound !== 'number' ||
-        typeof savedState.currentTurn !== 'number' ||
-        !Array.isArray(savedState.initiativeOrder)) {
+    if (!isValidSavedState(savedState)) {
       console.warn('Saved combat state has invalid structure');
       return false;
     }
 
-    // Validate the loaded state by creating a temporary copy with proper typing
-    const tempEncounter = {
-      ...encounter,
-      combatState: savedState,
-    } as IEncounter;
-
+    // Validate the loaded state
+    const tempEncounter = { ...encounter, combatState: savedState } as IEncounter;
     const validation = validateCombatState(tempEncounter);
     if (!validation.isValid) {
       console.warn('Loaded combat state is invalid:', validation.errors);
       return false;
     }
 
-    // Apply the saved state
-    encounter.combatState.isActive = savedState.isActive;
-    encounter.combatState.currentRound = savedState.currentRound;
-    encounter.combatState.currentTurn = savedState.currentTurn;
-    encounter.combatState.initiativeOrder = savedState.initiativeOrder;
-    encounter.combatState.startedAt = savedState.startedAt;
-    encounter.combatState.pausedAt = savedState.pausedAt;
-    encounter.combatState.endedAt = savedState.endedAt;
-    encounter.combatState.totalDuration = savedState.totalDuration;
-
+    applySavedState(encounter, savedState);
     return true;
   } catch (error) {
     console.error('Failed to load combat state:', error);
@@ -268,53 +284,58 @@ export function getCombatPhase(encounter: IEncounter): CombatPhase {
 }
 
 /**
- * Validates the integrity of combat state
+ * Validates round and turn values
  */
-export function validateCombatState(encounter: IEncounter): CombatStateValidation {
-  const errors: string[] = [];
-  const { combatState } = encounter;
-
-  // Check round number
+function validateRoundAndTurn(combatState: ICombatState, errors: string[]): void {
   if (combatState.currentRound < 0) {
     errors.push('Current round cannot be negative');
   }
 
-  // Check turn index
   if (combatState.currentTurn < 0) {
     errors.push('Current turn cannot be negative');
   }
 
-  if (
-    combatState.initiativeOrder.length > 0 &&
-    combatState.currentTurn >= combatState.initiativeOrder.length
-  ) {
+  if (combatState.initiativeOrder.length > 0 &&
+      combatState.currentTurn >= combatState.initiativeOrder.length) {
     errors.push('Current turn index is out of bounds');
   }
+}
 
-  // Check initiative order integrity
+/**
+ * Validates active participant state
+ */
+function validateActiveParticipants(combatState: ICombatState, errors: string[]): void {
   const activeParticipants = combatState.initiativeOrder.filter(entry => entry.isActive);
+
   if (activeParticipants.length > 1) {
     errors.push('Multiple participants marked as active');
   }
 
-  if (combatState.isActive && activeParticipants.length === 0 && combatState.initiativeOrder.length > 0) {
+  if (combatState.isActive && activeParticipants.length === 0 &&
+      combatState.initiativeOrder.length > 0) {
     errors.push('No participant marked as active during active combat');
   }
+}
 
-  // Check timestamp consistency
-  if (combatState.startedAt && combatState.endedAt) {
-    if (combatState.startedAt > combatState.endedAt) {
-      errors.push('Start time cannot be after end time');
-    }
+/**
+ * Validates timestamp consistency
+ */
+function validateTimestamps(combatState: ICombatState, errors: string[]): void {
+  if (combatState.startedAt && combatState.endedAt &&
+      combatState.startedAt > combatState.endedAt) {
+    errors.push('Start time cannot be after end time');
   }
 
-  if (combatState.startedAt && combatState.pausedAt) {
-    if (combatState.startedAt > combatState.pausedAt) {
-      errors.push('Start time cannot be after pause time');
-    }
+  if (combatState.startedAt && combatState.pausedAt &&
+      combatState.startedAt > combatState.pausedAt) {
+    errors.push('Start time cannot be after pause time');
   }
+}
 
-  // Check initiative values
+/**
+ * Validates initiative order values
+ */
+function validateInitiativeValues(combatState: ICombatState, errors: string[]): void {
   for (const entry of combatState.initiativeOrder) {
     if (entry.initiative < 0) {
       errors.push(`Participant ${entry.participantId} has negative initiative`);
@@ -324,12 +345,25 @@ export function validateCombatState(encounter: IEncounter): CombatStateValidatio
     }
   }
 
-  // Check for duplicate participants in initiative order
+  // Check for duplicates
   const participantIds = combatState.initiativeOrder.map(entry => entry.participantId.toString());
   const uniqueIds = new Set(participantIds);
   if (participantIds.length !== uniqueIds.size) {
     errors.push('Duplicate participants found in initiative order');
   }
+}
+
+/**
+ * Validates the integrity of combat state
+ */
+export function validateCombatState(encounter: IEncounter): CombatStateValidation {
+  const errors: string[] = [];
+  const { combatState } = encounter;
+
+  validateRoundAndTurn(combatState, errors);
+  validateActiveParticipants(combatState, errors);
+  validateTimestamps(combatState, errors);
+  validateInitiativeValues(combatState, errors);
 
   return {
     isValid: errors.length === 0,
@@ -386,13 +420,9 @@ export function enhancedEndCombat(encounter: IEncounter): void {
 }
 
 /**
- * Enhanced next turn with logging
+ * Logs turn end for current participant
  */
-export function enhancedNextTurn(encounter: IEncounter): boolean {
-  const currentRound = encounter.combatState.currentRound;
-  const currentTurn = encounter.combatState.currentTurn;
-
-  // Log turn end for current participant
+function logCurrentTurnEnd(encounter: IEncounter, currentRound: number, currentTurn: number): void {
   if (encounter.combatState.initiativeOrder.length > 0) {
     const currentEntry = encounter.combatState.initiativeOrder[currentTurn];
     if (currentEntry) {
@@ -404,32 +434,33 @@ export function enhancedNextTurn(encounter: IEncounter): boolean {
       });
     }
   }
+}
 
-  // Check if we're about to start a new round
-  const willStartNewRound = (currentTurn + 1) >= encounter.combatState.initiativeOrder.length;
-
+/**
+ * Logs round transitions
+ */
+function logRoundTransition(encounterId: string, willStartNewRound: boolean,
+                           currentRound: number, currentTurn: number,
+                           newCurrentRound: number, newCurrentTurn: number): void {
   if (willStartNewRound) {
-    logCombatAction(encounter._id.toString(), {
+    logCombatAction(encounterId, {
       action: 'round_end',
       round: currentRound,
       turn: currentTurn,
     });
-  }
 
-  // The actual turn advancement happens in the original nextTurn method
-  // After that completes, log the new turn/round start
-  const newCurrentTurn = willStartNewRound ? 0 : currentTurn + 1;
-  const newCurrentRound = willStartNewRound ? currentRound + 1 : currentRound;
-
-  if (willStartNewRound) {
-    logCombatAction(encounter._id.toString(), {
+    logCombatAction(encounterId, {
       action: 'round_start',
       round: newCurrentRound,
       turn: newCurrentTurn,
     });
   }
+}
 
-  // Log turn start for new participant
+/**
+ * Logs turn start for new participant
+ */
+function logNewTurnStart(encounter: IEncounter, newCurrentRound: number, newCurrentTurn: number): void {
   if (encounter.combatState.initiativeOrder.length > 0) {
     const nextEntry = encounter.combatState.initiativeOrder[newCurrentTurn];
     if (nextEntry) {
@@ -441,9 +472,28 @@ export function enhancedNextTurn(encounter: IEncounter): boolean {
       });
     }
   }
+}
+
+/**
+ * Enhanced next turn with logging
+ */
+export function enhancedNextTurn(encounter: IEncounter): boolean {
+  const currentRound = encounter.combatState.currentRound;
+  const currentTurn = encounter.combatState.currentTurn;
+  const encounterId = encounter._id.toString();
+
+  logCurrentTurnEnd(encounter, currentRound, currentTurn);
+
+  // Check if we're about to start a new round
+  const willStartNewRound = (currentTurn + 1) >= encounter.combatState.initiativeOrder.length;
+  const newCurrentTurn = willStartNewRound ? 0 : currentTurn + 1;
+  const newCurrentRound = willStartNewRound ? currentRound + 1 : currentRound;
+
+  logRoundTransition(encounterId, willStartNewRound, currentRound, currentTurn,
+                    newCurrentRound, newCurrentTurn);
+  logNewTurnStart(encounter, newCurrentRound, newCurrentTurn);
 
   // Save state after turn change
   saveCombatState(encounter);
-
   return true;
 }
