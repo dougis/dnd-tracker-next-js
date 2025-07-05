@@ -224,7 +224,7 @@ export function loadCombatState(encounter: IEncounter): boolean {
       ...encounter,
       combatState: savedState,
     } as IEncounter;
-    
+
     const validation = validateCombatState(tempEncounter);
     if (!validation.isValid) {
       console.warn('Loaded combat state is invalid:', validation.errors);
