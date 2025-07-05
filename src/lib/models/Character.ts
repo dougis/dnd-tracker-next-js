@@ -490,7 +490,7 @@ characterSchema.index({ ownerId: 1, name: 1 });
 characterSchema.index({ type: 1, isPublic: 1 });
 characterSchema.index({ 'classes.class': 1 });
 characterSchema.index({ race: 1 });
-characterSchema.index({ partyId: 1 });
+
 
 // Create and export the model
 export const Character = mongoose.model<ICharacter, CharacterModel>(
