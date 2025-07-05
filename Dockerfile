@@ -1,48 +1,50 @@
 # syntax = docker/dockerfile:1
 
-# Adjust NODE_VERSION as desired
+# Base stage with Node.js
 ARG NODE_VERSION=22.17.0
 FROM node:${NODE_VERSION}-slim AS base
-
-LABEL fly_launch_runtime="Next.js"
-
-# Next.js app lives here
 WORKDIR /app
 
-# Set production environment
-ENV NODE_ENV="production"
-
-
-# Throw-away build stage to reduce size of final image
+# Build stage
 FROM base AS build
+LABEL fly_launch_runtime="Next.js"
 
-# Install packages needed to build node modules
+# Install build dependencies
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential pkg-config python3 
+    apt-get install --no-install-recommends -y build-essential pkg-config python3
 
-# Install node modules
+# Install all Node.js dependencies (including devDependencies)
 COPY package-lock.json package.json ./
-RUN npm ci --include=dev
+RUN npm ci
 
-# Copy application code
+# Copy application code and build the application
 COPY . .
+RUN npm run build
 
-# Build application
-RUN npx next build --experimental-build-mode compile
+# Production stage
+FROM base AS production
+ENV NODE_ENV=production
 
-# Remove development dependencies
-RUN npm prune --omit=dev
+# Create a non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
+# Copy production dependencies and prune devDependencies
+COPY --from=build /app/package-lock.json /app/package.json ./
+RUN npm ci --omit=dev
 
-# Final stage for app image
-FROM base
+# Copy built application artifacts
+COPY --from=build --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=build /app/docker-entrypoint.js ./docker-entrypoint.js
 
-# Copy built application
-COPY --from=build /app /app
+# Set the user to the non-root user
+USER nextjs
 
-# Entrypoint sets up the container.
-ENTRYPOINT [ "/app/docker-entrypoint.js" ]
-
-# Start the server by default, this can be overwritten at runtime
+# Expose the port and add a health check
 EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Entrypoint and command to start the application
+ENTRYPOINT [ "./docker-entrypoint.js" ]
 CMD [ "npm", "run", "start" ]

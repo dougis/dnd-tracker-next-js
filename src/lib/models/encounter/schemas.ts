@@ -190,7 +190,6 @@ export const combatStateSchema = new Schema<ICombatState>(
     isActive: {
       type: Boolean,
       default: false,
-      index: true,
     },
     currentRound: {
       type: Number,
@@ -303,4 +302,4 @@ encounterSchema.index({ targetLevel: 1, difficulty: 1 });
 encounterSchema.index({ tags: 1 });
 encounterSchema.index({ 'combatState.isActive': 1 });
 encounterSchema.index({ sharedWith: 1 });
-encounterSchema.index({ partyId: 1 });
+
