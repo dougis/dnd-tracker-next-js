@@ -1,6 +1,13 @@
-import { NextRequest } from 'next/server';
+// NextRequest is imported via test helpers
 import { PATCH } from '../route';
 import { EncounterService } from '@/lib/services/EncounterService';
+import {
+  MOCK_ENCOUNTER_ID,
+  MOCK_VALID_SETTINGS,
+  createMockRequest,
+  createMockParams,
+  createMockServiceResponse,
+} from './test-helpers';
 
 // Configure Jest to use our mocks
 jest.mock('next/server');
@@ -16,53 +23,31 @@ jest.mock('@/lib/services/EncounterService', () => {
 });
 
 describe('PATCH /api/encounters/[id]/settings', () => {
-  const mockEncounterId = '507f1f77bcf86cd799439011';
-  const mockValidSettings = {
-    allowPlayerVisibility: true,
-    autoRollInitiative: false,
-    trackResources: true,
-    enableLairActions: true,
-    lairActionInitiative: 20,
-    enableGridMovement: false,
-    gridSize: 5,
-    roundTimeLimit: 60,
-    experienceThreshold: 4,
-  };
-
-  const createMockRequest = (body: any) => {
-    const req = new NextRequest('https://example.com');
-    // Use the mocked json method
-    (req.json as jest.Mock).mockResolvedValue(body);
-    return req;
-  };
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('successfully updates encounter settings', async () => {
-    // Mock the EncounterService methods
-    EncounterService.updateEncounter = jest.fn().mockResolvedValue({
-      success: true,
-      data: {
-        id: mockEncounterId,
-        settings: mockValidSettings,
-      },
+    const mockResponse = createMockServiceResponse(true, {
+      id: MOCK_ENCOUNTER_ID,
+      settings: MOCK_VALID_SETTINGS,
     });
+    EncounterService.updateEncounter = jest.fn().mockResolvedValue(mockResponse);
 
-    const request = createMockRequest(mockValidSettings);
-    const response = await PATCH(request, { params: Promise.resolve({ id: mockEncounterId }) });
+    const request = createMockRequest(MOCK_VALID_SETTINGS);
+    const response = await PATCH(request, createMockParams());
     const responseData = await response.json();
 
     expect(response.status).toBe(200);
     expect(responseData).toEqual({
       success: true,
       message: 'Encounter settings updated successfully',
-      settings: mockValidSettings,
+      settings: MOCK_VALID_SETTINGS,
     });
     expect(EncounterService.updateEncounter).toHaveBeenCalledWith(
-      mockEncounterId,
-      { settings: mockValidSettings }
+      MOCK_ENCOUNTER_ID,
+      { settings: MOCK_VALID_SETTINGS }
     );
   });
 
@@ -75,7 +60,7 @@ describe('PATCH /api/encounters/[id]/settings', () => {
     };
 
     const request = createMockRequest(invalidData);
-    const response = await PATCH(request, { params: Promise.resolve({ id: mockEncounterId }) });
+    const response = await PATCH(request, createMockParams());
     const responseData = await response.json();
 
     expect(response.status).toBe(400);
@@ -88,8 +73,8 @@ describe('PATCH /api/encounters/[id]/settings', () => {
 
   it('returns error for invalid encounter ID format', async () => {
     const invalidId = 'invalid-id';
-    const request = createMockRequest(mockValidSettings);
-    const response = await PATCH(request, { params: Promise.resolve({ id: invalidId }) });
+    const request = createMockRequest(MOCK_VALID_SETTINGS);
+    const response = await PATCH(request, createMockParams(invalidId));
     const responseData = await response.json();
 
     expect(response.status).toBe(400);
@@ -100,20 +85,16 @@ describe('PATCH /api/encounters/[id]/settings', () => {
   });
 
   it('returns 404 when encounter not found', async () => {
-    // Mock the service to return encounter not found
-    const mockError = {
-      success: false,
-      error: {
-        message: 'Encounter not found',
-        statusCode: 404,
-        details: [],
-      },
-    };
+    const mockError = createMockServiceResponse(false, null, {
+      message: 'Encounter not found',
+      statusCode: 404,
+      details: [],
+    });
 
     EncounterService.updateEncounter = jest.fn().mockResolvedValue(mockError);
 
-    const request = createMockRequest(mockValidSettings);
-    const response = await PATCH(request, { params: Promise.resolve({ id: mockEncounterId }) });
+    const request = createMockRequest(MOCK_VALID_SETTINGS);
+    const response = await PATCH(request, createMockParams());
     const responseData = await response.json();
 
     expect(response.status).toBe(404);
@@ -123,26 +104,22 @@ describe('PATCH /api/encounters/[id]/settings', () => {
       errors: [],
     });
     expect(EncounterService.updateEncounter).toHaveBeenCalledWith(
-      mockEncounterId,
-      { settings: mockValidSettings }
+      MOCK_ENCOUNTER_ID,
+      { settings: MOCK_VALID_SETTINGS }
     );
   });
 
   it('handles service errors gracefully', async () => {
-    // Mock the service to return a service error
-    const mockError = {
-      success: false,
-      error: {
-        message: 'Database connection failed',
-        statusCode: 500,
-        details: [],
-      },
-    };
+    const mockError = createMockServiceResponse(false, null, {
+      message: 'Database connection failed',
+      statusCode: 500,
+      details: [],
+    });
 
     EncounterService.updateEncounter = jest.fn().mockResolvedValue(mockError);
 
-    const request = createMockRequest(mockValidSettings);
-    const response = await PATCH(request, { params: Promise.resolve({ id: mockEncounterId }) });
+    const request = createMockRequest(MOCK_VALID_SETTINGS);
+    const response = await PATCH(request, createMockParams());
     const responseData = await response.json();
 
     expect(response.status).toBe(500);
@@ -152,8 +129,8 @@ describe('PATCH /api/encounters/[id]/settings', () => {
       errors: [],
     });
     expect(EncounterService.updateEncounter).toHaveBeenCalledWith(
-      mockEncounterId,
-      { settings: mockValidSettings }
+      MOCK_ENCOUNTER_ID,
+      { settings: MOCK_VALID_SETTINGS }
     );
   });
 
@@ -163,8 +140,8 @@ describe('PATCH /api/encounters/[id]/settings', () => {
       .fn()
       .mockRejectedValue(new Error('Unexpected error'));
 
-    const request = createMockRequest(mockValidSettings);
-    const response = await PATCH(request, { params: Promise.resolve({ id: mockEncounterId }) });
+    const request = createMockRequest(MOCK_VALID_SETTINGS);
+    const response = await PATCH(request, createMockParams());
     const responseData = await response.json();
 
     expect(response.status).toBe(500);
@@ -173,35 +150,32 @@ describe('PATCH /api/encounters/[id]/settings', () => {
       message: 'An unexpected error occurred',
     });
     expect(EncounterService.updateEncounter).toHaveBeenCalledWith(
-      mockEncounterId,
-      { settings: mockValidSettings }
+      MOCK_ENCOUNTER_ID,
+      { settings: MOCK_VALID_SETTINGS }
     );
   });
 
   it('validates partial settings updates', async () => {
-    // Test partial update with only some settings
     const partialSettings = {
       allowPlayerVisibility: false,
       enableLairActions: true,
       lairActionInitiative: 15,
     };
 
-    EncounterService.updateEncounter = jest.fn().mockResolvedValue({
-      success: true,
-      data: {
-        id: mockEncounterId,
-        settings: { ...mockValidSettings, ...partialSettings },
-      },
+    const mockResponse = createMockServiceResponse(true, {
+      id: MOCK_ENCOUNTER_ID,
+      settings: { ...MOCK_VALID_SETTINGS, ...partialSettings },
     });
+    EncounterService.updateEncounter = jest.fn().mockResolvedValue(mockResponse);
 
     const request = createMockRequest(partialSettings);
-    const response = await PATCH(request, { params: Promise.resolve({ id: mockEncounterId }) });
+    const response = await PATCH(request, createMockParams());
     const responseData = await response.json();
 
     expect(response.status).toBe(200);
     expect(responseData.success).toBe(true);
     expect(EncounterService.updateEncounter).toHaveBeenCalledWith(
-      mockEncounterId,
+      MOCK_ENCOUNTER_ID,
       { settings: partialSettings }
     );
   });
@@ -214,7 +188,7 @@ describe('PATCH /api/encounters/[id]/settings', () => {
     };
 
     const request = createMockRequest(invalidLairSettings);
-    const response = await PATCH(request, { params: Promise.resolve({ id: mockEncounterId }) });
+    const response = await PATCH(request, createMockParams());
     await response.json();
 
     // This should still be valid as the schema allows optional lairActionInitiative

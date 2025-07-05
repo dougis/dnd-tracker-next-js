@@ -4,78 +4,98 @@ import { encounterSettingsSchema } from '@/lib/validations/encounter';
 import { objectIdSchema } from '@/lib/validations/base';
 import { ZodError } from 'zod';
 
+function createErrorResponse(message: string, errors: string[], status: number) {
+  return NextResponse.json(
+    {
+      success: false,
+      message,
+      errors,
+    },
+    { status }
+  );
+}
+
+function createSuccessResponse(settings: any) {
+  return NextResponse.json(
+    {
+      success: true,
+      message: 'Encounter settings updated successfully',
+      settings,
+    },
+    { status: 200 }
+  );
+}
+
+async function validateEncounterId(params: Promise<{ id: string }>) {
+  const resolvedParams = await params;
+  const validation = objectIdSchema.safeParse(resolvedParams.id);
+
+  if (!validation.success) {
+    return {
+      success: false as const,
+      error: createErrorResponse(
+        'Validation error',
+        ['Invalid encounter ID format'],
+        400
+      ),
+    };
+  }
+
+  return { success: true as const, data: validation.data };
+}
+
+async function validateRequestBody(request: NextRequest) {
+  const body = await request.json();
+  const validation = encounterSettingsSchema.partial().safeParse(body);
+
+  if (!validation.success) {
+    const zodError = validation.error as ZodError;
+    const errors = zodError.errors.map((error) =>
+      `${error.path.join('.')}: ${error.message}`
+    );
+
+    return {
+      success: false as const,
+      error: createErrorResponse('Validation error', errors, 400),
+    };
+  }
+
+  return { success: true as const, data: validation.data };
+}
+
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ): Promise<Response> {
   try {
-    // Await params as it's a Promise in Next.js 15
-    const params = await context.params;
-
-    // Validate encounter ID format
-    const encounterIdValidation = objectIdSchema.safeParse(params.id);
-    if (!encounterIdValidation.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Validation error',
-          errors: ['Invalid encounter ID format'],
-        },
-        { status: 400 }
-      );
+    const idValidation = await validateEncounterId(context.params);
+    if (!idValidation.success) {
+      return idValidation.error;
     }
 
-    const encounterId = encounterIdValidation.data;
-
-    // Parse and validate request body
-    const body = await request.json();
-    const settingsValidation = encounterSettingsSchema.partial().safeParse(body);
-
-    if (!settingsValidation.success) {
-      const zodError = settingsValidation.error as ZodError;
-      const errors = zodError.errors.map((error) =>
-        `${error.path.join('.')}: ${error.message}`
-      );
-
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Validation error',
-          errors,
-        },
-        { status: 400 }
-      );
+    const bodyValidation = await validateRequestBody(request);
+    if (!bodyValidation.success) {
+      return bodyValidation.error;
     }
 
-    const validatedSettings = settingsValidation.data;
+    const encounterId = idValidation.data;
+    const validatedSettings = bodyValidation.data;
 
-    // Update encounter settings using the existing updateEncounter method
-    // We'll wrap the settings in the proper structure for the update
-    const updateData = {
+    const result = await EncounterService.updateEncounter(encounterId, {
       settings: validatedSettings,
-    };
-
-    const result = await EncounterService.updateEncounter(encounterId, updateData);
+    });
 
     if (!result.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: result.error?.message || 'Failed to update encounter settings',
-          errors: result.error?.details || [],
-        },
-        { status: result.error?.statusCode || 500 }
+      return createErrorResponse(
+        result.error?.message || 'Failed to update encounter settings',
+        (result.error?.details || []).map(detail => 
+          typeof detail === 'string' ? detail : `${detail.field}: ${detail.message}`
+        ),
+        result.error?.statusCode || 500
       );
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Encounter settings updated successfully',
-        settings: result.data?.settings,
-      },
-      { status: 200 }
-    );
+    return createSuccessResponse(result.data?.settings);
   } catch (error) {
     console.error('Error updating encounter settings:', error);
     return NextResponse.json(

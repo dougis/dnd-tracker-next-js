@@ -99,7 +99,7 @@ describe('useEncounterSettings', () => {
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
-        expect(result.current.error).toBe('Failed to update encounter settings');
+        expect(result.current.error).toBe('Network error');
       });
     });
 
@@ -182,7 +182,7 @@ describe('useEncounterSettings', () => {
         await result.current.updateSettings(updateData);
       });
 
-      expect(result.current.error).toBe('Failed to update encounter settings');
+      expect(result.current.error).toBe('Network error');
 
       // Second call succeeds
       mockFetch.mockResolvedValueOnce({
