@@ -88,7 +88,7 @@ export async function PATCH(
     if (!result.success) {
       return createErrorResponse(
         result.error?.message || 'Failed to update encounter settings',
-        (result.error?.details || []).map(detail => 
+        (result.error?.details || []).map(detail =>
           typeof detail === 'string' ? detail : `${detail.field}: ${detail.message}`
         ),
         result.error?.statusCode || 500
