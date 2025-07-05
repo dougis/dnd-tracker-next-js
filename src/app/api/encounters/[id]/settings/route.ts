@@ -63,6 +63,35 @@ async function validateRequestBody(request: NextRequest) {
   return { success: true as const, data: validation.data };
 }
 
+async function updateEncounterSettings(encounterId: string, settings: any) {
+  const result = await EncounterService.updateEncounter(encounterId, {
+    settings,
+  });
+
+  if (!result.success) {
+    return createErrorResponse(
+      result.error?.message || 'Failed to update encounter settings',
+      (result.error?.details || []).map(detail =>
+        typeof detail === 'string' ? detail : `${detail.field}: ${detail.message}`
+      ),
+      result.error?.statusCode || 500
+    );
+  }
+
+  return createSuccessResponse(result.data?.settings);
+}
+
+function handleUnexpectedError(error: unknown) {
+  console.error('Error updating encounter settings:', error);
+  return NextResponse.json(
+    {
+      success: false,
+      message: 'An unexpected error occurred',
+    },
+    { status: 500 }
+  );
+}
+
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -78,32 +107,8 @@ export async function PATCH(
       return bodyValidation.error;
     }
 
-    const encounterId = idValidation.data;
-    const validatedSettings = bodyValidation.data;
-
-    const result = await EncounterService.updateEncounter(encounterId, {
-      settings: validatedSettings,
-    });
-
-    if (!result.success) {
-      return createErrorResponse(
-        result.error?.message || 'Failed to update encounter settings',
-        (result.error?.details || []).map(detail =>
-          typeof detail === 'string' ? detail : `${detail.field}: ${detail.message}`
-        ),
-        result.error?.statusCode || 500
-      );
-    }
-
-    return createSuccessResponse(result.data?.settings);
+    return await updateEncounterSettings(idValidation.data, bodyValidation.data);
   } catch (error) {
-    console.error('Error updating encounter settings:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'An unexpected error occurred',
-      },
-      { status: 500 }
-    );
+    return handleUnexpectedError(error);
   }
 }

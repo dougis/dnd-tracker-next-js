@@ -4,9 +4,13 @@ import { EncounterService } from '@/lib/services/EncounterService';
 import {
   MOCK_ENCOUNTER_ID,
   MOCK_VALID_SETTINGS,
+  MOCK_INVALID_SETTINGS,
+  MOCK_PARTIAL_SETTINGS,
+  MOCK_LAIR_SETTINGS,
   createMockRequest,
   createMockParams,
-  createMockServiceResponse,
+  createSuccessResponse,
+  createErrorResponse,
 } from './test-helpers';
 
 // Configure Jest to use our mocks
@@ -29,11 +33,7 @@ describe('PATCH /api/encounters/[id]/settings', () => {
   });
 
   it('successfully updates encounter settings', async () => {
-    const mockResponse = createMockServiceResponse(true, {
-      id: MOCK_ENCOUNTER_ID,
-      settings: MOCK_VALID_SETTINGS,
-    });
-    EncounterService.updateEncounter = jest.fn().mockResolvedValue(mockResponse);
+    EncounterService.updateEncounter = jest.fn().mockResolvedValue(createSuccessResponse());
 
     const request = createMockRequest(MOCK_VALID_SETTINGS);
     const response = await PATCH(request, createMockParams());
@@ -52,14 +52,7 @@ describe('PATCH /api/encounters/[id]/settings', () => {
   });
 
   it('returns validation errors for invalid settings data', async () => {
-    // Invalid data (invalid grid size)
-    const invalidData = {
-      allowPlayerVisibility: true,
-      gridSize: -1, // Invalid: negative grid size
-      roundTimeLimit: 15, // Invalid: below minimum 30 seconds
-    };
-
-    const request = createMockRequest(invalidData);
+    const request = createMockRequest(MOCK_INVALID_SETTINGS);
     const response = await PATCH(request, createMockParams());
     const responseData = await response.json();
 
@@ -85,13 +78,9 @@ describe('PATCH /api/encounters/[id]/settings', () => {
   });
 
   it('returns 404 when encounter not found', async () => {
-    const mockError = createMockServiceResponse(false, null, {
-      message: 'Encounter not found',
-      statusCode: 404,
-      details: [],
-    });
-
-    EncounterService.updateEncounter = jest.fn().mockResolvedValue(mockError);
+    EncounterService.updateEncounter = jest.fn().mockResolvedValue(
+      createErrorResponse('Encounter not found', 404)
+    );
 
     const request = createMockRequest(MOCK_VALID_SETTINGS);
     const response = await PATCH(request, createMockParams());
@@ -110,13 +99,9 @@ describe('PATCH /api/encounters/[id]/settings', () => {
   });
 
   it('handles service errors gracefully', async () => {
-    const mockError = createMockServiceResponse(false, null, {
-      message: 'Database connection failed',
-      statusCode: 500,
-      details: [],
-    });
-
-    EncounterService.updateEncounter = jest.fn().mockResolvedValue(mockError);
+    EncounterService.updateEncounter = jest.fn().mockResolvedValue(
+      createErrorResponse('Database connection failed', 500)
+    );
 
     const request = createMockRequest(MOCK_VALID_SETTINGS);
     const response = await PATCH(request, createMockParams());
@@ -156,19 +141,11 @@ describe('PATCH /api/encounters/[id]/settings', () => {
   });
 
   it('validates partial settings updates', async () => {
-    const partialSettings = {
-      allowPlayerVisibility: false,
-      enableLairActions: true,
-      lairActionInitiative: 15,
-    };
+    EncounterService.updateEncounter = jest.fn().mockResolvedValue(
+      createSuccessResponse({ ...MOCK_VALID_SETTINGS, ...MOCK_PARTIAL_SETTINGS })
+    );
 
-    const mockResponse = createMockServiceResponse(true, {
-      id: MOCK_ENCOUNTER_ID,
-      settings: { ...MOCK_VALID_SETTINGS, ...partialSettings },
-    });
-    EncounterService.updateEncounter = jest.fn().mockResolvedValue(mockResponse);
-
-    const request = createMockRequest(partialSettings);
+    const request = createMockRequest(MOCK_PARTIAL_SETTINGS);
     const response = await PATCH(request, createMockParams());
     const responseData = await response.json();
 
@@ -176,18 +153,12 @@ describe('PATCH /api/encounters/[id]/settings', () => {
     expect(responseData.success).toBe(true);
     expect(EncounterService.updateEncounter).toHaveBeenCalledWith(
       MOCK_ENCOUNTER_ID,
-      { settings: partialSettings }
+      { settings: MOCK_PARTIAL_SETTINGS }
     );
   });
 
   it('validates lair action settings dependency', async () => {
-    // Test that lairActionInitiative is only valid when enableLairActions is true
-    const invalidLairSettings = {
-      enableLairActions: false,
-      lairActionInitiative: 20, // Should be ignored/invalid when lair actions disabled
-    };
-
-    const request = createMockRequest(invalidLairSettings);
+    const request = createMockRequest(MOCK_LAIR_SETTINGS);
     const response = await PATCH(request, createMockParams());
     await response.json();
 

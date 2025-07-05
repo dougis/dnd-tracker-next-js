@@ -7,6 +7,14 @@ export const MOCK_SETTINGS: Partial<IEncounterSettings> = {
   autoRollInitiative: false,
 };
 
+export const MOCK_PARTIAL_SETTINGS: Partial<IEncounterSettings> = {
+  allowPlayerVisibility: false,
+};
+
+export const MOCK_OPTIMISTIC_SETTINGS: Partial<IEncounterSettings> = {
+  enableLairActions: true,
+};
+
 export function createMockFetch(success: boolean, responseData?: any) {
   return jest.fn().mockResolvedValue({
     ok: success,
@@ -20,4 +28,32 @@ export function createMockFetch(success: boolean, responseData?: any) {
 
 export function createMockErrorFetch() {
   return jest.fn().mockRejectedValue(new Error('Network error'));
+}
+
+export function createMockDelayedFetch(delay: number = 100) {
+  return jest.fn().mockImplementation(() =>
+    new Promise(resolve =>
+      setTimeout(() => resolve({
+        ok: true,
+        json: jest.fn().mockResolvedValue({ success: true }),
+      }), delay)
+    )
+  );
+}
+
+export function createMockSuccessResponse() {
+  return {
+    ok: true,
+    json: jest.fn().mockResolvedValue({ success: true }),
+  };
+}
+
+export function createMockErrorResponse(message = 'Validation error') {
+  return {
+    ok: false,
+    json: jest.fn().mockResolvedValue({
+      success: false,
+      message
+    }),
+  };
 }
