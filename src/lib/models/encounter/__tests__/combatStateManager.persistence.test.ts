@@ -110,7 +110,7 @@ describe('Combat State Manager - Persistence', () => {
 
     it('should cover localStorage access paths in loadCombatState', () => {
       clearCombatState(encounter._id.toString());
-      
+
       const originalWindow = global.window;
       global.window = {
         localStorage: {

@@ -57,7 +57,7 @@ describe('Combat State Manager - Enhanced Functions', () => {
 
     it('should clear saved state after combat ends', () => {
       saveCombatState(encounter);
-      
+
       enhancedEndCombat(encounter);
 
       clearCombatHistory(encounter._id.toString());
@@ -101,11 +101,11 @@ describe('Combat State Manager - Enhanced Functions', () => {
       const history = getCombatHistory(encounter._id.toString());
       const roundEndLog = history.find(h => h.action === 'round_end');
       const roundStartLog = history.find(h => h.action === 'round_start');
-      
+
       expect(roundEndLog).toBeDefined();
       expect(roundEndLog?.round).toBe(2);
       expect(roundEndLog?.turn).toBe(1);
-      
+
       expect(roundStartLog).toBeDefined();
       expect(roundStartLog?.round).toBe(3);
       expect(roundStartLog?.turn).toBe(0);

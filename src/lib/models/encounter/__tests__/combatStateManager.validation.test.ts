@@ -150,7 +150,7 @@ describe('Combat State Manager - Validation', () => {
     it('should detect invalid timestamp combinations', () => {
       const now = new Date();
       const later = new Date(now.getTime() + 60000);
-      
+
       encounter.combatState.startedAt = later;
       encounter.combatState.endedAt = now;
 
@@ -162,7 +162,7 @@ describe('Combat State Manager - Validation', () => {
     it('should detect invalid pause timestamp', () => {
       const now = new Date();
       const later = new Date(now.getTime() + 60000);
-      
+
       encounter.combatState.startedAt = later;
       encounter.combatState.pausedAt = now;
 
