@@ -3,8 +3,14 @@ import {
   abilityScoreField,
   savingThrowField,
   hitPointsSchema,
+  hitPointsUtils,
   getStandardSchemaOptions,
   mongooseObjectIdField,
+  commonFields,
+  dndFields,
+  commonIndexes,
+  validationHelpers,
+  type IHitPoints,
 } from './shared/schema-utils';
 import type { CharacterSummary as ValidationCharacterSummary } from '../validations/character';
 
@@ -40,11 +46,7 @@ export interface ICharacter extends Document {
     wisdom: number;
     charisma: number;
   };
-  hitPoints: {
-    maximum: number;
-    current: number;
-    temporary: number;
-  };
+  hitPoints: IHitPoints;
   armorClass: number;
   speed: number;
   proficiencyBonus: number;
@@ -122,10 +124,7 @@ const characterSchema = new Schema<ICharacter, CharacterModel>(
   {
     ownerId: mongooseObjectIdField('User'),
     name: {
-      type: String,
-      required: true,
-      trim: true,
-      maxlength: 100,
+      ...commonFields.name,
       index: 'text',
     },
     type: {
@@ -155,22 +154,12 @@ const characterSchema = new Schema<ICharacter, CharacterModel>(
           type: String,
           required: true,
         },
-        level: {
-          type: Number,
-          required: true,
-          min: 1,
-          max: 20,
-        },
+        level: dndFields.characterLevel,
         subclass: {
           type: String,
           trim: true,
         },
-        hitDie: {
-          type: Number,
-          required: true,
-          min: 4,
-          max: 12,
-        },
+        hitDie: dndFields.hitDie,
       },
     ],
     abilityScores: {
@@ -182,24 +171,9 @@ const characterSchema = new Schema<ICharacter, CharacterModel>(
       charisma: abilityScoreField,
     },
     hitPoints: hitPointsSchema,
-    armorClass: {
-      type: Number,
-      required: true,
-      min: 1,
-      max: 30,
-    },
-    speed: {
-      type: Number,
-      required: true,
-      min: 0,
-      default: 30,
-    },
-    proficiencyBonus: {
-      type: Number,
-      required: true,
-      min: 2,
-      max: 6,
-    },
+    armorClass: dndFields.armorClass,
+    speed: dndFields.speed,
+    proficiencyBonus: dndFields.proficiencyBonus,
     savingThrows: {
       strength: savingThrowField,
       dexterity: savingThrowField,
@@ -256,12 +230,7 @@ const characterSchema = new Schema<ICharacter, CharacterModel>(
           required: true,
           trim: true,
         },
-        level: {
-          type: Number,
-          required: true,
-          min: 0,
-          max: 9,
-        },
+        level: dndFields.spellLevel,
         school: {
           type: String,
           required: true,
@@ -298,35 +267,13 @@ const characterSchema = new Schema<ICharacter, CharacterModel>(
         },
       },
     ],
-    backstory: {
-      type: String,
-      default: '',
-      maxlength: 5000,
-    },
-    notes: {
-      type: String,
-      default: '',
-      maxlength: 2000,
-    },
-    imageUrl: {
-      type: String,
-      trim: true,
-      maxlength: 500,
-    },
-    isPublic: {
-      type: Boolean,
-      default: false,
-      index: true,
-    },
+    backstory: commonFields.backstory,
+    notes: commonFields.notes,
+    imageUrl: commonFields.imageUrl,
+    isPublic: commonFields.isPublic,
     partyId: mongooseObjectIdField('Party', false),
-    isDeleted: {
-      type: Boolean,
-      default: false,
-      index: true,
-    },
-    deletedAt: {
-      type: Date,
-    },
+    isDeleted: commonFields.isDeleted,
+    deletedAt: commonFields.deletedAt,
     undoToken: {
       type: String,
       trim: true,
@@ -351,7 +298,7 @@ characterSchema.methods.getAbilityModifier = function (
   ability: AbilityName
 ): number {
   const score = this.abilityScores[ability];
-  return Math.floor((score - 10) / 2);
+  return validationHelpers.getAbilityModifier(score);
 };
 
 // Instance method: Calculate initiative modifier
@@ -361,52 +308,32 @@ characterSchema.methods.getInitiativeModifier = function (): number {
 
 // Instance method: Get effective HP (current + temporary)
 characterSchema.methods.getEffectiveHP = function (): number {
-  return this.hitPoints.current + this.hitPoints.temporary;
+  return hitPointsUtils.getEffectiveHP(this.hitPoints);
 };
 
 // Instance method: Check if character is alive
 characterSchema.methods.isAlive = function (): boolean {
-  return this.hitPoints.current > 0;
+  return hitPointsUtils.isAlive(this.hitPoints);
 };
 
 // Instance method: Check if character is unconscious
 characterSchema.methods.isUnconscious = function (): boolean {
-  return this.hitPoints.current <= 0;
+  return hitPointsUtils.isUnconscious(this.hitPoints);
 };
 
 // Instance method: Apply damage
 characterSchema.methods.takeDamage = function (damage: number): void {
-  if (damage <= 0) return;
-
-  // Apply damage to temporary HP first
-  if (this.hitPoints.temporary > 0) {
-    const tempDamage = Math.min(damage, this.hitPoints.temporary);
-    this.hitPoints.temporary -= tempDamage;
-    damage -= tempDamage;
-  }
-
-  // Apply remaining damage to current HP
-  if (damage > 0) {
-    this.hitPoints.current = Math.max(0, this.hitPoints.current - damage);
-  }
+  hitPointsUtils.takeDamage(this.hitPoints, damage);
 };
 
 // Instance method: Heal damage
 characterSchema.methods.heal = function (healing: number): void {
-  if (healing <= 0) return;
-
-  this.hitPoints.current = Math.min(
-    this.hitPoints.maximum,
-    this.hitPoints.current + healing
-  );
+  hitPointsUtils.heal(this.hitPoints, healing);
 };
 
 // Instance method: Add temporary HP
 characterSchema.methods.addTemporaryHP = function (tempHP: number): void {
-  if (tempHP <= 0) return;
-
-  // Temporary HP doesn't stack, take the higher value
-  this.hitPoints.temporary = Math.max(this.hitPoints.temporary, tempHP);
+  hitPointsUtils.addTemporaryHP(this.hitPoints, tempHP);
 };
 
 // Instance method: Get character summary
@@ -485,9 +412,13 @@ characterSchema.post('save', function (doc, next) {
   next();
 });
 
-// Indexes for performance
-characterSchema.index({ ownerId: 1, name: 1 });
-characterSchema.index({ type: 1, isPublic: 1 });
+// Apply common indexes
+commonIndexes.ownerBased(characterSchema);
+commonIndexes.publicContent(characterSchema);
+commonIndexes.temporal(characterSchema);
+commonIndexes.dndContent(characterSchema);
+
+// Character-specific indexes
 characterSchema.index({ 'classes.class': 1 });
 characterSchema.index({ race: 1 });
 
