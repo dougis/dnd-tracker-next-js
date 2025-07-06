@@ -54,21 +54,25 @@ export function SuccessState(_props: SuccessStateProps) {
   );
 }
 
+type ProfileFormData = {
+  displayName: string;
+  timezone: string;
+  dndEdition: string;
+  experienceLevel: string;
+  primaryRole: string;
+};
+
+/* eslint-disable no-unused-vars */
 type ProfileFormProps = {
-  formData: {
-    displayName: string;
-    timezone: string;
-    dndEdition: string;
-    experienceLevel: string;
-    primaryRole: string;
-  };
-  updateField: (field: string, value: string) => void;
+  formData: ProfileFormData;
+  updateField: (field: keyof ProfileFormData, value: string) => void;
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   handleSkip: () => void;
   getFieldError: (field: string) => string | undefined;
   isSubmitting: boolean;
   errors: Array<{ field: string; message: string }>;
 };
+/* eslint-enable no-unused-vars */
 
 export function ProfileForm({
   formData,
