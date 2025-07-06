@@ -17,7 +17,7 @@ interface EncounterDetailClientProps {
  */
 export function EncounterDetailClient({ encounterId }: EncounterDetailClientProps) {
   const router = useRouter();
-  const { encounter, loading, error, handleRetry } = useEncounterData(encounterId);
+  const { encounter, loading, error, handleRetry, updateEncounter } = useEncounterData(encounterId);
   const [isEditing, setIsEditing] = useState(false);
 
   const handleEditEncounter = () => {
@@ -78,6 +78,7 @@ export function EncounterDetailClient({ encounterId }: EncounterDetailClientProp
         encounter={encounter}
         isEditing={isEditing}
         onToggleEdit={handleToggleEdit}
+        onEncounterUpdate={updateEncounter}
       />
     </div>
   );
