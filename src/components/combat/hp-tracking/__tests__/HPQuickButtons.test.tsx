@@ -1,10 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { HPQuickButtons } from '../HPQuickButtons';
-import { setupHPTrackingTest } from './test-helpers';
+import { setupHPTrackingHooks } from '../test-helpers';
 
 describe('HPQuickButtons', () => {
-  const { mocks } = setupHPTrackingTest();
+  const { mocks } = setupHPTrackingHooks();
 
   it('renders all quick action buttons', () => {
     render(

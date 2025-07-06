@@ -1,3 +1,5 @@
+import React from 'react';
+import { render, screen, fireEvent, waitFor, act, renderHook } from '@testing-library/react';
 import { IParticipantReference } from '@/lib/models/encounter/interfaces';
 import { createTestParticipant } from '@/lib/models/encounter/__tests__/test-helpers';
 
@@ -8,6 +10,9 @@ export interface HPTrackingMocks {
   onApplyDamage: jest.Mock;
   onApplyHealing: jest.Mock;
   onErrorChange: jest.Mock;
+  onDamage: jest.Mock;
+  onHealing: jest.Mock;
+  onEdit: jest.Mock;
 }
 
 export function createHPTrackingMocks(): HPTrackingMocks {
@@ -18,11 +23,19 @@ export function createHPTrackingMocks(): HPTrackingMocks {
     onApplyDamage: jest.fn(),
     onApplyHealing: jest.fn(),
     onErrorChange: jest.fn(),
+    onDamage: jest.fn(),
+    onHealing: jest.fn(),
+    onEdit: jest.fn(),
   };
 }
 
 export function setupHPTrackingTest(): { mocks: HPTrackingMocks } {
   const mocks = createHPTrackingMocks();
+  return { mocks };
+}
+
+export function setupHPTrackingHooks() {
+  const { mocks } = setupHPTrackingTest();
 
   beforeEach(() => {
     Object.values(mocks).forEach(mock => mock.mockClear());
@@ -93,3 +106,218 @@ export const DEFAULT_TEST_VALUES = {
   },
   errors: {},
 } as const;
+
+// Component Rendering Utilities
+export function renderHPEditModal(
+  overrides: Partial<{
+    participant: IParticipantReference;
+    isOpen: boolean;
+    onSave: jest.Mock;
+    onCancel: jest.Mock;
+  }> = {}
+) {
+  const { mocks } = setupHPTrackingTest();
+  const mockParticipant = createTestHPParticipant();
+
+  const defaultProps = {
+    participant: mockParticipant,
+    isOpen: true,
+    onSave: mocks.onSave,
+    onCancel: mocks.onCancel,
+    ...overrides,
+  };
+
+  // Import HPEditModal dynamically to avoid circular dependencies
+  const HPEditModal = require('./HPEditModal').HPEditModal;
+
+  return {
+    ...render(React.createElement(HPEditModal, defaultProps)),
+    mocks,
+    participant: mockParticipant,
+  };
+}
+
+export function renderHPEditForm(
+  overrides: Partial<{
+    initialValues: { currentHitPoints: number; maxHitPoints: number; temporaryHitPoints: number };
+    onSave: jest.Mock;
+    onCancel: jest.Mock;
+  }> = {}
+) {
+  const { mocks } = setupHPTrackingTest();
+
+  const defaultProps = {
+    initialValues: TEST_SCENARIOS.injured,
+    onSave: mocks.onSave,
+    onCancel: mocks.onCancel,
+    ...overrides,
+  };
+
+  // Import HPEditForm dynamically to avoid circular dependencies
+  const HPEditForm = require('./HPEditForm').HPEditForm;
+
+  return {
+    ...render(React.createElement(HPEditForm, defaultProps)),
+    mocks,
+  };
+}
+
+// HP Action Testing Utilities
+export async function testDamageApplication(
+  damageAmount: number,
+  expectedCurrentHP: number,
+  expectedStatus: string
+) {
+  const damageInput = screen.getByLabelText('Damage Amount');
+  const applyDamageButton = screen.getByTestId('apply-damage-button');
+
+  fireEvent.change(damageInput, { target: { value: damageAmount.toString() } });
+  fireEvent.click(applyDamageButton);
+
+  await waitFor(() => {
+    expect(screen.getByLabelText('Current HP')).toHaveValue(expectedCurrentHP);
+    expect(screen.getByText(expectedStatus)).toBeInTheDocument();
+  });
+}
+
+export async function testHealingApplication(
+  healingAmount: number,
+  expectedCurrentHP: number,
+  expectedStatus: string
+) {
+  const healingInput = screen.getByLabelText('Healing Amount');
+  const applyHealingButton = screen.getByTestId('apply-healing-button');
+
+  fireEvent.change(healingInput, { target: { value: healingAmount.toString() } });
+  fireEvent.click(applyHealingButton);
+
+  await waitFor(() => {
+    expect(screen.getByLabelText('Current HP')).toHaveValue(expectedCurrentHP);
+    expect(screen.getByText(expectedStatus)).toBeInTheDocument();
+  });
+}
+
+export async function testTemporaryHPChange(
+  tempHPAmount: number,
+  expectedStatus: string
+) {
+  const tempHPInput = screen.getByLabelText('Temporary HP');
+  fireEvent.change(tempHPInput, { target: { value: tempHPAmount.toString() } });
+
+  await waitFor(() => {
+    expect(screen.getByText(expectedStatus)).toBeInTheDocument();
+  });
+}
+
+// Validation Testing Utilities
+export async function testFieldValidation(
+  fieldLabel: string,
+  invalidValue: string,
+  expectedErrorMessage: string
+) {
+  const input = screen.getByLabelText(fieldLabel);
+  const saveButton = screen.getByText('Save');
+
+  fireEvent.change(input, { target: { value: invalidValue } });
+  fireEvent.click(saveButton);
+
+  await waitFor(() => {
+    expect(screen.getByText(expectedErrorMessage)).toBeInTheDocument();
+  });
+}
+
+export async function testInputValidation(
+  inputLabel: string,
+  buttonTestId: string,
+  invalidValue: string,
+  expectedErrorMessage: string
+) {
+  const input = screen.getByLabelText(inputLabel);
+  const button = screen.getByTestId(buttonTestId);
+
+  fireEvent.change(input, { target: { value: invalidValue } });
+  fireEvent.click(button);
+
+  await waitFor(() => {
+    expect(screen.getByText(expectedErrorMessage)).toBeInTheDocument();
+  });
+}
+
+// Assertion Utilities
+export function expectHPStatus(
+  currentHP: number,
+  maxHP: number,
+  tempHP: number = 0
+) {
+  const effectiveHP = currentHP + tempHP;
+  const statusText = tempHP > 0
+    ? `Status: ${currentHP}/${maxHP} (+${tempHP}) = ${effectiveHP} effective HP`
+    : `Status: ${currentHP}/${maxHP} = ${effectiveHP} effective HP`;
+
+  expect(screen.getByText(statusText)).toBeInTheDocument();
+}
+
+export function expectHPInputValues(
+  currentHP: number,
+  maxHP: number,
+  tempHP: number = 0
+) {
+  expect(screen.getByLabelText('Current HP')).toHaveValue(currentHP);
+  expect(screen.getByLabelText('Maximum HP')).toHaveValue(maxHP);
+  expect(screen.getByLabelText('Temporary HP')).toHaveValue(tempHP);
+}
+
+export function expectHPSaveCall(
+  mockFn: jest.Mock,
+  currentHP: number,
+  maxHP: number,
+  tempHP: number = 0
+) {
+  expect(mockFn).toHaveBeenCalledWith({
+    currentHitPoints: currentHP,
+    maxHitPoints: maxHP,
+    temporaryHitPoints: tempHP,
+  });
+}
+
+// Hook Testing Utilities
+export function testHPTrackingAction(
+  action: string,
+  value: number,
+  expectedResult: {
+    currentHP: number;
+    maxHP: number;
+    tempHP: number;
+    effectiveHP: number;
+  }
+) {
+  const useHPTracking = require('../useHPTracking').useHPTracking;
+  const { result } = renderHook(() =>
+    useHPTracking(createTestHPParticipant(), jest.fn())
+  );
+
+  act(() => {
+    switch (action) {
+      case 'damage':
+        result.current.applyDamage(value);
+        break;
+      case 'healing':
+        result.current.applyHealing(value);
+        break;
+      case 'setTempHP':
+        result.current.setTemporaryHP(value);
+        break;
+      case 'setCurrentHP':
+        result.current.setCurrentHP(value);
+        break;
+      case 'setMaxHP':
+        result.current.setMaxHP(value);
+        break;
+    }
+  });
+
+  expect(result.current.currentHP).toBe(expectedResult.currentHP);
+  expect(result.current.maxHP).toBe(expectedResult.maxHP);
+  expect(result.current.tempHP).toBe(expectedResult.tempHP);
+  expect(result.current.effectiveHP).toBe(expectedResult.effectiveHP);
+}

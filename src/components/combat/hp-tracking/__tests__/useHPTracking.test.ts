@@ -1,9 +1,9 @@
 import { renderHook, act } from '@testing-library/react';
 import { useHPTracking } from '../useHPTracking';
-import { setupHPTrackingTest, createTestHPParticipant } from './test-helpers';
+import { setupHPTrackingHooks, createTestHPParticipant } from '../test-helpers';
 
 describe('useHPTracking', () => {
-  const { mocks } = setupHPTrackingTest();
+  const { mocks } = setupHPTrackingHooks();
   const mockParticipant = createTestHPParticipant();
 
   it('initializes with correct HP values', () => {

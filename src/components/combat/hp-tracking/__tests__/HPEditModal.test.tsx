@@ -1,156 +1,60 @@
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { HPEditModal } from '../HPEditModal';
-import { setupHPTrackingTest, createTestHPParticipant, createScenarioParticipant } from '../test-helpers';
+import {
+  setupHPTrackingHooks,
+  createTestHPParticipant,
+  createScenarioParticipant,
+  renderHPEditModal,
+  testDamageApplication,
+  testHealingApplication,
+  testTemporaryHPChange,
+  expectHPInputValues,
+  expectHPStatus,
+  expectHPSaveCall,
+} from '../test-helpers';
 
 describe('HPEditModal', () => {
-  const { mocks } = setupHPTrackingTest();
-  const mockParticipant = createTestHPParticipant();
+  const { mocks } = setupHPTrackingHooks();
 
   it('renders HP edit modal with correct initial values', () => {
-    render(
-      <HPEditModal
-        participant={mockParticipant}
-        isOpen={true}
-        onSave={mocks.onSave}
-        onCancel={mocks.onCancel}
-      />
-    );
+    const { participant } = renderHPEditModal();
 
-    expect(screen.getByText('Edit HP: Test Character')).toBeInTheDocument();
-    expect(screen.getByLabelText('Current HP')).toHaveValue(75);
-    expect(screen.getByLabelText('Maximum HP')).toHaveValue(100);
-    expect(screen.getByLabelText('Temporary HP')).toHaveValue(5);
+    expect(screen.getByText(`Edit HP: ${participant.name}`)).toBeInTheDocument();
+    expectHPInputValues(75, 100, 5);
   });
 
   it('displays current HP status correctly', () => {
-    render(
-      <HPEditModal
-        participant={mockParticipant}
-        isOpen={true}
-        onSave={mocks.onSave}
-        onCancel={mocks.onCancel}
-      />
-    );
-
-    expect(screen.getByText('Status: 75/100 (+5) = 80 effective HP')).toBeInTheDocument();
+    renderHPEditModal();
+    expectHPStatus(75, 100, 5);
   });
 
   it('handles damage input correctly', async () => {
-    render(
-      <HPEditModal
-        participant={mockParticipant}
-        isOpen={true}
-        onSave={mocks.onSave}
-        onCancel={mocks.onCancel}
-      />
-    );
-
-    const damageInput = screen.getByLabelText('Damage Amount');
-    const applyDamageButton = screen.getByTestId('apply-damage-button');
-
-    fireEvent.change(damageInput, { target: { value: '10' } });
-    fireEvent.click(applyDamageButton);
-
-    await waitFor(() => {
-      expect(screen.getByLabelText('Current HP')).toHaveValue(70);
-      expect(screen.getByText('Status: 70/100 = 70 effective HP')).toBeInTheDocument();
-    });
+    renderHPEditModal();
+    await testDamageApplication(10, 70, 'Status: 70/100 = 70 effective HP');
   });
 
   it('handles healing input correctly', async () => {
-    render(
-      <HPEditModal
-        participant={mockParticipant}
-        isOpen={true}
-        onSave={mocks.onSave}
-        onCancel={mocks.onCancel}
-      />
-    );
-
-    const healingInput = screen.getByLabelText('Healing Amount');
-    const applyHealingButton = screen.getByTestId('apply-healing-button');
-
-    fireEvent.change(healingInput, { target: { value: '15' } });
-    fireEvent.click(applyHealingButton);
-
-    await waitFor(() => {
-      expect(screen.getByLabelText('Current HP')).toHaveValue(90);
-      expect(screen.getByText('Status: 90/100 (+5) = 95 effective HP')).toBeInTheDocument();
-    });
+    renderHPEditModal();
+    await testHealingApplication(15, 90, 'Status: 90/100 (+5) = 95 effective HP');
   });
 
   it('handles temporary HP correctly', async () => {
-    render(
-      <HPEditModal
-        participant={mockParticipant}
-        isOpen={true}
-        onSave={mocks.onSave}
-        onCancel={mocks.onCancel}
-      />
-    );
-
-    const tempHPInput = screen.getByLabelText('Temporary HP');
-    fireEvent.change(tempHPInput, { target: { value: '10' } });
-
-    await waitFor(() => {
-      expect(screen.getByText('Status: 75/100 (+10) = 85 effective HP')).toBeInTheDocument();
-    });
+    renderHPEditModal();
+    await testTemporaryHPChange(10, 'Status: 75/100 (+10) = 85 effective HP');
   });
 
   it('prevents current HP from going below 0', async () => {
-    render(
-      <HPEditModal
-        participant={mockParticipant}
-        isOpen={true}
-        onSave={mocks.onSave}
-        onCancel={mocks.onCancel}
-      />
-    );
-
-    const damageInput = screen.getByLabelText('Damage Amount');
-    const applyDamageButton = screen.getByTestId('apply-damage-button');
-
-    fireEvent.change(damageInput, { target: { value: '200' } });
-    fireEvent.click(applyDamageButton);
-
-    await waitFor(() => {
-      expect(screen.getByLabelText('Current HP')).toHaveValue(0);
-      expect(screen.getByText('Status: 0/100 = 0 effective HP')).toBeInTheDocument();
-    });
+    renderHPEditModal();
+    await testDamageApplication(200, 0, 'Status: 0/100 = 0 effective HP');
   });
 
   it('prevents healing above maximum HP', async () => {
-    render(
-      <HPEditModal
-        participant={mockParticipant}
-        isOpen={true}
-        onSave={mocks.onSave}
-        onCancel={mocks.onCancel}
-      />
-    );
-
-    const healingInput = screen.getByLabelText('Healing Amount');
-    const applyHealingButton = screen.getByTestId('apply-healing-button');
-
-    fireEvent.change(healingInput, { target: { value: '50' } });
-    fireEvent.click(applyHealingButton);
-
-    await waitFor(() => {
-      expect(screen.getByLabelText('Current HP')).toHaveValue(100);
-      expect(screen.getByText('Status: 100/100 (+5) = 105 effective HP')).toBeInTheDocument();
-    });
+    renderHPEditModal();
+    await testHealingApplication(50, 100, 'Status: 100/100 (+5) = 105 effective HP');
   });
 
   it('handles save action correctly', async () => {
-    render(
-      <HPEditModal
-        participant={mockParticipant}
-        isOpen={true}
-        onSave={mocks.onSave}
-        onCancel={mocks.onCancel}
-      />
-    );
+    const { mocks } = renderHPEditModal();
 
     const currentHPInput = screen.getByLabelText('Current HP');
     const saveButton = screen.getByText('Save');
@@ -159,23 +63,12 @@ describe('HPEditModal', () => {
     fireEvent.click(saveButton);
 
     await waitFor(() => {
-      expect(mocks.onSave).toHaveBeenCalledWith({
-        currentHitPoints: 50,
-        maxHitPoints: 100,
-        temporaryHitPoints: 5,
-      });
+      expectHPSaveCall(mocks.onSave, 50, 100, 5);
     });
   });
 
   it('handles cancel action correctly', () => {
-    render(
-      <HPEditModal
-        participant={mockParticipant}
-        isOpen={true}
-        onSave={mocks.onSave}
-        onCancel={mocks.onCancel}
-      />
-    );
+    const { mocks } = renderHPEditModal();
 
     const cancelButton = screen.getByText('Cancel');
     fireEvent.click(cancelButton);
@@ -184,29 +77,14 @@ describe('HPEditModal', () => {
   });
 
   it('shows HP threshold warnings', () => {
-    const criticalParticipant = createScenarioParticipant('critical', 'Critical Character');
-
-    render(
-      <HPEditModal
-        participant={criticalParticipant}
-        isOpen={true}
-        onSave={mocks.onSave}
-        onCancel={mocks.onCancel}
-      />
-    );
+    const criticalParticipant = createScenarioParticipant('critical');
+    renderHPEditModal({ participant: criticalParticipant });
 
     expect(screen.getByText('⚠️ Critical HP Level')).toBeInTheDocument();
   });
 
   it('validates input fields correctly', async () => {
-    render(
-      <HPEditModal
-        participant={mockParticipant}
-        isOpen={true}
-        onSave={mocks.onSave}
-        onCancel={mocks.onCancel}
-      />
-    );
+    const { mocks } = renderHPEditModal();
 
     const currentHPInput = screen.getByLabelText('Current HP');
     const saveButton = screen.getByText('Save');
@@ -219,18 +97,14 @@ describe('HPEditModal', () => {
     fireEvent.click(saveButton);
 
     await waitFor(() => {
-      expect(mocks.onSave).toHaveBeenCalledWith({
-        currentHitPoints: 0,
-        maxHitPoints: 100,
-        temporaryHitPoints: 5,
-      });
+      expectHPSaveCall(mocks.onSave, 0, 100, 5);
     });
   });
 
   it('does not render when closed', () => {
     render(
       <HPEditModal
-        participant={mockParticipant}
+        participant={createTestHPParticipant()}
         isOpen={false}
         onSave={mocks.onSave}
         onCancel={mocks.onCancel}
