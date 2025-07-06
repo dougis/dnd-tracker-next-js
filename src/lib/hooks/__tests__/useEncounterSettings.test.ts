@@ -22,11 +22,11 @@ async function performUpdateTest(
 ) {
   mockFetch.mockImplementation(mockImplementation);
   const { result } = renderHook(() => useEncounterSettings(TEST_ENCOUNTER_ID));
-  
+
   await act(async () => {
     await result.current.updateSettings(updateData);
   });
-  
+
   return result;
 }
 
@@ -52,7 +52,7 @@ describe('useEncounterSettings', () => {
     it('successfully updates encounter settings', async () => {
       const updateData = { allowPlayerVisibility: false };
       const updatedSettings = { ...TEST_SETTINGS, ...updateData };
-      
+
       const result = await performUpdateTest(updateData, createFetchSuccess(updatedSettings));
 
       expectApiCall(mockFetch, updateData);
@@ -62,7 +62,7 @@ describe('useEncounterSettings', () => {
 
     it('handles API errors gracefully', async () => {
       const updateData = { gridSize: -1 };
-      
+
       const result = await performUpdateTest(updateData, createFetchError('Validation error'));
 
       await waitFor(() => {
@@ -72,7 +72,7 @@ describe('useEncounterSettings', () => {
 
     it('handles network errors', async () => {
       const updateData = { allowPlayerVisibility: false };
-      
+
       const result = await performUpdateTest(updateData, createFetchNetworkError());
 
       await waitFor(() => {
@@ -101,8 +101,8 @@ describe('useEncounterSettings', () => {
 
     it('supports partial settings updates', async () => {
       const mergedSettings = { ...TEST_SETTINGS, ...TEST_PARTIAL_SETTINGS };
-      
-      const result = await performUpdateTest(TEST_PARTIAL_SETTINGS, createFetchSuccess(mergedSettings));
+
+      await performUpdateTest(TEST_PARTIAL_SETTINGS, createFetchSuccess(mergedSettings));
 
       expectApiCall(mockFetch, TEST_PARTIAL_SETTINGS);
     });
