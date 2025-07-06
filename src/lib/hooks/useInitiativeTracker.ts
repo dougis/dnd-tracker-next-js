@@ -2,6 +2,14 @@
 
 import { useCallback, useState } from 'react';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
+import {
+  makeRequest,
+  buildExportData,
+  createDownloadLink,
+  generateExportFilename,
+  buildShareText,
+  copyToClipboard
+} from '@/components/combat/useInitiativeHelpers';
 
 interface UseInitiativeTrackerProps {
   encounter: IEncounter;
@@ -44,7 +52,6 @@ export function useInitiativeTracker({
     method: string = 'PATCH',
     body?: any
   ) => {
-    const { makeRequest } = require('@/components/combat/useInitiativeHelpers');
     return makeRequest({
       url: `/api/encounters/${encounter._id}/${endpoint}`,
       method,
@@ -108,7 +115,6 @@ export function useInitiativeTracker({
     }
 
     try {
-      const { buildExportData, createDownloadLink, generateExportFilename } = require('@/components/combat/useInitiativeHelpers');
       const exportData = buildExportData(encounter);
       const filename = generateExportFilename(encounter.name, encounter.combatState.currentRound);
       createDownloadLink(exportData, filename);
@@ -124,7 +130,6 @@ export function useInitiativeTracker({
     }
 
     try {
-      const { buildShareText, copyToClipboard } = require('@/components/combat/useInitiativeHelpers');
       const shareText = buildShareText(encounter);
 
       if (navigator.share) {

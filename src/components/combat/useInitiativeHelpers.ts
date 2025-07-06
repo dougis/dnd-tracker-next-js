@@ -113,9 +113,9 @@ export async function makeRequest({
   url: string;
   method?: string;
   body?: any;
-  setIsLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
-  onEncounterUpdate?: (encounter: any) => void;
+  setIsLoading: (_loading: boolean) => void;
+  setError: (_error: string | null) => void;
+  onEncounterUpdate?: (_encounter: any) => void;
 }) {
   try {
     setIsLoading(true);

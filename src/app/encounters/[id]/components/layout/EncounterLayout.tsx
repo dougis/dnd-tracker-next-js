@@ -34,7 +34,19 @@ export function EncounterLayout({ encounter, isEditing, onToggleEdit, onEncounte
         {/* Combat Mode - Initiative Tracker takes priority */}
         <InitiativeTracker
           encounter={encounter}
-          {...initiativeTrackerHandlers}
+          combatActions={{
+            onNextTurn: initiativeTrackerHandlers.handleNextTurn,
+            onPreviousTurn: initiativeTrackerHandlers.handlePreviousTurn,
+            onPauseCombat: initiativeTrackerHandlers.handlePauseCombat,
+            onResumeCombat: initiativeTrackerHandlers.handleResumeCombat,
+            onExportInitiative: initiativeTrackerHandlers.handleExportInitiative,
+            onShareInitiative: initiativeTrackerHandlers.handleShareInitiative,
+          }}
+          initiativeActions={{
+            onEditInitiative: initiativeTrackerHandlers.handleEditInitiative,
+            onDelayAction: initiativeTrackerHandlers.handleDelayAction,
+            onReadyAction: initiativeTrackerHandlers.handleReadyAction,
+          }}
         />
 
         {/* Secondary combat information */}

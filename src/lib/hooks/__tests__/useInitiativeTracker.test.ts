@@ -2,6 +2,10 @@ import { renderHook, act } from '@testing-library/react';
 import { useInitiativeTracker } from '../useInitiativeTracker';
 import { createTestEncounter, makeEncounterActive, PARTICIPANT_IDS } from '@/lib/models/encounter/__tests__/combat-test-helpers';
 
+/**
+ * @jest-environment jsdom
+ */
+
 // Set up DOM environment for testing
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -45,6 +49,13 @@ describe('useInitiativeTracker', () => {
   let mockOnEncounterUpdate: jest.Mock;
 
   beforeEach(() => {
+    // Ensure DOM is available
+    if (typeof document === 'undefined') {
+      const { JSDOM } = require('jsdom');
+      const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
+      global.document = dom.window.document;
+      global.window = dom.window as any;
+    }
     mockEncounter = createTestEncounter();
     makeEncounterActive(mockEncounter);
     mockEncounter.combatState.currentTurn = 1;

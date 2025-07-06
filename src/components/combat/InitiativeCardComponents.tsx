@@ -122,15 +122,15 @@ interface CardContainerProps {
 export function CardContainer({ isActive, isNext, children }: CardContainerProps) {
   const getCardClassName = () => {
     const baseClass = 'p-3 rounded-lg border transition-all';
-    
+
     if (isActive) {
       return `${baseClass} border-primary bg-primary/5 shadow-md`;
     }
-    
+
     if (isNext) {
       return `${baseClass} border-amber-200 bg-amber-50`;
     }
-    
+
     return `${baseClass} border-border bg-card`;
   };
 
