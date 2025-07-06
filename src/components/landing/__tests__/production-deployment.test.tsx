@@ -24,7 +24,7 @@ describe('Production Deployment Configuration', () => {
     it('should verify Dockerfile includes public folder in production stage', () => {
       const dockerfilePath = path.join(process.cwd(), 'Dockerfile');
       const dockerfileContent = fs.readFileSync(dockerfilePath, 'utf8');
-      
+
       // Check that public folder is copied in production stage
       expect(dockerfileContent).toMatch(/COPY.*--from=build.*\/app\/public.*\.\/public/);
     });
