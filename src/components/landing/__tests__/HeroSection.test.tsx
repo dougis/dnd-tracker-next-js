@@ -40,7 +40,7 @@ describe('HeroSection Component', () => {
 
     const getStartedLink = screen.getByText('Get Started Free');
     expect(getStartedLink).toBeInTheDocument();
-    expect(getStartedLink.closest('a')).toHaveAttribute('href', '/signup');
+    expect(getStartedLink.closest('a')).toHaveAttribute('href', '/auth/signup');
   });
 
   it('provides secondary call-to-action button for existing users', () => {
@@ -48,7 +48,7 @@ describe('HeroSection Component', () => {
 
     const signInLink = screen.getByText('Sign In');
     expect(signInLink).toBeInTheDocument();
-    expect(signInLink.closest('a')).toHaveAttribute('href', '/signin');
+    expect(signInLink.closest('a')).toHaveAttribute('href', '/auth/signin');
   });
 
   it('uses proper typography hierarchy for readability', () => {
