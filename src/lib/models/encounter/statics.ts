@@ -12,8 +12,6 @@ import { createDefaultEncounterSettings } from './utils';
  * Static methods for the Encounter model
  */
 
-/* eslint-disable no-unused-vars */
-
 
 export function findByOwnerId(
   this: any,
@@ -34,6 +32,7 @@ export function findByStatus(
 ): Promise<IEncounter[]> {
   return this.find({ status }).sort({ updatedAt: -1 });
 }
+
 
 // eslint-disable-next-line no-unused-vars
 export function findPublic(this: any): Promise<IEncounter[]> {
@@ -65,6 +64,7 @@ export function findByTargetLevel(
 ): Promise<IEncounter[]> {
   return this.find({ targetLevel: level }).sort({ updatedAt: -1 });
 }
+
 
 // eslint-disable-next-line no-unused-vars
 export function findActive(this: any): Promise<IEncounter[]> {

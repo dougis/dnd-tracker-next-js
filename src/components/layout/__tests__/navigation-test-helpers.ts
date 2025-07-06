@@ -13,15 +13,22 @@ import {
 } from './shared-assertions';
 
 /**
- * Standard navigation items used across components
+ * Standard navigation items used across authenticated components
  */
 export const NAVIGATION_ITEMS = [
-  { text: 'Dashboard', href: '/' },
+  { text: 'Dashboard', href: '/dashboard' },
   { text: 'Characters', href: '/characters' },
   { text: 'Parties', href: '/parties' },
   { text: 'Encounters', href: '/encounters' },
   { text: 'Combat', href: '/combat' },
   { text: 'Settings', href: '/settings' },
+];
+
+/**
+ * Navigation items for unauthenticated users
+ */
+export const UNAUTHENTICATED_NAVIGATION_ITEMS = [
+  { text: 'Home', href: '/' },
 ];
 
 /**
