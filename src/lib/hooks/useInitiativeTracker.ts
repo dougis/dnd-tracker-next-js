@@ -108,11 +108,34 @@ export function useInitiativeTracker({
     });
   }, [makeApiCall]);
 
-  const handleExportInitiative = useCallback(() => {
+  /**
+   * Validates that combat is active
+   */
+  const validateCombatActive = useCallback((): boolean => {
     if (!encounter.combatState.isActive) {
       setError('Combat must be active to export initiative data');
-      return;
+      return false;
     }
+    return true;
+  }, [encounter.combatState.isActive]);
+
+  /**
+   * Attempts to share using native share API with clipboard fallback
+   */
+  const attemptShare = useCallback(async (shareText: string, title: string): Promise<void> => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text: shareText });
+        return;
+      } catch {
+        // Fall through to clipboard fallback
+      }
+    }
+    await copyToClipboard(shareText);
+  }, []);
+
+  const handleExportInitiative = useCallback(() => {
+    if (!validateCombatActive()) return;
 
     try {
       const exportData = buildExportData(encounter);
@@ -121,34 +144,19 @@ export function useInitiativeTracker({
     } catch {
       setError('Failed to export initiative data');
     }
-  }, [encounter]);
+  }, [encounter, validateCombatActive]);
 
   const handleShareInitiative = useCallback(async () => {
-    if (!encounter.combatState.isActive) {
-      setError('Combat must be active to share initiative data');
-      return;
-    }
+    if (!validateCombatActive()) return;
 
     try {
       const shareText = buildShareText(encounter);
-
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: `Initiative Order - ${encounter.name}`,
-            text: shareText,
-          });
-        } catch {
-          // Fallback to clipboard
-          await copyToClipboard(shareText);
-        }
-      } else {
-        await copyToClipboard(shareText);
-      }
+      const title = `Initiative Order - ${encounter.name}`;
+      await attemptShare(shareText, title);
     } catch {
       setError('Failed to share initiative data');
     }
-  }, [encounter]);
+  }, [encounter, validateCombatActive, attemptShare]);
 
   return {
     isLoading,

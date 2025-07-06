@@ -76,22 +76,32 @@ interface HPDisplayProps {
   participant: IParticipantReference;
 }
 
+/**
+ * Gets the appropriate text color class based on HP percentage
+ */
+function getHPTextColor(hpPercentage: number): string {
+  if (hpPercentage <= 25) return 'text-destructive';
+  if (hpPercentage < 100) return 'text-amber-600';
+  return 'text-foreground';
+}
+
+/**
+ * Gets the appropriate progress bar color class based on HP percentage
+ */
+function getHPProgressColor(hpPercentage: number): string {
+  if (hpPercentage <= 25) return '[&>div]:bg-destructive';
+  if (hpPercentage < 100) return '[&>div]:bg-amber-500';
+  return '[&>div]:bg-green-500';
+}
+
 export function HPDisplay({ participant }: HPDisplayProps) {
   const hpPercentage = (participant.currentHitPoints / participant.maxHitPoints) * 100;
-  const isInjured = hpPercentage < 100;
-  const isCritical = hpPercentage <= 25;
+  const textColorClass = getHPTextColor(hpPercentage);
+  const progressColorClass = getHPProgressColor(hpPercentage);
 
   return (
     <div className="text-right">
-      <div
-        className={`text-lg font-bold ${
-          isCritical
-            ? 'text-destructive'
-            : isInjured
-            ? 'text-amber-600'
-            : 'text-foreground'
-        }`}
-      >
+      <div className={`text-lg font-bold ${textColorClass}`}>
         {participant.currentHitPoints}/{participant.maxHitPoints}
         {participant.temporaryHitPoints > 0 && (
           <span className="text-blue-600 ml-1">
@@ -101,13 +111,7 @@ export function HPDisplay({ participant }: HPDisplayProps) {
       </div>
       <Progress
         value={Math.max(hpPercentage, 0)}
-        className={`w-20 h-2 ${
-          isCritical
-            ? '[&>div]:bg-destructive'
-            : isInjured
-            ? '[&>div]:bg-amber-500'
-            : '[&>div]:bg-green-500'
-        }`}
+        className={`w-20 h-2 ${progressColorClass}`}
       />
     </div>
   );
@@ -119,20 +123,25 @@ interface CardContainerProps {
   children: React.ReactNode;
 }
 
+/**
+ * Gets card-specific styling based on state
+ */
+function getCardStateStyles(isActive: boolean, isNext: boolean): string {
+  if (isActive) {
+    return 'border-primary bg-primary/5 shadow-md';
+  }
+
+  if (isNext) {
+    return 'border-amber-200 bg-amber-50';
+  }
+
+  return 'border-border bg-card';
+}
+
 export function CardContainer({ isActive, isNext, children }: CardContainerProps) {
-  const getCardClassName = () => {
-    const baseClass = 'p-3 rounded-lg border transition-all';
+  const baseClass = 'p-3 rounded-lg border transition-all';
+  const stateStyles = getCardStateStyles(isActive, isNext);
+  const className = `${baseClass} ${stateStyles}`;
 
-    if (isActive) {
-      return `${baseClass} border-primary bg-primary/5 shadow-md`;
-    }
-
-    if (isNext) {
-      return `${baseClass} border-amber-200 bg-amber-50`;
-    }
-
-    return `${baseClass} border-border bg-card`;
-  };
-
-  return <div className={getCardClassName()}>{children}</div>;
+  return <div className={className}>{children}</div>;
 }

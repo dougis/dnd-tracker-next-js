@@ -1,7 +1,22 @@
 'use client';
 
-import { IEncounter } from '@/lib/models/encounter/interfaces';
+import { IEncounter, IInitiativeEntry, IParticipantReference } from '@/lib/models/encounter/interfaces';
 import { findParticipantById } from './participantUtils';
+
+/**
+ * Transforms an initiative entry for export
+ */
+function transformInitiativeEntry(entry: IInitiativeEntry, participant: IParticipantReference | undefined) {
+  return {
+    name: participant?.name || 'Unknown',
+    initiative: entry.initiative,
+    dexterity: entry.dexterity,
+    hasActed: entry.hasActed,
+    hitPoints: participant ? `${participant.currentHitPoints}/${participant.maxHitPoints}` : 'Unknown',
+    armorClass: participant?.armorClass || 'Unknown',
+    conditions: participant?.conditions || []
+  };
+}
 
 /**
  * Helper function to build export data
@@ -13,15 +28,7 @@ export function buildExportData(encounter: IEncounter) {
     turn: encounter.combatState.currentTurn,
     initiativeOrder: encounter.combatState.initiativeOrder.map(entry => {
       const participant = findParticipantById(encounter.participants, entry.participantId.toString());
-      return {
-        name: participant?.name || 'Unknown',
-        initiative: entry.initiative,
-        dexterity: entry.dexterity,
-        hasActed: entry.hasActed,
-        hitPoints: participant ? `${participant.currentHitPoints}/${participant.maxHitPoints}` : 'Unknown',
-        armorClass: participant?.armorClass || 'Unknown',
-        conditions: participant?.conditions || []
-      };
+      return transformInitiativeEntry(entry, participant);
     }),
     exportedAt: new Date().toISOString()
   };
@@ -35,19 +42,31 @@ export function generateExportFilename(encounterName: string, round: number): st
 }
 
 /**
- * Helper function to create download link
+ * Creates a blob and download URL for file download
  */
-export function createDownloadLink(data: object, filename: string): void {
+function createBlobUrl(data: object): string {
   const dataStr = JSON.stringify(data, null, 2);
   const dataBlob = new Blob([dataStr], { type: 'application/json' });
-  const url = URL.createObjectURL(dataBlob);
+  return URL.createObjectURL(dataBlob);
+}
 
+/**
+ * Creates and triggers a download link
+ */
+function triggerDownload(url: string, filename: string): void {
   const link = document.createElement('a');
   link.href = url;
   link.download = filename;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
 
+/**
+ * Helper function to create download link
+ */
+export function createDownloadLink(data: object, filename: string): void {
+  const url = createBlobUrl(data);
+  triggerDownload(url, filename);
   URL.revokeObjectURL(url);
 }
