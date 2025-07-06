@@ -138,7 +138,7 @@ export function setupDOMMocks() {
     if (element === 'a') return mockLink;
     return {};
   });
-  
+
   document.body.appendChild = jest.fn();
   document.body.removeChild = jest.fn();
   document.execCommand = jest.fn();
@@ -176,4 +176,40 @@ export function resetDOMMocks() {
   (URL.createObjectURL as jest.Mock).mockClear();
   (URL.revokeObjectURL as jest.Mock).mockClear();
   (global.Blob as jest.Mock).mockClear();
+}
+
+/**
+ * Creates successful fetch mock response for API tests
+ */
+export function createSuccessfulFetchMock(encounter: any) {
+  return {
+    ok: true,
+    json: () => Promise.resolve({ success: true, encounter })
+  };
+}
+
+/**
+ * Sets up global fetch mock with successful response
+ */
+export function setupSuccessfulFetchMock(encounter: any) {
+  (global.fetch as jest.Mock).mockResolvedValueOnce(createSuccessfulFetchMock(encounter));
+}
+
+/**
+ * Creates complete encounter with participants for hook testing
+ */
+export function createEncounterForHookTesting(): IEncounter {
+  const encounter = createActiveEncounter(2, 1);
+  encounter.participants = createTestParticipants();
+  return encounter;
+}
+
+/**
+ * Creates mock handlers props for useInitiativeTracker tests
+ */
+export function createInitiativeTrackerProps(encounter: IEncounter, onUpdate?: jest.Mock) {
+  return {
+    encounter,
+    onEncounterUpdate: onUpdate || jest.fn()
+  };
 }

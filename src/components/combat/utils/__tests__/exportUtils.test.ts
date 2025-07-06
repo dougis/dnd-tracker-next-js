@@ -2,12 +2,12 @@
  * @jest-environment jsdom
  */
 import { buildExportData, generateExportFilename, createDownloadLink } from '../exportUtils';
-import { 
-  createEncounterWithParticipants, 
+import {
+  createEncounterWithParticipants,
   createActiveEncounter,
   createParticipantWithConditions,
   setupDOMMocks,
-  resetDOMMocks 
+  resetDOMMocks
 } from './__test-helpers__/combatTestHelpers';
 
 describe('exportUtils', () => {
@@ -25,7 +25,7 @@ describe('exportUtils', () => {
     it('should build export data with correct format', () => {
       const encounter = createEncounterWithParticipants(5, 1);
       encounter.name = 'Test Encounter';
-      
+
       // Use the participant with conditions
       encounter.participants = [createParticipantWithConditions(['Blessed', 'Haste'])];
 
@@ -79,19 +79,19 @@ describe('exportUtils', () => {
   describe('generateExportFilename', () => {
     it('should generate valid filename with encounter name and round', () => {
       const result = generateExportFilename('My Test Encounter!', 3);
-      
+
       expect(result).toBe('my_test_encounter__initiative_round_3.json');
     });
 
     it('should handle special characters', () => {
       const result = generateExportFilename('Encounter #1 - Boss Fight!', 10);
-      
+
       expect(result).toBe('encounter__1___boss_fight__initiative_round_10.json');
     });
 
     it('should handle empty encounter name', () => {
       const result = generateExportFilename('', 1);
-      
+
       expect(result).toBe('_initiative_round_1.json');
     });
   });
@@ -124,7 +124,7 @@ describe('exportUtils', () => {
         number: 42,
         boolean: true
       };
-      
+
       createDownloadLink(complexData, 'complex.json');
 
       expect(global.Blob).toHaveBeenCalledWith(

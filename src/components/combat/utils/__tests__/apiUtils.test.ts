@@ -162,7 +162,8 @@ describe('apiUtils', () => {
       const mockResponse = createMockResponse(false, { id: 'test-encounter' });
       mockResponse.json.mockResolvedValue({
         success: false,
-        encounter: { id: 'test-encounter' }
+        encounter: { id: 'test-encounter' },
+        message: 'Failed to update encounter'
       });
       (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
@@ -171,9 +172,10 @@ describe('apiUtils', () => {
         ...mockCallbacks
       };
 
-      await makeRequest(config);
+      await expect(makeRequest(config)).rejects.toThrow('Failed to update encounter');
 
       expect(mockCallbacks.onEncounterUpdate).not.toHaveBeenCalled();
+      expect(mockCallbacks.setError).toHaveBeenCalledWith('Failed to update encounter');
     });
 
     it('should work without onEncounterUpdate callback', async () => {

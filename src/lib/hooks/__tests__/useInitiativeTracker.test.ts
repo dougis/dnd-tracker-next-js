@@ -2,117 +2,66 @@
  * @jest-environment jsdom
  */
 import { useInitiativeTracker } from '../useInitiativeTracker';
-import { createTestEncounter, makeEncounterActive, PARTICIPANT_IDS } from '@/lib/models/encounter/__tests__/combat-test-helpers';
-import { act } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
+import {
+  createEncounterForHookTesting,
+  setupDOMMocks,
+  resetDOMMocks,
+  setupSuccessfulFetchMock,
+  createInitiativeTrackerProps
+} from '@/components/combat/utils/__tests__/__test-helpers__/combatTestHelpers';
 
 // Mock fetch
 global.fetch = jest.fn();
-
-// Mock clipboard API
-Object.assign(navigator, {
-  clipboard: {
-    writeText: jest.fn(),
-  },
-});
-
-// Mock document methods
-document.createElement = jest.fn().mockReturnValue({
-  href: '',
-  download: '',
-  click: jest.fn(),
-}) as any;
-document.body.appendChild = jest.fn();
-document.body.removeChild = jest.fn();
-
-// Mock URL.createObjectURL
-global.URL.createObjectURL = jest.fn().mockReturnValue('mock-url');
-global.URL.revokeObjectURL = jest.fn();
 
 describe('useInitiativeTracker', () => {
   let mockEncounter: any;
   let mockOnEncounterUpdate: jest.Mock;
 
   beforeEach(() => {
-    mockEncounter = createTestEncounter();
-    makeEncounterActive(mockEncounter);
-    mockEncounter.combatState.currentTurn = 1;
-
-    // Add participants to match the initiative order
-    mockEncounter.participants = [
-      {
-        characterId: PARTICIPANT_IDS.FIRST,
-        name: 'Test Character 1',
-        type: 'Player',
-        maxHitPoints: 20,
-        currentHitPoints: 20,
-        temporaryHitPoints: 0,
-        armorClass: 15,
-        initiative: 20,
-        isPlayer: true,
-        isVisible: true,
-        notes: '',
-        conditions: []
-      },
-      {
-        characterId: PARTICIPANT_IDS.SECOND,
-        name: 'Test Character 2',
-        type: 'NPC',
-        maxHitPoints: 20,
-        currentHitPoints: 15,
-        temporaryHitPoints: 0,
-        armorClass: 14,
-        initiative: 15,
-        isPlayer: false,
-        isVisible: true,
-        notes: '',
-        conditions: []
-      }
-    ];
-
+    mockEncounter = createEncounterForHookTesting();
     mockOnEncounterUpdate = jest.fn();
+    setupDOMMocks();
+
+    // Setup DOM container for testing
+    document.body.innerHTML = '<div id="test-container"></div>';
 
     // Reset fetch mock
     (fetch as jest.Mock).mockClear();
-    (navigator.clipboard.writeText as jest.Mock).mockClear();
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    resetDOMMocks();
+    document.body.innerHTML = '';
   });
 
   it('initializes with correct default state', () => {
-    const handlers = useInitiativeTracker({
-      encounter: mockEncounter,
-      onEncounterUpdate: mockOnEncounterUpdate
-    });
+    const { result } = renderHook(() =>
+      useInitiativeTracker(createInitiativeTrackerProps(mockEncounter, mockOnEncounterUpdate))
+    );
 
-    expect(handlers.isLoading).toBe(false);
-    expect(handlers.error).toBe(null);
-    expect(typeof handlers.handleNextTurn).toBe('function');
-    expect(typeof handlers.handlePreviousTurn).toBe('function');
-    expect(typeof handlers.handlePauseCombat).toBe('function');
-    expect(typeof handlers.handleResumeCombat).toBe('function');
-    expect(typeof handlers.handleEditInitiative).toBe('function');
-    expect(typeof handlers.handleDelayAction).toBe('function');
-    expect(typeof handlers.handleReadyAction).toBe('function');
-    expect(typeof handlers.handleExportInitiative).toBe('function');
-    expect(typeof handlers.handleShareInitiative).toBe('function');
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.error).toBe(null);
+    expect(typeof result.current.handleNextTurn).toBe('function');
+    expect(typeof result.current.handlePreviousTurn).toBe('function');
+    expect(typeof result.current.handlePauseCombat).toBe('function');
+    expect(typeof result.current.handleResumeCombat).toBe('function');
+    expect(typeof result.current.handleEditInitiative).toBe('function');
+    expect(typeof result.current.handleDelayAction).toBe('function');
+    expect(typeof result.current.handleReadyAction).toBe('function');
+    expect(typeof result.current.handleExportInitiative).toBe('function');
+    expect(typeof result.current.handleShareInitiative).toBe('function');
   });
 
   describe('API call handlers', () => {
     it('handleNextTurn makes API call to next-turn endpoint', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ success: true, encounter: mockEncounter })
-      });
-
-      const handlers = useInitiativeTracker({
-        encounter: mockEncounter,
-        onEncounterUpdate: mockOnEncounterUpdate
-      });
+      setupSuccessfulFetchMock(mockEncounter);
+      const { result } = renderHook(() =>
+        useInitiativeTracker(createInitiativeTrackerProps(mockEncounter, mockOnEncounterUpdate))
+      );
 
       await act(async () => {
-        await handlers.handleNextTurn();
+        await result.current.handleNextTurn();
       });
 
       expect(fetch).toHaveBeenCalledWith(
@@ -125,18 +74,13 @@ describe('useInitiativeTracker', () => {
     });
 
     it('handlePreviousTurn makes API call to previous-turn endpoint', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ success: true, encounter: mockEncounter })
-      });
-
-      const handlers = useInitiativeTracker({
-        encounter: mockEncounter,
-        onEncounterUpdate: mockOnEncounterUpdate
-      });
+      setupSuccessfulFetchMock(mockEncounter);
+      const { result } = renderHook(() =>
+        useInitiativeTracker(createInitiativeTrackerProps(mockEncounter, mockOnEncounterUpdate))
+      );
 
       await act(async () => {
-        await handlers.handlePreviousTurn();
+        await result.current.handlePreviousTurn();
       });
 
       expect(fetch).toHaveBeenCalledWith(
@@ -148,21 +92,16 @@ describe('useInitiativeTracker', () => {
     });
 
     it('handleEditInitiative makes API call with participant ID and new initiative', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ success: true, encounter: mockEncounter })
-      });
-
-      const handlers = useInitiativeTracker({
-        encounter: mockEncounter,
-        onEncounterUpdate: mockOnEncounterUpdate
-      });
+      setupSuccessfulFetchMock(mockEncounter);
+      const { result } = renderHook(() =>
+        useInitiativeTracker(createInitiativeTrackerProps(mockEncounter, mockOnEncounterUpdate))
+      );
 
       const participantId = 'participant-123';
       const newInitiative = 15;
 
       await act(async () => {
-        await handlers.handleEditInitiative(participantId, newInitiative);
+        await result.current.handleEditInitiative(participantId, newInitiative);
       });
 
       expect(fetch).toHaveBeenCalledWith(
@@ -180,13 +119,12 @@ describe('useInitiativeTracker', () => {
 
   describe('export and share functionality', () => {
     it('handleExportInitiative creates download link when combat is active', () => {
-      const handlers = useInitiativeTracker({
-        encounter: mockEncounter,
-        onEncounterUpdate: mockOnEncounterUpdate
-      });
+      const { result } = renderHook(() =>
+        useInitiativeTracker(createInitiativeTrackerProps(mockEncounter, mockOnEncounterUpdate))
+      );
 
       act(() => {
-        handlers.handleExportInitiative();
+        result.current.handleExportInitiative();
       });
 
       expect(URL.createObjectURL).toHaveBeenCalled();
@@ -195,27 +133,24 @@ describe('useInitiativeTracker', () => {
 
     it('handleExportInitiative sets error when combat is not active', () => {
       mockEncounter.combatState.isActive = false;
-
-      const handlers = useInitiativeTracker({
-        encounter: mockEncounter,
-        onEncounterUpdate: mockOnEncounterUpdate
-      });
+      const { result } = renderHook(() =>
+        useInitiativeTracker(createInitiativeTrackerProps(mockEncounter, mockOnEncounterUpdate))
+      );
 
       act(() => {
-        handlers.handleExportInitiative();
+        result.current.handleExportInitiative();
       });
 
-      expect(handlers.error).toBe('Combat must be active to export initiative data');
+      expect(result.current.error).toBe('Combat must be active to export initiative data');
     });
 
     it('handleShareInitiative copies data to clipboard when navigator.share is not available', () => {
-      const handlers = useInitiativeTracker({
-        encounter: mockEncounter,
-        onEncounterUpdate: mockOnEncounterUpdate
-      });
+      const { result } = renderHook(() =>
+        useInitiativeTracker(createInitiativeTrackerProps(mockEncounter, mockOnEncounterUpdate))
+      );
 
       act(() => {
-        handlers.handleShareInitiative();
+        result.current.handleShareInitiative();
       });
 
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
@@ -225,17 +160,15 @@ describe('useInitiativeTracker', () => {
 
     it('handleShareInitiative sets error when combat is not active', () => {
       mockEncounter.combatState.isActive = false;
-
-      const handlers = useInitiativeTracker({
-        encounter: mockEncounter,
-        onEncounterUpdate: mockOnEncounterUpdate
-      });
+      const { result } = renderHook(() =>
+        useInitiativeTracker(createInitiativeTrackerProps(mockEncounter, mockOnEncounterUpdate))
+      );
 
       act(() => {
-        handlers.handleShareInitiative();
+        result.current.handleShareInitiative();
       });
 
-      expect(handlers.error).toBe('Combat must be active to share initiative data');
+      expect(result.current.error).toBe('Combat must be active to share initiative data');
     });
   });
 });

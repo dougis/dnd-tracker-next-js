@@ -2,11 +2,11 @@
  * @jest-environment jsdom
  */
 import { buildShareText, copyToClipboard } from '../shareUtils';
-import { 
-  createEncounterWithParticipants, 
+import {
+  createEncounterWithParticipants,
   createActiveEncounter,
   setupDOMMocks,
-  resetDOMMocks 
+  resetDOMMocks
 } from './__test-helpers__/combatTestHelpers';
 
 describe('shareUtils', () => {
@@ -65,7 +65,7 @@ describe('shareUtils', () => {
     it('should use fallback when navigator.clipboard is not available', async () => {
       const testText = 'Test clipboard text';
       const originalClipboard = navigator.clipboard;
-      
+
       // Temporarily remove clipboard support
       Object.defineProperty(navigator, 'clipboard', {
         value: undefined,
