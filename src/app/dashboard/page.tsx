@@ -15,13 +15,13 @@ export default function DashboardPage() {
           <div className="text-muted-foreground">Loading...</div>
         </div>
       )}
-      
+
       {status === 'unauthenticated' && (
         <div className="flex items-center justify-center h-64">
           <div className="text-muted-foreground">Please sign in to view your dashboard.</div>
         </div>
       )}
-      
+
       {status === 'authenticated' && session?.user && (
         <main className="container mx-auto px-4 py-8">
           <header className="mb-8">
@@ -30,7 +30,7 @@ export default function DashboardPage() {
               Welcome back, {session.user.name || session.user.email}!
             </p>
           </header>
-          
+
           <Dashboard />
         </main>
       )}

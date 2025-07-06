@@ -297,13 +297,18 @@ describe('AppLayout', () => {
       expect(screen.getByTestId('theme-toggle')).toBeInTheDocument();
     });
 
-    test('header contains user avatar button', () => {
+    test('header contains auth button based on status', () => {
+      const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
+      mockUseSession.mockReturnValue({
+        data: null,
+        status: 'unauthenticated',
+        update: jest.fn(),
+      });
+
       render(<AppLayout>{mockChildren}</AppLayout>);
 
-      const userButton = screen.getByRole('button', { name: '' }); // SVG button
-      expect(userButton).toHaveClass(
-        'rounded-full bg-primary p-2 text-primary-foreground'
-      );
+      const signInButton = screen.getByRole('button', { name: 'Sign In' });
+      expect(signInButton).toBeInTheDocument();
     });
   });
 

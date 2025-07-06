@@ -7,7 +7,7 @@ import DashboardPage from '../page';
 jest.mock('next-auth/react');
 const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
 
-// Mock child components  
+// Mock child components
 jest.mock('@/components/dashboard', () => ({
   Dashboard: () => <div data-testid="dashboard-component">Dashboard Component</div>,
 }));
@@ -42,20 +42,20 @@ describe('Dashboard Page', () => {
 
     test('renders dashboard page with layout', () => {
       render(<DashboardPage />);
-      
+
       expect(screen.getByTestId('app-layout')).toBeInTheDocument();
       expect(screen.getByTestId('dashboard-component')).toBeInTheDocument();
     });
 
     test('renders dashboard title', () => {
       render(<DashboardPage />);
-      
+
       expect(screen.getByRole('heading', { name: 'Dashboard', level: 1 })).toBeInTheDocument();
     });
 
     test('renders welcome message with user name', () => {
       render(<DashboardPage />);
-      
+
       expect(screen.getByText(/Welcome back, Test User/i)).toBeInTheDocument();
     });
   });
@@ -71,7 +71,7 @@ describe('Dashboard Page', () => {
 
     test('renders loading state', () => {
       render(<DashboardPage />);
-      
+
       expect(screen.getByTestId('app-layout')).toBeInTheDocument();
       expect(screen.getByText('Loading...')).toBeInTheDocument();
     });
@@ -88,7 +88,7 @@ describe('Dashboard Page', () => {
 
     test('renders unauthenticated message', () => {
       render(<DashboardPage />);
-      
+
       expect(screen.getByTestId('app-layout')).toBeInTheDocument();
       expect(screen.getByText('Please sign in to view your dashboard.')).toBeInTheDocument();
     });
@@ -113,7 +113,7 @@ describe('Dashboard Page', () => {
 
     test('has proper heading structure', () => {
       render(<DashboardPage />);
-      
+
       const heading = screen.getByRole('heading', { level: 1 });
       expect(heading).toBeInTheDocument();
       expect(heading).toHaveTextContent('Dashboard');
@@ -121,7 +121,7 @@ describe('Dashboard Page', () => {
 
     test('contains main content area', () => {
       render(<DashboardPage />);
-      
+
       const main = screen.getByRole('main', { hidden: true });
       expect(main).toBeInTheDocument();
     });
