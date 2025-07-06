@@ -28,19 +28,12 @@ export function parseAndValidateNumber(
   const parsed = typeof value === 'string' ? parseInt(value, 10) : value;
 
   if (isNaN(parsed)) {
-    return {
-      value: min,
-      isValid: false,
-      error: HP_VALIDATION_MESSAGES.invalidNumber,
-    };
+    return { value: min, isValid: false, error: HP_VALIDATION_MESSAGES.invalidNumber };
   }
 
   if (parsed < min) {
-    return {
-      value: min,
-      isValid: false,
-      error: min === 0 ? HP_VALIDATION_MESSAGES.currentHPMin : HP_VALIDATION_MESSAGES.maxHPMin,
-    };
+    const errorMsg = min === 0 ? HP_VALIDATION_MESSAGES.currentHPMin : HP_VALIDATION_MESSAGES.maxHPMin;
+    return { value: min, isValid: false, error: errorMsg };
   }
 
   return { value: parsed, isValid: true };
@@ -68,22 +61,18 @@ export function validateHPValues(
   return errors;
 }
 
+function validateActionInput(input: string, actionType: 'damage' | 'healing') {
+  const { value, isValid, error } = parseAndValidateNumber(input, 0);
+  const fallbackError = actionType === 'damage' ? HP_VALIDATION_MESSAGES.damageMin : HP_VALIDATION_MESSAGES.healingMin;
+  return { isValid, error: isValid ? undefined : (error || fallbackError), parsed: value };
+}
+
 export function validateDamageInput(damage: string): { isValid: boolean; error?: string; parsed: number } {
-  const { value, isValid, error } = parseAndValidateNumber(damage, 0);
-  return {
-    isValid,
-    error: isValid ? undefined : (error || HP_VALIDATION_MESSAGES.damageMin),
-    parsed: value,
-  };
+  return validateActionInput(damage, 'damage');
 }
 
 export function validateHealingInput(healing: string): { isValid: boolean; error?: string; parsed: number } {
-  const { value, isValid, error } = parseAndValidateNumber(healing, 0);
-  return {
-    isValid,
-    error: isValid ? undefined : (error || HP_VALIDATION_MESSAGES.healingMin),
-    parsed: value,
-  };
+  return validateActionInput(healing, 'healing');
 }
 
 export function hasValidationErrors(errors: HPValidationError): boolean {

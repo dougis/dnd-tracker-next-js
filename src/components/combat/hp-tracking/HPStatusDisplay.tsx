@@ -9,6 +9,13 @@ interface HPStatusDisplayProps {
   hpStatus: HPStatus;
 }
 
+const HP_STATUS_CONFIG = {
+  unconscious: { icon: '💀', text: 'Unconscious', className: 'text-red-600 font-medium' },
+  critical: { icon: '⚠️', text: 'Critical HP Level', className: 'text-orange-600 font-medium' },
+  injured: { icon: '🩹', text: 'Injured', className: 'text-yellow-600 font-medium' },
+  healthy: { icon: '💚', text: 'Healthy', className: 'text-green-600 font-medium' },
+} as const;
+
 export function HPStatusDisplay({
   currentHP,
   maxHP,
@@ -16,26 +23,18 @@ export function HPStatusDisplay({
   effectiveHP,
   hpStatus,
 }: HPStatusDisplayProps) {
-  const getHPStatusDisplay = () => {
-    switch (hpStatus) {
-      case 'unconscious':
-        return <span className="text-red-600 font-medium">💀 Unconscious</span>;
-      case 'critical':
-        return <span className="text-orange-600 font-medium">⚠️ Critical HP Level</span>;
-      case 'injured':
-        return <span className="text-yellow-600 font-medium">🩹 Injured</span>;
-      case 'healthy':
-        return <span className="text-green-600 font-medium">💚 Healthy</span>;
-      default:
-        return null;
-    }
-  };
+  const statusConfig = HP_STATUS_CONFIG[hpStatus];
+  const statusDisplay = statusConfig ? (
+    <span className={statusConfig.className}>
+      {statusConfig.icon} {statusConfig.text}
+    </span>
+  ) : null;
 
   return (
     <div className="p-4 bg-muted rounded-lg">
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-medium">Current Status</span>
-        {getHPStatusDisplay()}
+        {statusDisplay}
       </div>
       <div className="text-lg font-mono">
         Status: {currentHP}/{maxHP} {tempHP > 0 && `(+${tempHP})`} = {effectiveHP} effective HP

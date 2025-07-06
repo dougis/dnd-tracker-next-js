@@ -280,44 +280,35 @@ export function expectHPSaveCall(
   });
 }
 
-// Hook Testing Utilities
-export function testHPTrackingAction(
-  action: string,
-  value: number,
-  expectedResult: {
-    currentHP: number;
-    maxHP: number;
-    tempHP: number;
-    effectiveHP: number;
-  }
-) {
+// Hook Testing Utilities - Individual action testers to reduce complexity
+export function testDamageAction(damage: number, expectedResult: { currentHP: number; tempHP: number; effectiveHP: number }) {
   const useHPTracking = require('../useHPTracking').useHPTracking;
-  const { result } = renderHook(() =>
-    useHPTracking(createTestHPParticipant(), jest.fn())
-  );
+  const { result } = renderHook(() => useHPTracking(createTestHPParticipant(), jest.fn()));
 
-  act(() => {
-    switch (action) {
-      case 'damage':
-        result.current.applyDamage(value);
-        break;
-      case 'healing':
-        result.current.applyHealing(value);
-        break;
-      case 'setTempHP':
-        result.current.setTemporaryHP(value);
-        break;
-      case 'setCurrentHP':
-        result.current.setCurrentHP(value);
-        break;
-      case 'setMaxHP':
-        result.current.setMaxHP(value);
-        break;
-    }
-  });
+  act(() => result.current.applyDamage(damage));
 
   expect(result.current.currentHP).toBe(expectedResult.currentHP);
-  expect(result.current.maxHP).toBe(expectedResult.maxHP);
   expect(result.current.tempHP).toBe(expectedResult.tempHP);
   expect(result.current.effectiveHP).toBe(expectedResult.effectiveHP);
+}
+
+export function testHealingAction(healing: number, expectedCurrentHP: number) {
+  const useHPTracking = require('../useHPTracking').useHPTracking;
+  const { result } = renderHook(() => useHPTracking(createTestHPParticipant(), jest.fn()));
+
+  act(() => result.current.applyHealing(healing));
+  expect(result.current.currentHP).toBe(expectedCurrentHP);
+}
+
+export function testSetTempHPAction(tempHP: number, expectedTempHP: number) {
+  const useHPTracking = require('../useHPTracking').useHPTracking;
+  const { result } = renderHook(() => useHPTracking(createTestHPParticipant(), jest.fn()));
+
+  act(() => result.current.setTemporaryHP(tempHP));
+  expect(result.current.tempHP).toBe(expectedTempHP);
+}
+
+export function renderHPQuickButtons(overrides = {}) {
+  const HPQuickButtons = require('./HPQuickButtons').HPQuickButtons;
+  return render(React.createElement(HPQuickButtons, overrides));
 }

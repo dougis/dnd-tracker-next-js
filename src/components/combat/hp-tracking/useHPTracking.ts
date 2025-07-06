@@ -4,6 +4,14 @@ import { HPValues } from './hp-validation-utils';
 
 export type HPStatus = 'healthy' | 'injured' | 'critical' | 'unconscious';
 
+function calculateHPStatus(currentHP: number, maxHP: number): HPStatus {
+  if (currentHP <= 0) return 'unconscious';
+  const percentage = (currentHP / maxHP) * 100;
+  if (percentage <= 25) return 'critical';
+  if (percentage < 100) return 'injured';
+  return 'healthy';
+}
+
 export interface UseHPTrackingReturn {
   currentHP: number;
   maxHP: number;
@@ -37,13 +45,7 @@ export function useHPTracking(
   const effectiveHP = currentHP + tempHP;
 
   // Calculate HP status
-  const hpStatus: HPStatus = (() => {
-    if (currentHP <= 0) return 'unconscious';
-    const percentage = (currentHP / maxHP) * 100;
-    if (percentage <= 25) return 'critical';
-    if (percentage < 100) return 'injured';
-    return 'healthy';
-  })();
+  const hpStatus: HPStatus = calculateHPStatus(currentHP, maxHP);
 
   // Check if character is alive
   const isAlive = currentHP > 0;

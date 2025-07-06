@@ -30,22 +30,15 @@ export function getButtonSpacing(compact: boolean = false): string {
   return compact ? HP_BUTTON_SPACING.tight : HP_BUTTON_SPACING.normal;
 }
 
+const A11Y_CONFIGS = {
+  edit: { 'aria-label': 'Edit HP values', 'data-testid': 'edit-hp-button' },
+} as const;
+
 export function getHPButtonA11yProps(action: 'damage' | 'healing' | 'edit', amount?: number) {
-  if (action === 'edit') {
-    return {
-      'aria-label': 'Edit HP values',
-      'data-testid': 'edit-hp-button',
-    };
-  }
+  if (action === 'edit') return A11Y_CONFIGS.edit;
 
-  const baseProps = {
-    'aria-label': amount
-      ? `Apply ${amount} ${action}`
-      : `Apply ${action}`,
-    'data-testid': amount
-      ? `${action}-${amount}-button`
-      : `apply-${action}-button`,
-  };
+  const label = amount ? `Apply ${amount} ${action}` : `Apply ${action}`;
+  const testId = amount ? `${action}-${amount}-button` : `apply-${action}-button`;
 
-  return baseProps;
+  return { 'aria-label': label, 'data-testid': testId };
 }
