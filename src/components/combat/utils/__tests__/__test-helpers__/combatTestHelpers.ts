@@ -213,3 +213,127 @@ export function createInitiativeTrackerProps(encounter: IEncounter, onUpdate?: j
     onEncounterUpdate: onUpdate || jest.fn()
   };
 }
+
+/**
+ * Universal test runner for eliminating repetitive test patterns
+ */
+export function createTestCase<T = any>(
+  description: string,
+  setup: () => T | Promise<T>,
+  assertions: (result: T) => void | Promise<void>,
+  isAsync: boolean = false
+) {
+  if (isAsync) {
+    return it(description, async () => {
+      const result = await setup();
+      await assertions(result);
+    });
+  } else {
+    return it(description, () => {
+      const result = setup();
+      assertions(result);
+    });
+  }
+}
+
+/**
+ * Complete test execution function for API requests
+ */
+export async function executeApiTest(
+  makeRequestFn: any,
+  config: {
+    url: string;
+    method?: string;
+    body?: any;
+    expectedCalls?: any[];
+    expectedResult?: any;
+    shouldSucceed?: boolean;
+    encounter?: any;
+    callbacks: ReturnType<typeof createMockCallbacks>;
+  }
+) {
+  const { url, method = 'PATCH', body, expectedCalls = [], expectedResult, shouldSucceed = true, encounter, callbacks } = config;
+  
+  if (shouldSucceed) {
+    const mockResponse = createMockResponse(true, encounter || { id: 'test-encounter' });
+    (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
+  } else {
+    const mockResponse = createMockErrorResponse('Test error');
+    (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
+  }
+
+  const requestConfig = {
+    url,
+    method,
+    body,
+    ...callbacks
+  };
+  
+  if (shouldSucceed) {
+    const result = await makeRequestFn(requestConfig);
+    
+    expect(callbacks.setIsLoading).toHaveBeenCalledWith(true);
+    expect(callbacks.setError).toHaveBeenCalledWith(null);
+    expect(callbacks.setIsLoading).toHaveBeenCalledWith(false);
+    
+    if (expectedResult) {
+      expect(result).toEqual(expectedResult);
+    }
+    
+    expectedCalls.forEach(call => {
+      expect(fetch).toHaveBeenCalledWith(call.url, call.options);
+    });
+    
+    return result;
+  } else {
+    await expect(makeRequestFn(requestConfig)).rejects.toThrow();
+    return null;
+  }
+}
+
+/**
+ * Data-driven test case generator
+ */
+export function generateApiTestCases() {
+  return [
+    {
+      name: 'should make successful API request',
+      config: {
+        url: '/test/url',
+        method: 'POST',
+        body: { test: 'data' },
+        expectedCalls: [{
+          url: '/test/url',
+          options: {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ test: 'data' })
+          }
+        }],
+        expectedResult: { success: true, encounter: { id: 'test-encounter' } },
+        encounter: { id: 'test-encounter' }
+      }
+    },
+    {
+      name: 'should use default method PATCH when not specified',
+      config: {
+        url: '/test/url',
+        expectedCalls: [{
+          url: '/test/url',
+          options: {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: undefined
+          }
+        }]
+      }
+    },
+    {
+      name: 'should handle API errors',
+      config: {
+        url: '/test/url',
+        shouldSucceed: false
+      }
+    }
+  ];
+}
