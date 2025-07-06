@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
 import { useSession } from 'next-auth/react';
 import DashboardPage from '../page';
+import { createDashboardPageTests, applyTestSuite } from '@/components/layout/__tests__/dashboard-test-helpers';
 
 // Mock next-auth/react
 jest.mock('next-auth/react');
@@ -19,111 +19,28 @@ jest.mock('@/components/layout/AppLayout', () => ({
 }));
 
 describe('Dashboard Page', () => {
+  const testSuites = createDashboardPageTests(DashboardPage, mockUseSession);
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('Authenticated User', () => {
-    beforeEach(() => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            email: 'test@example.com',
-            name: 'Test User',
-            subscriptionTier: 'free',
-          },
-          expires: '2024-01-01',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
-    });
-
-    test('renders dashboard page with layout', () => {
-      render(<DashboardPage />);
-
-      expect(screen.getByTestId('app-layout')).toBeInTheDocument();
-      expect(screen.getByTestId('dashboard-component')).toBeInTheDocument();
-    });
-
-    test('renders dashboard title', () => {
-      render(<DashboardPage />);
-
-      expect(screen.getByRole('heading', { name: 'Dashboard', level: 1 })).toBeInTheDocument();
-    });
-
-    test('renders welcome message with user name', () => {
-      render(<DashboardPage />);
-
-      expect(screen.getByText(/Welcome back, Test User/i)).toBeInTheDocument();
-    });
+    applyTestSuite(testSuites.authenticated);
   });
 
   describe('Loading State', () => {
-    beforeEach(() => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'loading',
-        update: jest.fn(),
-      });
-    });
-
-    test('renders loading state', () => {
-      render(<DashboardPage />);
-
-      expect(screen.getByTestId('app-layout')).toBeInTheDocument();
-      expect(screen.getByText('Loading...')).toBeInTheDocument();
-    });
+    applyTestSuite(testSuites.loading);
   });
 
   describe('Unauthenticated User', () => {
-    beforeEach(() => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-        update: jest.fn(),
-      });
-    });
-
-    test('renders unauthenticated message', () => {
-      render(<DashboardPage />);
-
-      expect(screen.getByTestId('app-layout')).toBeInTheDocument();
-      expect(screen.getByText('Please sign in to view your dashboard.')).toBeInTheDocument();
-    });
+    applyTestSuite(testSuites.unauthenticated);
   });
 
   describe('Accessibility', () => {
-    beforeEach(() => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            email: 'test@example.com',
-            name: 'Test User',
-            subscriptionTier: 'free',
-          },
-          expires: '2024-01-01',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
-    });
-
-    test('has proper heading structure', () => {
-      render(<DashboardPage />);
-
-      const heading = screen.getByRole('heading', { level: 1 });
-      expect(heading).toBeInTheDocument();
-      expect(heading).toHaveTextContent('Dashboard');
-    });
-
-    test('contains main content area', () => {
-      render(<DashboardPage />);
-
-      const main = screen.getByRole('main', { hidden: true });
-      expect(main).toBeInTheDocument();
+    applyTestSuite({
+      'has proper heading structure': testSuites.authenticated['has proper heading structure'],
+      'contains main content area': testSuites.authenticated['contains main content area'],
     });
   });
 });

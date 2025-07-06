@@ -58,13 +58,11 @@ describe('AppLayout', () => {
   describe('Component Rendering', () => {
     test('renders without errors', () => {
       render(<AppLayout>{mockChildren}</AppLayout>);
-
       expect(screen.getByTestId('main-content')).toBeInTheDocument();
     });
 
     test('renders all core layout components', () => {
       render(<AppLayout>{mockChildren}</AppLayout>);
-
       expect(screen.getByTestId('sidebar')).toBeInTheDocument();
       expect(screen.getByTestId('mobile-menu')).toBeInTheDocument();
       expect(screen.getByTestId('breadcrumbs')).toBeInTheDocument();
@@ -73,7 +71,6 @@ describe('AppLayout', () => {
 
     test('renders children content in main element', () => {
       render(<AppLayout>{mockChildren}</AppLayout>);
-
       const mainElement = screen.getByRole('main');
       expect(mainElement).toBeInTheDocument();
       expect(mainElement).toContainElement(screen.getByTestId('main-content'));
@@ -81,7 +78,6 @@ describe('AppLayout', () => {
 
     test('applies correct CSS classes for layout structure', () => {
       const { container } = render(<AppLayout>{mockChildren}</AppLayout>);
-
       const rootDiv = container.firstChild as HTMLElement;
       expect(rootDiv).toHaveClass('min-h-screen');
       expect(rootDiv).toHaveClass('bg-background');
@@ -411,7 +407,6 @@ describe('AppLayout', () => {
       });
 
       render(<AppLayout>{mockChildren}</AppLayout>);
-
       expect(screen.getByRole('button', { name: 'Sign In' })).toBeInTheDocument();
     });
 
@@ -430,7 +425,6 @@ describe('AppLayout', () => {
       });
 
       render(<AppLayout>{mockChildren}</AppLayout>);
-
       expect(screen.getByRole('button', { name: 'User menu' })).toBeInTheDocument();
     });
 
@@ -442,7 +436,6 @@ describe('AppLayout', () => {
       });
 
       render(<AppLayout>{mockChildren}</AppLayout>);
-
       expect(screen.getByTestId('auth-loading')).toBeInTheDocument();
     });
 
@@ -461,7 +454,6 @@ describe('AppLayout', () => {
       });
 
       render(<AppLayout>{mockChildren}</AppLayout>);
-
       expect(screen.getByTestId('sidebar')).toHaveAttribute('data-open', 'true');
     });
   });
