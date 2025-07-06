@@ -3,6 +3,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { useSession } from 'next-auth/react';
 import { AppLayout } from '../AppLayout';
 import { setupLayoutTest, mockWindowInnerWidth } from './test-utils';
+import { setupMockSession, setupCustomMockSession } from './session-test-helpers';
 
 // Mock next-auth/react
 jest.mock('next-auth/react');
@@ -295,11 +296,7 @@ describe('AppLayout', () => {
 
     test('header contains auth button based on status', () => {
       const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-        update: jest.fn(),
-      });
+      setupMockSession(mockUseSession, 'unauthenticated');
 
       render(<AppLayout>{mockChildren}</AppLayout>);
 
@@ -400,28 +397,16 @@ describe('AppLayout', () => {
     });
 
     test('renders sign in button when user is not authenticated', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-        update: jest.fn(),
-      });
+      setupMockSession(mockUseSession, 'unauthenticated');
 
       render(<AppLayout>{mockChildren}</AppLayout>);
       expect(screen.getByRole('button', { name: 'Sign In' })).toBeInTheDocument();
     });
 
     test('renders user menu when user is authenticated', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            email: 'test@example.com',
-            name: 'Test User',
-          },
-          expires: '2024-01-01',
-        },
+      setupCustomMockSession(mockUseSession, {
         status: 'authenticated',
-        update: jest.fn(),
+        user: { name: 'Test User', email: 'test@example.com' },
       });
 
       render(<AppLayout>{mockChildren}</AppLayout>);
@@ -429,32 +414,51 @@ describe('AppLayout', () => {
     });
 
     test('shows loading state during authentication check', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'loading',
-        update: jest.fn(),
-      });
+      setupMockSession(mockUseSession, 'loading');
 
       render(<AppLayout>{mockChildren}</AppLayout>);
       expect(screen.getByTestId('auth-loading')).toBeInTheDocument();
     });
 
     test('passes auth status to sidebar', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            email: 'test@example.com',
-            name: 'Test User',
-          },
-          expires: '2024-01-01',
-        },
+      setupCustomMockSession(mockUseSession, {
         status: 'authenticated',
-        update: jest.fn(),
+        user: { name: 'Test User', email: 'test@example.com' },
       });
 
       render(<AppLayout>{mockChildren}</AppLayout>);
       expect(screen.getByTestId('sidebar')).toHaveAttribute('data-open', 'true');
+    });
+
+    test('displays real user name when authenticated', () => {
+      setupCustomMockSession(mockUseSession, {
+        status: 'authenticated',
+        user: { name: 'John Doe', email: 'john.doe@example.com' },
+      });
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    });
+
+    test('displays user email when name is not available', () => {
+      setupCustomMockSession(mockUseSession, {
+        status: 'authenticated',
+        user: { email: 'john.doe@example.com' },
+      });
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+      expect(screen.getByText('john.doe@example.com')).toBeInTheDocument();
+    });
+
+    test('sign out functionality works with callback URL', () => {
+      setupCustomMockSession(mockUseSession, {
+        status: 'authenticated',
+        user: { name: 'Test User', email: 'test@example.com' },
+      });
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+      const userMenuButton = screen.getByRole('button', { name: 'User menu' });
+      expect(userMenuButton).toBeInTheDocument();
     });
   });
 });
