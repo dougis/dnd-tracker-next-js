@@ -18,9 +18,29 @@ export function CharacterDetailClient({ id }: CharacterDetailClientProps) {
     router.push(`/characters/${character._id.toString()}/edit` as any);
   };
 
-  const handleShare = (character: ICharacter) => {
-    // TODO: Implement share functionality
-    console.log('Sharing character:', character.name);
+  const handleShare = async (character: ICharacter) => {
+    try {
+      // Create shareable URL
+      const shareUrl = `${window.location.origin}/characters/${character._id}`;
+      
+      // Try to use the native Web Share API if available
+      if (navigator.share) {
+        await navigator.share({
+          title: `${character.name} - D&D Character`,
+          text: `Check out my D&D character: ${character.name}`,
+          url: shareUrl,
+        });
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        // You could add a toast notification here
+        alert('Character link copied to clipboard!');
+      }
+    } catch (error) {
+      console.error('Error sharing character:', error);
+      // Fallback: just show the URL
+      prompt('Share this character link:', `${window.location.origin}/characters/${character._id}`);
+    }
   };
 
   const handleBack = () => {
