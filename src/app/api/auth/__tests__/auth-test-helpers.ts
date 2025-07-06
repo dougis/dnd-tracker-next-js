@@ -167,6 +167,7 @@ export const createValidLoginData = () => ({
 export const createValidResetPasswordData = () => ({
   token: 'valid-reset-token',
   password: 'NewValidPass123!',
+  confirmPassword: 'NewValidPass123!',
 });
 
 export const createValidVerificationData = () => ({

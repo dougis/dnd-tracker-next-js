@@ -1,9 +1,16 @@
-import { NextRequest } from 'next/server';
 import { POST } from '../reset-password/route';
-import { UserService } from '@/lib/services/UserService';
-
-// Configure Jest to use our mocks
-jest.mock('next/server');
+import {
+  createMockAuthRequest,
+  expectSuccessfulAuthResponse,
+  expectValidationError,
+  expectAuthError,
+  expectServerError,
+  setupUserServiceMock,
+  runMissingFieldTest,
+  runInvalidFormatTest,
+  createValidResetPasswordData,
+} from './auth-test-helpers';
+import { setupMockCleanup } from '../../__tests__/shared-api-helpers';
 
 // Mock the UserService
 jest.mock('@/lib/services/UserService', () => ({
@@ -13,207 +20,69 @@ jest.mock('@/lib/services/UserService', () => ({
 }));
 
 describe('POST /api/auth/reset-password', () => {
-  const mockResetPasswordData = {
-    token: 'valid-reset-token-123',
-    password: 'NewPassword123!',
-    confirmPassword: 'NewPassword123!',
-  };
+  const mockResetPasswordData = createValidResetPasswordData();
 
-  const createMockRequest = (body: any) => {
-    const req = new NextRequest('https://example.com');
-    (req.json as jest.Mock).mockResolvedValue(body);
-    return req;
-  };
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  setupMockCleanup();
 
   describe('Success scenarios', () => {
     it('successfully resets password with valid token and passwords', async () => {
-      // Mock successful password reset
-      UserService.resetPassword = jest.fn().mockResolvedValue({
+      setupUserServiceMock('resetPassword', {
         success: true,
         data: { message: 'Password reset successfully' },
       });
 
-      const request = createMockRequest(mockResetPasswordData);
+      const request = createMockAuthRequest(mockResetPasswordData);
       const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(responseData).toEqual({
-        success: true,
-        message: 'Password reset successfully',
-      });
-      expect(UserService.resetPassword).toHaveBeenCalledWith(
-        mockResetPasswordData
+      await expectSuccessfulAuthResponse(response, 'Password reset successfully');
+      
+      expect(require('@/lib/services/UserService').UserService.resetPassword)
+        .toHaveBeenCalledWith(mockResetPasswordData
       );
     });
   });
 
   describe('Validation errors', () => {
     it('returns validation error for missing token', async () => {
-      const invalidData = {
-        password: 'NewPassword123!',
-        confirmPassword: 'NewPassword123!',
-      };
-
-      const request = createMockRequest(invalidData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(responseData.success).toBe(false);
-      expect(responseData.message).toBe('Validation error');
-      expect(responseData.errors).toBeDefined();
-      expect(responseData.errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            field: 'token',
-            message: 'Required',
-          }),
-        ])
-      );
-      expect(UserService.resetPassword).not.toHaveBeenCalled();
+      await runMissingFieldTest(POST, mockResetPasswordData, 'token');
     });
 
     it('returns validation error for missing password', async () => {
-      const invalidData = {
-        token: 'valid-token',
-        confirmPassword: 'NewPassword123!',
-      };
-
-      const request = createMockRequest(invalidData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(responseData.success).toBe(false);
-      expect(responseData.message).toBe('Validation error');
-      expect(responseData.errors).toBeDefined();
-      expect(responseData.errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            field: 'password',
-            message: 'Required',
-          }),
-        ])
-      );
-      expect(UserService.resetPassword).not.toHaveBeenCalled();
+      await runMissingFieldTest(POST, mockResetPasswordData, 'password');
     });
 
     it('returns validation error for missing confirmPassword', async () => {
-      const invalidData = {
-        token: 'valid-token',
-        password: 'NewPassword123!',
-      };
-
-      const request = createMockRequest(invalidData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(responseData.success).toBe(false);
-      expect(responseData.message).toBe('Validation error');
-      expect(responseData.errors).toBeDefined();
-      expect(responseData.errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            field: 'confirmPassword',
-            message: 'Required',
-          }),
-        ])
-      );
-      expect(UserService.resetPassword).not.toHaveBeenCalled();
+      await runMissingFieldTest(POST, mockResetPasswordData, 'confirmPassword');
     });
 
     it('returns validation error for password mismatch', async () => {
       const invalidData = {
-        token: 'valid-token',
-        password: 'NewPassword123!',
+        ...mockResetPasswordData,
         confirmPassword: 'DifferentPassword123!',
       };
 
-      const request = createMockRequest(invalidData);
+      const request = createMockAuthRequest(invalidData);
       const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(responseData.success).toBe(false);
-      expect(responseData.message).toBe('Validation error');
-      expect(responseData.errors).toBeDefined();
-      expect(responseData.errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            field: 'confirmPassword',
-            message: 'Passwords do not match',
-          }),
-        ])
-      );
-      expect(UserService.resetPassword).not.toHaveBeenCalled();
+      await expectValidationError(response);
     });
 
     it('returns validation error for weak password', async () => {
       const invalidData = {
-        token: 'valid-token',
+        ...mockResetPasswordData,
         password: 'weak',
         confirmPassword: 'weak',
       };
 
-      const request = createMockRequest(invalidData);
+      const request = createMockAuthRequest(invalidData);
       const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(responseData.success).toBe(false);
-      expect(responseData.message).toBe('Validation error');
-      expect(responseData.errors).toBeDefined();
-      expect(responseData.errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            field: 'password',
-            message: 'Password must be at least 8 characters long',
-          }),
-        ])
-      );
-      expect(UserService.resetPassword).not.toHaveBeenCalled();
+      await expectValidationError(response, 'password');
     });
 
     it('returns validation error for empty token', async () => {
-      const invalidData = {
-        token: '',
-        password: 'NewPassword123!',
-        confirmPassword: 'NewPassword123!',
-      };
-
-      const request = createMockRequest(invalidData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(responseData.success).toBe(false);
-      expect(responseData.message).toBe('Validation error');
-      expect(responseData.errors).toBeDefined();
-      expect(UserService.resetPassword).not.toHaveBeenCalled();
+      await runInvalidFormatTest(POST, mockResetPasswordData, 'token', '');
     });
 
     it('returns validation error for non-string token', async () => {
-      const invalidData = {
-        token: 123,
-        password: 'NewPassword123!',
-        confirmPassword: 'NewPassword123!',
-      };
-
-      const request = createMockRequest(invalidData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(responseData.success).toBe(false);
-      expect(responseData.message).toBe('Validation error');
-      expect(responseData.errors).toBeDefined();
-      expect(UserService.resetPassword).not.toHaveBeenCalled();
+      await runInvalidFormatTest(POST, mockResetPasswordData, 'token', 123);
     });
   });
 
