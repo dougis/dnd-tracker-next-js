@@ -2,6 +2,21 @@ import { renderHook, act } from '@testing-library/react';
 import { useInitiativeTracker } from '../useInitiativeTracker';
 import { createTestEncounter, makeEncounterActive, PARTICIPANT_IDS } from '@/lib/models/encounter/__tests__/combat-test-helpers';
 
+// Set up DOM environment for testing
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(), // Deprecated
+    removeListener: jest.fn(), // Deprecated
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+});
+
 // Mock fetch
 global.fetch = jest.fn();
 
@@ -33,7 +48,7 @@ describe('useInitiativeTracker', () => {
     mockEncounter = createTestEncounter();
     makeEncounterActive(mockEncounter);
     mockEncounter.combatState.currentTurn = 1;
-    
+
     // Add participants to match the initiative order
     mockEncounter.participants = [
       {

@@ -24,6 +24,8 @@ interface InitiativeTrackerProps {
   onResumeCombat?: () => void;
   onEndCombat?: () => void;
   onEditInitiative?: (_participantId: string, _newInitiative: number) => void;
+  onDelayAction?: (_participantId: string) => void;
+  onReadyAction?: (_participantId: string, _triggerCondition: string) => void;
   onExportInitiative?: () => void;
   onShareInitiative?: () => void;
 }
@@ -47,6 +49,8 @@ export function InitiativeTracker({
   onResumeCombat,
   onEndCombat: _onEndCombat,
   onEditInitiative,
+  onDelayAction,
+  onReadyAction,
   onExportInitiative,
   onShareInitiative
 }: InitiativeTrackerProps) {
@@ -167,6 +171,8 @@ export function InitiativeTracker({
               isActive={index === currentTurn}
               isNext={index === (currentTurn + 1) % initiativeWithParticipants.length}
               onEditInitiative={onEditInitiative}
+              onDelayAction={onDelayAction}
+              onReadyAction={onReadyAction}
             />
           ))}
         </CardContent>
@@ -181,6 +187,8 @@ interface InitiativeCardProps {
   isActive: boolean;
   isNext: boolean;
   onEditInitiative?: (_participantId: string, _newInitiative: number) => void;
+  onDelayAction?: (_participantId: string) => void;
+  onReadyAction?: (_participantId: string, _triggerCondition: string) => void;
 }
 
 function InitiativeCard({
@@ -188,7 +196,9 @@ function InitiativeCard({
   participant,
   isActive,
   isNext,
-  onEditInitiative: _onEditInitiative
+  onEditInitiative: _onEditInitiative,
+  onDelayAction: _onDelayAction,
+  onReadyAction: _onReadyAction
 }: InitiativeCardProps) {
   const hpPercentage = (participant.currentHitPoints / participant.maxHitPoints) * 100;
   const isInjured = hpPercentage < 100;
