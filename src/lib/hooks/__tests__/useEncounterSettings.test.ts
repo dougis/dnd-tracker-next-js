@@ -15,6 +15,29 @@ import {
 global.fetch = jest.fn();
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
 
+// Helper function to render hook and perform update
+async function performUpdateTest(
+  updateData: any,
+  mockImplementation: jest.MockImplementation<typeof fetch>
+) {
+  mockFetch.mockImplementation(mockImplementation);
+  const { result } = renderHook(() => useEncounterSettings(TEST_ENCOUNTER_ID));
+  
+  await act(async () => {
+    await result.current.updateSettings(updateData);
+  });
+  
+  return result;
+}
+
+// Helper to validate loading state expectations
+function expectLoadingState(result: any, loading: boolean, error: string | null = null) {
+  expect(result.current.loading).toBe(loading);
+  if (error !== null) {
+    expect(result.current.error).toBe(error);
+  }
+}
+
 describe('useEncounterSettings', () => {
 
   beforeEach(() => {
@@ -29,50 +52,31 @@ describe('useEncounterSettings', () => {
     it('successfully updates encounter settings', async () => {
       const updateData = { allowPlayerVisibility: false };
       const updatedSettings = { ...TEST_SETTINGS, ...updateData };
-      mockFetch.mockImplementation(createFetchSuccess(updatedSettings));
-
-      const { result } = renderHook(() => useEncounterSettings(TEST_ENCOUNTER_ID));
-
-      await act(async () => {
-        await result.current.updateSettings(updateData);
-      });
+      
+      const result = await performUpdateTest(updateData, createFetchSuccess(updatedSettings));
 
       expectApiCall(mockFetch, updateData);
-      expect(result.current.loading).toBe(false);
+      expectLoadingState(result, false);
       expect(result.current.error).toBeNull();
     });
 
     it('handles API errors gracefully', async () => {
-      mockFetch.mockImplementation(createFetchError('Validation error'));
-
-      const { result } = renderHook(() => useEncounterSettings(TEST_ENCOUNTER_ID));
-
       const updateData = { gridSize: -1 };
-
-      await act(async () => {
-        await result.current.updateSettings(updateData);
-      });
+      
+      const result = await performUpdateTest(updateData, createFetchError('Validation error'));
 
       await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-        expect(result.current.error).toBe('Validation error');
+        expectLoadingState(result, false, 'Validation error');
       });
     });
 
     it('handles network errors', async () => {
-      mockFetch.mockImplementation(createFetchNetworkError());
-
-      const { result } = renderHook(() => useEncounterSettings(TEST_ENCOUNTER_ID));
-
       const updateData = { allowPlayerVisibility: false };
-
-      await act(async () => {
-        await result.current.updateSettings(updateData);
-      });
+      
+      const result = await performUpdateTest(updateData, createFetchNetworkError());
 
       await waitFor(() => {
-        expect(result.current.loading).toBe(false);
-        expect(result.current.error).toBe('Network error');
+        expectLoadingState(result, false, 'Network error');
       });
     });
 
@@ -97,13 +101,8 @@ describe('useEncounterSettings', () => {
 
     it('supports partial settings updates', async () => {
       const mergedSettings = { ...TEST_SETTINGS, ...TEST_PARTIAL_SETTINGS };
-      mockFetch.mockImplementation(createFetchSuccess(mergedSettings));
-
-      const { result } = renderHook(() => useEncounterSettings(TEST_ENCOUNTER_ID));
-
-      await act(async () => {
-        await result.current.updateSettings(TEST_PARTIAL_SETTINGS);
-      });
+      
+      const result = await performUpdateTest(TEST_PARTIAL_SETTINGS, createFetchSuccess(mergedSettings));
 
       expectApiCall(mockFetch, TEST_PARTIAL_SETTINGS);
     });
@@ -139,19 +138,15 @@ describe('useEncounterSettings', () => {
   describe('optimistic updates', () => {
     it('supports optimistic updates with rollback on error', async () => {
       mockFetch.mockImplementation(createFetchError('Server error'));
-
       const { result } = renderHook(() => useEncounterSettings(TEST_ENCOUNTER_ID));
-
       const updateData = { allowPlayerVisibility: false };
 
       await act(async () => {
         await result.current.updateSettings(updateData, { optimistic: true });
       });
 
-      // Should rollback on error when using optimistic updates
       await waitFor(() => {
-        expect(result.current.error).toBe('Server error');
-        expect(result.current.loading).toBe(false);
+        expectLoadingState(result, false, 'Server error');
       });
     });
   });

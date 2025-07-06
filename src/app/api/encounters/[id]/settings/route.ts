@@ -63,6 +63,12 @@ async function validateRequestBody(request: NextRequest) {
   return { success: true as const, data: validation.data };
 }
 
+function formatErrorDetails(details: any[] = []): string[] {
+  return details.map(detail =>
+    typeof detail === 'string' ? detail : `${detail.field}: ${detail.message}`
+  );
+}
+
 async function updateEncounterSettings(encounterId: string, settings: any) {
   const result = await EncounterService.updateEncounter(encounterId, {
     settings,
@@ -71,9 +77,7 @@ async function updateEncounterSettings(encounterId: string, settings: any) {
   if (!result.success) {
     return createErrorResponse(
       result.error?.message || 'Failed to update encounter settings',
-      (result.error?.details || []).map(detail =>
-        typeof detail === 'string' ? detail : `${detail.field}: ${detail.message}`
-      ),
+      formatErrorDetails(result.error?.details),
       result.error?.statusCode || 500
     );
   }
