@@ -2,7 +2,11 @@
 
 ## Overview
 
-This document outlines the systematic approach for eliminating code duplication in test files to meet Codacy compliance requirements (≤2 code clones maximum). The approach has been successfully demonstrated in reducing 8 clones in `apiUtils.test.ts` and provides a blueprint for addressing the remaining 18+ clones across the codebase.
+This document outlines the systematic approach for eliminating code duplication
+in test files to meet Codacy compliance requirements (≤2 code clones maximum).
+The approach has been successfully demonstrated in reducing 8 clones in
+`apiUtils.test.ts` and provides a blueprint for addressing the remaining 18+
+clones across the codebase.
 
 ## Current Status
 
@@ -35,7 +39,7 @@ Created comprehensive test helper utilities to eliminate common patterns:
 
 ### Phase 2: Pattern Identification and Categorization
 
-#### Major Duplication Categories Identified:
+#### Major Duplication Categories Identified
 
 1. **Character Form Tests** (Highest Priority - 25+ files)
    - Repeated field validation patterns
@@ -60,7 +64,7 @@ Created comprehensive test helper utilities to eliminate common patterns:
 
 ### Phase 3: Systematic Refactoring Process
 
-#### Step-by-Step Refactoring Method:
+#### Step-by-Step Refactoring Method
 
 1. **Analyze Current Test File**
    ```bash
@@ -98,7 +102,8 @@ Created comprehensive test helper utilities to eliminate common patterns:
 4. **Extract Common Utilities**
    ```typescript
    // Extract repeated patterns to helper functions
-   function testFieldValidation(fieldName: string, validData: any, invalidData: any) {
+   function testFieldValidation(fieldName: string, validData: any, 
+                                invalidData: any) {
      // Common validation testing logic
    }
    ```
@@ -117,12 +122,14 @@ Created comprehensive test helper utilities to eliminate common patterns:
 
 ## Demonstrated Success: apiUtils.test.ts Refactoring
 
-### Before Refactoring:
+### Before Refactoring
+
 - **8 code clones** from repetitive test patterns
 - 60+ lines of duplicated code
 - Manual test case variations
 
-### Refactoring Applied:
+### Refactoring Applied
+
 ```typescript
 // Created executeApiTest helper function
 export async function executeApiTest(makeRequestFn: any, config: {
@@ -159,21 +166,25 @@ testCases.forEach(testCase => {
 });
 ```
 
-### After Refactoring:
+### After Refactoring
+
 - **0 code clones** (eliminated all 8)
 - 25+ lines of concise, maintainable code
 - Data-driven approach for easy test case addition
 
 ## Implementation Guidelines
 
-### For Character Form Tests:
+### For Character Form Tests
+
 ```typescript
-import { CharacterFormHelpers, createFieldValidationTests } from '@/components/forms/__tests__/formTestHelpers';
+import { CharacterFormHelpers, createFieldValidationTests } from 
+  '@/components/forms/__tests__/formTestHelpers';
 
 describe('CharacterFormSection', () => {
   const validationTestCases = createFieldValidationTests('fieldName', [
     { label: 'valid data', value: 'valid', shouldBeValid: true },
-    { label: 'invalid data', value: '', shouldBeValid: false, expectedError: 'Required' }
+    { label: 'invalid data', value: '', shouldBeValid: false, 
+      expectedError: 'Required' }
   ]);
 
   validationTestCases.forEach(({ name, test }) => {
@@ -182,13 +193,16 @@ describe('CharacterFormSection', () => {
 });
 ```
 
-### For Validation Schema Tests:
+### For Validation Schema Tests
+
 ```typescript
-import { runValidationTests, createStringValidationTests } from '@/lib/validations/__tests__/validationTestHelpers';
+import { runValidationTests, createStringValidationTests } from 
+  '@/lib/validations/__tests__/validationTestHelpers';
 
 describe('UserSchema', () => {
   const testCases = [
-    ...createStringValidationTests('username', { required: true, minLength: 3 }),
+    ...createStringValidationTests('username', 
+      { required: true, minLength: 3 }),
     ...createEmailValidationTests('email')
   ];
 
@@ -196,7 +210,8 @@ describe('UserSchema', () => {
 });
 ```
 
-### For UI Component Tests:
+### For UI Component Tests
+
 ```typescript
 import { TestPatterns } from '@/__tests__/utils/testHelpers';
 
@@ -210,18 +225,21 @@ describe('ButtonComponent', () => {
 
 ## Quality Assurance Checklist
 
-### Pre-Refactoring:
+### Pre-Refactoring
+
 - [ ] Identify all duplication patterns in target file
 - [ ] Document current test coverage
 - [ ] Note any file-specific testing requirements
 
-### During Refactoring:
+### During Refactoring
+
 - [ ] Maintain identical test logic and assertions
 - [ ] Preserve test descriptions and coverage
 - [ ] Use appropriate helper utilities
 - [ ] Follow data-driven testing patterns
 
-### Post-Refactoring:
+### Post-Refactoring
+
 - [ ] All tests pass: `npm run test:ci`
 - [ ] No linting errors: `npm run lint:fix`
 - [ ] Test coverage maintained or improved
@@ -230,13 +248,15 @@ describe('ButtonComponent', () => {
 
 ## Expected Outcomes
 
-### Per File Refactoring:
+### Per File Refactoring
+
 - **Duplication Reduction**: 50-80% reduction in repetitive code
 - **Maintainability**: Easier to add new test cases
 - **Consistency**: Standardized testing patterns
 - **Readability**: Clearer test intent and structure
 
-### Overall Project Impact:
+### Overall Project Impact
+
 - **Codacy Compliance**: ≤2 code clones (from 26)
 - **Test Quality**: Improved test organization and coverage
 - **Developer Experience**: Faster test development
@@ -244,13 +264,15 @@ describe('ButtonComponent', () => {
 
 ## Risk Mitigation
 
-### Common Pitfalls:
+### Common Pitfalls
+
 1. **Over-abstraction**: Don't create helpers for single-use patterns
 2. **Lost Test Intent**: Maintain clear test descriptions
 3. **Broken Functionality**: Verify all tests pass after refactoring
 4. **Coverage Loss**: Ensure test coverage is maintained
 
-### Mitigation Strategies:
+### Mitigation Strategies
+
 1. **Incremental Refactoring**: One file at a time
 2. **Comprehensive Testing**: Run full test suite after each change
 3. **Code Review**: Review refactored tests for clarity
@@ -258,13 +280,15 @@ describe('ButtonComponent', () => {
 
 ## Success Metrics
 
-### Quantitative:
+### Quantitative
+
 - Code clone count: Target ≤2 (from 26)
 - Test coverage: Maintain 80%+ coverage
 - Build time: No significant increase in test execution time
 - Lines of code: 30-50% reduction in test file sizes
 
-### Qualitative:
+### Qualitative
+
 - Improved test readability and maintainability
 - Easier addition of new test cases
 - Consistent testing patterns across codebase
@@ -272,6 +296,11 @@ describe('ButtonComponent', () => {
 
 ## Conclusion
 
-This systematic approach provides a proven methodology for eliminating test duplication while maintaining test quality and functionality. The infrastructure created enables rapid refactoring of remaining duplicated test files, ensuring Codacy compliance and improved code quality.
+This systematic approach provides a proven methodology for eliminating test
+duplication while maintaining test quality and functionality. The infrastructure
+created enables rapid refactoring of remaining duplicated test files, ensuring
+Codacy compliance and improved code quality.
 
-The success demonstrated with `apiUtils.test.ts` (8 clones eliminated) validates this approach and provides confidence for scaling across the entire codebase.
+The success demonstrated with `apiUtils.test.ts` (8 clones eliminated)
+validates this approach and provides confidence for scaling across the entire
+codebase.
