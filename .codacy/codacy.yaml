@@ -4,6 +4,7 @@ exclude_paths:
     - dist/**
     - build/**
     - coverage/**
+    - eslint.config.mjs
 runtimes:
     - dart@3.7.2
     - go@1.22.3
