@@ -26,7 +26,7 @@ export function parseAndValidateNumber(
   min: number = 0
 ): { value: number; isValid: boolean; error?: string } {
   const parsed = typeof value === 'string' ? parseInt(value, 10) : value;
-  
+
   if (isNaN(parsed)) {
     return {
       value: min,

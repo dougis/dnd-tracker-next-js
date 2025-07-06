@@ -13,8 +13,8 @@ interface HPQuickButtonsProps {
   onDamage: (_amount: number) => void;
   onHealing: (_amount: number) => void;
   onEdit: () => void;
-  damageAmounts?: number[];
-  healingAmounts?: number[];
+  damageAmounts?: readonly number[];
+  healingAmounts?: readonly number[];
   compact?: boolean;
   disabled?: boolean;
   className?: string;

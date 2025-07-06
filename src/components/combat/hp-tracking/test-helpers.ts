@@ -23,7 +23,7 @@ export function createHPTrackingMocks(): HPTrackingMocks {
 
 export function setupHPTrackingTest(): { mocks: HPTrackingMocks } {
   const mocks = createHPTrackingMocks();
-  
+
   beforeEach(() => {
     Object.values(mocks).forEach(mock => mock.mockClear());
   });

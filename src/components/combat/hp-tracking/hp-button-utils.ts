@@ -22,8 +22,8 @@ export const DEFAULT_DAMAGE_AMOUNTS = [1, 5, 10, 15, 20] as const;
 
 export const DEFAULT_HEALING_AMOUNTS = [1, 5, 10, 15, 20] as const;
 
-export function getButtonSize(compact: boolean = false): string {
-  return compact ? HP_BUTTON_SIZES.small : HP_BUTTON_SIZES.medium;
+export function getButtonSize(compact: boolean = false): 'sm' | 'default' {
+  return compact ? 'sm' : 'default';
 }
 
 export function getButtonSpacing(compact: boolean = false): string {
@@ -39,11 +39,11 @@ export function getHPButtonA11yProps(action: 'damage' | 'healing' | 'edit', amou
   }
 
   const baseProps = {
-    'aria-label': amount 
-      ? `Apply ${amount} ${action}` 
+    'aria-label': amount
+      ? `Apply ${amount} ${action}`
       : `Apply ${action}`,
-    'data-testid': amount 
-      ? `${action}-${amount}-button` 
+    'data-testid': amount
+      ? `${action}-${amount}-button`
       : `apply-${action}-button`,
   };
 

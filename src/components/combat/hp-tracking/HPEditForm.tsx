@@ -61,11 +61,7 @@ export function HPEditForm({
   } = useHPTracking(mockParticipant, () => {});
 
   const validateForm = (): boolean => {
-    const newErrors = validateHPValues({
-      currentHitPoints: currentHP,
-      maxHitPoints: maxHP,
-      temporaryHitPoints: tempHP,
-    });
+    const newErrors = validateHPValues(currentHP, maxHP, tempHP);
 
     setErrors(newErrors);
     return !hasValidationErrors(newErrors);
