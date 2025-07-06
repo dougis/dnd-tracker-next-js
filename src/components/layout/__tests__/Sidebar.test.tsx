@@ -34,7 +34,7 @@ jest.mock('next/link', () => {
   };
 });
 
-// Mock UserMenu component 
+// Mock UserMenu component
 jest.mock('../UserMenu', () => ({
   UserMenu: () => (
     <div data-testid="user-menu" className="border-t border-border p-4">
@@ -191,7 +191,7 @@ describe('Sidebar', () => {
       renderWithProps(Sidebar);
       const sidebar = screen.getByTestId('user-menu').closest('.flex.h-full.flex-col');
       const userMenu = screen.getByTestId('user-menu');
-      
+
       // UserMenu should be one of the last elements in the flex column
       expect(sidebar).toContainElement(userMenu);
     });

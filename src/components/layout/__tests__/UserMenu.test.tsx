@@ -132,7 +132,7 @@ describe('UserMenu', () => {
       render(<UserMenu />);
       const signOutButton = screen.getByRole('button', { name: 'Sign Out' });
       fireEvent.click(signOutButton);
-      
+
       expect(mockSignOut).toHaveBeenCalledTimes(1);
       expect(mockSignOut).toHaveBeenCalledWith({ callbackUrl: '/' });
     });

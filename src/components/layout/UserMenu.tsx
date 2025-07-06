@@ -8,7 +8,7 @@ export function UserMenu() {
 
   if (status === 'loading') {
     return (
-      <div 
+      <div
         className="border-t border-border p-4"
         data-testid="user-menu"
       >
@@ -27,18 +27,18 @@ export function UserMenu() {
   const displayEmail = session.user.email;
 
   return (
-    <div 
+    <div
       className="border-t border-border p-4"
       data-testid="user-menu"
     >
       <div className="space-y-3">
         {/* User Profile Section */}
         <div className="flex items-center space-x-3">
-          <div 
+          <div
             className="h-8 w-8 rounded-full bg-muted"
             data-testid="user-avatar"
           />
-          <div 
+          <div
             className="flex-1 min-w-0"
             data-testid="user-info"
           >
