@@ -12,7 +12,7 @@ describe('InitiativeTracker', () => {
     mockEncounter = createTestEncounter();
     makeEncounterActive(mockEncounter);
     mockEncounter.combatState.currentTurn = 1;
-    
+
     // Add participants to match the initiative order
     mockEncounter.participants = [
       {

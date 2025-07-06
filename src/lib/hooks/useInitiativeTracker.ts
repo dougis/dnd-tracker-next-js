@@ -17,6 +17,8 @@ interface UseInitiativeTrackerReturn {
   handleResumeCombat: () => Promise<void>;
   handleEndCombat: () => Promise<void>;
   handleEditInitiative: (_participantId: string, _newInitiative: number) => Promise<void>;
+  handleDelayAction: (_participantId: string) => Promise<void>;
+  handleReadyAction: (_participantId: string, _triggerCondition: string) => Promise<void>;
   handleExportInitiative: () => void;
   handleShareInitiative: () => void;
 }
@@ -102,6 +104,22 @@ export function useInitiativeTracker({
     await makeApiCall('combat/initiative', 'PATCH', {
       participantId,
       initiative: newInitiative
+    });
+  }, [makeApiCall]);
+
+  const handleDelayAction = useCallback(async (participantId: string) => {
+    await makeApiCall('combat/delay-action', 'PATCH', {
+      participantId
+    });
+  }, [makeApiCall]);
+
+  const handleReadyAction = useCallback(async (
+    participantId: string,
+    triggerCondition: string
+  ) => {
+    await makeApiCall('combat/ready-action', 'PATCH', {
+      participantId,
+      triggerCondition
     });
   }, [makeApiCall]);
 
@@ -201,6 +219,8 @@ export function useInitiativeTracker({
     handleResumeCombat,
     handleEndCombat,
     handleEditInitiative,
+    handleDelayAction,
+    handleReadyAction,
     handleExportInitiative,
     handleShareInitiative
   };
