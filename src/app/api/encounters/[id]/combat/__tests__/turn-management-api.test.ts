@@ -72,87 +72,49 @@ describe('Turn Management API Endpoints (TDD)', () => {
     _mockParams = { params: { id: 'test-encounter-id' } };
   });
 
+  // Helper function to eliminate code duplication in route existence tests
+  const testRouteExists = async (routePath: string) => {
+    try {
+      const { PATCH } = await import(`../${routePath}/route`);
+      expect(PATCH).toBeDefined();
+      expect(typeof PATCH).toBe('function');
+    } catch (error) {
+      // Expected to fail initially - this proves our TDD approach
+      expect(error).toBeDefined();
+    }
+  };
+
   describe('TDD: API Routes That Need Implementation', () => {
     test('next-turn route should exist', async () => {
-      // This test will fail until we implement the route
-      try {
-        const { PATCH } = await import('../next-turn/route');
-        expect(PATCH).toBeDefined();
-        expect(typeof PATCH).toBe('function');
-      } catch (error) {
-        // Expected to fail initially - this proves our TDD approach
-        expect(error).toBeDefined();
-      }
+      await testRouteExists('next-turn');
     });
 
     test('previous-turn route should exist', async () => {
-      try {
-        const { PATCH } = await import('../previous-turn/route');
-        expect(PATCH).toBeDefined();
-        expect(typeof PATCH).toBe('function');
-      } catch (error) {
-        expect(error).toBeDefined();
-      }
+      await testRouteExists('previous-turn');
     });
 
     test('pause route should exist', async () => {
-      try {
-        const { PATCH } = await import('../pause/route');
-        expect(PATCH).toBeDefined();
-        expect(typeof PATCH).toBe('function');
-      } catch (error) {
-        expect(error).toBeDefined();
-      }
+      await testRouteExists('pause');
     });
 
     test('resume route should exist', async () => {
-      try {
-        const { PATCH } = await import('../resume/route');
-        expect(PATCH).toBeDefined();
-        expect(typeof PATCH).toBe('function');
-      } catch (error) {
-        expect(error).toBeDefined();
-      }
+      await testRouteExists('resume');
     });
 
     test('end route should exist', async () => {
-      try {
-        const { PATCH } = await import('../end/route');
-        expect(PATCH).toBeDefined();
-        expect(typeof PATCH).toBe('function');
-      } catch (error) {
-        expect(error).toBeDefined();
-      }
+      await testRouteExists('end');
     });
 
     test('initiative route should exist', async () => {
-      try {
-        const { PATCH } = await import('../initiative/route');
-        expect(PATCH).toBeDefined();
-        expect(typeof PATCH).toBe('function');
-      } catch (error) {
-        expect(error).toBeDefined();
-      }
+      await testRouteExists('initiative');
     });
 
     test('delay-action route should exist', async () => {
-      try {
-        const { PATCH } = await import('../delay-action/route');
-        expect(PATCH).toBeDefined();
-        expect(typeof PATCH).toBe('function');
-      } catch (error) {
-        expect(error).toBeDefined();
-      }
+      await testRouteExists('delay-action');
     });
 
     test('ready-action route should exist', async () => {
-      try {
-        const { PATCH } = await import('../ready-action/route');
-        expect(PATCH).toBeDefined();
-        expect(typeof PATCH).toBe('function');
-      } catch (error) {
-        expect(error).toBeDefined();
-      }
+      await testRouteExists('ready-action');
     });
   });
 

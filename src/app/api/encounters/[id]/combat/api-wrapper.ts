@@ -108,19 +108,19 @@ function performAdditionalValidations(
   encounter: IEncounter,
   config: CombatApiConfig
 ): NextResponse | null {
-  if (config.validatePaused && !encounter.combatState.pausedAt) {
+  const { combatState } = encounter;
+
+  // Validate pause state
+  if (config.validatePaused && !combatState.pausedAt) {
     return createValidationErrorResponse('Combat is not paused', 400);
   }
-
-  if (config.validateNotPaused && encounter.combatState.pausedAt) {
+  if (config.validateNotPaused && combatState.pausedAt) {
     return createValidationErrorResponse('Combat is paused', 400);
   }
 
-  if (config.validateTurnHistory) {
-    const { currentTurn, currentRound } = encounter.combatState;
-    if (currentTurn === 0 && currentRound === 1) {
-      return createValidationErrorResponse('No previous turn available', 400);
-    }
+  // Validate turn history
+  if (config.validateTurnHistory && combatState.currentTurn === 0 && combatState.currentRound === 1) {
+    return createValidationErrorResponse('No previous turn available', 400);
   }
 
   return null;
