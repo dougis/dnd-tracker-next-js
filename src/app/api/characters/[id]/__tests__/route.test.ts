@@ -1,12 +1,10 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { GET, PUT, DELETE } from '../route';
-import { CharacterService } from '@/lib/services/CharacterService';
 import {
   TEST_USER_ID,
   TEST_CHARACTER_ID,
   createMockParams,
   createTestCharacter,
-  expectErrorResponse,
 } from '../../__tests__/test-helpers';
 import {
   mockCharacterService,
@@ -16,7 +14,6 @@ import {
   setupCharacterNotFound,
   setupAccessDeniedError,
   createCharacterRequest,
-  createUnauthenticatedRequest,
   createUpdateData,
   expectSuccessfulResponse,
   runAuthenticationTest,

@@ -3,7 +3,6 @@ import { CharacterService } from '@/lib/services/CharacterService';
 import { characterCreationSchema } from '@/lib/validations/character';
 import {
   createErrorResponse,
-  createSuccessResponse,
   parseQueryParams
 } from './helpers/api-helpers';
 import {

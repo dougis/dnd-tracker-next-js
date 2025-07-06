@@ -4,7 +4,6 @@ import {
   TEST_CHARACTER_ID,
   createMockRequest,
   createTestCharacter,
-  createCharacterData,
   expectErrorResponse,
 } from './test-helpers';
 

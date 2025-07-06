@@ -14,9 +14,9 @@ export async function initializeRoute(request: NextRequest) {
 
   const userId = validateAuth(request);
   if (!userId) {
-    return { 
-      error: createErrorResponse('Unauthorized', 401), 
-      userId: null 
+    return {
+      error: createErrorResponse('Unauthorized', 401),
+      userId: null
     };
   }
 
@@ -50,7 +50,7 @@ export function handleServiceResult(
  */
 export function handleRouteError(error: any, operation: string) {
   console.error(`${operation} error:`, error);
-  
+
   if (error instanceof Error) {
     if (error.message.includes('not found')) {
       return createErrorResponse('Character not found', 404);

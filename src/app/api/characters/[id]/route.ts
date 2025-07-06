@@ -2,8 +2,7 @@ import { NextRequest } from 'next/server';
 import { CharacterService } from '@/lib/services/CharacterService';
 import { characterUpdateSchema } from '@/lib/validations/character';
 import {
-  createErrorResponse,
-  createSuccessResponse
+  createErrorResponse
 } from '../helpers/api-helpers';
 import {
   initializeRoute,
