@@ -1,5 +1,62 @@
 import { rerollInitiative } from '@/lib/models/encounter/initiative-rolling';
 import { withCombatValidation } from '../api-wrapper';
+import type { IEncounter } from '@/lib/models/encounter/interfaces';
+
+/**
+ * Validates initiative order exists and is not empty
+ */
+function validateInitiativeOrder(encounter: IEncounter): void {
+  if (!encounter.combatState.initiativeOrder || encounter.combatState.initiativeOrder.length === 0) {
+    throw new Error('No initiative order found. Roll initiative first.');
+  }
+}
+
+/**
+ * Validates participant exists in initiative order if provided
+ */
+function validateParticipantExists(encounter: IEncounter, participantId?: string): void {
+  if (!participantId) return;
+
+  const existingEntry = encounter.combatState.initiativeOrder.find(
+    entry => entry.participantId.toString() === participantId
+  );
+
+  if (!existingEntry) {
+    throw new Error(`Participant with ID ${participantId} not found in initiative order`);
+  }
+}
+
+/**
+ * Gets the current active participant ID
+ */
+function getCurrentActiveParticipantId(encounter: IEncounter): string | null {
+  const currentActiveIndex = encounter.combatState.initiativeOrder.findIndex(entry => entry.isActive);
+  return currentActiveIndex >= 0
+    ? encounter.combatState.initiativeOrder[currentActiveIndex].participantId.toString()
+    : null;
+}
+
+/**
+ * Restores the active participant after reroll
+ */
+function restoreActiveParticipant(encounter: IEncounter, activeParticipantId: string | null): void {
+  if (!encounter.combatState.isActive || !activeParticipantId) return;
+
+  const newActiveIndex = encounter.combatState.initiativeOrder.findIndex(
+    entry => entry.participantId.toString() === activeParticipantId
+  );
+
+  if (newActiveIndex < 0) return;
+
+  // Reset all active states first
+  encounter.combatState.initiativeOrder.forEach(entry => {
+    entry.isActive = false;
+  });
+
+  // Set the previously active participant as active again
+  encounter.combatState.initiativeOrder[newActiveIndex].isActive = true;
+  encounter.combatState.currentTurn = newActiveIndex;
+}
 
 export const POST = withCombatValidation(
   {
@@ -8,31 +65,15 @@ export const POST = withCombatValidation(
     requiredFields: [],
   },
   async (encounter, body) => {
-    // Handle empty body case
     const bodyData = body || {};
     const { participantId } = bodyData;
 
-    // Validate that we have an active initiative order
-    if (!encounter.combatState.initiativeOrder || encounter.combatState.initiativeOrder.length === 0) {
-      throw new Error('No initiative order found. Roll initiative first.');
-    }
-
-    // If participantId is provided, validate it exists
-    if (participantId) {
-      const existingEntry = encounter.combatState.initiativeOrder.find(
-        entry => entry.participantId.toString() === participantId
-      );
-
-      if (!existingEntry) {
-        throw new Error(`Participant with ID ${participantId} not found in initiative order`);
-      }
-    }
+    // Validate preconditions
+    validateInitiativeOrder(encounter);
+    validateParticipantExists(encounter, participantId);
 
     // Store current active participant to maintain combat state
-    const currentActiveIndex = encounter.combatState.initiativeOrder.findIndex(entry => entry.isActive);
-    const currentActiveParticipantId = currentActiveIndex >= 0
-      ? encounter.combatState.initiativeOrder[currentActiveIndex].participantId
-      : null;
+    const currentActiveParticipantId = getCurrentActiveParticipantId(encounter);
 
     // Reroll initiative
     encounter.combatState.initiativeOrder = rerollInitiative(
@@ -41,24 +82,8 @@ export const POST = withCombatValidation(
     );
 
     // Restore active participant if combat is active
-    if (encounter.combatState.isActive && currentActiveParticipantId) {
-      const newActiveIndex = encounter.combatState.initiativeOrder.findIndex(
-        entry => entry.participantId.toString() === currentActiveParticipantId.toString()
-      );
+    restoreActiveParticipant(encounter, currentActiveParticipantId);
 
-      if (newActiveIndex >= 0) {
-        // Reset all active states first
-        encounter.combatState.initiativeOrder.forEach(entry => {
-          entry.isActive = false;
-        });
-
-        // Set the previously active participant as active again
-        encounter.combatState.initiativeOrder[newActiveIndex].isActive = true;
-        encounter.combatState.currentTurn = newActiveIndex;
-      }
-    }
-
-    // Return true to let the wrapper handle the success response and save
     return true;
   }
 );
