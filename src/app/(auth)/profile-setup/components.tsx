@@ -74,6 +74,115 @@ type ProfileFormProps = {
 };
 /* eslint-enable no-unused-vars */
 
+function ProfileFormHeader() {
+  return (
+    <div className="text-center space-y-4">
+      <div className="flex justify-center">
+        <Avatar className="w-16 h-16">
+          <AvatarFallback>
+            <User className="h-8 w-8" />
+          </AvatarFallback>
+        </Avatar>
+      </div>
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold">Complete Your Profile</h1>
+        <p className="text-slate-500 dark:text-slate-400">
+          Help us personalize your D&D Encounter Tracker experience
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* eslint-disable no-unused-vars */
+function ProfileFormFields({ formData, updateField, getFieldError }: {
+  formData: ProfileFormData;
+  updateField: (field: keyof ProfileFormData, value: string) => void;
+  getFieldError: (field: string) => string | undefined;
+}) {
+/* eslint-enable no-unused-vars */
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-4">
+        <FormInput
+          label="Display Name"
+          placeholder="How should we display your name?"
+          value={formData.displayName}
+          onChange={(e) => updateField('displayName', e.target.value)}
+          error={getFieldError('displayName')}
+          helperText="This is how others will see your name in shared encounters"
+        />
+        <FormSelect
+          label="Timezone"
+          options={TIMEZONE_OPTIONS}
+          value={formData.timezone}
+          onValueChange={(value) => updateField('timezone', value)}
+          error={getFieldError('timezone')}
+          helperText="Used for scheduling encounters and notifications"
+        />
+      </div>
+
+      <FormInput
+        label="Preferred D&D Edition"
+        placeholder="e.g., 5th Edition, Pathfinder 2e"
+        value={formData.dndEdition}
+        onChange={(e) => updateField('dndEdition', e.target.value)}
+        error={getFieldError('dndEdition')}
+        helperText="Helps us customize features for your preferred game system"
+      />
+
+      <FormSelect
+        label="Experience Level"
+        options={EXPERIENCE_LEVEL_OPTIONS}
+        value={formData.experienceLevel}
+        onValueChange={(value) => updateField('experienceLevel', value)}
+        error={getFieldError('experienceLevel')}
+        helperText="Helps us provide appropriate content and tips"
+      />
+
+      <FormSelect
+        label="Primary Role"
+        options={PRIMARY_ROLE_OPTIONS}
+        value={formData.primaryRole}
+        onValueChange={(value) => updateField('primaryRole', value)}
+        error={getFieldError('primaryRole')}
+        helperText="How do you primarily engage with D&D?"
+      />
+    </>
+  );
+}
+
+function ProfileFormActions({ handleSkip, isSubmitting }: {
+  handleSkip: () => void;
+  isSubmitting: boolean;
+}) {
+  return (
+    <>
+      <div className="flex gap-3 pt-4">
+        <FormSubmitButton
+          loadingText="Setting up profile..."
+          className="flex-1"
+        >
+          Complete Setup
+        </FormSubmitButton>
+
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleSkip}
+          disabled={isSubmitting}
+        >
+          Skip for Now
+        </Button>
+      </div>
+
+      <div className="text-center text-sm text-slate-500 dark:text-slate-400">
+        You can update these preferences anytime in your account settings.
+      </div>
+    </>
+  );
+}
+
 export function ProfileForm({
   formData,
   updateField,
@@ -85,94 +194,21 @@ export function ProfileForm({
 }: ProfileFormProps) {
   return (
     <div className="space-y-6">
-      <div className="text-center space-y-4">
-        <div className="flex justify-center">
-          <Avatar className="w-16 h-16">
-            <AvatarFallback>
-              <User className="h-8 w-8" />
-            </AvatarFallback>
-          </Avatar>
-        </div>
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold">Complete Your Profile</h1>
-          <p className="text-slate-500 dark:text-slate-400">
-            Help us personalize your D&D Encounter Tracker experience
-          </p>
-        </div>
-      </div>
-
+      <ProfileFormHeader />
       <FormWrapper
         onSubmit={handleSubmit}
         errors={errors}
         isSubmitting={isSubmitting}
       >
-        <div className="grid grid-cols-2 gap-4">
-          <FormInput
-            label="Display Name"
-            placeholder="How should we display your name?"
-            value={formData.displayName}
-            onChange={(e) => updateField('displayName', e.target.value)}
-            error={getFieldError('displayName')}
-            helperText="This is how others will see your name in shared encounters"
-          />
-          <FormSelect
-            label="Timezone"
-            options={TIMEZONE_OPTIONS}
-            value={formData.timezone}
-            onValueChange={(value) => updateField('timezone', value)}
-            error={getFieldError('timezone')}
-            helperText="Used for scheduling encounters and notifications"
-          />
-        </div>
-
-        <FormInput
-          label="Preferred D&D Edition"
-          placeholder="e.g., 5th Edition, Pathfinder 2e"
-          value={formData.dndEdition}
-          onChange={(e) => updateField('dndEdition', e.target.value)}
-          error={getFieldError('dndEdition')}
-          helperText="Helps us customize features for your preferred game system"
+        <ProfileFormFields
+          formData={formData}
+          updateField={updateField}
+          getFieldError={getFieldError}
         />
-
-        <FormSelect
-          label="Experience Level"
-          options={EXPERIENCE_LEVEL_OPTIONS}
-          value={formData.experienceLevel}
-          onValueChange={(value) => updateField('experienceLevel', value)}
-          error={getFieldError('experienceLevel')}
-          helperText="Helps us provide appropriate content and tips"
+        <ProfileFormActions
+          handleSkip={handleSkip}
+          isSubmitting={isSubmitting}
         />
-
-        <FormSelect
-          label="Primary Role"
-          options={PRIMARY_ROLE_OPTIONS}
-          value={formData.primaryRole}
-          onValueChange={(value) => updateField('primaryRole', value)}
-          error={getFieldError('primaryRole')}
-          helperText="How do you primarily engage with D&D?"
-        />
-
-        <div className="flex gap-3 pt-4">
-          <FormSubmitButton
-            loadingText="Setting up profile..."
-            className="flex-1"
-          >
-            Complete Setup
-          </FormSubmitButton>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleSkip}
-            disabled={isSubmitting}
-          >
-            Skip for Now
-          </Button>
-        </div>
-
-        <div className="text-center text-sm text-slate-500 dark:text-slate-400">
-          You can update these preferences anytime in your account settings.
-        </div>
       </FormWrapper>
     </div>
   );
