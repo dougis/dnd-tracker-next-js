@@ -1,12 +1,17 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
+import { useSession } from 'next-auth/react';
 import { AppLayout } from '../AppLayout';
 import { setupLayoutTest, mockWindowInnerWidth } from './test-utils';
+import { setupMockSession, setupCustomMockSession } from './session-test-helpers';
+
+// Mock next-auth/react
+jest.mock('next-auth/react');
 
 // Mock the child components
 jest.mock('../Sidebar', () => ({
-  Sidebar: ({ isOpen }: { isOpen: boolean }) => (
-    <div data-testid="sidebar" data-open={isOpen} />
+  Sidebar: ({ isOpen, isAuthenticated }: { isOpen: boolean; isAuthenticated?: boolean }) => (
+    <div data-testid="sidebar" data-open={isOpen} data-auth={isAuthenticated} />
   ),
 }));
 
@@ -14,11 +19,13 @@ jest.mock('../MobileMenu', () => ({
   MobileMenu: ({
     isOpen,
     onClose,
+    isAuthenticated,
   }: {
     isOpen: boolean;
     onClose: () => void;
+    isAuthenticated?: boolean;
   }) => (
-    <div data-testid="mobile-menu" data-open={isOpen}>
+    <div data-testid="mobile-menu" data-open={isOpen} data-auth={isAuthenticated}>
       {isOpen && (
         <button data-testid="mobile-menu-close" onClick={onClose}>
           Close
@@ -52,13 +59,11 @@ describe('AppLayout', () => {
   describe('Component Rendering', () => {
     test('renders without errors', () => {
       render(<AppLayout>{mockChildren}</AppLayout>);
-
       expect(screen.getByTestId('main-content')).toBeInTheDocument();
     });
 
     test('renders all core layout components', () => {
       render(<AppLayout>{mockChildren}</AppLayout>);
-
       expect(screen.getByTestId('sidebar')).toBeInTheDocument();
       expect(screen.getByTestId('mobile-menu')).toBeInTheDocument();
       expect(screen.getByTestId('breadcrumbs')).toBeInTheDocument();
@@ -67,7 +72,6 @@ describe('AppLayout', () => {
 
     test('renders children content in main element', () => {
       render(<AppLayout>{mockChildren}</AppLayout>);
-
       const mainElement = screen.getByRole('main');
       expect(mainElement).toBeInTheDocument();
       expect(mainElement).toContainElement(screen.getByTestId('main-content'));
@@ -75,7 +79,6 @@ describe('AppLayout', () => {
 
     test('applies correct CSS classes for layout structure', () => {
       const { container } = render(<AppLayout>{mockChildren}</AppLayout>);
-
       const rootDiv = container.firstChild as HTMLElement;
       expect(rootDiv).toHaveClass('min-h-screen');
       expect(rootDiv).toHaveClass('bg-background');
@@ -291,13 +294,14 @@ describe('AppLayout', () => {
       expect(screen.getByTestId('theme-toggle')).toBeInTheDocument();
     });
 
-    test('header contains user avatar button', () => {
+    test('header contains auth button based on status', () => {
+      const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
+      setupMockSession(mockUseSession, 'unauthenticated');
+
       render(<AppLayout>{mockChildren}</AppLayout>);
 
-      const userButton = screen.getByRole('button', { name: '' }); // SVG button
-      expect(userButton).toHaveClass(
-        'rounded-full bg-primary p-2 text-primary-foreground'
-      );
+      const signInButton = screen.getByRole('button', { name: 'Sign In' });
+      expect(signInButton).toBeInTheDocument();
     });
   });
 
@@ -382,6 +386,79 @@ describe('AppLayout', () => {
         'data-open',
         'true'
       );
+    });
+  });
+
+  describe('Authentication Aware Features', () => {
+    const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    test('renders sign in button when user is not authenticated', () => {
+      setupMockSession(mockUseSession, 'unauthenticated');
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+      expect(screen.getByRole('button', { name: 'Sign In' })).toBeInTheDocument();
+    });
+
+    test('renders user menu when user is authenticated', () => {
+      setupCustomMockSession(mockUseSession, {
+        status: 'authenticated',
+        user: { name: 'Test User', email: 'test@example.com' },
+      });
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+      expect(screen.getByRole('button', { name: 'User menu' })).toBeInTheDocument();
+    });
+
+    test('shows loading state during authentication check', () => {
+      setupMockSession(mockUseSession, 'loading');
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+      expect(screen.getByTestId('auth-loading')).toBeInTheDocument();
+    });
+
+    test('passes auth status to sidebar', () => {
+      setupCustomMockSession(mockUseSession, {
+        status: 'authenticated',
+        user: { name: 'Test User', email: 'test@example.com' },
+      });
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+      expect(screen.getByTestId('sidebar')).toHaveAttribute('data-open', 'true');
+    });
+
+    test('displays real user name when authenticated', () => {
+      setupCustomMockSession(mockUseSession, {
+        status: 'authenticated',
+        user: { name: 'John Doe', email: 'john.doe@example.com' },
+      });
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    });
+
+    test('displays user email when name is not available', () => {
+      setupCustomMockSession(mockUseSession, {
+        status: 'authenticated',
+        user: { email: 'john.doe@example.com' },
+      });
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+      expect(screen.getByText('john.doe@example.com')).toBeInTheDocument();
+    });
+
+    test('sign out functionality works with callback URL', () => {
+      setupCustomMockSession(mockUseSession, {
+        status: 'authenticated',
+        user: { name: 'Test User', email: 'test@example.com' },
+      });
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+      const userMenuButton = screen.getByRole('button', { name: 'User menu' });
+      expect(userMenuButton).toBeInTheDocument();
     });
   });
 });

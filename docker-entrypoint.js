@@ -74,7 +74,7 @@ const args = process.argv.slice(3);
 
 const appProcess = spawn(command, args, {
   stdio: 'inherit',
-  shell: true
+  shell: false
 });
 
 appProcess.on('close', (code) => {

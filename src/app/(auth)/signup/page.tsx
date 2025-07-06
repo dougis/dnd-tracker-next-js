@@ -87,7 +87,7 @@ export default function SignUpPage() {
       });
 
       router.push(
-        ('/auth/verify-email?email=' +
+        ('/verify-email?email=' +
           encodeURIComponent(validatedData.email)) as any
       );
     } catch (error) {
@@ -234,7 +234,7 @@ export default function SignUpPage() {
         <div className="text-center text-sm">
           Already have an account?{' '}
           <Link
-            href={'/auth/signin' as any}
+            href={'/signin' as any}
             className="text-primary hover:underline"
           >
             Sign in

@@ -48,10 +48,15 @@ export function useEncounterData(encounterId: string) {
     loadEncounter();
   };
 
+  const updateEncounter = useCallback((updatedEncounter: IEncounter) => {
+    setEncounter(updatedEncounter);
+  }, []);
+
   return {
     encounter,
     loading,
     error,
     handleRetry,
+    updateEncounter,
   };
 }

@@ -84,6 +84,13 @@ export const passwordResetSchema = z
     path: ['confirmPassword'],
   });
 
+// Common profile field schemas
+const displayNameSchema = z.string().min(1).max(100);
+const timezoneSchema = z.string().min(1);
+const dndEditionSchema = z.string().min(1).max(50);
+const experienceLevelSchema = z.enum(['new', 'beginner', 'intermediate', 'experienced', 'veteran']);
+const primaryRoleSchema = z.enum(['dm', 'player', 'both']);
+
 // User profile update schema
 export const userProfileUpdateSchema = z.object({
   username: createOptionalSchema(usernameSchema),
@@ -91,6 +98,11 @@ export const userProfileUpdateSchema = z.object({
   lastName: createOptionalSchema(nameSchema),
   email: createOptionalSchema(emailSchema),
   preferences: createOptionalSchema(userPreferencesSchema),
+  displayName: createOptionalSchema(displayNameSchema),
+  timezone: createOptionalSchema(timezoneSchema),
+  dndEdition: createOptionalSchema(dndEditionSchema),
+  experienceLevel: createOptionalSchema(experienceLevelSchema),
+  primaryRole: createOptionalSchema(primaryRoleSchema),
 });
 
 // Change password schema
@@ -125,6 +137,14 @@ export const userSchema = z.object({
   passwordResetToken: createOptionalSchema(z.string()),
   passwordResetExpires: createOptionalSchema(dateSchema),
   lastLoginAt: createOptionalSchema(dateSchema),
+  displayName: createOptionalSchema(z.string().min(1).max(100)),
+  timezone: createOptionalSchema(z.string().min(1)).default('UTC'),
+  dndEdition: createOptionalSchema(z.string().min(1).max(50)).default('5th Edition'),
+  experienceLevel: createOptionalSchema(
+    z.enum(['new', 'beginner', 'intermediate', 'experienced', 'veteran'])
+  ),
+  primaryRole: createOptionalSchema(z.enum(['dm', 'player', 'both'])),
+  profileSetupCompleted: z.boolean().default(false),
   createdAt: dateSchema.default(() => new Date().toISOString()),
   updatedAt: dateSchema.default(() => new Date().toISOString()),
 });

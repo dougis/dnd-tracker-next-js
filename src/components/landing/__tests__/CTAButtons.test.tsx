@@ -43,8 +43,8 @@ describe('CTAButtons Component', () => {
     const getStartedLink = screen.getByText('Get Started Free').closest('a');
     const signInLink = screen.getByText('Sign In').closest('a');
 
-    expect(getStartedLink).toHaveAttribute('href', '/auth/signup');
-    expect(signInLink).toHaveAttribute('href', '/auth/signin');
+    expect(getStartedLink).toHaveAttribute('href', '/signup');
+    expect(signInLink).toHaveAttribute('href', '/signin');
   });
 
   it('applies correct styling classes for responsive layout', () => {

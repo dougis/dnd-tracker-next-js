@@ -49,3 +49,28 @@ export {
   createCharacterWithNotes,
   createCharacterWithBackstory,
 };
+
+// Fetch mocking utilities to reduce duplication
+export const mockSuccessfulCharacterFetch = (character: any, mockFetch: jest.MockedFunction<typeof fetch>) => {
+  mockFetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      success: true,
+      data: character,
+    }),
+  } as Response);
+};
+
+export const mockFailedCharacterFetch = (error: string, mockFetch: jest.MockedFunction<typeof fetch>) => {
+  mockFetch.mockResolvedValue({
+    ok: false,
+    json: async () => ({
+      success: false,
+      error,
+    }),
+  } as Response);
+};
+
+export const mockPendingCharacterFetch = (mockFetch: jest.MockedFunction<typeof fetch>) => {
+  mockFetch.mockReturnValue(new Promise(() => {}));
+};

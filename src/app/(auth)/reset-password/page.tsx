@@ -114,7 +114,7 @@ export default function ResetPasswordPage() {
         </p>
         <div className="pt-2">
           <Link
-            href={'/auth/signin' as any}
+            href={'/signin' as any}
             className="text-sm text-primary hover:underline"
           >
             Return to Sign In
@@ -154,7 +154,7 @@ export default function ResetPasswordPage() {
 
         <div className="text-center text-sm">
           <Link
-            href={'/auth/signin' as any}
+            href={'/signin' as any}
             className="text-primary hover:underline"
           >
             Return to Sign In

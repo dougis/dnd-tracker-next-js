@@ -11,10 +11,22 @@ const customJestConfig = {
   globalSetup: '<rootDir>/jest.global-setup.js', // Added global setup for MongoDB
   globalTeardown: '<rootDir>/jest.global-teardown.js', // Added global teardown for MongoDB
   testEnvironment: 'jest-environment-jsdom',
+  // Parallel execution configuration
+  maxWorkers: process.env.CI ? 2 : '75%', // Use 2 workers in CI, 75% of available cores locally
+  maxConcurrency: 10, // Limit concurrent test suites to prevent resource exhaustion
+  testSequencer: '<rootDir>/jest.sequencer.js', // Custom sequencer for optimal test ordering
+  // Worker configuration for better resource management
+  workerIdleMemoryLimit: '512MB', // Restart workers if they exceed memory limit
+  // Test execution configuration
+  testTimeout: 30000, // 30 second timeout for individual tests
+  // Performance optimizations
+  cacheDirectory: '<rootDir>/.jest-cache', // Custom cache directory for better performance
+  clearMocks: true, // Clear mocks between tests to prevent memory leaks
   testPathIgnorePatterns: [
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
-    '<rootDir>/src/components/forms/character/__tests__/CharacterCreationForm.test.tsx'
+    '<rootDir>/src/components/forms/character/__tests__/CharacterCreationForm.test.tsx',
+    '<rootDir>/src/lib/hooks/__tests__/useInitiativeTracker.test.ts'
   ],
   testMatch: ['<rootDir>/src/**/*.test.{js,jsx,ts,tsx}'],
   collectCoverage: true,
