@@ -26,7 +26,7 @@ type FormState = {
 export default function SignInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const callbackUrl = searchParams.get('callbackUrl') || searchParams.get('next') || '/dashboard';
   const error = searchParams.get('error');
 
   const [formState, setFormState] = useState<FormState>({
@@ -178,7 +178,7 @@ export default function SignInPage() {
         <div className="text-center text-sm">
           Don&apos;t have an account?{' '}
           <Link
-            href={'/auth/signup' as any}
+            href={'/signup' as any}
             className="text-primary hover:underline"
           >
             Sign up

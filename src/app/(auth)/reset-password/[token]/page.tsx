@@ -124,7 +124,7 @@ export default function ResetPasswordWithTokenPage({
         </p>
         <div className="pt-2">
           <Link
-            href={'/auth/signin' as any}
+            href={'/signin' as any}
             className="text-primary font-medium hover:underline"
           >
             Sign in with your new password
@@ -173,7 +173,7 @@ export default function ResetPasswordWithTokenPage({
 
         <div className="text-center text-sm">
           <Link
-            href={'/auth/signin' as any}
+            href={'/signin' as any}
             className="text-primary hover:underline"
           >
             Return to Sign In

@@ -114,7 +114,7 @@ export default function VerifyEmailPage() {
       </p>
       <div className="pt-2">
         <Button asChild>
-          <Link href={'/auth/signin' as any}>Sign In to Your Account</Link>
+          <Link href={'/signin?next=/profile-setup' as any}>Sign In and Complete Profile</Link>
         </Button>
       </div>
     </div>
@@ -145,7 +145,7 @@ export default function VerifyEmailPage() {
         )}
         <div>
           <Link
-            href={'/auth/signin' as any}
+            href={'/signin' as any}
             className="text-sm text-primary hover:underline"
           >
             Return to Sign In
@@ -197,7 +197,7 @@ export default function VerifyEmailPage() {
         </Button>
         <div>
           <Link
-            href={'/auth/signin' as any}
+            href={'/signin' as any}
             className="text-sm text-primary hover:underline"
           >
             Return to Sign In
