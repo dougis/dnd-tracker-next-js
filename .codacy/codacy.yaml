@@ -4,8 +4,16 @@ exclude_paths:
     - dist/**
     - build/**
     - coverage/**
-    - "*.config.*"
-    - "**/*.config.*"
+    - eslint.config.mjs
+    - postcss.config.mjs
+    - next.config.js
+    - jest.config.js
+    - jest.setup.js
+    - jest.global-setup.js
+    - jest.global-teardown.js
+    - jest.sequencer.js
+    - tailwind.config.ts
+    - docker-entrypoint.js
 runtimes:
     - dart@3.7.2
     - go@1.22.3
