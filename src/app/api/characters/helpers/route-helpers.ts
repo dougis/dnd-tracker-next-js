@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { connectToDatabase } from '@/lib/db';
+import { characterCreationSchema, characterUpdateSchema } from '@/lib/validations/character';
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -24,25 +25,42 @@ export async function initializeRoute(request: NextRequest) {
 }
 
 /**
- * Handle service result and create appropriate response
+ * Handle service result for simple operations
  */
-export function handleServiceResult(
+export function handleSimpleResult(
   result: { success: boolean; data?: any; error?: any },
-  successMessage?: string,
-  notFoundStatus: number = 404
+  successMessage?: string
 ) {
   if (!result.success) {
-    return createErrorResponse(result.error, notFoundStatus);
+    return createErrorResponse(result.error, 404);
   }
+  return createSuccessResponse(result.data, successMessage);
+}
 
-  // Handle paginated results
-  if (result.data && typeof result.data === 'object' && 'items' in result.data && 'pagination' in result.data) {
-    const paginatedData = result.data as any;
-    return createSuccessResponse(paginatedData.items, successMessage, paginatedData.pagination);
+/**
+ * Handle service result for creation operations (returns 201)
+ */
+export function handleCreationResult(
+  result: { success: boolean; data?: any; error?: any },
+  successMessage?: string
+) {
+  if (!result.success) {
+    return createErrorResponse(result.error, 400);
   }
+  return createSuccessResponse(result.data, successMessage, undefined, 201);
+}
 
-  const status = successMessage === 'Character created successfully' ? 201 : 200;
-  return createSuccessResponse(result.data, successMessage, undefined, status);
+/**
+ * Handle service result for paginated operations
+ */
+export function handlePaginatedResult(
+  result: { success: boolean; data?: any; error?: any }
+) {
+  if (!result.success) {
+    return createErrorResponse(result.error, 404);
+  }
+  const paginatedData = result.data as any;
+  return createSuccessResponse(paginatedData.items, undefined, paginatedData.pagination);
 }
 
 /**
@@ -51,17 +69,48 @@ export function handleServiceResult(
 export function handleRouteError(error: any, operation: string) {
   console.error(`${operation} error:`, error);
 
-  if (error instanceof Error) {
-    if (error.message.includes('not found')) {
-      return createErrorResponse('Character not found', 404);
-    }
-    if (error.message.includes('access denied') || error.message.includes('forbidden')) {
-      return createErrorResponse('Access denied', 403);
-    }
-    if (error.message.includes('validation')) {
-      return createErrorResponse('Validation failed', 400);
-    }
+  if (!(error instanceof Error)) {
+    return createErrorResponse('Internal server error', 500);
+  }
+
+  const message = error.message.toLowerCase();
+  if (message.includes('not found')) {
+    return createErrorResponse('Character not found', 404);
+  }
+  if (message.includes('access denied') || message.includes('forbidden')) {
+    return createErrorResponse('Access denied', 403);
+  }
+  if (message.includes('validation')) {
+    return createErrorResponse('Validation failed', 400);
   }
 
   return createErrorResponse('Internal server error', 500);
+}
+
+/**
+ * Validate character creation data
+ */
+export function validateCharacterCreation(body: any) {
+  const validation = characterCreationSchema.safeParse(body);
+  if (!validation.success) {
+    return {
+      isValid: false,
+      error: createErrorResponse('Validation failed', 400, validation.error.errors)
+    };
+  }
+  return { isValid: true, data: validation.data };
+}
+
+/**
+ * Validate character update data
+ */
+export function validateCharacterUpdate(body: any) {
+  const validation = characterUpdateSchema.safeParse(body);
+  if (!validation.success) {
+    return {
+      isValid: false,
+      error: createErrorResponse('Validation failed', 400, validation.error.errors)
+    };
+  }
+  return { isValid: true, data: validation.data };
 }
