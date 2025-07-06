@@ -72,8 +72,8 @@ describe('Sidebar', () => {
       expect(flexContainer).toBeInTheDocument();
     });
 
-    test('contains header, navigation, and footer sections', () => {
-      render(<Sidebar isOpen={true} />);
+    test('contains header, navigation, and footer sections when authenticated', () => {
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       // Header with logo
       expect(screen.getByText('D&D Tracker')).toBeInTheDocument();
@@ -81,9 +81,23 @@ describe('Sidebar', () => {
       // Navigation section
       expect(screen.getByRole('navigation')).toBeInTheDocument();
 
-      // Footer with user info
+      // Footer with user info (only shown when authenticated)
       expect(screen.getByText('Demo User')).toBeInTheDocument();
       expect(screen.getByText('demo@example.com')).toBeInTheDocument();
+    });
+
+    test('contains header and navigation sections only when unauthenticated', () => {
+      render(<Sidebar isOpen={true} isAuthenticated={false} />);
+
+      // Header with logo
+      expect(screen.getByText('D&D Tracker')).toBeInTheDocument();
+
+      // Navigation section
+      expect(screen.getByRole('navigation')).toBeInTheDocument();
+
+      // Footer should not be shown when unauthenticated
+      expect(screen.queryByText('Demo User')).not.toBeInTheDocument();
+      expect(screen.queryByText('demo@example.com')).not.toBeInTheDocument();
     });
   });
 
@@ -121,8 +135,8 @@ describe('Sidebar', () => {
   });
 
   describe('Navigation Items', () => {
-    test('renders all primary navigation items', () => {
-      render(<Sidebar isOpen={true} />);
+    test('renders all authenticated navigation items when authenticated', () => {
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       expect(screen.getByText('Dashboard')).toBeInTheDocument();
       expect(screen.getByText('Characters')).toBeInTheDocument();
@@ -131,19 +145,27 @@ describe('Sidebar', () => {
       expect(screen.getByText('Combat')).toBeInTheDocument();
     });
 
-    test('renders all secondary navigation items', () => {
-      render(<Sidebar isOpen={true} />);
+    test('renders unauthenticated navigation items when not authenticated', () => {
+      render(<Sidebar isOpen={true} isAuthenticated={false} />);
+
+      expect(screen.getByText('Home')).toBeInTheDocument();
+      expect(screen.queryByText('Dashboard')).not.toBeInTheDocument();
+      expect(screen.queryByText('Characters')).not.toBeInTheDocument();
+    });
+
+    test('renders all secondary navigation items when authenticated', () => {
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       expect(screen.getByText('Settings')).toBeInTheDocument();
       expect(screen.getByText('Help')).toBeInTheDocument();
     });
 
-    test('navigation items have correct href attributes', () => {
-      render(<Sidebar isOpen={true} />);
+    test('navigation items have correct href attributes when authenticated', () => {
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       expect(screen.getByText('Dashboard').closest('a')).toHaveAttribute(
         'href',
-        '/'
+        '/dashboard'
       );
       expect(screen.getByText('Characters').closest('a')).toHaveAttribute(
         'href',
@@ -172,7 +194,7 @@ describe('Sidebar', () => {
     });
 
     test('navigation items have icons', () => {
-      render(<Sidebar isOpen={true} />);
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       const dashboardLink = screen.getByText('Dashboard').closest('a');
       const icon = dashboardLink?.querySelector('svg');
@@ -182,8 +204,8 @@ describe('Sidebar', () => {
       expect(icon).toHaveAttribute('viewBox', '0 0 24 24');
     });
 
-    test('has visual separator between primary and secondary navigation', () => {
-      render(<Sidebar isOpen={true} />);
+    test('has visual separator between primary and secondary navigation when authenticated', () => {
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       const separator = screen
         .getByRole('navigation')
@@ -194,9 +216,9 @@ describe('Sidebar', () => {
   });
 
   describe('Active State Handling', () => {
-    test('highlights active navigation item based on current pathname', () => {
+    test('highlights active navigation item based on current pathname when authenticated', () => {
       mockUsePathname.mockReturnValue('/characters');
-      render(<Sidebar isOpen={true} />);
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       const charactersLink = screen.getByText('Characters').closest('a');
       expect(charactersLink).toHaveClass('bg-primary text-primary-foreground');
@@ -204,24 +226,32 @@ describe('Sidebar', () => {
 
     test('inactive navigation items have muted styling', () => {
       mockUsePathname.mockReturnValue('/characters');
-      render(<Sidebar isOpen={true} />);
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       const dashboardLink = screen.getByText('Dashboard').closest('a');
       expect(dashboardLink).toHaveClass('text-muted-foreground');
       expect(dashboardLink).not.toHaveClass('bg-primary');
     });
 
-    test('active state works for root path', () => {
-      mockUsePathname.mockReturnValue('/');
-      render(<Sidebar isOpen={true} />);
+    test('active state works for dashboard path when authenticated', () => {
+      mockUsePathname.mockReturnValue('/dashboard');
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       const dashboardLink = screen.getByText('Dashboard').closest('a');
       expect(dashboardLink).toHaveClass('bg-primary text-primary-foreground');
     });
 
+    test('active state works for root path when unauthenticated', () => {
+      mockUsePathname.mockReturnValue('/');
+      render(<Sidebar isOpen={true} isAuthenticated={false} />);
+
+      const homeLink = screen.getByText('Home').closest('a');
+      expect(homeLink).toHaveClass('bg-primary text-primary-foreground');
+    });
+
     test('active state works for secondary navigation items', () => {
       mockUsePathname.mockReturnValue('/settings');
-      render(<Sidebar isOpen={true} />);
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       const settingsLink = screen.getByText('Settings').closest('a');
       expect(settingsLink).toHaveClass('bg-primary text-primary-foreground');
@@ -229,7 +259,7 @@ describe('Sidebar', () => {
 
     test('only one navigation item is active at a time', () => {
       mockUsePathname.mockReturnValue('/combat');
-      render(<Sidebar isOpen={true} />);
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       const combatLink = screen.getByText('Combat').closest('a');
       const dashboardLink = screen.getByText('Dashboard').closest('a');
@@ -242,15 +272,22 @@ describe('Sidebar', () => {
   });
 
   describe('User Profile Footer', () => {
-    test('renders user profile section', () => {
-      render(<Sidebar isOpen={true} />);
+    test('renders user profile section when authenticated', () => {
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       expect(screen.getByText('Demo User')).toBeInTheDocument();
       expect(screen.getByText('demo@example.com')).toBeInTheDocument();
     });
 
-    test('user profile has correct styling', () => {
-      render(<Sidebar isOpen={true} />);
+    test('does not render user profile section when unauthenticated', () => {
+      render(<Sidebar isOpen={true} isAuthenticated={false} />);
+
+      expect(screen.queryByText('Demo User')).not.toBeInTheDocument();
+      expect(screen.queryByText('demo@example.com')).not.toBeInTheDocument();
+    });
+
+    test('user profile has correct styling when authenticated', () => {
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       const userSection = screen
         .getByText('Demo User')
@@ -258,8 +295,8 @@ describe('Sidebar', () => {
       expect(userSection).toBeInTheDocument();
     });
 
-    test('user avatar placeholder exists', () => {
-      render(<Sidebar isOpen={true} />);
+    test('user avatar placeholder exists when authenticated', () => {
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       const avatar = screen
         .getByText('Demo User')
@@ -269,8 +306,8 @@ describe('Sidebar', () => {
       expect(avatar).toBeInTheDocument();
     });
 
-    test('user info has proper text truncation', () => {
-      render(<Sidebar isOpen={true} />);
+    test('user info has proper text truncation when authenticated', () => {
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       const userName = screen.getByText('Demo User');
       const userEmail = screen.getByText('demo@example.com');
@@ -284,14 +321,14 @@ describe('Sidebar', () => {
 
   describe('Navigation Link Component', () => {
     test('navigation links have proper hover states', () => {
-      render(<Sidebar isOpen={true} />);
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       const dashboardLink = screen.getByText('Dashboard').closest('a');
       expect(dashboardLink).toHaveClass('transition-colors');
     });
 
     test('navigation links have consistent spacing and padding', () => {
-      render(<Sidebar isOpen={true} />);
+      render(<Sidebar isOpen={true} isAuthenticated={true} />);
 
       const links = screen.getAllByRole('link');
       const navigationLinks = links.filter(link =>

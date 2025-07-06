@@ -284,28 +284,40 @@ describe('MobileMenu', () => {
   });
 
   describe('Navigation Items', () => {
-    test('renders all navigation items', () => {
-      render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+    test('renders authenticated navigation items when authenticated', () => {
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={true} />);
 
+      // Should show all authenticated navigation items
       NAVIGATION_ITEMS.forEach(item => {
         expect(screen.getByText(item.text)).toBeInTheDocument();
       });
     });
 
-    test('navigation items have correct href attributes', () => {
-      render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+    test('renders unauthenticated navigation items when not authenticated', () => {
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={false} />);
+
+      // Should only show Home navigation item
+      expect(screen.getByText('Home')).toBeInTheDocument();
+
+      // Should not show authenticated navigation items
+      expect(screen.queryByText('Dashboard')).not.toBeInTheDocument();
+      expect(screen.queryByText('Characters')).not.toBeInTheDocument();
+    });
+
+    test('navigation items have correct href attributes when authenticated', () => {
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={true} />);
       testNavigationLinks();
     });
 
-    test('navigation items have icons', () => {
-      render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+    test('navigation items have icons when authenticated', () => {
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={true} />);
 
       const dashboardLink = screen.getByText('Dashboard').closest('a');
       assertSvgIcon(dashboardLink);
     });
 
     test('navigation links call onClose when clicked', () => {
-      render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={true} />);
 
       const dashboardLink = screen.getByText('Dashboard').closest('a');
       fireEvent.click(dashboardLink!);
@@ -315,27 +327,33 @@ describe('MobileMenu', () => {
   });
 
   describe('Active State Handling', () => {
-    test('highlights active navigation item based on current pathname', () => {
+    test('highlights active navigation item based on current pathname when authenticated', () => {
       mockUsePathname.mockReturnValue('/characters');
-      render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={true} />);
       assertActiveNavigation('Characters');
     });
 
-    test('inactive navigation items have muted styling', () => {
+    test('inactive navigation items have muted styling when authenticated', () => {
       mockUsePathname.mockReturnValue('/characters');
-      render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={true} />);
       assertInactiveNavigation('Dashboard');
     });
 
-    test('active state works for root path', () => {
-      mockUsePathname.mockReturnValue('/');
-      render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+    test('active state works for dashboard path when authenticated', () => {
+      mockUsePathname.mockReturnValue('/dashboard');
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={true} />);
       assertActiveNavigation('Dashboard');
     });
 
-    test('only one navigation item is active at a time', () => {
+    test('active state works for root path when unauthenticated', () => {
+      mockUsePathname.mockReturnValue('/');
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={false} />);
+      assertActiveNavigation('Home');
+    });
+
+    test('only one navigation item is active at a time when authenticated', () => {
       mockUsePathname.mockReturnValue('/combat');
-      render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={true} />);
 
       assertActiveNavigation('Combat');
       assertInactiveNavigation('Dashboard');
@@ -351,7 +369,7 @@ describe('MobileMenu', () => {
 
     test('does not render user profile section when unauthenticated', () => {
       render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={false} />);
-      
+
       expect(screen.queryByText('Demo User')).not.toBeInTheDocument();
       expect(screen.queryByText('demo@example.com')).not.toBeInTheDocument();
     });
@@ -407,14 +425,14 @@ describe('MobileMenu', () => {
     });
 
     test('navigation links have proper hover states', () => {
-      render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={true} />);
 
       const dashboardLink = screen.getByText('Dashboard').closest('a');
       expect(dashboardLink).toHaveClass('transition-colors');
     });
 
     test('navigation links have consistent spacing and padding', () => {
-      render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={true} />);
 
       const links = screen.getAllByRole('link');
       const navigationLinks = links.filter(link =>
