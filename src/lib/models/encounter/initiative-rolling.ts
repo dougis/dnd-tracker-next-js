@@ -15,7 +15,17 @@ export interface InitiativeRollResult {
  */
 export interface InitiativeEntryWithInfo extends IInitiativeEntry {
   name: string;
-  type: 'pc' | 'npc';
+  type: 'pc' | 'npc' | 'monster';
+}
+
+/**
+ * Extended participant interface with ability scores for rolling
+ */
+export interface IParticipantWithAbilityScores extends IParticipantReference {
+  abilityScores: {
+    dexterity: number;
+    [key: string]: number;
+  };
 }
 
 /**
@@ -44,7 +54,7 @@ export function rollInitiativeWithModifier(dexterity: number): InitiativeRollRes
  * Generate initiative entries from participants without rolling
  */
 export function generateInitiativeEntries(
-  participants: IParticipantReference[],
+  participants: IParticipantWithAbilityScores[],
   preserveExisting = false
 ): IInitiativeEntry[] {
   return participants.map((participant) => ({
@@ -60,11 +70,11 @@ export function generateInitiativeEntries(
  * Roll initiative for all participants and return sorted entries
  */
 export function rollBulkInitiative(
-  participants: IParticipantReference[]
+  participants: IParticipantWithAbilityScores[]
 ): InitiativeEntryWithInfo[] {
   const entries: InitiativeEntryWithInfo[] = participants.map((participant) => {
     const rollResult = rollInitiativeWithModifier(participant.abilityScores.dexterity);
-    
+
     return {
       participantId: participant.characterId,
       initiative: rollResult.total,
@@ -94,7 +104,7 @@ export function rerollInitiative(
     }
 
     const rollResult = rollInitiativeWithModifier(entry.dexterity);
-    
+
     return {
       ...entry,
       initiative: rollResult.total,
@@ -114,7 +124,7 @@ export function rollSingleInitiative(
   dexterity: number
 ): IInitiativeEntry[] {
   const rollResult = rollInitiativeWithModifier(dexterity);
-  
+
   const entries = currentEntries.map((entry) => {
     if (entry.participantId.toString() === participantId) {
       return {
@@ -138,7 +148,7 @@ export function getInitiativeRollBreakdown(
 ): { d20Roll: number; modifier: number } {
   const modifier = calculateInitiativeModifier(dexterity);
   const d20Roll = total - modifier;
-  
+
   return {
     d20Roll: Math.max(1, Math.min(20, d20Roll)), // Ensure valid d20 range
     modifier,
