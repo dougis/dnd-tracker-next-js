@@ -4,8 +4,6 @@ import { IEncounter } from '@/lib/models/encounter/interfaces';
 
 /**
  * Validates and retrieves an encounter by ID
- * @param encounterId - The encounter ID to validate
- * @returns Promise<{ encounter: IEncounter | null; errorResponse: NextResponse | null }>
  */
 export async function validateAndGetEncounter(encounterId: string): Promise<{
   encounter: IEncounter | null;
@@ -14,7 +12,7 @@ export async function validateAndGetEncounter(encounterId: string): Promise<{
   try {
     const encounterResult = await EncounterService.getEncounterById(encounterId);
 
-    if (!encounterResult.success) {
+    if (!encounterResult.success || !encounterResult.data) {
       return {
         encounter: null,
         errorResponse: NextResponse.json(
@@ -24,18 +22,7 @@ export async function validateAndGetEncounter(encounterId: string): Promise<{
       };
     }
 
-    const encounter = encounterResult.data;
-    if (!encounter) {
-      return {
-        encounter: null,
-        errorResponse: NextResponse.json(
-          { success: false, message: 'Encounter not found' },
-          { status: 404 }
-        )
-      };
-    }
-
-    return { encounter, errorResponse: null };
+    return { encounter: encounterResult.data, errorResponse: null };
   } catch (_error) {
     console.error('Error validating and getting encounter:', _error);
     return {
@@ -50,8 +37,6 @@ export async function validateAndGetEncounter(encounterId: string): Promise<{
 
 /**
  * Validates that combat is active for an encounter
- * @param encounter - The encounter to validate
- * @returns NextResponse | null - Error response if invalid, null if valid
  */
 export function validateCombatActive(encounter: IEncounter): NextResponse | null {
   if (!encounter.combatState?.isActive) {
@@ -65,9 +50,6 @@ export function validateCombatActive(encounter: IEncounter): NextResponse | null
 
 /**
  * Validates required fields from request body
- * @param body - The request body
- * @param requiredFields - Array of required field names
- * @returns NextResponse | null - Error response if invalid, null if valid
  */
 export function validateRequiredFields(
   body: any,
@@ -90,9 +72,6 @@ export function validateRequiredFields(
 
 /**
  * Finds a participant in the initiative order
- * @param encounter - The encounter to search
- * @param participantId - The participant ID to find
- * @returns The initiative entry or null if not found
  */
 export function findParticipantInInitiative(encounter: IEncounter, participantId: string) {
   return encounter.combatState.initiativeOrder.find(
@@ -102,8 +81,6 @@ export function findParticipantInInitiative(encounter: IEncounter, participantId
 
 /**
  * Creates a standard success response
- * @param encounter - The encounter to return
- * @returns NextResponse with success format
  */
 export function createSuccessResponse(encounter: IEncounter): NextResponse {
   return NextResponse.json({
@@ -114,9 +91,6 @@ export function createSuccessResponse(encounter: IEncounter): NextResponse {
 
 /**
  * Creates a standard error response
- * @param message - Error message
- * @param status - HTTP status code
- * @returns NextResponse with error format
  */
 export function createErrorResponse(message: string, status: number): NextResponse {
   return NextResponse.json(
@@ -127,9 +101,6 @@ export function createErrorResponse(message: string, status: number): NextRespon
 
 /**
  * Handles async errors and returns standard error response
- * @param error - The error that occurred
- * @param operation - Description of the operation that failed
- * @returns NextResponse with error format
  */
 export function handleAsyncError(_error: any, operation: string): NextResponse {
   console.error(`Error ${operation}:`, _error);
