@@ -23,7 +23,7 @@ export function HPQuickButtons({
   disabled = false,
   className,
 }: HPQuickButtonsProps) {
-  const buttonSize = compact ? 'sm' : 'sm';
+  const buttonSize = compact ? 'sm' : 'default';
   const spacing = compact ? 'space-x-1' : 'space-x-2';
 
   return (
