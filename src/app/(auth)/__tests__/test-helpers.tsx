@@ -1,6 +1,7 @@
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import userEvent from '@testing-library/user-event';
+import { screen } from '@testing-library/react';
 
 export const TEST_USER_ID = '123';
 export const TEST_EMAIL = 'test@example.com';
@@ -66,6 +67,26 @@ export const submitForm = async () => {
   if (submitButton) {
     await userEvent.click(submitButton);
   }
+};
+
+export const fillProfileFormField = async (fieldLabel: string | RegExp, value: string) => {
+  const fieldInput = screen.getByLabelText(fieldLabel);
+  await userEvent.clear(fieldInput);
+  await userEvent.type(fieldInput, value);
+};
+
+export const clickCompleteSetupButton = async () => {
+  await userEvent.click(screen.getByRole('button', { name: /Complete Setup/i }));
+};
+
+export const expectProfileApiCall = (userId: string = '123') => {
+  expect(global.fetch).toHaveBeenCalledWith(
+    `/api/users/${userId}/profile`,
+    expect.objectContaining({
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+    })
+  );
 };
 
 export const setupMocksForTest = () => {

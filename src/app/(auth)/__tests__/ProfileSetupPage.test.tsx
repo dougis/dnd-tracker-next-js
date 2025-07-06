@@ -6,6 +6,9 @@ import ProfileSetupPage from '../profile-setup/page';
 import {
   setupMocksForTest,
   createFailedFetchMock,
+  fillProfileFormField,
+  clickCompleteSetupButton,
+  expectProfileApiCall,
 } from './test-helpers';
 
 // Mock next/navigation
@@ -84,30 +87,12 @@ describe('ProfileSetupPage Component', () => {
 
     render(<ProfileSetupPage />);
 
-    // Clear the default value and type the new value
-    const displayNameInput = screen.getByLabelText(/Display Name/i);
-    await userEvent.clear(displayNameInput);
-    await userEvent.type(displayNameInput, 'John the Dungeon Master');
-
-    // For FormSelect components, we need to clear and type the value
-    const dndEditionInput = screen.getByLabelText(/Preferred D&D Edition/i);
-    await userEvent.clear(dndEditionInput);
-    await userEvent.type(dndEditionInput, 'Pathfinder 2e');
-
-    await userEvent.click(
-      screen.getByRole('button', { name: /Complete Setup/i })
-    );
+    await fillProfileFormField(/Display Name/i, 'John the Dungeon Master');
+    await fillProfileFormField(/Preferred D&D Edition/i, 'Pathfinder 2e');
+    await clickCompleteSetupButton();
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/users/123/profile',
-        expect.objectContaining({
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-      );
+      expectProfileApiCall('123');
 
       const actualCall = (global.fetch as jest.Mock).mock.calls[0][1];
       const parsedBody = JSON.parse(actualCall.body);
@@ -122,13 +107,8 @@ describe('ProfileSetupPage Component', () => {
   it('shows success screen after successful profile setup', async () => {
     render(<ProfileSetupPage />);
 
-    const displayNameInput = screen.getByLabelText(/Display Name/i);
-    await userEvent.clear(displayNameInput);
-    await userEvent.type(displayNameInput, 'Test User');
-
-    await userEvent.click(
-      screen.getByRole('button', { name: /Complete Setup/i })
-    );
+    await fillProfileFormField(/Display Name/i, 'Test User');
+    await clickCompleteSetupButton();
 
     await waitFor(() => {
       expect(screen.getByText('Profile Setup Complete!')).toBeInTheDocument();
@@ -154,10 +134,7 @@ describe('ProfileSetupPage Component', () => {
   it('allows submitting empty form (all fields are optional)', async () => {
     render(<ProfileSetupPage />);
 
-    // Submit without filling any fields
-    await userEvent.click(
-      screen.getByRole('button', { name: /Complete Setup/i })
-    );
+    await clickCompleteSetupButton();
 
     await waitFor(() => {
       // Should show success screen since all profile fields are optional
@@ -170,19 +147,11 @@ describe('ProfileSetupPage Component', () => {
 
     render(<ProfileSetupPage />);
 
-    const displayNameInput = screen.getByLabelText(/Display Name/i);
-    await userEvent.clear(displayNameInput);
-    await userEvent.type(displayNameInput, 'Test');
-
-    await userEvent.click(
-      screen.getByRole('button', { name: /Complete Setup/i })
-    );
+    await fillProfileFormField(/Display Name/i, 'Test');
+    await clickCompleteSetupButton();
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/users/123/profile',
-        expect.objectContaining({ method: 'PATCH' })
-      );
+      expectProfileApiCall('123');
       expect(mockRouter.push).not.toHaveBeenCalledWith('/dashboard');
       expect(screen.getByRole('button', { name: /Complete Setup/i })).toBeEnabled();
     });
@@ -192,13 +161,8 @@ describe('ProfileSetupPage Component', () => {
     render(<ProfileSetupPage />);
 
     // Complete the form first
-    const displayNameInput = screen.getByLabelText(/Display Name/i);
-    await userEvent.clear(displayNameInput);
-    await userEvent.type(displayNameInput, 'Test User');
-
-    await userEvent.click(
-      screen.getByRole('button', { name: /Complete Setup/i })
-    );
+    await fillProfileFormField(/Display Name/i, 'Test User');
+    await clickCompleteSetupButton();
 
     // Wait for success screen
     await waitFor(() => {

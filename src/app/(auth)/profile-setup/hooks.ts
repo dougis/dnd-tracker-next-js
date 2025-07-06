@@ -67,6 +67,47 @@ export function useProfileForm(initialDisplayName: string = '', userId?: string)
     };
   }, [formData]);
 
+  const submitProfileData = useCallback(async (userId: string, data: any) => {
+    const response = await fetch(`/api/users/${userId}/profile`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 400 && result.errors) {
+        throw { type: 'validation', errors: result.errors };
+      }
+      throw new Error(result.message || 'Profile setup failed');
+    }
+
+    return result;
+  }, []);
+
+  const handleValidationError = useCallback((error: z.ZodError) => {
+    setError(error.errors.map(err => ({
+      field: err.path.join('.'),
+      message: err.message,
+    })));
+  }, [setError]);
+
+  const handleApiError = useCallback((error: any) => {
+    if (error.type === 'validation') {
+      setError(error.errors.map((err: any) => ({
+        field: err.field || '',
+        message: err.message,
+      })));
+      return;
+    }
+
+    setError([{
+      field: '',
+      message: error instanceof Error ? error.message : 'An unexpected error occurred',
+    }]);
+  }, [setError]);
+
   const handleSubmit = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -80,42 +121,16 @@ export function useProfileForm(initialDisplayName: string = '', userId?: string)
     try {
       const data = createFormDataObject();
       const validatedData = userProfileUpdateSchema.parse(data);
-
-      const response = await fetch(`/api/users/${userId}/profile`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(validatedData),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 400 && result.errors) {
-          setError(result.errors.map((err: any) => ({
-            field: err.field || '',
-            message: err.message,
-          })));
-          return;
-        }
-        throw new Error(result.message || 'Profile setup failed');
-      }
-
+      await submitProfileData(userId, validatedData);
       setSuccess();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        setError(error.errors.map(err => ({
-          field: err.path.join('.'),
-          message: err.message,
-        })));
-        return;
+        handleValidationError(error);
+      } else {
+        handleApiError(error);
       }
-
-      setError([{
-        field: '',
-        message: error instanceof Error ? error.message : 'An unexpected error occurred',
-      }]);
     }
-  }, [userId, createFormDataObject, setError, setSuccess, setSubmitting]);
+  }, [userId, createFormDataObject, setError, setSuccess, setSubmitting, submitProfileData, handleValidationError, handleApiError]);
 
   return {
     formState,
