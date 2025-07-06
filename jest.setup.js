@@ -1,3 +1,4 @@
+const debug_logs = false;
 // This adds custom jest matchers from jest-dom
 require('@testing-library/jest-dom');
 
@@ -8,20 +9,25 @@ require('./src/__mocks__/jest-setup-node-globals');
 // For CI environment, these should be set in the GitHub workflow
 // For local testing, we use these defaults
 if (!process.env.MONGODB_URI) {
-  console.log('Setting default MONGODB_URI for tests');
+  if (debug_logs) {
+    console.log('No MONGODB_URI set, using default for tests');
+  }
   process.env.MONGODB_URI = 'mongodb://localhost:27017/testdb';
 }
 
 if (!process.env.MONGODB_DB_NAME) {
-  console.log('Setting default MONGODB_DB_NAME for tests');
+  if (debug_logs) {
+    console.log('No MONGODB_DB_NAME set, using default for tests');
+  }
   process.env.MONGODB_DB_NAME = 'testdb';
 }
 
 // Log the MongoDB connection details for debugging
-console.log(
-  `Using MongoDB: ${process.env.MONGODB_URI}, DB: ${process.env.MONGODB_DB_NAME}`
-);
-
+if (debug_logs) {
+  console.log(
+    `Using MongoDB: ${process.env.MONGODB_URI}, DB: ${process.env.MONGODB_DB_NAME}`
+  );
+}
 // Set up missing browser APIs
 global.MutationObserver = class {
   constructor(_callback) {}
