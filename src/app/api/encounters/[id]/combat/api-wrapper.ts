@@ -46,10 +46,19 @@ export function withCombatValidation(
     try {
       const { id: encounterId } = await context.params;
 
-      // Parse body if required
+      // Parse body if required or if there's content
       let body;
-      if (config.requireBody || config.requiredFields) {
-        body = await request.json();
+      if (config.requireBody || config.requiredFields || request.headers.get('content-length') !== '0') {
+        try {
+          body = await request.json();
+        } catch (error) {
+          // If parsing fails and body is not required, set to empty object
+          if (!config.requireBody) {
+            body = {};
+          } else {
+            throw error;
+          }
+        }
 
         // Validate required fields
         if (config.requiredFields) {
