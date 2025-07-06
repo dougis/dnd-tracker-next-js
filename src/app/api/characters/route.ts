@@ -1,126 +1,93 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { CharacterService } from '@/lib/services/CharacterService';
 import { characterCreationSchema } from '@/lib/validations/character';
 import { connectToDatabase } from '@/lib/db';
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  validateAuth,
+  parseQueryParams
+} from './helpers/api-helpers';
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
+async function handleSearch(search: string, userId: string) {
+  const result = await CharacterService.searchCharacters(search, userId);
+  return result.success ? createSuccessResponse(result.data) : null;
+}
+
+async function handleTypeFilter(type: string, userId: string) {
+  const result = await CharacterService.getCharactersByType(type as any, userId);
+  return result.success ? createSuccessResponse(result.data) : null;
+}
+
+async function handlePaginatedQuery(userId: string, page: number, limit: number) {
+  const result = await CharacterService.getCharactersByOwner(userId, page, limit);
+  return result.success
+    ? createSuccessResponse(result.data.items, undefined, result.data.pagination)
+    : null;
+}
+
+export async function GET(request: NextRequest) {
   try {
     await connectToDatabase();
 
-    const userId = request.headers.get('x-user-id');
+    const userId = validateAuth(request);
     if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return createErrorResponse('Unauthorized', 401);
     }
 
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type');
-    const search = searchParams.get('search');
-    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 50;
-    const page = searchParams.get('page') ? parseInt(searchParams.get('page')!) : 1;
+    const { type, search, limit, page } = parseQueryParams(request.url);
 
-    // Handle different query types
-    let result;
+    let response = null;
     if (search) {
-      result = await CharacterService.searchCharacters(search, userId);
-      if (result.success) {
-        return NextResponse.json({
-          success: true,
-          data: result.data,
-        });
-      }
+      response = await handleSearch(search, userId);
     } else if (type) {
-      result = await CharacterService.getCharactersByType(type as any, userId);
-      if (result.success) {
-        return NextResponse.json({
-          success: true,
-          data: result.data,
-        });
-      }
+      response = await handleTypeFilter(type, userId);
     } else {
-      // Get all characters by owner with pagination
-      const paginatedResult = await CharacterService.getCharactersByOwner(userId, page, limit);
-      if (paginatedResult.success) {
-        return NextResponse.json({
-          success: true,
-          data: paginatedResult.data.items,
-          pagination: paginatedResult.data.pagination
-        });
-      }
+      response = await handlePaginatedQuery(userId, page, limit);
     }
 
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch characters' },
-      { status: 500 }
-    );
+    return response || createErrorResponse('Failed to fetch characters', 500);
   } catch (error) {
     console.error('GET /api/characters error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return createErrorResponse('Internal server error', 500);
   }
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+async function validateCharacterData(body: any) {
+  const validation = characterCreationSchema.safeParse(body);
+  if (!validation.success) {
+    return {
+      isValid: false,
+      error: createErrorResponse('Validation failed', 400, validation.error.errors)
+    };
+  }
+  return { isValid: true, data: validation.data };
+}
+
+export async function POST(request: NextRequest) {
   try {
     await connectToDatabase();
 
-    const userId = request.headers.get('x-user-id');
+    const userId = validateAuth(request);
     if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return createErrorResponse('Unauthorized', 401);
     }
 
     const body = await request.json();
+    const validation = await validateCharacterData(body);
 
-    // Validate the request body
-    const validation = characterCreationSchema.safeParse(body);
-    if (!validation.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Validation failed',
-          details: validation.error.errors
-        },
-        { status: 400 }
-      );
+    if (!validation.isValid) {
+      return validation.error!;
     }
 
-    const result = await CharacterService.createCharacter(userId, validation.data);
-
+    const result = await CharacterService.createCharacter(userId, validation.data!);
     if (!result.success) {
-      return NextResponse.json(
-        { success: false, error: result.error },
-        { status: 400 }
-      );
+      return createErrorResponse(result.error, 400);
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: result.data,
-        message: 'Character created successfully'
-      },
-      { status: 201 }
-    );
+    return createSuccessResponse(result.data, 'Character created successfully', undefined, 201);
   } catch (error) {
     console.error('POST /api/characters error:', error);
-
-    if (error instanceof Error && error.message.includes('validation')) {
-      return NextResponse.json(
-        { success: false, error: 'Validation failed', details: error.message },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return createErrorResponse('Internal server error', 500);
   }
 }

@@ -25,7 +25,10 @@ describe('/api/characters/[id] API Route', () => {
     it('should return character when user owns it', async () => {
       // Arrange
       const character = createTestCharacter();
-      mockCharacterService.getCharacterById.mockResolvedValue(character);
+      mockCharacterService.getCharacterById.mockResolvedValue({
+        success: true,
+        data: character
+      });
 
       const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
         headers: { 'x-user-id': TEST_USER_ID }
@@ -41,14 +44,17 @@ describe('/api/characters/[id] API Route', () => {
       expect(data.data.name).toBe('Test Character');
       expect(data.data._id).toBe(TEST_CHARACTER_ID);
       expect(mockCharacterService.getCharacterById).toHaveBeenCalledWith(
-        TEST_USER_ID,
-        TEST_CHARACTER_ID
+        TEST_CHARACTER_ID,
+        TEST_USER_ID
       );
     });
 
     it('should return 404 when character does not exist', async () => {
       // Arrange
-      mockCharacterService.getCharacterById.mockResolvedValue(null);
+      mockCharacterService.getCharacterById.mockResolvedValue({
+        success: false,
+        error: { code: 'CHARACTER_NOT_FOUND', message: 'Character not found' }
+      });
 
       const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
         headers: { 'x-user-id': TEST_USER_ID }
@@ -83,7 +89,10 @@ describe('/api/characters/[id] API Route', () => {
         name: 'Public Character',
         isPublic: true
       });
-      mockCharacterService.getCharacterById.mockResolvedValue(publicCharacter);
+      mockCharacterService.getCharacterById.mockResolvedValue({
+        success: true,
+        data: publicCharacter
+      });
 
       const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
         headers: { 'x-user-id': 'other-user-id' }
@@ -120,7 +129,10 @@ describe('/api/characters/[id] API Route', () => {
       };
 
       const updatedCharacter = createTestCharacter(updateData);
-      mockCharacterService.updateCharacter.mockResolvedValue(updatedCharacter);
+      mockCharacterService.updateCharacter.mockResolvedValue({
+        success: true,
+        data: updatedCharacter
+      });
 
       const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
         method: 'PUT',
@@ -142,15 +154,18 @@ describe('/api/characters/[id] API Route', () => {
       // expect(data.data.level).toBe(2); // Level is calculated from classes, not directly settable
       expect(data.data.hitPoints.maximum).toBe(19);
       expect(mockCharacterService.updateCharacter).toHaveBeenCalledWith(
-        TEST_USER_ID,
         TEST_CHARACTER_ID,
+        TEST_USER_ID,
         updateData
       );
     });
 
     it('should return 404 when character does not exist', async () => {
       // Arrange
-      mockCharacterService.updateCharacter.mockResolvedValue(null);
+      mockCharacterService.updateCharacter.mockResolvedValue({
+        success: false,
+        error: { code: 'CHARACTER_NOT_FOUND', message: 'Character not found' }
+      });
 
       const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
         method: 'PUT',
@@ -193,7 +208,10 @@ describe('/api/characters/[id] API Route', () => {
   describe('DELETE /api/characters/[id]', () => {
     it('should delete character when user owns it', async () => {
       // Arrange
-      mockCharacterService.deleteCharacter.mockResolvedValue(true);
+      mockCharacterService.deleteCharacter.mockResolvedValue({
+        success: true,
+        data: undefined
+      });
 
       const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
         method: 'DELETE',
@@ -209,14 +227,17 @@ describe('/api/characters/[id] API Route', () => {
       expect(data.success).toBe(true);
       expect(data.message).toBe('Character deleted successfully');
       expect(mockCharacterService.deleteCharacter).toHaveBeenCalledWith(
-        TEST_USER_ID,
-        TEST_CHARACTER_ID
+        TEST_CHARACTER_ID,
+        TEST_USER_ID
       );
     });
 
     it('should return 404 when character does not exist', async () => {
       // Arrange
-      mockCharacterService.deleteCharacter.mockResolvedValue(false);
+      mockCharacterService.deleteCharacter.mockResolvedValue({
+        success: false,
+        error: { code: 'CHARACTER_NOT_FOUND', message: 'Character not found' }
+      });
 
       const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
         method: 'DELETE',

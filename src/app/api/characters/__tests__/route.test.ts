@@ -28,9 +28,12 @@ describe('/api/characters API Route', () => {
         createTestCharacter({ name: 'Test Character 2', type: 'npc' }),
       ];
 
-      mockCharacterService.searchCharacters.mockResolvedValue({
-        characters,
-        total: 2,
+      mockCharacterService.getCharactersByOwner.mockResolvedValue({
+        success: true,
+        data: {
+          items: characters,
+          pagination: { page: 1, limit: 50, total: 2, totalPages: 1 }
+        }
       });
 
       const request = createMockRequest('http://localhost:3000/api/characters', {
@@ -48,18 +51,19 @@ describe('/api/characters API Route', () => {
       expect(data.data.map((c: any) => c.name)).toEqual(
         expect.arrayContaining(['Test Character 1', 'Test Character 2'])
       );
-      expect(mockCharacterService.searchCharacters).toHaveBeenCalledWith(
-        TEST_USER_ID,
-        {},
-        { limit: 50, offset: 0 }
+      expect(mockCharacterService.getCharactersByOwner).toHaveBeenCalledWith(
+        TEST_USER_ID, 1, 50
       );
     });
 
     it('should return empty array for user with no characters', async () => {
       // Arrange
-      mockCharacterService.searchCharacters.mockResolvedValue({
-        characters: [],
-        total: 0,
+      mockCharacterService.getCharactersByOwner.mockResolvedValue({
+        success: true,
+        data: {
+          items: [],
+          pagination: { page: 1, limit: 50, total: 0, totalPages: 0 }
+        }
       });
 
       const request = createMockRequest('http://localhost:3000/api/characters', {
@@ -93,9 +97,9 @@ describe('/api/characters API Route', () => {
         createTestCharacter({ name: 'PC Character', type: 'pc' }),
       ];
 
-      mockCharacterService.searchCharacters.mockResolvedValue({
-        characters: pcCharacters,
-        total: 1,
+      mockCharacterService.getCharactersByType.mockResolvedValue({
+        success: true,
+        data: pcCharacters
       });
 
       const request = createMockRequest('http://localhost:3000/api/characters?type=pc', {
@@ -112,10 +116,8 @@ describe('/api/characters API Route', () => {
       expect(data.data).toHaveLength(1);
       expect(data.data[0].name).toBe('PC Character');
       expect(data.data[0].type).toBe('pc');
-      expect(mockCharacterService.searchCharacters).toHaveBeenCalledWith(
-        TEST_USER_ID,
-        { type: 'pc' },
-        { limit: 50, offset: 0 }
+      expect(mockCharacterService.getCharactersByType).toHaveBeenCalledWith(
+        'pc', TEST_USER_ID
       );
     });
   });
@@ -126,7 +128,10 @@ describe('/api/characters API Route', () => {
       const characterData = createCharacterData();
       const createdCharacter = createTestCharacter(characterData);
 
-      mockCharacterService.createCharacter.mockResolvedValue(createdCharacter);
+      mockCharacterService.createCharacter.mockResolvedValue({
+        success: true,
+        data: createdCharacter
+      });
 
       const request = createMockRequest('http://localhost:3000/api/characters', {
         method: 'POST',
