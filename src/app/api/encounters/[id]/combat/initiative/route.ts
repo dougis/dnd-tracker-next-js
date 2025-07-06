@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterService } from '@/lib/services/EncounterService';
+import { setInitiative } from '@/lib/models/encounter/methods';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const encounterId = params.id;
+    const { id: encounterId } = await context.params;
     const body = await request.json();
 
     // Validate required fields
@@ -16,7 +17,7 @@ export async function PATCH(
       if (!participantId) missingFields.push('participantId');
       if (initiative === undefined) missingFields.push('initiative');
       if (dexterity === undefined) missingFields.push('dexterity');
-      
+
       return NextResponse.json(
         { success: false, message: `Missing required fields: ${missingFields.join(', ')}` },
         { status: 400 }
@@ -25,7 +26,7 @@ export async function PATCH(
 
     // Get the current encounter
     const encounterResult = await EncounterService.getEncounterById(encounterId);
-    
+
     if (!encounterResult.success) {
       return NextResponse.json(
         { success: false, message: 'Encounter not found' },
@@ -34,42 +35,34 @@ export async function PATCH(
     }
 
     const encounter = encounterResult.data;
+    if (!encounter) {
+      return NextResponse.json(
+        { success: false, message: 'Encounter not found' },
+        { status: 404 }
+      );
+    }
 
     // Validate combat state
-    if (!encounter.combat?.isActive) {
+    if (!encounter.combatState?.isActive) {
       return NextResponse.json(
         { success: false, message: 'Combat is not active' },
         { status: 400 }
       );
     }
 
-    // Find the participant in the initiative order
-    const initiativeEntry = encounter.combat.initiativeOrder.find(
-      entry => entry.participantId === participantId
-    );
+    // Update the initiative using the encounter method
+    const success = setInitiative(encounter, participantId, initiative, dexterity);
 
-    if (!initiativeEntry) {
+    if (!success) {
       return NextResponse.json(
         { success: false, message: 'Participant not found' },
         { status: 400 }
       );
     }
 
-    // Update the initiative entry
-    initiativeEntry.initiative = initiative;
-    initiativeEntry.dexterity = dexterity;
-
-    // Re-sort the initiative order
-    encounter.combat.initiativeOrder.sort((a, b) => {
-      if (a.initiative !== b.initiative) {
-        return b.initiative - a.initiative; // Higher initiative goes first
-      }
-      return b.dexterity - a.dexterity; // Higher dexterity breaks ties
-    });
-
     // Save the updated encounter
     const saveResult = await EncounterService.updateEncounter(encounterId, {
-      combat: encounter.combat
+      combatState: encounter.combatState
     });
 
     if (!saveResult.success) {

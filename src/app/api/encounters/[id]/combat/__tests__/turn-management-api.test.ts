@@ -20,60 +20,56 @@ const mockUpdateEncounter = jest.spyOn(EncounterService, 'updateEncounter');
 describe('Turn Management API Endpoints (TDD)', () => {
   let mockEncounter: any;
   let mockCombatState: ICombatState;
-  let mockRequest: NextRequest;
-  let mockParams: { params: { id: string } };
+  let _mockRequest: NextRequest;
+  let _mockParams: { params: { id: string } };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     mockCombatState = {
       isActive: true,
-      isPaused: false,
       currentRound: 1,
       currentTurn: 0,
-      startTime: new Date(),
-      endTime: null,
+      startedAt: new Date(),
+      endedAt: null,
       initiativeOrder: [
-        { 
-          participantId: 'char1', 
-          initiative: 18, 
-          dexterity: 14, 
+        {
+          participantId: 'char1',
+          initiative: 18,
+          dexterity: 14,
           isActive: true,
           hasActed: false,
           isDelayed: false,
           readyAction: null
         },
-        { 
-          participantId: 'char2', 
-          initiative: 15, 
-          dexterity: 12, 
+        {
+          participantId: 'char2',
+          initiative: 15,
+          dexterity: 12,
           isActive: true,
           hasActed: false,
           isDelayed: false,
           readyAction: null
         }
       ],
-      turnHistory: [],
-      totalDuration: 0,
-      lastAction: null,
-      actionHistory: []
+      totalDuration: 0
     };
 
     mockEncounter = createTestEncounter({
-      combat: mockCombatState,
+      combatState: mockCombatState,
       participants: [
         createTestParticipant({ characterId: 'char1', name: 'Fighter', currentHitPoints: 45, maxHitPoints: 45, armorClass: 18 }),
         createTestParticipant({ characterId: 'char2', name: 'Wizard', currentHitPoints: 32, maxHitPoints: 32, armorClass: 12 })
       ]
     });
 
-    mockRequest = {
+    _mockRequest = {
       url: 'http://localhost:3000/api/encounters/test-id/combat/next-turn',
       method: 'PATCH',
       json: jest.fn().mockResolvedValue({})
     } as unknown as NextRequest;
 
-    mockParams = { params: { id: 'test-encounter-id' } };
+    _mockParams = { params: { id: 'test-encounter-id' } };
   });
 
   describe('TDD: API Routes That Need Implementation', () => {

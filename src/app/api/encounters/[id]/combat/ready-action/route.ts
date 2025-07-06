@@ -3,10 +3,10 @@ import { EncounterService } from '@/lib/services/EncounterService';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const encounterId = params.id;
+    const { id: encounterId } = await context.params;
     const body = await request.json();
 
     // Validate required fields
@@ -15,7 +15,7 @@ export async function PATCH(
       const missingFields = [];
       if (!participantId) missingFields.push('participantId');
       if (readyAction === undefined) missingFields.push('readyAction');
-      
+
       return NextResponse.json(
         { success: false, message: `Missing required field: ${missingFields.join(', ')}` },
         { status: 400 }
@@ -24,7 +24,7 @@ export async function PATCH(
 
     // Get the current encounter
     const encounterResult = await EncounterService.getEncounterById(encounterId);
-    
+
     if (!encounterResult.success) {
       return NextResponse.json(
         { success: false, message: 'Encounter not found' },
@@ -33,9 +33,15 @@ export async function PATCH(
     }
 
     const encounter = encounterResult.data;
+    if (!encounter) {
+      return NextResponse.json(
+        { success: false, message: 'Encounter not found' },
+        { status: 404 }
+      );
+    }
 
     // Validate combat state
-    if (!encounter.combat?.isActive) {
+    if (!encounter.combatState?.isActive) {
       return NextResponse.json(
         { success: false, message: 'Combat is not active' },
         { status: 400 }
@@ -43,8 +49,8 @@ export async function PATCH(
     }
 
     // Find the participant in the initiative order
-    const initiativeEntry = encounter.combat.initiativeOrder.find(
-      entry => entry.participantId === participantId
+    const initiativeEntry = encounter.combatState.initiativeOrder.find(
+      entry => entry.participantId.toString() === participantId
     );
 
     if (!initiativeEntry) {
@@ -59,7 +65,7 @@ export async function PATCH(
 
     // Save the updated encounter
     const saveResult = await EncounterService.updateEncounter(encounterId, {
-      combat: encounter.combat
+      combatState: encounter.combatState
     });
 
     if (!saveResult.success) {

@@ -42,6 +42,8 @@ export interface IInitiativeEntry {
   dexterity: number;
   isActive: boolean;
   hasActed: boolean;
+  isDelayed?: boolean;
+  readyAction?: string | null;
 }
 
 /**
