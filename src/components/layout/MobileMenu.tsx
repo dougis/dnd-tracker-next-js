@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { getMobileNavigationItems } from './shared/navigation-config';
+import { UserMenu } from './UserMenu';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -107,21 +108,7 @@ export function MobileMenu({ isOpen, onClose, isAuthenticated = false }: MobileM
           </nav>
 
           {/* Footer */}
-          {isAuthenticated && (
-            <div className="border-t border-border p-4">
-              <div className="flex items-center space-x-3">
-                <div className="h-8 w-8 rounded-full bg-muted"></div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    Demo User
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    demo@example.com
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+          <UserMenu />
         </div>
       </div>
     </>

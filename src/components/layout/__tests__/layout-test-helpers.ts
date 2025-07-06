@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
+import { useSession } from 'next-auth/react';
 import {
   assertUserProfile,
   assertActiveNavigation,
@@ -12,6 +13,7 @@ import {
   assertSvgIcon,
 } from './shared-assertions';
 import { testNavigationLinks, NAVIGATION_ITEMS } from './navigation-test-helpers';
+import { setupMockSession } from './session-test-helpers';
 
 // Common test configurations
 export const COMMON_CLASSES = {
@@ -53,6 +55,19 @@ export const renderWithProps = <T extends React.ComponentType<any>>(
     isAuthenticated: false,
     ...props,
   };
+
+  // Set up session mock based on isAuthenticated prop
+  try {
+    const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
+    if (defaultProps.isAuthenticated) {
+      setupMockSession(mockUseSession, 'authenticatedWithName');
+    } else {
+      setupMockSession(mockUseSession, 'unauthenticated');
+    }
+  } catch {
+    // Ignore if useSession is not mocked - this allows backward compatibility
+  }
+
   return render(React.createElement(Component, defaultProps));
 };
 
@@ -121,37 +136,27 @@ export const createUserProfileTests = <T extends React.ComponentType<any>>(
 
   'does not render user profile section when unauthenticated': () => {
     renderWithProps(Component, { isAuthenticated: false, ...additionalProps });
-    expect(screen.queryByText('Demo User')).not.toBeInTheDocument();
-    expect(screen.queryByText('demo@example.com')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('user-menu')).not.toBeInTheDocument();
   },
 
   'user profile has correct styling when authenticated': () => {
     renderWithProps(Component, { isAuthenticated: true, ...additionalProps });
-    const userSection = screen
-      .getByText('Demo User')
-      .closest('.border-t.border-border.p-4');
+    const userSection = screen.queryByTestId('user-menu');
     expect(userSection).toBeInTheDocument();
+    expect(userSection).toHaveClass('border-t border-border p-4');
   },
 
   'user avatar placeholder exists when authenticated': () => {
     renderWithProps(Component, { isAuthenticated: true, ...additionalProps });
-    const avatar = screen
-      .getByText('Demo User')
-      .parentElement?.parentElement?.querySelector(
-        '.h-8.w-8.rounded-full.bg-muted'
-      );
+    const avatar = screen.queryByTestId('user-avatar');
     expect(avatar).toBeInTheDocument();
   },
 
   'user info has proper text truncation when authenticated': () => {
     renderWithProps(Component, { isAuthenticated: true, ...additionalProps });
-    const userName = screen.getByText('Demo User');
-    const userEmail = screen.getByText('demo@example.com');
-
-    expect(userName).toHaveClass(
-      'text-sm font-medium text-foreground truncate'
-    );
-    expect(userEmail).toHaveClass('text-xs text-muted-foreground truncate');
+    const userInfo = screen.queryByTestId('user-info');
+    expect(userInfo).toBeInTheDocument();
+    expect(userInfo).toHaveClass('flex-1 min-w-0');
   },
 });
 
@@ -213,9 +218,8 @@ export const createLayoutStructureTests = <T extends React.ComponentType<any>>(
     expect(screen.getByText('D&D Tracker')).toBeInTheDocument();
     // Navigation section
     expect(screen.getByRole('navigation')).toBeInTheDocument();
-    // Footer with user info (only shown when authenticated)
-    expect(screen.getByText('Demo User')).toBeInTheDocument();
-    expect(screen.getByText('demo@example.com')).toBeInTheDocument();
+    // Footer with user menu (only shown when authenticated)
+    expect(screen.queryByTestId('user-menu')).toBeInTheDocument();
   },
 
   'contains header and navigation sections only when unauthenticated': () => {
@@ -226,8 +230,7 @@ export const createLayoutStructureTests = <T extends React.ComponentType<any>>(
     // Navigation section
     expect(screen.getByRole('navigation')).toBeInTheDocument();
     // Footer should not be shown when unauthenticated
-    expect(screen.queryByText('Demo User')).not.toBeInTheDocument();
-    expect(screen.queryByText('demo@example.com')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('user-menu')).not.toBeInTheDocument();
   },
 });
 

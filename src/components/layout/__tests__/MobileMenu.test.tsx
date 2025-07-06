@@ -21,6 +21,15 @@ jest.mock('next/navigation', () => ({
   usePathname: jest.fn(),
 }));
 
+// Mock next-auth/react
+jest.mock('next-auth/react', () => ({
+  useSession: jest.fn(() => ({
+    data: null,
+    status: 'unauthenticated',
+    update: jest.fn(),
+  })),
+}));
+
 // Mock Next.js Link component
 jest.mock('next/link', () => {
   return function MockLink({
@@ -50,6 +59,7 @@ describe('MobileMenu', () => {
   beforeEach(() => {
     mockUsePathname.mockReturnValue('/');
     clearAllMocks(mocks);
+    jest.clearAllMocks();
   });
 
   afterEach(() => {

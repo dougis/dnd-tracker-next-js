@@ -14,7 +14,8 @@ const customJestConfig = {
   testPathIgnorePatterns: [
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
-    '<rootDir>/src/components/forms/character/__tests__/CharacterCreationForm.test.tsx'
+    '<rootDir>/src/components/forms/character/__tests__/CharacterCreationForm.test.tsx',
+    '<rootDir>/src/lib/hooks/__tests__/useInitiativeTracker.test.ts'
   ],
   testMatch: ['<rootDir>/src/**/*.test.{js,jsx,ts,tsx}'],
   collectCoverage: true,

@@ -1,7 +1,9 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
+import { useSession } from 'next-auth/react';
 import { Sidebar } from '../Sidebar';
 import { setupLayoutTest, mockUsePathname } from './test-utils';
+import { setupMockSession } from './session-test-helpers';
 import {
   createVisibilityTests,
   createAuthenticationTests,
@@ -16,6 +18,15 @@ import {
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
   usePathname: jest.fn(),
+}));
+
+// Mock next-auth/react
+jest.mock('next-auth/react', () => ({
+  useSession: jest.fn(() => ({
+    data: null,
+    status: 'unauthenticated',
+    update: jest.fn(),
+  })),
 }));
 
 // Mock Next.js Link component
@@ -36,9 +47,11 @@ jest.mock('next/link', () => {
 
 describe('Sidebar', () => {
   const { cleanup } = setupLayoutTest();
+  const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
 
   beforeEach(() => {
     mockUsePathname.mockReturnValue('/');
+    jest.clearAllMocks();
   });
 
   afterEach(() => {
@@ -159,6 +172,37 @@ describe('Sidebar', () => {
       renderWithProps(Sidebar);
       const navigation = screen.getByRole('navigation');
       expect(navigation).toHaveClass('flex-1 space-y-1 px-3 py-4');
+    });
+  });
+
+  describe('UserMenu Integration', () => {
+    test('renders UserMenu component when authenticated', () => {
+      setupMockSession(mockUseSession, 'authenticatedWithName');
+      renderWithProps(Sidebar, { isAuthenticated: true });
+      expect(screen.getByTestId('user-menu')).toBeInTheDocument();
+    });
+
+    test('does not render UserMenu when unauthenticated', () => {
+      setupMockSession(mockUseSession, 'unauthenticated');
+      renderWithProps(Sidebar, { isAuthenticated: false });
+      expect(screen.queryByTestId('user-menu')).not.toBeInTheDocument();
+    });
+
+    test('UserMenu appears at bottom of sidebar when authenticated', () => {
+      setupMockSession(mockUseSession, 'authenticatedWithName');
+      renderWithProps(Sidebar, { isAuthenticated: true });
+      const sidebar = screen.getByTestId('user-menu').closest('.flex.h-full.flex-col');
+      const userMenu = screen.getByTestId('user-menu');
+
+      // UserMenu should be one of the last elements in the flex column
+      expect(sidebar).toContainElement(userMenu);
+    });
+
+    test('UserMenu has proper styling integration when authenticated', () => {
+      setupMockSession(mockUseSession, 'authenticatedWithName');
+      renderWithProps(Sidebar, { isAuthenticated: true });
+      const userMenu = screen.getByTestId('user-menu');
+      expect(userMenu).toHaveClass('border-t border-border p-4');
     });
   });
 });
