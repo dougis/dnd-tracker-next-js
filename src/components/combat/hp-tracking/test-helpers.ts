@@ -171,7 +171,7 @@ async function testHPAction(
 ) {
   const inputLabel = actionType === 'damage' ? 'Damage Amount' : 'Healing Amount';
   const buttonTestId = `apply-${actionType}-button`;
-  
+
   const input = screen.getByLabelText(inputLabel);
   const button = screen.getByTestId(buttonTestId);
 
