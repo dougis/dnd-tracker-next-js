@@ -33,8 +33,8 @@ export function findByStatus(
   return this.find({ status }).sort({ updatedAt: -1 });
 }
 
-// eslint-disable-next-line no-unused-vars
-export function findPublic(this: any): Promise<IEncounter[]> {
+export function findPublic(_this: any): Promise<IEncounter[]> {
+  // @ts-ignore: Need this context for Mongoose static method
   return this.find({ isPublic: true }).sort({ updatedAt: -1 });
 }
 
@@ -64,8 +64,8 @@ export function findByTargetLevel(
   return this.find({ targetLevel: level }).sort({ updatedAt: -1 });
 }
 
-// eslint-disable-next-line no-unused-vars
-export function findActive(this: any): Promise<IEncounter[]> {
+export function findActive(_this: any): Promise<IEncounter[]> {
+  // @ts-ignore: Need this context for Mongoose static method
   return this.find({ 'combatState.isActive': true }).sort({
     'combatState.startedAt': -1,
   });
