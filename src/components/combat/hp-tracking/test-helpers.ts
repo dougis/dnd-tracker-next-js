@@ -163,16 +163,20 @@ export function renderHPEditForm(
 }
 
 // HP Action Testing Utilities
-export async function testDamageApplication(
-  damageAmount: number,
+async function testHPAction(
+  actionType: 'damage' | 'healing',
+  amount: number,
   expectedCurrentHP: number,
   expectedStatus: string
 ) {
-  const damageInput = screen.getByLabelText('Damage Amount');
-  const applyDamageButton = screen.getByTestId('apply-damage-button');
+  const inputLabel = actionType === 'damage' ? 'Damage Amount' : 'Healing Amount';
+  const buttonTestId = `apply-${actionType}-button`;
+  
+  const input = screen.getByLabelText(inputLabel);
+  const button = screen.getByTestId(buttonTestId);
 
-  fireEvent.change(damageInput, { target: { value: damageAmount.toString() } });
-  fireEvent.click(applyDamageButton);
+  fireEvent.change(input, { target: { value: amount.toString() } });
+  fireEvent.click(button);
 
   await waitFor(() => {
     expect(screen.getByLabelText('Current HP')).toHaveValue(expectedCurrentHP);
@@ -180,21 +184,20 @@ export async function testDamageApplication(
   });
 }
 
+export async function testDamageApplication(
+  damageAmount: number,
+  expectedCurrentHP: number,
+  expectedStatus: string
+) {
+  return testHPAction('damage', damageAmount, expectedCurrentHP, expectedStatus);
+}
+
 export async function testHealingApplication(
   healingAmount: number,
   expectedCurrentHP: number,
   expectedStatus: string
 ) {
-  const healingInput = screen.getByLabelText('Healing Amount');
-  const applyHealingButton = screen.getByTestId('apply-healing-button');
-
-  fireEvent.change(healingInput, { target: { value: healingAmount.toString() } });
-  fireEvent.click(applyHealingButton);
-
-  await waitFor(() => {
-    expect(screen.getByLabelText('Current HP')).toHaveValue(expectedCurrentHP);
-    expect(screen.getByText(expectedStatus)).toBeInTheDocument();
-  });
+  return testHPAction('healing', healingAmount, expectedCurrentHP, expectedStatus);
 }
 
 export async function testTemporaryHPChange(
