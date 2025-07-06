@@ -36,6 +36,7 @@ RUN npm ci --omit=dev
 
 # Copy built application artifacts
 COPY --from=build --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=build --chown=nextjs:nodejs /app/public ./public
 COPY --from=build /app/docker-entrypoint.js ./docker-entrypoint.js
 
 # Set the user to the non-root user
