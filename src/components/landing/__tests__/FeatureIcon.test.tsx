@@ -38,4 +38,14 @@ describe('FeatureIcon Component', () => {
       expect(image).toHaveAttribute('alt', 'Initiative Tracking Feature');
     });
   });
+
+  describe('Visual Issues', () => {
+    it('should have color styling to ensure SVG visibility', () => {
+      render(<FeatureIcon src="/features/initiative-tracker.svg" alt="Initiative Tracking Feature" />);
+
+      const image = screen.getByRole('img');
+      // SVG icons use currentColor, so the image should have color context
+      expect(image).toHaveClass('text-primary');
+    });
+  });
 });

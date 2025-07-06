@@ -20,3 +20,4 @@ declare module 'next-auth/jwt' {
     subscriptionTier: string;
   }
 }
+/* eslint-enable no-unused-vars */
