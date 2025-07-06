@@ -16,7 +16,7 @@ interface SettingRowProps {
 }
 
 /**
- * Reusable setting row component
+ * Reusable setting row component for encounter settings
  */
 function SettingRow({ id, label, checked, disabled, onChange }: SettingRowProps) {
   return (
