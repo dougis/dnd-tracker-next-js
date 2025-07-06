@@ -7,7 +7,7 @@ describe('FeaturesSection Component', () => {
   describe('Feature Images', () => {
     it('should render all feature icons with correct paths', () => {
       render(<FeaturesSection />);
-      
+
       const expectedFeatures = [
         { icon: '/features/initiative-tracker.svg', title: 'Initiative Tracking' },
         { icon: '/features/hp-management.svg', title: 'HP & AC Management' },
@@ -26,10 +26,10 @@ describe('FeaturesSection Component', () => {
 
     it('should display feature images with proper dimensions', () => {
       render(<FeaturesSection />);
-      
+
       const images = screen.getAllByRole('img');
       expect(images).toHaveLength(6);
-      
+
       images.forEach(image => {
         expect(image).toHaveAttribute('width', '32');
         expect(image).toHaveAttribute('height', '32');
@@ -38,10 +38,10 @@ describe('FeaturesSection Component', () => {
 
     it('should have meaningful alt text for all feature images', () => {
       render(<FeaturesSection />);
-      
+
       const requiredAltTexts = [
         'Initiative Tracking',
-        'HP & AC Management', 
+        'HP & AC Management',
         'Character Management',
         'Encounter Builder',
         'Lair Actions',
@@ -57,7 +57,7 @@ describe('FeaturesSection Component', () => {
   describe('Feature Content', () => {
     it('should display all feature titles and descriptions', () => {
       render(<FeaturesSection />);
-      
+
       expect(screen.getByRole('heading', { name: /initiative tracking/i })).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: /hp & ac management/i })).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: /character management/i })).toBeInTheDocument();
@@ -68,7 +68,7 @@ describe('FeaturesSection Component', () => {
 
     it('should display section heading', () => {
       render(<FeaturesSection />);
-      
+
       expect(screen.getByRole('heading', { name: /everything you need for epic d&d encounters/i })).toBeInTheDocument();
     });
   });

@@ -7,7 +7,7 @@ describe('FeatureIcon Component', () => {
   describe('Image Rendering', () => {
     it('should render image with correct src and alt attributes', () => {
       render(<FeatureIcon src="/features/test-image.svg" alt="Test Feature" />);
-      
+
       const image = screen.getByRole('img');
       expect(image).toBeInTheDocument();
       expect(image).toHaveAttribute('src', expect.stringContaining('/features/test-image.svg'));
@@ -16,14 +16,14 @@ describe('FeatureIcon Component', () => {
 
     it('should have proper container styling', () => {
       render(<FeatureIcon src="/features/test-image.svg" alt="Test Feature" />);
-      
+
       const container = screen.getByRole('img').closest('div');
       expect(container).toHaveClass('w-12', 'h-12', 'bg-primary/10', 'rounded-lg', 'flex', 'items-center', 'justify-center', 'mb-4');
     });
 
     it('should handle missing images gracefully', () => {
       render(<FeatureIcon src="/features/non-existent.svg" alt="Missing Image" />);
-      
+
       const image = screen.getByRole('img');
       expect(image).toBeInTheDocument();
       expect(image).toHaveAttribute('alt', 'Missing Image');
@@ -33,7 +33,7 @@ describe('FeatureIcon Component', () => {
   describe('Accessibility', () => {
     it('should provide meaningful alt text', () => {
       render(<FeatureIcon src="/features/initiative-tracker.svg" alt="Initiative Tracking Feature" />);
-      
+
       const image = screen.getByRole('img');
       expect(image).toHaveAttribute('alt', 'Initiative Tracking Feature');
     });
