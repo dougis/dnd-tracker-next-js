@@ -29,12 +29,10 @@ export async function validateUserAccess(requestedUserId: string, sessionUserId:
   return null;
 }
 
-/* eslint-disable no-unused-vars */
 export async function withAuthAndAccess(
   params: Promise<{ id: string }>,
-  callback: (userId: string) => Promise<Response>
+  callback: (_userId: string) => Promise<Response>
 ): Promise<Response> {
-/* eslint-enable no-unused-vars */
   try {
     const { error: authError, session } = await validateAuth();
     if (authError) return authError;

@@ -62,17 +62,15 @@ type ProfileFormData = {
   primaryRole: string;
 };
 
-/* eslint-disable no-unused-vars */
 type ProfileFormProps = {
   formData: ProfileFormData;
-  updateField: (field: keyof ProfileFormData, value: string) => void;
-  handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  updateField: (_field: keyof ProfileFormData, _value: string) => void;
+  handleSubmit: (_event: React.FormEvent<HTMLFormElement>) => void;
   handleSkip: () => void;
-  getFieldError: (field: string) => string | undefined;
+  getFieldError: (_field: string) => string | undefined;
   isSubmitting: boolean;
   errors: Array<{ field: string; message: string }>;
 };
-/* eslint-enable no-unused-vars */
 
 function ProfileFormHeader() {
   return (
@@ -94,13 +92,11 @@ function ProfileFormHeader() {
   );
 }
 
-/* eslint-disable no-unused-vars */
 function ProfileFormFields({ formData, updateField, getFieldError }: {
   formData: ProfileFormData;
-  updateField: (field: keyof ProfileFormData, value: string) => void;
-  getFieldError: (field: string) => string | undefined;
+  updateField: (_field: keyof ProfileFormData, _value: string) => void;
+  getFieldError: (_field: string) => string | undefined;
 }) {
-/* eslint-enable no-unused-vars */
   return (
     <>
       <div className="grid grid-cols-2 gap-4">
