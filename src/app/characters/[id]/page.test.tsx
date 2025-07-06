@@ -17,6 +17,9 @@ import {
   createMulticlassCharacter,
   createCharacterWithNotes,
   createCharacterWithBackstory,
+  mockSuccessfulCharacterFetch,
+  mockFailedCharacterFetch,
+  mockPendingCharacterFetch,
 } from './__tests__/page-test-utils';
 
 // Mock dependencies
@@ -55,13 +58,7 @@ describe('CharacterDetailClient', () => {
 
   it('should render character detail page with basic information', async () => {
     const testCharacter = createBasicCharacter();
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: testCharacter,
-      }),
-    } as Response);
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
 
     renderCharacterPage();
 
@@ -70,21 +67,14 @@ describe('CharacterDetailClient', () => {
   });
 
   it('should render loading state while fetching character', () => {
-    // Mock a promise that never resolves to keep the loading state
-    mockFetch.mockReturnValue(new Promise(() => {}));
+    mockPendingCharacterFetch(mockFetch);
 
     renderCharacterPage();
     expect(screen.getByText('Loading character...')).toBeInTheDocument();
   });
 
   it('should render error state when character not found', async () => {
-    mockFetch.mockResolvedValue({
-      ok: false,
-      json: async () => ({
-        success: false,
-        error: 'Character not found',
-      }),
-    } as Response);
+    mockFailedCharacterFetch('Character not found', mockFetch);
 
     renderCharacterPage();
     await waitForText('Character not found');
@@ -92,13 +82,7 @@ describe('CharacterDetailClient', () => {
 
   it('should display character stats section', async () => {
     const testCharacter = createCharacterWithStats();
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: testCharacter,
-      }),
-    } as Response);
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
 
     renderCharacterPage();
 
@@ -108,13 +92,7 @@ describe('CharacterDetailClient', () => {
   it('should display ability scores section', async () => {
     const { user } = setupCharacterTest();
     const testCharacter = createCharacterWithAbilities();
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: testCharacter,
-      }),
-    } as Response);
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
 
     renderCharacterPage();
 
@@ -126,13 +104,7 @@ describe('CharacterDetailClient', () => {
 
   it('should display multiclass information', async () => {
     const testCharacter = createMulticlassCharacter();
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: testCharacter,
-      }),
-    } as Response);
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
 
     renderCharacterPage();
 
@@ -144,13 +116,7 @@ describe('CharacterDetailClient', () => {
 
   it('should display edit and share buttons', async () => {
     const testCharacter = createBasicCharacter();
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: testCharacter,
-      }),
-    } as Response);
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
 
     renderCharacterPage();
 
@@ -159,13 +125,7 @@ describe('CharacterDetailClient', () => {
 
   it('should navigate to edit page when edit button is clicked', async () => {
     const testCharacter = createBasicCharacter();
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: testCharacter,
-      }),
-    } as Response);
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
 
     renderCharacterPage();
 
@@ -177,13 +137,7 @@ describe('CharacterDetailClient', () => {
   it('should display equipment section when character has equipment', async () => {
     const { user } = setupCharacterTest();
     const testCharacter = createCharacterWithEquipment(['longsword', 'chainMail']);
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: testCharacter,
-      }),
-    } as Response);
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
 
     renderCharacterPage();
 
@@ -194,13 +148,7 @@ describe('CharacterDetailClient', () => {
   it('should display spells section when character has spells', async () => {
     const { user } = setupCharacterTest();
     const testCharacter = createCharacterWithSpells(['fireball', 'magicMissile']);
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: testCharacter,
-      }),
-    } as Response);
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
 
     renderCharacterPage();
 
@@ -211,13 +159,7 @@ describe('CharacterDetailClient', () => {
   it('should display notes section when character has notes', async () => {
     const { user } = setupCharacterTest();
     const testCharacter = createCharacterWithNotes();
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: testCharacter,
-      }),
-    } as Response);
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
 
     renderCharacterPage();
 
@@ -228,13 +170,7 @@ describe('CharacterDetailClient', () => {
   it('should display backstory section when character has backstory', async () => {
     const { user } = setupCharacterTest();
     const testCharacter = createCharacterWithBackstory();
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: testCharacter,
-      }),
-    } as Response);
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
 
     renderCharacterPage();
 
