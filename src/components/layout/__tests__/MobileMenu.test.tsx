@@ -1,9 +1,7 @@
 import React from 'react';
 import { screen, fireEvent, act } from '@testing-library/react';
-import { useSession } from 'next-auth/react';
 import { MobileMenu } from '../MobileMenu';
 import { setupLayoutTest, mockUsePathname } from './test-utils';
-import { setupMockSession } from './session-test-helpers';
 import {
   createVisibilityTests,
   createAuthenticationTests,
@@ -57,7 +55,6 @@ jest.mock('next/link', () => {
 describe('MobileMenu', () => {
   const mocks = createMockCallbacks();
   const { cleanup } = setupLayoutTest();
-  const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
 
   beforeEach(() => {
     mockUsePathname.mockReturnValue('/');
