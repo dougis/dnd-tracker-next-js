@@ -150,8 +150,8 @@ describe('MobileMenu', () => {
       expect(flexContainer).toBeInTheDocument();
     });
 
-    test('contains header, navigation, and footer sections', () => {
-      render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+    test('contains header, navigation, and footer sections when authenticated', () => {
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={true} />);
 
       // Header with logo and close button
       expect(screen.getByText('D&D Tracker')).toBeInTheDocument();
@@ -160,9 +160,24 @@ describe('MobileMenu', () => {
       // Navigation section
       expect(screen.getByRole('navigation')).toBeInTheDocument();
 
-      // Footer with user info
+      // Footer with user info (only shown when authenticated)
       expect(screen.getByText('Demo User')).toBeInTheDocument();
       expect(screen.getByText('demo@example.com')).toBeInTheDocument();
+    });
+
+    test('contains header and navigation sections only when unauthenticated', () => {
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={false} />);
+
+      // Header with logo and close button
+      expect(screen.getByText('D&D Tracker')).toBeInTheDocument();
+      expect(screen.getByLabelText('Close menu')).toBeInTheDocument();
+
+      // Navigation section
+      expect(screen.getByRole('navigation')).toBeInTheDocument();
+
+      // Footer should not be shown when unauthenticated
+      expect(screen.queryByText('Demo User')).not.toBeInTheDocument();
+      expect(screen.queryByText('demo@example.com')).not.toBeInTheDocument();
     });
   });
 
@@ -329,13 +344,20 @@ describe('MobileMenu', () => {
   });
 
   describe('User Profile Footer', () => {
-    test('renders user profile section', () => {
-      render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+    test('renders user profile section when authenticated', () => {
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={true} />);
       assertUserProfile();
     });
 
-    test('user profile has correct styling', () => {
-      render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+    test('does not render user profile section when unauthenticated', () => {
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={false} />);
+      
+      expect(screen.queryByText('Demo User')).not.toBeInTheDocument();
+      expect(screen.queryByText('demo@example.com')).not.toBeInTheDocument();
+    });
+
+    test('user profile has correct styling when authenticated', () => {
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={true} />);
 
       const userSection = screen
         .getByText('Demo User')
@@ -343,8 +365,8 @@ describe('MobileMenu', () => {
       expect(userSection).toBeInTheDocument();
     });
 
-    test('user avatar placeholder exists', () => {
-      render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+    test('user avatar placeholder exists when authenticated', () => {
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={true} />);
 
       const avatar = screen
         .getByText('Demo User')
@@ -354,8 +376,8 @@ describe('MobileMenu', () => {
       expect(avatar).toBeInTheDocument();
     });
 
-    test('user info has proper text truncation', () => {
-      render(<MobileMenu isOpen={true} onClose={mockOnClose} />);
+    test('user info has proper text truncation when authenticated', () => {
+      render(<MobileMenu isOpen={true} onClose={mockOnClose} isAuthenticated={true} />);
 
       const userName = screen.getByText('Demo User');
       const userEmail = screen.getByText('demo@example.com');

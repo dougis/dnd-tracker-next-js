@@ -59,18 +59,18 @@ const AuthSection = ({ status, session }: { status: string; session: any }) => (
   </>
 );
 
-const HeaderSection = ({ 
-  isMobile, 
-  sidebarOpen, 
-  setSidebarOpen, 
-  status, 
-  session 
-}: { 
-  isMobile: boolean; 
-  sidebarOpen: boolean; 
-  setSidebarOpen: (open: boolean) => void; 
-  status: string; 
-  session: any; 
+const HeaderSection = ({
+  isMobile,
+  _sidebarOpen,
+  setSidebarOpen,
+  status,
+  session
+}: {
+  isMobile: boolean;
+  _sidebarOpen: boolean;
+  setSidebarOpen: (_open: boolean) => void;
+  status: string;
+  session: any;
 }) => (
   <header className="sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur-sm">
     <div className="flex h-16 items-center justify-between px-4">
@@ -144,12 +144,12 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top navigation bar */}
-        <HeaderSection 
-          isMobile={isMobile} 
-          sidebarOpen={sidebarOpen} 
-          setSidebarOpen={setSidebarOpen} 
-          status={status} 
-          session={session} 
+        <HeaderSection
+          isMobile={isMobile}
+          _sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          status={status}
+          session={session}
         />
 
         {/* Page content */}
