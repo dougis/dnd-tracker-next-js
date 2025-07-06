@@ -1,0 +1,22 @@
+import { PrivacyPolicy } from '@/components/legal/PrivacyPolicy';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+export default function PrivacyPage() {
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Privacy Policy</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PrivacyPolicy />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export const metadata = {
+  title: 'Privacy Policy | D&D Encounter Tracker',
+  description: 'Privacy Policy for D&D Encounter Tracker - learn how we protect your data.',
+};
