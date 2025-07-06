@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { useSession, signOut } from 'next-auth/react';
 import { UserMenu } from '../UserMenu';
+import { setupMockSession, setupCustomMockSession } from './session-test-helpers';
 
 // Mock next-auth/react
 jest.mock('next-auth/react', () => ({
@@ -19,73 +20,35 @@ describe('UserMenu', () => {
 
   describe('User Information Display', () => {
     test('displays user name when available', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            name: 'John Doe',
-            email: 'john@example.com',
-          },
-          expires: '2024-01-01',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      setupMockSession(mockUseSession, 'authenticatedWithName');
 
       render(<UserMenu />);
       expect(screen.getByText('John Doe')).toBeInTheDocument();
     });
 
     test('displays user email when name is not available', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            email: 'john@example.com',
-          },
-          expires: '2024-01-01',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      setupMockSession(mockUseSession, 'authenticatedWithEmailOnly');
 
       render(<UserMenu />);
       expect(screen.getByText('john@example.com')).toBeInTheDocument();
     });
 
     test('displays placeholder when user has no name or email', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-          },
-          expires: '2024-01-01',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      setupMockSession(mockUseSession, 'authenticatedMinimal');
 
       render(<UserMenu />);
       expect(screen.getByText('User')).toBeInTheDocument();
     });
 
     test('displays loading state when session status is loading', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'loading',
-        update: jest.fn(),
-      });
+      setupMockSession(mockUseSession, 'loading');
 
       render(<UserMenu />);
       expect(screen.getByText('Loading...')).toBeInTheDocument();
     });
 
     test('displays nothing when not authenticated', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-        update: jest.fn(),
-      });
+      setupMockSession(mockUseSession, 'unauthenticated');
 
       render(<UserMenu />);
       expect(screen.queryByTestId('user-menu')).not.toBeInTheDocument();
@@ -94,18 +57,7 @@ describe('UserMenu', () => {
 
   describe('User Avatar', () => {
     test('renders user avatar placeholder', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            name: 'John Doe',
-            email: 'john@example.com',
-          },
-          expires: '2024-01-01',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      setupMockSession(mockUseSession, 'authenticatedWithName');
 
       render(<UserMenu />);
       const avatar = screen.getByTestId('user-avatar');
@@ -116,18 +68,7 @@ describe('UserMenu', () => {
 
   describe('Sign Out Functionality', () => {
     test('calls signOut when sign out button is clicked', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            name: 'John Doe',
-            email: 'john@example.com',
-          },
-          expires: '2024-01-01',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      setupMockSession(mockUseSession, 'authenticatedWithName');
 
       render(<UserMenu />);
       const signOutButton = screen.getByRole('button', { name: 'Sign Out' });
@@ -138,18 +79,7 @@ describe('UserMenu', () => {
     });
 
     test('sign out button has correct styling', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            name: 'John Doe',
-            email: 'john@example.com',
-          },
-          expires: '2024-01-01',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      setupMockSession(mockUseSession, 'authenticatedWithName');
 
       render(<UserMenu />);
       const signOutButton = screen.getByRole('button', { name: 'Sign Out' });
@@ -161,18 +91,7 @@ describe('UserMenu', () => {
 
   describe('Layout and Styling', () => {
     test('has correct container styling', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            name: 'John Doe',
-            email: 'john@example.com',
-          },
-          expires: '2024-01-01',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      setupMockSession(mockUseSession, 'authenticatedWithName');
 
       render(<UserMenu />);
       const container = screen.getByTestId('user-menu');
@@ -180,18 +99,7 @@ describe('UserMenu', () => {
     });
 
     test('user info has proper layout classes', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            name: 'John Doe',
-            email: 'john@example.com',
-          },
-          expires: '2024-01-01',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      setupMockSession(mockUseSession, 'authenticatedWithName');
 
       render(<UserMenu />);
       const userInfo = screen.getByTestId('user-info');
@@ -199,18 +107,7 @@ describe('UserMenu', () => {
     });
 
     test('user name has correct text styling', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            name: 'John Doe',
-            email: 'john@example.com',
-          },
-          expires: '2024-01-01',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      setupMockSession(mockUseSession, 'authenticatedWithName');
 
       render(<UserMenu />);
       const userName = screen.getByText('John Doe');
@@ -218,18 +115,7 @@ describe('UserMenu', () => {
     });
 
     test('user email has correct text styling', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            name: 'John Doe',
-            email: 'john@example.com',
-          },
-          expires: '2024-01-01',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      setupMockSession(mockUseSession, 'authenticatedWithName');
 
       render(<UserMenu />);
       const userEmail = screen.getByText('john@example.com');
@@ -239,13 +125,9 @@ describe('UserMenu', () => {
 
   describe('Edge Cases', () => {
     test('handles session data with null user', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: null,
-          expires: '2024-01-01',
-        },
+      setupCustomMockSession(mockUseSession, {
         status: 'authenticated',
-        update: jest.fn(),
+        user: null,
       });
 
       render(<UserMenu />);
@@ -254,17 +136,9 @@ describe('UserMenu', () => {
 
     test('handles very long user names with truncation', () => {
       const longName = 'A'.repeat(100);
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            name: longName,
-            email: 'john@example.com',
-          },
-          expires: '2024-01-01',
-        },
+      setupCustomMockSession(mockUseSession, {
         status: 'authenticated',
-        update: jest.fn(),
+        user: { name: longName, email: 'john@example.com' },
       });
 
       render(<UserMenu />);
@@ -274,17 +148,9 @@ describe('UserMenu', () => {
 
     test('handles very long email addresses with truncation', () => {
       const longEmail = 'a'.repeat(50) + '@' + 'b'.repeat(50) + '.com';
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            name: 'John Doe',
-            email: longEmail,
-          },
-          expires: '2024-01-01',
-        },
+      setupCustomMockSession(mockUseSession, {
         status: 'authenticated',
-        update: jest.fn(),
+        user: { name: 'John Doe', email: longEmail },
       });
 
       render(<UserMenu />);

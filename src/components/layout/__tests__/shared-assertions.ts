@@ -43,10 +43,20 @@ export const assertSvgIcon = (
 
 /**
  * Assert user profile section content
+ * Updated to work with real UserMenu component using session data
  */
 export const assertUserProfile = () => {
-  expect(screen.getByText('Demo User')).toBeInTheDocument();
-  expect(screen.getByText('demo@example.com')).toBeInTheDocument();
+  // Verify the UserMenu component is rendered
+  expect(screen.getByTestId('user-menu')).toBeInTheDocument();
+
+  // Verify user data is displayed (matches session-test-helpers.ts config)
+  expect(screen.getByText('John Doe')).toBeInTheDocument();
+  expect(screen.getByText('john@example.com')).toBeInTheDocument();
+
+  // Verify UserMenu structure
+  expect(screen.getByTestId('user-avatar')).toBeInTheDocument();
+  expect(screen.getByTestId('user-info')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Sign Out' })).toBeInTheDocument();
 };
 
 /**
