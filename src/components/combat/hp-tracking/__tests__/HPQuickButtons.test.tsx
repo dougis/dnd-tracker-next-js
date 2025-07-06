@@ -1,26 +1,17 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { HPQuickButtons } from '../HPQuickButtons';
+import { setupHPTrackingTest } from './test-helpers';
 
 describe('HPQuickButtons', () => {
-  const mockOnDamage = jest.fn();
-  const mockOnHealing = jest.fn();
-  const mockOnEdit = jest.fn();
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  const { mocks } = setupHPTrackingTest();
 
   it('renders all quick action buttons', () => {
     render(
       <HPQuickButtons
-        onDamage={mockOnDamage}
-        onHealing={mockOnHealing}
-        onEdit={mockOnEdit}
+        onDamage={mocks.onDamage}
+        onHealing={mocks.onHealing}
+        onEdit={mocks.onEdit}
       />
     );
 
@@ -36,52 +27,52 @@ describe('HPQuickButtons', () => {
   it('handles damage button clicks correctly', () => {
     render(
       <HPQuickButtons
-        onDamage={mockOnDamage}
-        onHealing={mockOnHealing}
-        onEdit={mockOnEdit}
+        onDamage={mocks.onDamage}
+        onHealing={mocks.onHealing}
+        onEdit={mocks.onEdit}
       />
     );
 
     fireEvent.click(screen.getByText('1 Damage'));
-    expect(mockOnDamage).toHaveBeenCalledWith(1);
+    expect(mocks.onDamage).toHaveBeenCalledWith(1);
 
     fireEvent.click(screen.getByText('5 Damage'));
-    expect(mockOnDamage).toHaveBeenCalledWith(5);
+    expect(mocks.onDamage).toHaveBeenCalledWith(5);
 
     fireEvent.click(screen.getByText('10 Damage'));
-    expect(mockOnDamage).toHaveBeenCalledWith(10);
+    expect(mocks.onDamage).toHaveBeenCalledWith(10);
   });
 
   it('handles healing button clicks correctly', () => {
     render(
       <HPQuickButtons
-        onDamage={mockOnDamage}
-        onHealing={mockOnHealing}
-        onEdit={mockOnEdit}
+        onDamage={mocks.onDamage}
+        onHealing={mocks.onHealing}
+        onEdit={mocks.onEdit}
       />
     );
 
     fireEvent.click(screen.getByText('1 Heal'));
-    expect(mockOnHealing).toHaveBeenCalledWith(1);
+    expect(mocks.onHealing).toHaveBeenCalledWith(1);
 
     fireEvent.click(screen.getByText('5 Heal'));
-    expect(mockOnHealing).toHaveBeenCalledWith(5);
+    expect(mocks.onHealing).toHaveBeenCalledWith(5);
 
     fireEvent.click(screen.getByText('10 Heal'));
-    expect(mockOnHealing).toHaveBeenCalledWith(10);
+    expect(mocks.onHealing).toHaveBeenCalledWith(10);
   });
 
   it('handles edit button click correctly', () => {
     render(
       <HPQuickButtons
-        onDamage={mockOnDamage}
-        onHealing={mockOnHealing}
-        onEdit={mockOnEdit}
+        onDamage={mocks.onDamage}
+        onHealing={mocks.onHealing}
+        onEdit={mocks.onEdit}
       />
     );
 
     fireEvent.click(screen.getByText('Edit HP'));
-    expect(mockOnEdit).toHaveBeenCalled();
+    expect(mocks.onEdit).toHaveBeenCalled();
   });
 
   it('renders with custom damage amounts', () => {
@@ -89,9 +80,9 @@ describe('HPQuickButtons', () => {
 
     render(
       <HPQuickButtons
-        onDamage={mockOnDamage}
-        onHealing={mockOnHealing}
-        onEdit={mockOnEdit}
+        onDamage={mocks.onDamage}
+        onHealing={mocks.onHealing}
+        onEdit={mocks.onEdit}
         damageAmounts={customDamageAmounts}
       />
     );
@@ -106,9 +97,9 @@ describe('HPQuickButtons', () => {
 
     render(
       <HPQuickButtons
-        onDamage={mockOnDamage}
-        onHealing={mockOnHealing}
-        onEdit={mockOnEdit}
+        onDamage={mocks.onDamage}
+        onHealing={mocks.onHealing}
+        onEdit={mocks.onEdit}
         healingAmounts={customHealingAmounts}
       />
     );
@@ -121,23 +112,23 @@ describe('HPQuickButtons', () => {
   it('renders with compact layout', () => {
     render(
       <HPQuickButtons
-        onDamage={mockOnDamage}
-        onHealing={mockOnHealing}
-        onEdit={mockOnEdit}
+        onDamage={mocks.onDamage}
+        onHealing={mocks.onHealing}
+        onEdit={mocks.onEdit}
         compact={true}
       />
     );
 
     const container = screen.getByTestId('hp-quick-buttons');
-    expect(container).toHaveClass('space-x-1');
+    expect(container).toHaveClass('gap-1', 'space-x-1');
   });
 
   it('renders with disabled state', () => {
     render(
       <HPQuickButtons
-        onDamage={mockOnDamage}
-        onHealing={mockOnHealing}
-        onEdit={mockOnEdit}
+        onDamage={mocks.onDamage}
+        onHealing={mocks.onHealing}
+        onEdit={mocks.onEdit}
         disabled={true}
       />
     );
@@ -154,9 +145,9 @@ describe('HPQuickButtons', () => {
   it('has proper accessibility attributes', () => {
     render(
       <HPQuickButtons
-        onDamage={mockOnDamage}
-        onHealing={mockOnHealing}
-        onEdit={mockOnEdit}
+        onDamage={mocks.onDamage}
+        onHealing={mocks.onHealing}
+        onEdit={mocks.onEdit}
       />
     );
 

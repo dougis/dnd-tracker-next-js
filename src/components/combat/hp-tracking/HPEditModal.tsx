@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormModal } from '@/components/modals/FormModal';
+import { Modal } from '@/components/modals/Modal';
 import { HPEditForm, HPValues } from './HPEditForm';
 import { IParticipantReference } from '@/lib/models/encounter/interfaces';
 
@@ -27,24 +27,21 @@ export function HPEditModal({
   };
 
   return (
-    <FormModal
+    <Modal
       open={isOpen}
       onOpenChange={(open) => {
         if (!open) {
           onCancel();
         }
       }}
-      config={{
-        title: `Edit HP: ${participant.name}`,
-        size: 'lg',
-        showCancelButton: false, // HPEditForm handles its own buttons
-      }}
+      title={`Edit HP: ${participant.name}`}
+      size="lg"
     >
       <HPEditForm
         initialValues={initialValues}
         onSave={onSave}
         onCancel={onCancel}
       />
-    </FormModal>
+    </Modal>
   );
 }

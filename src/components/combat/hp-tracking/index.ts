@@ -5,4 +5,9 @@ export { HPStatusDisplay } from './HPStatusDisplay';
 export { HPValueInputs } from './HPValueInputs';
 export { HPQuickActions } from './HPQuickActions';
 export { useHPTracking } from './useHPTracking';
-export type { HPValues, HPStatus, UseHPTrackingReturn } from './useHPTracking';
+export type { HPStatus, UseHPTrackingReturn } from './useHPTracking';
+
+// Export shared utilities
+export * from './hp-validation-utils';
+export * from './hp-button-utils';
+export * from './test-helpers';

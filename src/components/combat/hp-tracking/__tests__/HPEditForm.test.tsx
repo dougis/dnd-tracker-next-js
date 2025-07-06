@@ -1,28 +1,16 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { HPEditForm } from '../HPEditForm';
+import { setupHPTrackingTest, TEST_SCENARIOS } from './test-helpers';
 
 describe('HPEditForm', () => {
-  const mockOnSave = jest.fn();
-  const mockOnCancel = jest.fn();
+  const { mocks } = setupHPTrackingTest();
 
   const defaultProps = {
-    initialValues: {
-      currentHitPoints: 75,
-      maxHitPoints: 100,
-      temporaryHitPoints: 5,
-    },
-    onSave: mockOnSave,
-    onCancel: mockOnCancel,
+    initialValues: TEST_SCENARIOS.injured,
+    onSave: mocks.onSave,
+    onCancel: mocks.onCancel,
   };
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
 
   it('renders form with initial values', () => {
     render(<HPEditForm {...defaultProps} />);
@@ -53,7 +41,7 @@ describe('HPEditForm', () => {
     render(<HPEditForm {...defaultProps} />);
 
     const damageInput = screen.getByLabelText('Damage Amount');
-    const applyDamageButton = screen.getByText('Apply');
+    const applyDamageButton = screen.getByTestId('apply-damage-button');
 
     fireEvent.change(damageInput, { target: { value: '10' } });
     fireEvent.click(applyDamageButton);
@@ -68,7 +56,7 @@ describe('HPEditForm', () => {
     render(<HPEditForm {...defaultProps} />);
 
     const healingInput = screen.getByLabelText('Healing Amount');
-    const applyHealingButton = screen.getByText('Apply');
+    const applyHealingButton = screen.getByTestId('apply-healing-button');
 
     fireEvent.change(healingInput, { target: { value: '15' } });
     fireEvent.click(applyHealingButton);
@@ -136,7 +124,7 @@ describe('HPEditForm', () => {
     render(<HPEditForm {...defaultProps} />);
 
     const damageInput = screen.getByLabelText('Damage Amount');
-    const applyDamageButton = screen.getByText('Apply');
+    const applyDamageButton = screen.getByTestId('apply-damage-button');
 
     fireEvent.change(damageInput, { target: { value: '-5' } });
     fireEvent.click(applyDamageButton);
@@ -150,7 +138,7 @@ describe('HPEditForm', () => {
     render(<HPEditForm {...defaultProps} />);
 
     const healingInput = screen.getByLabelText('Healing Amount');
-    const applyHealingButton = screen.getByText('Apply');
+    const applyHealingButton = screen.getByTestId('apply-healing-button');
 
     fireEvent.change(healingInput, { target: { value: '-10' } });
     fireEvent.click(applyHealingButton);
@@ -170,7 +158,7 @@ describe('HPEditForm', () => {
     fireEvent.click(saveButton);
 
     await waitFor(() => {
-      expect(mockOnSave).toHaveBeenCalledWith({
+      expect(mocks.onSave).toHaveBeenCalledWith({
         currentHitPoints: 80,
         maxHitPoints: 100,
         temporaryHitPoints: 5,
@@ -184,17 +172,13 @@ describe('HPEditForm', () => {
     const cancelButton = screen.getByText('Cancel');
     fireEvent.click(cancelButton);
 
-    expect(mockOnCancel).toHaveBeenCalled();
+    expect(mocks.onCancel).toHaveBeenCalled();
   });
 
   it('shows HP threshold warning for critical HP', () => {
     const criticalProps = {
       ...defaultProps,
-      initialValues: {
-        currentHitPoints: 20,
-        maxHitPoints: 100,
-        temporaryHitPoints: 0,
-      },
+      initialValues: TEST_SCENARIOS.critical,
     };
 
     render(<HPEditForm {...criticalProps} />);
@@ -205,11 +189,7 @@ describe('HPEditForm', () => {
   it('shows unconscious status for 0 HP', () => {
     const unconsciousProps = {
       ...defaultProps,
-      initialValues: {
-        currentHitPoints: 0,
-        maxHitPoints: 100,
-        temporaryHitPoints: 0,
-      },
+      initialValues: TEST_SCENARIOS.unconscious,
     };
 
     render(<HPEditForm {...unconsciousProps} />);
@@ -221,7 +201,7 @@ describe('HPEditForm', () => {
     render(<HPEditForm {...defaultProps} />);
 
     const damageInput = screen.getByLabelText('Damage Amount');
-    const applyDamageButton = screen.getByText('Apply');
+    const applyDamageButton = screen.getByTestId('apply-damage-button');
 
     fireEvent.change(damageInput, { target: { value: '10' } });
     fireEvent.click(applyDamageButton);
@@ -235,7 +215,7 @@ describe('HPEditForm', () => {
     render(<HPEditForm {...defaultProps} />);
 
     const healingInput = screen.getByLabelText('Healing Amount');
-    const applyHealingButton = screen.getByText('Apply');
+    const applyHealingButton = screen.getByTestId('apply-healing-button');
 
     fireEvent.change(healingInput, { target: { value: '15' } });
     fireEvent.click(applyHealingButton);

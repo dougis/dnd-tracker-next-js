@@ -1,6 +1,13 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import {
+  getButtonSize,
+  getButtonSpacing,
+  getHPButtonA11yProps,
+  DEFAULT_DAMAGE_AMOUNTS,
+  DEFAULT_HEALING_AMOUNTS
+} from './hp-button-utils';
 
 interface HPQuickButtonsProps {
   onDamage: (_amount: number) => void;
@@ -17,14 +24,14 @@ export function HPQuickButtons({
   onDamage,
   onHealing,
   onEdit,
-  damageAmounts = [1, 5, 10],
-  healingAmounts = [1, 5, 10],
+  damageAmounts = DEFAULT_DAMAGE_AMOUNTS,
+  healingAmounts = DEFAULT_HEALING_AMOUNTS,
   compact = false,
   disabled = false,
   className,
 }: HPQuickButtonsProps) {
-  const buttonSize = compact ? 'sm' : 'default';
-  const spacing = compact ? 'space-x-1' : 'space-x-2';
+  const buttonSize = getButtonSize(compact);
+  const spacing = getButtonSpacing(compact);
 
   return (
     <div
@@ -44,7 +51,7 @@ export function HPQuickButtons({
             size={buttonSize}
             onClick={() => onDamage(amount)}
             disabled={disabled}
-            aria-label={`Apply ${amount} damage`}
+            {...getHPButtonA11yProps('damage', amount)}
             className="min-w-[60px]"
           >
             {amount} Damage
@@ -64,7 +71,7 @@ export function HPQuickButtons({
             size={buttonSize}
             onClick={() => onHealing(amount)}
             disabled={disabled}
-            aria-label={`Apply ${amount} healing`}
+            {...getHPButtonA11yProps('healing', amount)}
             className="min-w-[60px] bg-green-600 hover:bg-green-700 text-white"
           >
             {amount} Heal
@@ -81,7 +88,7 @@ export function HPQuickButtons({
         size={buttonSize}
         onClick={onEdit}
         disabled={disabled}
-        aria-label="Edit HP values"
+        {...getHPButtonA11yProps('edit')}
         className="min-w-[70px]"
       >
         Edit HP

@@ -1,5 +1,6 @@
 import React from 'react';
 import { FormInput } from '@/components/forms/FormInput';
+import { HPValidationError } from './hp-validation-utils';
 
 interface HPValueInputsProps {
   currentHP: number;
@@ -8,11 +9,7 @@ interface HPValueInputsProps {
   onCurrentHPChange: (_value: number) => void;
   onMaxHPChange: (_value: number) => void;
   onTempHPChange: (_value: number) => void;
-  errors: {
-    currentHitPoints?: string;
-    maxHitPoints?: string;
-    temporaryHitPoints?: string;
-  };
+  errors: Pick<HPValidationError, 'currentHitPoints' | 'maxHitPoints' | 'temporaryHitPoints'>;
 }
 
 export function HPValueInputs({

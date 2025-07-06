@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/forms/FormInput';
+import { validateDamageInput, validateHealingInput, HPValidationError } from './hp-validation-utils';
+import { HP_BUTTON_STYLES, getHPButtonA11yProps } from './hp-button-utils';
 
 interface HPQuickActionsProps {
   onApplyDamage: (_damage: number) => void;
@@ -9,7 +11,7 @@ interface HPQuickActionsProps {
     damage?: string;
     healing?: string;
   };
-  onErrorChange: (_errors: { damage?: string; healing?: string }) => void;
+  onErrorChange: (_errors: Pick<HPValidationError, 'damage' | 'healing'>) => void;
 }
 
 export function HPQuickActions({
@@ -22,38 +24,30 @@ export function HPQuickActions({
   const [healingAmount, setHealingAmount] = useState('');
 
   const validateDamage = (value: string): boolean => {
-    const damage = parseInt(value);
-    if (isNaN(damage) || damage < 0) {
-      onErrorChange({ ...errors, damage: 'Damage must be at least 0' });
-      return false;
-    }
-    onErrorChange({ ...errors, damage: undefined });
-    return true;
+    const { isValid, error } = validateDamageInput(value);
+    onErrorChange({ ...errors, damage: error });
+    return isValid;
   };
 
   const validateHealing = (value: string): boolean => {
-    const healing = parseInt(value);
-    if (isNaN(healing) || healing < 0) {
-      onErrorChange({ ...errors, healing: 'Healing must be at least 0' });
-      return false;
-    }
-    onErrorChange({ ...errors, healing: undefined });
-    return true;
+    const { isValid, error } = validateHealingInput(value);
+    onErrorChange({ ...errors, healing: error });
+    return isValid;
   };
 
   const handleApplyDamage = () => {
     if (!validateDamage(damageAmount)) return;
 
-    const damage = parseInt(damageAmount);
-    onApplyDamage(damage);
+    const { parsed } = validateDamageInput(damageAmount);
+    onApplyDamage(parsed);
     setDamageAmount('');
   };
 
   const handleApplyHealing = () => {
     if (!validateHealing(healingAmount)) return;
 
-    const healing = parseInt(healingAmount);
-    onApplyHealing(healing);
+    const { parsed } = validateHealingInput(healingAmount);
+    onApplyHealing(parsed);
     setHealingAmount('');
   };
 
@@ -76,7 +70,8 @@ export function HPQuickActions({
           <Button
             onClick={handleApplyDamage}
             variant="destructive"
-            className="px-4"
+            className={HP_BUTTON_STYLES.applyDamage}
+            {...getHPButtonA11yProps('damage')}
           >
             Apply
           </Button>
@@ -99,7 +94,8 @@ export function HPQuickActions({
           />
           <Button
             onClick={handleApplyHealing}
-            className="px-4 bg-green-600 hover:bg-green-700 text-white"
+            className={HP_BUTTON_STYLES.applyHealing}
+            {...getHPButtonA11yProps('healing')}
           >
             Apply
           </Button>

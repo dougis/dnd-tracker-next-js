@@ -1,11 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { IParticipantReference } from '@/lib/models/encounter/interfaces';
-
-export interface HPValues {
-  currentHitPoints: number;
-  maxHitPoints: number;
-  temporaryHitPoints: number;
-}
+import { HPValues } from './hp-validation-utils';
 
 export type HPStatus = 'healthy' | 'injured' | 'critical' | 'unconscious';
 

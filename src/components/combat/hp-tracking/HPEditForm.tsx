@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useHPTracking, HPValues } from './useHPTracking';
+import { useHPTracking } from './useHPTracking';
 import { IParticipantReference } from '@/lib/models/encounter/interfaces';
 import { HPStatusDisplay } from './HPStatusDisplay';
 import { HPValueInputs } from './HPValueInputs';
 import { HPQuickActions } from './HPQuickActions';
 import { cn } from '@/lib/utils';
+import {
+  validateHPValues,
+  hasValidationErrors,
+  HPValidationError,
+  HPValues
+} from './hp-validation-utils';
 
 interface HPEditFormProps {
   initialValues: {
@@ -18,21 +24,13 @@ interface HPEditFormProps {
   className?: string;
 }
 
-interface FormErrors {
-  currentHitPoints?: string;
-  maxHitPoints?: string;
-  temporaryHitPoints?: string;
-  damage?: string;
-  healing?: string;
-}
-
 export function HPEditForm({
   initialValues,
   onSave,
   onCancel,
   className,
 }: HPEditFormProps) {
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [errors, setErrors] = useState<HPValidationError>({});
 
   const mockParticipant: IParticipantReference = {
     characterId: '' as any,
@@ -63,22 +61,14 @@ export function HPEditForm({
   } = useHPTracking(mockParticipant, () => {});
 
   const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    if (currentHP < 0) {
-      newErrors.currentHitPoints = 'Current HP must be at least 0';
-    }
-
-    if (maxHP < 1) {
-      newErrors.maxHitPoints = 'Maximum HP must be at least 1';
-    }
-
-    if (tempHP < 0) {
-      newErrors.temporaryHitPoints = 'Temporary HP must be at least 0';
-    }
+    const newErrors = validateHPValues({
+      currentHitPoints: currentHP,
+      maxHitPoints: maxHP,
+      temporaryHitPoints: tempHP,
+    });
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return !hasValidationErrors(newErrors);
   };
 
   const handleSave = () => {

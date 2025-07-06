@@ -1,29 +1,14 @@
 import { renderHook, act } from '@testing-library/react';
 import { useHPTracking } from '../useHPTracking';
-import { createTestParticipant } from '@/lib/models/encounter/__tests__/test-helpers';
-import { IParticipantReference } from '@/lib/models/encounter/interfaces';
+import { setupHPTrackingTest, createTestHPParticipant } from './test-helpers';
 
 describe('useHPTracking', () => {
-  const mockParticipant: IParticipantReference = createTestParticipant({
-    name: 'Test Character',
-    maxHitPoints: 100,
-    currentHitPoints: 75,
-    temporaryHitPoints: 5,
-  });
-
-  const mockOnUpdate = jest.fn();
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  const { mocks } = setupHPTrackingTest();
+  const mockParticipant = createTestHPParticipant();
 
   it('initializes with correct HP values', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     expect(result.current.currentHP).toBe(75);
@@ -34,7 +19,7 @@ describe('useHPTracking', () => {
 
   it('applies damage correctly', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     act(() => {
@@ -48,7 +33,7 @@ describe('useHPTracking', () => {
 
   it('applies damage to temporary HP first', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     act(() => {
@@ -62,7 +47,7 @@ describe('useHPTracking', () => {
 
   it('applies damage to current HP after temporary HP is depleted', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     act(() => {
@@ -76,7 +61,7 @@ describe('useHPTracking', () => {
 
   it('prevents current HP from going below 0', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     act(() => {
@@ -90,7 +75,7 @@ describe('useHPTracking', () => {
 
   it('applies healing correctly', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     act(() => {
@@ -104,7 +89,7 @@ describe('useHPTracking', () => {
 
   it('prevents healing above maximum HP', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     act(() => {
@@ -118,7 +103,7 @@ describe('useHPTracking', () => {
 
   it('sets temporary HP correctly', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     act(() => {
@@ -131,7 +116,7 @@ describe('useHPTracking', () => {
 
   it('replaces temporary HP with higher value', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     act(() => {
@@ -143,7 +128,7 @@ describe('useHPTracking', () => {
 
   it('keeps existing temporary HP when new value is lower', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     act(() => {
@@ -155,7 +140,7 @@ describe('useHPTracking', () => {
 
   it('sets maximum HP correctly', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     act(() => {
@@ -167,7 +152,7 @@ describe('useHPTracking', () => {
 
   it('adjusts current HP when max HP is reduced below current', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     act(() => {
@@ -180,7 +165,7 @@ describe('useHPTracking', () => {
 
   it('sets current HP directly', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     act(() => {
@@ -192,7 +177,7 @@ describe('useHPTracking', () => {
 
   it('prevents setting current HP below 0', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     act(() => {
@@ -204,7 +189,7 @@ describe('useHPTracking', () => {
 
   it('prevents setting current HP above maximum', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     act(() => {
@@ -216,7 +201,7 @@ describe('useHPTracking', () => {
 
   it('calculates HP status correctly', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     expect(result.current.hpStatus).toBe('injured');
@@ -242,7 +227,7 @@ describe('useHPTracking', () => {
 
   it('determines if character is alive correctly', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     expect(result.current.isAlive).toBe(true);
@@ -256,14 +241,14 @@ describe('useHPTracking', () => {
 
   it('calls onUpdate when HP changes', () => {
     const { result } = renderHook(() =>
-      useHPTracking(mockParticipant, mockOnUpdate)
+      useHPTracking(mockParticipant, mocks.onUpdate)
     );
 
     act(() => {
       result.current.applyDamage(10);
     });
 
-    expect(mockOnUpdate).toHaveBeenCalledWith({
+    expect(mocks.onUpdate).toHaveBeenCalledWith({
       currentHitPoints: 70,
       maxHitPoints: 100,
       temporaryHitPoints: 0,
@@ -272,7 +257,7 @@ describe('useHPTracking', () => {
 
   it('resets HP values when participant changes', () => {
     const { result, rerender } = renderHook(
-      ({ participant }) => useHPTracking(participant, mockOnUpdate),
+      ({ participant }) => useHPTracking(participant, mocks.onUpdate),
       { initialProps: { participant: mockParticipant } }
     );
 
@@ -282,7 +267,7 @@ describe('useHPTracking', () => {
 
     expect(result.current.currentHP).toBe(70);
 
-    const newParticipant = createTestParticipant({
+    const newParticipant = createTestHPParticipant({
       name: 'New Character',
       maxHitPoints: 80,
       currentHitPoints: 60,
