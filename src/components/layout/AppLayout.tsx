@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useSession, signIn, signOut } from 'next-auth/react';
+import Link from 'next/link';
 import { Sidebar } from './Sidebar';
 import { MobileMenu } from './MobileMenu';
 import { Breadcrumbs } from './Breadcrumbs';
@@ -12,6 +14,7 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const { data: session, status } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -31,10 +34,14 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-background lg:flex">
       {/* Sidebar for desktop */}
-      <Sidebar isOpen={!isMobile} />
+      <Sidebar isOpen={!isMobile} isAuthenticated={status === 'authenticated'} />
 
       {/* Mobile menu overlay */}
-      <MobileMenu isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <MobileMenu 
+        isOpen={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)} 
+        isAuthenticated={status === 'authenticated'} 
+      />
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
@@ -69,24 +76,53 @@ export function AppLayout({ children }: AppLayoutProps) {
               <Breadcrumbs />
             </div>
 
-            {/* Theme toggle and user menu */}
+            {/* Theme toggle and auth section */}
             <div className="flex items-center space-x-4">
               <ThemeToggle />
-              <button className="rounded-full bg-primary p-2 text-primary-foreground">
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              
+              {/* Authentication section */}
+              {status === 'loading' && (
+                <div data-testid="auth-loading" className="text-muted-foreground text-sm">
+                  Loading...
+                </div>
+              )}
+              
+              {status === 'unauthenticated' && (
+                <button
+                  onClick={() => signIn()}
+                  className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors"
+                  aria-label="Sign In"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </button>
+                  Sign In
+                </button>
+              )}
+              
+              {status === 'authenticated' && session?.user && (
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-foreground">
+                    {session.user.name || session.user.email}
+                  </span>
+                  <button
+                    onClick={() => signOut()}
+                    className="rounded-full bg-primary p-2 text-primary-foreground hover:bg-primary/90 transition-colors"
+                    aria-label="User menu"
+                  >
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>

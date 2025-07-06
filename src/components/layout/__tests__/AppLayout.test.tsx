@@ -1,12 +1,16 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
+import { useSession } from 'next-auth/react';
 import { AppLayout } from '../AppLayout';
 import { setupLayoutTest, mockWindowInnerWidth } from './test-utils';
 
+// Mock next-auth/react
+jest.mock('next-auth/react');
+
 // Mock the child components
 jest.mock('../Sidebar', () => ({
-  Sidebar: ({ isOpen }: { isOpen: boolean }) => (
-    <div data-testid="sidebar" data-open={isOpen} />
+  Sidebar: ({ isOpen, isAuthenticated }: { isOpen: boolean; isAuthenticated?: boolean }) => (
+    <div data-testid="sidebar" data-open={isOpen} data-auth={isAuthenticated} />
   ),
 }));
 
@@ -14,11 +18,13 @@ jest.mock('../MobileMenu', () => ({
   MobileMenu: ({
     isOpen,
     onClose,
+    isAuthenticated,
   }: {
     isOpen: boolean;
     onClose: () => void;
+    isAuthenticated?: boolean;
   }) => (
-    <div data-testid="mobile-menu" data-open={isOpen}>
+    <div data-testid="mobile-menu" data-open={isOpen} data-auth={isAuthenticated}>
       {isOpen && (
         <button data-testid="mobile-menu-close" onClick={onClose}>
           Close
@@ -382,6 +388,76 @@ describe('AppLayout', () => {
         'data-open',
         'true'
       );
+    });
+  });
+
+  describe('Authentication Aware Features', () => {
+    const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    test('renders sign in button when user is not authenticated', () => {
+      mockUseSession.mockReturnValue({
+        data: null,
+        status: 'unauthenticated',
+        update: jest.fn(),
+      });
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+
+      expect(screen.getByRole('button', { name: 'Sign In' })).toBeInTheDocument();
+    });
+
+    test('renders user menu when user is authenticated', () => {
+      mockUseSession.mockReturnValue({
+        data: {
+          user: {
+            id: '1',
+            email: 'test@example.com',
+            name: 'Test User',
+          },
+          expires: '2024-01-01',
+        },
+        status: 'authenticated',
+        update: jest.fn(),
+      });
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+
+      expect(screen.getByRole('button', { name: 'User menu' })).toBeInTheDocument();
+    });
+
+    test('shows loading state during authentication check', () => {
+      mockUseSession.mockReturnValue({
+        data: null,
+        status: 'loading',
+        update: jest.fn(),
+      });
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+
+      expect(screen.getByTestId('auth-loading')).toBeInTheDocument();
+    });
+
+    test('passes auth status to sidebar', () => {
+      mockUseSession.mockReturnValue({
+        data: {
+          user: {
+            id: '1',
+            email: 'test@example.com',
+            name: 'Test User',
+          },
+          expires: '2024-01-01',
+        },
+        status: 'authenticated',
+        update: jest.fn(),
+      });
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+
+      expect(screen.getByTestId('sidebar')).toHaveAttribute('data-open', 'true');
     });
   });
 });
