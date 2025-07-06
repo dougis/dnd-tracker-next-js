@@ -2,67 +2,52 @@ import { NextRequest } from 'next/server';
 import { ZodError } from 'zod';
 import { UserService } from '@/lib/services/UserService';
 import { userProfileUpdateSchema } from '@/lib/validations/user';
-import {
-  validateAuth,
-  validateUserAccess,
-  handleServiceError,
-  handleValidationError,
-  handleUnexpectedError,
-  createSuccessResponse,
-} from './helpers';
+import { withAuthAndAccess, createSuccessResponse, handleServiceError } from '@/lib/api/route-helpers';
+import { NextResponse } from 'next/server';
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    // Validate authentication
-    const { error: authError, session } = await validateAuth();
-    if (authError) return authError;
+  return withAuthAndAccess(params, async (userId) => {
+    try {
+      const body = await request.json();
+      const validatedData = userProfileUpdateSchema.parse(body);
 
-    // Get user ID and validate access
-    const { id: userId } = await params;
-    const accessError = await validateUserAccess(userId, session!.user.id);
-    if (accessError) return accessError;
+      const result = await UserService.updateUserProfile(userId, validatedData);
 
-    // Parse and validate request body
-    const body = await request.json();
-    const validatedData = userProfileUpdateSchema.parse(body);
+      if (!result.success) {
+        return handleServiceError(result, 'Profile update failed');
+      }
 
-    // Update the user profile
-    const result = await UserService.updateUserProfile(userId, validatedData);
-
-    if (!result.success) {
-      return handleServiceError(result, 'Profile update failed');
+      return createSuccessResponse(
+        { user: result.data },
+        'Profile updated successfully'
+      );
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'Validation error',
+            errors: error.errors.map((err: any) => ({
+              field: err.path.join('.'),
+              message: err.message,
+            })),
+          },
+          { status: 400 }
+        );
+      }
+      throw error; // Let withAuthAndAccess handle unexpected errors
     }
-
-    return createSuccessResponse(
-      { user: result.data },
-      'Profile updated successfully'
-    );
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return handleValidationError(error);
-    }
-    return handleUnexpectedError(error, 'Profile update');
-  }
+  });
 }
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    // Validate authentication
-    const { error: authError, session } = await validateAuth();
-    if (authError) return authError;
-
-    // Get user ID and validate access
-    const { id: userId } = await params;
-    const accessError = await validateUserAccess(userId, session!.user.id);
-    if (accessError) return accessError;
-
-    // Get the user profile
+  return withAuthAndAccess(params, async (userId) => {
     const result = await UserService.getUserById(userId);
 
     if (!result.success) {
@@ -70,7 +55,5 @@ export async function GET(
     }
 
     return createSuccessResponse({ user: result.data });
-  } catch (error) {
-    return handleUnexpectedError(error, 'Profile fetch');
-  }
+  });
 }
