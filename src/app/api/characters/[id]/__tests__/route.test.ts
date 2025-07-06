@@ -5,16 +5,28 @@ import {
   TEST_USER_ID,
   TEST_CHARACTER_ID,
   createMockParams,
-  createMockRequest,
   createTestCharacter,
   expectErrorResponse,
 } from '../../__tests__/test-helpers';
+import {
+  mockCharacterService,
+  setupSuccessfulCharacterById,
+  setupSuccessfulCharacterUpdate,
+  setupSuccessfulCharacterDelete,
+  setupCharacterNotFound,
+  setupAccessDeniedError,
+  createCharacterRequest,
+  createUnauthenticatedRequest,
+  createUpdateData,
+  expectSuccessfulResponse,
+  runAuthenticationTest,
+  runNotFoundTest,
+  runAccessDeniedTest,
+} from '../../__tests__/shared-test-utils';
 
 // Mock dependencies
 jest.mock('@/lib/services/CharacterService');
 jest.mock('@/lib/db');
-
-const mockCharacterService = CharacterService as jest.Mocked<typeof CharacterService>;
 
 describe('/api/characters/[id] API Route', () => {
   beforeEach(() => {
@@ -25,22 +37,14 @@ describe('/api/characters/[id] API Route', () => {
     it('should return character when user owns it', async () => {
       // Arrange
       const character = createTestCharacter();
-      mockCharacterService.getCharacterById.mockResolvedValue({
-        success: true,
-        data: character
-      });
-
-      const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
-        headers: { 'x-user-id': TEST_USER_ID }
-      });
+      setupSuccessfulCharacterById(character);
+      const request = createCharacterRequest();
 
       // Act
       const response = await GET(request, { params: createMockParams() });
-      const data = await response.json();
+      const data = await expectSuccessfulResponse(response);
 
       // Assert
-      expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
       expect(data.data.name).toBe('Test Character');
       expect(data.data._id).toBe(TEST_CHARACTER_ID);
       expect(mockCharacterService.getCharacterById).toHaveBeenCalledWith(
@@ -50,108 +54,50 @@ describe('/api/characters/[id] API Route', () => {
     });
 
     it('should return 404 when character does not exist', async () => {
-      // Arrange
-      mockCharacterService.getCharacterById.mockResolvedValue({
-        success: false,
-        error: { code: 'CHARACTER_NOT_FOUND', message: 'Character not found' }
-      });
-
-      const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
-        headers: { 'x-user-id': TEST_USER_ID }
-      });
-
-      // Act
-      const response = await GET(request, { params: createMockParams() });
-
-      // Assert
-      await expectErrorResponse(response, 404, 'Character not found');
+      await runNotFoundTest(GET, setupCharacterNotFound, { params: createMockParams() });
     });
 
     it('should return 403 when user does not own character', async () => {
-      // Arrange
-      const error = new Error('access denied');
-      mockCharacterService.getCharacterById.mockRejectedValue(error);
-
-      const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
-        headers: { 'x-user-id': 'other-user-id' }
-      });
-
-      // Act
-      const response = await GET(request, { params: createMockParams() });
-
-      // Assert
-      await expectErrorResponse(response, 403, 'Access denied');
+      await runAccessDeniedTest(GET, setupAccessDeniedError, { params: createMockParams() });
     });
 
     it('should return public character when not owned but public', async () => {
       // Arrange
-      const publicCharacter = createTestCharacter({
-        name: 'Public Character',
-        isPublic: true
-      });
-      mockCharacterService.getCharacterById.mockResolvedValue({
-        success: true,
-        data: publicCharacter
-      });
-
-      const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
-        headers: { 'x-user-id': 'other-user-id' }
-      });
+      const publicCharacter = createTestCharacter({ name: 'Public Character', isPublic: true });
+      setupSuccessfulCharacterById(publicCharacter);
+      const request = createCharacterRequest({ headers: { 'x-user-id': 'other-user-id' } });
 
       // Act
       const response = await GET(request, { params: createMockParams() });
-      const data = await response.json();
+      const data = await expectSuccessfulResponse(response);
 
       // Assert
-      expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
       expect(data.data.name).toBe('Public Character');
     });
 
     it('should return 401 when user is not authenticated', async () => {
-      // Arrange
-      const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`);
-
-      // Act
-      const response = await GET(request, { params: createMockParams() });
-
-      // Assert
-      await expectErrorResponse(response, 401, 'Unauthorized');
+      await runAuthenticationTest(GET, { params: createMockParams() });
     });
   });
 
   describe('PUT /api/characters/[id]', () => {
     it('should update character when user owns it', async () => {
       // Arrange
-      const updateData = {
-        name: 'Updated Name',
-        hitPoints: { maximum: 19, current: 19, temporary: 0 }
-      };
-
+      const updateData = createUpdateData();
       const updatedCharacter = createTestCharacter(updateData);
-      mockCharacterService.updateCharacter.mockResolvedValue({
-        success: true,
-        data: updatedCharacter
-      });
-
-      const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
+      setupSuccessfulCharacterUpdate(updatedCharacter);
+      const request = createCharacterRequest({
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': TEST_USER_ID
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: updateData
       });
 
       // Act
       const response = await PUT(request, { params: createMockParams() });
-      const data = await response.json();
+      const data = await expectSuccessfulResponse(response);
 
       // Assert
-      expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
       expect(data.data.name).toBe('Updated Name');
-      // expect(data.data.level).toBe(2); // Level is calculated from classes, not directly settable
       expect(data.data.hitPoints.maximum).toBe(19);
       expect(mockCharacterService.updateCharacter).toHaveBeenCalledWith(
         TEST_CHARACTER_ID,
@@ -161,70 +107,25 @@ describe('/api/characters/[id] API Route', () => {
     });
 
     it('should return 404 when character does not exist', async () => {
-      // Arrange
-      mockCharacterService.updateCharacter.mockResolvedValue({
-        success: false,
-        error: { code: 'CHARACTER_NOT_FOUND', message: 'Character not found' }
-      });
-
-      const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': TEST_USER_ID
-        },
-        body: { name: 'Updated Name' }
-      });
-
-      // Act
-      const response = await PUT(request, { params: createMockParams() });
-
-      // Assert
-      await expectErrorResponse(response, 404, 'Character not found');
+      await runNotFoundTest(PUT, setupCharacterNotFound, { params: createMockParams() });
     });
 
     it('should return 403 when user does not own character', async () => {
-      // Arrange
-      const error = new Error('access denied');
-      mockCharacterService.updateCharacter.mockRejectedValue(error);
-
-      const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': 'other-user-id'
-        },
-        body: { name: 'Updated Name' }
-      });
-
-      // Act
-      const response = await PUT(request, { params: createMockParams() });
-
-      // Assert
-      await expectErrorResponse(response, 403, 'Access denied');
+      await runAccessDeniedTest(PUT, setupAccessDeniedError, { params: createMockParams() });
     });
   });
 
   describe('DELETE /api/characters/[id]', () => {
     it('should delete character when user owns it', async () => {
       // Arrange
-      mockCharacterService.deleteCharacter.mockResolvedValue({
-        success: true,
-        data: undefined
-      });
-
-      const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
-        method: 'DELETE',
-        headers: { 'x-user-id': TEST_USER_ID }
-      });
+      setupSuccessfulCharacterDelete();
+      const request = createCharacterRequest({ method: 'DELETE' });
 
       // Act
       const response = await DELETE(request, { params: createMockParams() });
-      const data = await response.json();
+      const data = await expectSuccessfulResponse(response);
 
       // Assert
-      expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
       expect(data.message).toBe('Character deleted successfully');
       expect(mockCharacterService.deleteCharacter).toHaveBeenCalledWith(
         TEST_CHARACTER_ID,
@@ -233,39 +134,11 @@ describe('/api/characters/[id] API Route', () => {
     });
 
     it('should return 404 when character does not exist', async () => {
-      // Arrange
-      mockCharacterService.deleteCharacter.mockResolvedValue({
-        success: false,
-        error: { code: 'CHARACTER_NOT_FOUND', message: 'Character not found' }
-      });
-
-      const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
-        method: 'DELETE',
-        headers: { 'x-user-id': TEST_USER_ID }
-      });
-
-      // Act
-      const response = await DELETE(request, { params: createMockParams() });
-
-      // Assert
-      await expectErrorResponse(response, 404, 'Character not found');
+      await runNotFoundTest(DELETE, setupCharacterNotFound, { params: createMockParams() });
     });
 
     it('should return 403 when user does not own character', async () => {
-      // Arrange
-      const error = new Error('access denied');
-      mockCharacterService.deleteCharacter.mockRejectedValue(error);
-
-      const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
-        method: 'DELETE',
-        headers: { 'x-user-id': 'other-user-id' }
-      });
-
-      // Act
-      const response = await DELETE(request, { params: createMockParams() });
-
-      // Assert
-      await expectErrorResponse(response, 403, 'Access denied');
+      await runAccessDeniedTest(DELETE, setupAccessDeniedError, { params: createMockParams() });
     });
   });
 });
