@@ -1,6 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { EncounterService } from '@/lib/services/EncounterService';
+import { NextRequest } from 'next/server';
 import { setInitiative } from '@/lib/models/encounter/methods';
+import {
+  validateAndGetEncounter,
+  validateCombatActive,
+  validateRequiredFields,
+  createSuccessResponse,
+  createErrorResponse,
+  handleAsyncError
+} from '../utils';
 
 export async function PATCH(
   request: NextRequest,
@@ -10,78 +17,24 @@ export async function PATCH(
     const { id: encounterId } = await context.params;
     const body = await request.json();
 
-    // Validate required fields
-    const { participantId, initiative, dexterity } = body;
-    if (!participantId || initiative === undefined || dexterity === undefined) {
-      const missingFields = [];
-      if (!participantId) missingFields.push('participantId');
-      if (initiative === undefined) missingFields.push('initiative');
-      if (dexterity === undefined) missingFields.push('dexterity');
+    const fieldsError = validateRequiredFields(body, ['participantId', 'initiative', 'dexterity']);
+    if (fieldsError) return fieldsError;
 
-      return NextResponse.json(
-        { success: false, message: `Missing required fields: ${missingFields.join(', ')}` },
-        { status: 400 }
-      );
-    }
+    const { encounter, errorResponse } = await validateAndGetEncounter(encounterId);
+    if (errorResponse) return errorResponse;
 
-    // Get the current encounter
-    const encounterResult = await EncounterService.getEncounterById(encounterId);
+    const combatError = validateCombatActive(encounter!);
+    if (combatError) return combatError;
 
-    if (!encounterResult.success) {
-      return NextResponse.json(
-        { success: false, message: 'Encounter not found' },
-        { status: 404 }
-      );
-    }
-
-    const encounter = encounterResult.data;
-    if (!encounter) {
-      return NextResponse.json(
-        { success: false, message: 'Encounter not found' },
-        { status: 404 }
-      );
-    }
-
-    // Validate combat state
-    if (!encounter.combatState?.isActive) {
-      return NextResponse.json(
-        { success: false, message: 'Combat is not active' },
-        { status: 400 }
-      );
-    }
-
-    // Update the initiative using the encounter method
-    const success = setInitiative(encounter, participantId, initiative, dexterity);
-
+    const success = setInitiative(encounter!, body.participantId, body.initiative, body.dexterity);
     if (!success) {
-      return NextResponse.json(
-        { success: false, message: 'Participant not found' },
-        { status: 400 }
-      );
+      return createErrorResponse('Participant not found', 400);
     }
 
-    // Save the updated encounter
-    const saveResult = await EncounterService.updateEncounter(encounterId, {
-      combatState: encounter.combatState
-    });
-
-    if (!saveResult.success) {
-      return NextResponse.json(
-        { success: false, message: 'Failed to save encounter' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      encounter: saveResult.data
-    });
+    await encounter!.save();
+    return createSuccessResponse(encounter!);
 
   } catch (error) {
-    console.error('Error updating initiative:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return handleAsyncError(error, 'updating initiative');
   }
 }

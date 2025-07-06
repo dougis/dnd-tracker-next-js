@@ -1,6 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { EncounterService } from '@/lib/services/EncounterService';
+import { NextRequest } from 'next/server';
 import { previousTurn } from '@/lib/models/encounter/methods';
+import {
+  validateAndGetEncounter,
+  validateCombatActive,
+  createSuccessResponse,
+  createErrorResponse,
+  handleAsyncError
+} from '../utils';
 
 export async function PATCH(
   request: NextRequest,
@@ -9,72 +15,25 @@ export async function PATCH(
   try {
     const { id: encounterId } = await context.params;
 
-    // Get the current encounter
-    const encounterResult = await EncounterService.getEncounterById(encounterId);
+    const { encounter, errorResponse } = await validateAndGetEncounter(encounterId);
+    if (errorResponse) return errorResponse;
 
-    if (!encounterResult.success) {
-      return NextResponse.json(
-        { success: false, message: 'Encounter not found' },
-        { status: 404 }
-      );
+    const combatError = validateCombatActive(encounter!);
+    if (combatError) return combatError;
+
+    if (encounter!.combatState.currentTurn === 0 && encounter!.combatState.currentRound === 1) {
+      return createErrorResponse('No previous turn available', 400);
     }
 
-    const encounter = encounterResult.data;
-    if (!encounter) {
-      return NextResponse.json(
-        { success: false, message: 'Encounter not found' },
-        { status: 404 }
-      );
-    }
-
-    // Validate combat state
-    if (!encounter.combatState?.isActive) {
-      return NextResponse.json(
-        { success: false, message: 'Combat is not active' },
-        { status: 400 }
-      );
-    }
-
-    // Check if there's a previous turn available
-    if (encounter.combatState.currentTurn === 0 && encounter.combatState.currentRound === 1) {
-      return NextResponse.json(
-        { success: false, message: 'No previous turn available' },
-        { status: 400 }
-      );
-    }
-
-    // Go back to previous turn using the encounter's method
-    const success = previousTurn(encounter);
-
+    const success = previousTurn(encounter!);
     if (!success) {
-      return NextResponse.json(
-        { success: false, message: 'Unable to go to previous turn' },
-        { status: 400 }
-      );
+      return createErrorResponse('Unable to go to previous turn', 400);
     }
 
-    // Save the updated encounter
-    const saveResult = await EncounterService.updateEncounter(encounterId, {
-      combatState: encounter.combatState
-    });
-
-    if (!saveResult.success) {
-      return NextResponse.json(
-        { success: false, message: 'Failed to save encounter' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      encounter: saveResult.data
-    });
+    await encounter!.save();
+    return createSuccessResponse(encounter!);
 
   } catch (error) {
-    console.error('Error going to previous turn:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return handleAsyncError(error, 'going to previous turn');
   }
 }

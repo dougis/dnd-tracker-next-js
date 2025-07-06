@@ -1,6 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { EncounterService } from '@/lib/services/EncounterService';
+import { NextRequest } from 'next/server';
 import { endCombat } from '@/lib/models/encounter/methods';
+import {
+  validateAndGetEncounter,
+  validateCombatActive,
+  createSuccessResponse,
+  handleAsyncError
+} from '../utils';
 
 export async function PATCH(
   request: NextRequest,
@@ -9,58 +14,17 @@ export async function PATCH(
   try {
     const { id: encounterId } = await context.params;
 
-    // Get the current encounter
-    const encounterResult = await EncounterService.getEncounterById(encounterId);
+    const { encounter, errorResponse } = await validateAndGetEncounter(encounterId);
+    if (errorResponse) return errorResponse;
 
-    if (!encounterResult.success) {
-      return NextResponse.json(
-        { success: false, message: 'Encounter not found' },
-        { status: 404 }
-      );
-    }
+    const combatError = validateCombatActive(encounter!);
+    if (combatError) return combatError;
 
-    const encounter = encounterResult.data;
-    if (!encounter) {
-      return NextResponse.json(
-        { success: false, message: 'Encounter not found' },
-        { status: 404 }
-      );
-    }
-
-    // Validate combat state
-    if (!encounter.combatState?.isActive) {
-      return NextResponse.json(
-        { success: false, message: 'Combat is not active' },
-        { status: 400 }
-      );
-    }
-
-    // End combat using the encounter's method
-    endCombat(encounter);
-
-    // Save the updated encounter
-    const saveResult = await EncounterService.updateEncounter(encounterId, {
-      combatState: encounter.combatState,
-      status: encounter.status
-    });
-
-    if (!saveResult.success) {
-      return NextResponse.json(
-        { success: false, message: 'Failed to save encounter' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      encounter: saveResult.data
-    });
+    endCombat(encounter!);
+    await encounter!.save();
+    return createSuccessResponse(encounter!);
 
   } catch (error) {
-    console.error('Error ending combat:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return handleAsyncError(error, 'ending combat');
   }
 }
