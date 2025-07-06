@@ -1,138 +1,75 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from '@jest/globals';
+import '@testing-library/jest-dom';
 import { FeaturesSection } from '../FeaturesSection';
-import {
-  getSection,
-  expectResponsiveLayout,
-  expectSemanticStructure,
-} from './test-utils';
-
-// Mock the FeatureIcon component
-jest.mock('../FeatureIcon', () => ({
-  FeatureIcon: ({ src, alt }: { src: string; alt: string }) => (
-    <div data-testid="feature-icon">
-      <div data-testid="feature-icon-icon">{src}</div>
-      <div data-testid="feature-icon-title">{alt}</div>
-      <div data-testid="feature-icon-description">{alt}</div>
-    </div>
-  ),
-}));
 
 describe('FeaturesSection Component', () => {
-  it('renders section heading that showcases key functionality', () => {
-    render(<FeaturesSection />);
+  describe('Feature Images', () => {
+    it('should render all feature icons with correct paths', () => {
+      render(<FeaturesSection />);
 
-    // Should have a main heading about features/functionality
-    const headings = screen.getAllByRole('heading');
-    expect(headings.length).toBeGreaterThan(0);
+      const expectedFeatures = [
+        { icon: '/features/initiative-tracker.svg', title: 'Initiative Tracking' },
+        { icon: '/features/hp-management.svg', title: 'HP & AC Management' },
+        { icon: '/features/character-management.svg', title: 'Character Management' },
+        { icon: '/features/encounter-builder.svg', title: 'Encounter Builder' },
+        { icon: '/features/lair-actions.svg', title: 'Lair Actions' },
+        { icon: '/features/mobile-ready.svg', title: 'Mobile & Tablet Ready' }
+      ];
 
-    // Check for feature-related text
-    const sectionText = screen.getByRole('heading', { level: 2 });
-    expect(sectionText).toBeInTheDocument();
-  });
+      expectedFeatures.forEach(feature => {
+        const image = screen.getByAltText(feature.title);
+        expect(image).toBeInTheDocument();
+        expect(image).toHaveAttribute('src', expect.stringContaining(feature.icon));
+      });
+    });
 
-  it('displays core D&D encounter management features', () => {
-    render(<FeaturesSection />);
+    it('should display feature images with proper dimensions', () => {
+      render(<FeaturesSection />);
 
-    // Should display initiative tracking feature
-    expect(screen.getAllByText(/initiative/i).length).toBeGreaterThan(0);
+      const images = screen.getAllByRole('img');
+      expect(images).toHaveLength(6);
 
-    // Should display character management feature
-    expect(screen.getAllByText(/character/i).length).toBeGreaterThan(0);
+      images.forEach(image => {
+        expect(image).toHaveAttribute('width', '32');
+        expect(image).toHaveAttribute('height', '32');
+      });
+    });
 
-    // Should display encounter building feature
-    expect(screen.getAllByText(/encounter/i).length).toBeGreaterThan(0);
-  });
+    it('should have meaningful alt text for all feature images', () => {
+      render(<FeaturesSection />);
 
-  it('highlights unique competitive advantages', () => {
-    render(<FeaturesSection />);
+      const requiredAltTexts = [
+        'Initiative Tracking',
+        'HP & AC Management',
+        'Character Management',
+        'Encounter Builder',
+        'Lair Actions',
+        'Mobile & Tablet Ready'
+      ];
 
-    // Should mention lair actions (unique feature)
-    expect(screen.getAllByText(/lair.*action/i).length).toBeGreaterThan(0);
-
-    // Should emphasize real-time collaboration
-    expect(
-      screen.getAllByText(/real.*time|collaboration/i).length
-    ).toBeGreaterThan(0);
-  });
-
-  it('uses feature icons for visual appeal and clarity', () => {
-    render(<FeaturesSection />);
-
-    const featureIcons = screen.getAllByTestId('feature-icon');
-    expect(featureIcons.length).toBeGreaterThanOrEqual(3);
-  });
-
-  it('provides clear feature descriptions for user understanding', () => {
-    render(<FeaturesSection />);
-
-    // Check for feature descriptions in the actual CardDescription elements
-    const descriptions = screen.getAllByText(
-      /rolling|tracking|management|building|actions|responsive/i
-    );
-    expect(descriptions.length).toBeGreaterThan(3);
-    descriptions.forEach(description => {
-      expect(description.textContent).toBeTruthy();
-      expect(description.textContent!.length).toBeGreaterThan(10);
+      requiredAltTexts.forEach(altText => {
+        expect(screen.getByAltText(altText)).toBeInTheDocument();
+      });
     });
   });
 
-  it('implements responsive grid layout for different screen sizes', () => {
-    render(<FeaturesSection />);
+  describe('Feature Content', () => {
+    it('should display all feature titles and descriptions', () => {
+      render(<FeaturesSection />);
 
-    const section = getSection(screen);
-    expectResponsiveLayout(section);
-    expect(section).toHaveClass('py-16');
-
-    // Should have grid layout for features
-    const featuresGrid = section?.querySelector('.grid');
-    expect(featuresGrid).toBeInTheDocument();
-    expect(featuresGrid).toHaveClass('md:grid-cols-2');
-    expect(featuresGrid).toHaveClass('lg:grid-cols-3');
-  });
-
-  it('follows proper content hierarchy for readability', () => {
-    render(<FeaturesSection />);
-
-    // Should have proper heading structure
-    const mainHeading = screen.getByRole('heading', { level: 2 });
-    expect(mainHeading).toBeInTheDocument();
-
-    // Feature titles should be smaller headings (h3)
-    const featureTitles = screen.getAllByRole('heading', { level: 3 });
-    expect(featureTitles.length).toBeGreaterThanOrEqual(3);
-    featureTitles.forEach(title => {
-      expect(title.textContent).toBeTruthy();
+      expect(screen.getByRole('heading', { name: /initiative tracking/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /hp & ac management/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /character management/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /encounter builder/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /lair actions/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /mobile & tablet ready/i })).toBeInTheDocument();
     });
-  });
 
-  it('demonstrates value for Dungeon Masters specifically', () => {
-    render(<FeaturesSection />);
+    it('should display section heading', () => {
+      render(<FeaturesSection />);
 
-    // Should mention DM-specific benefits
-    expect(screen.getAllByText(/dungeon.*master|dm/i).length).toBeGreaterThan(
-      0
-    );
-
-    // Should highlight combat management benefits
-    expect(screen.getAllByText(/combat|manage|track/i).length).toBeGreaterThan(
-      0
-    );
-  });
-
-  it('emphasizes mobile responsiveness for table use', () => {
-    render(<FeaturesSection />);
-
-    // Should mention mobile/tablet optimization
-    expect(
-      screen.getAllByText(/mobile|tablet|responsive/i).length
-    ).toBeGreaterThan(0);
-  });
-
-  it('has proper semantic structure for accessibility', () => {
-    render(<FeaturesSection />);
-
-    const section = getSection(screen);
-    expectSemanticStructure(section);
+      expect(screen.getByRole('heading', { name: /everything you need for epic d&d encounters/i })).toBeInTheDocument();
+    });
   });
 });

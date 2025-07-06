@@ -87,7 +87,7 @@ export default function SignUpPage() {
       });
 
       router.push(
-        ('/auth/verify-email?email=' +
+        ('/verify-email?email=' +
           encodeURIComponent(validatedData.email)) as any
       );
     } catch (error) {
