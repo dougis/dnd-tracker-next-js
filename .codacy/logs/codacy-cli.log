@@ -1,0 +1,2 @@
+2025-07-06T00:31:59-07:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.339.sha.dcd97cf (dcd97cf) built at 2025-06-16T20:10:29Z
+2025-07-06T00:31:59-07:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/home/doug/.cache/codacy/codacy-cli-v2/1.0.0-main.339.sha.dcd97cf/codacy-cli-v2 analyze src/components/layout --format sarif] args=[src/components/layout]

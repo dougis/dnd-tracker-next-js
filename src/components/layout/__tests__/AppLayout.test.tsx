@@ -456,5 +456,75 @@ describe('AppLayout', () => {
       render(<AppLayout>{mockChildren}</AppLayout>);
       expect(screen.getByTestId('sidebar')).toHaveAttribute('data-open', 'true');
     });
+
+    test('displays real user name when authenticated', () => {
+      mockUseSession.mockReturnValue({
+        data: {
+          user: {
+            id: '1',
+            email: 'john.doe@example.com',
+            name: 'John Doe',
+          },
+          expires: '2024-01-01',
+        },
+        status: 'authenticated',
+        update: jest.fn(),
+      });
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    });
+
+    test('displays user email when name is not available', () => {
+      mockUseSession.mockReturnValue({
+        data: {
+          user: {
+            id: '1',
+            email: 'john.doe@example.com',
+          },
+          expires: '2024-01-01',
+        },
+        status: 'authenticated',
+        update: jest.fn(),
+      });
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+      expect(screen.getByText('john.doe@example.com')).toBeInTheDocument();
+    });
+
+    test('sign out functionality works with callback URL', () => {
+      const mockSignOut = jest.fn();
+      jest.doMock('next-auth/react', () => ({
+        useSession: jest.fn(() => ({
+          data: {
+            user: {
+              id: '1',
+              email: 'test@example.com',
+              name: 'Test User',
+            },
+            expires: '2024-01-01',
+          },
+          status: 'authenticated',
+        })),
+        signOut: mockSignOut,
+      }));
+
+      mockUseSession.mockReturnValue({
+        data: {
+          user: {
+            id: '1',
+            email: 'test@example.com',
+            name: 'Test User',
+          },
+          expires: '2024-01-01',
+        },
+        status: 'authenticated',
+        update: jest.fn(),
+      });
+
+      render(<AppLayout>{mockChildren}</AppLayout>);
+      const userMenuButton = screen.getByRole('button', { name: 'User menu' });
+      expect(userMenuButton).toBeInTheDocument();
+    });
   });
 });

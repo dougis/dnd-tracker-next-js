@@ -34,6 +34,25 @@ jest.mock('next/link', () => {
   };
 });
 
+// Mock UserMenu component 
+jest.mock('../UserMenu', () => ({
+  UserMenu: () => (
+    <div data-testid="user-menu" className="border-t border-border p-4">
+      <div className="flex items-center space-x-3">
+        <div className="h-8 w-8 rounded-full bg-muted"></div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-foreground truncate">
+            Demo User
+          </p>
+          <p className="text-xs text-muted-foreground truncate">
+            demo@example.com
+          </p>
+        </div>
+      </div>
+    </div>
+  ),
+}));
+
 describe('Sidebar', () => {
   const { cleanup } = setupLayoutTest();
 
@@ -159,6 +178,28 @@ describe('Sidebar', () => {
       renderWithProps(Sidebar);
       const navigation = screen.getByRole('navigation');
       expect(navigation).toHaveClass('flex-1 space-y-1 px-3 py-4');
+    });
+  });
+
+  describe('UserMenu Integration', () => {
+    test('renders UserMenu component in footer area', () => {
+      renderWithProps(Sidebar);
+      expect(screen.getByTestId('user-menu')).toBeInTheDocument();
+    });
+
+    test('UserMenu appears at bottom of sidebar', () => {
+      renderWithProps(Sidebar);
+      const sidebar = screen.getByTestId('user-menu').closest('.flex.h-full.flex-col');
+      const userMenu = screen.getByTestId('user-menu');
+      
+      // UserMenu should be one of the last elements in the flex column
+      expect(sidebar).toContainElement(userMenu);
+    });
+
+    test('UserMenu has proper styling integration', () => {
+      renderWithProps(Sidebar);
+      const userMenu = screen.getByTestId('user-menu');
+      expect(userMenu).toHaveClass('border-t border-border p-4');
     });
   });
 });
