@@ -10,7 +10,7 @@ export const createMockApiRequest = (
   } = {}
 ): NextRequest => {
   const { method = 'GET', body, headers = {} } = options;
-  
+
   const req = new NextRequest(url, {
     method,
     headers: {
@@ -18,11 +18,11 @@ export const createMockApiRequest = (
       ...headers,
     },
   });
-  
+
   if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
     (req.json as jest.Mock) = jest.fn().mockResolvedValue(body);
   }
-  
+
   return req;
 };
 
@@ -35,11 +35,11 @@ export const expectApiSuccess = async (
   const data = await response.json();
   expect(response.status).toBe(expectedStatus);
   expect(data.success).toBe(true);
-  
+
   if (expectedMessage) {
     expect(data.message).toBe(expectedMessage);
   }
-  
+
   return data;
 };
 
@@ -81,11 +81,11 @@ export const mockDbConnection = () => {
 // Environment variable mock helpers
 export const mockEnvironmentVariables = (envVars: Record<string, string>) => {
   const originalEnv = process.env;
-  
+
   beforeEach(() => {
     process.env = { ...originalEnv, ...envVars };
   });
-  
+
   afterEach(() => {
     process.env = originalEnv;
   });
@@ -112,10 +112,10 @@ export const expectValidationFailure = async (
   expect(response.status).toBe(400);
   expect(data.success).toBe(false);
   expect(data.message).toMatch(/validation/i);
-  
+
   if (expectedField) {
     expect(data.errors || data.details).toBeDefined();
   }
-  
+
   return data;
 };

@@ -160,7 +160,7 @@ describe('POST /api/auth/verify-email', () => {
       const request = createMockAuthRequest(dataWithExtra);
       const response = await POST(request);
       await expectSuccessfulAuthResponse(response);
-      
+
       // Should only pass validated data to service
       expect(require('@/lib/services/UserService').UserService.verifyEmail)
         .toHaveBeenCalledWith(mockVerificationData);

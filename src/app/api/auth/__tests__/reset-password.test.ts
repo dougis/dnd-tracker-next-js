@@ -3,8 +3,6 @@ import {
   createMockAuthRequest,
   expectSuccessfulAuthResponse,
   expectValidationError,
-  expectAuthError,
-  expectServerError,
   setupUserServiceMock,
   runMissingFieldTest,
   runInvalidFormatTest,
@@ -34,7 +32,7 @@ describe('POST /api/auth/reset-password', () => {
       const request = createMockAuthRequest(mockResetPasswordData);
       const response = await POST(request);
       await expectSuccessfulAuthResponse(response, 'Password reset successfully');
-      
+
       expect(require('@/lib/services/UserService').UserService.resetPassword)
         .toHaveBeenCalledWith(mockResetPasswordData
       );

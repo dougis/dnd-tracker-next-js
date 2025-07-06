@@ -10,7 +10,7 @@ export const createMockAuthRequest = (
   } = {}
 ): NextRequest => {
   const { method = 'POST', headers = {}, url = 'https://example.com/api/auth/test' } = options;
-  
+
   const req = new NextRequest(url, {
     method,
     headers: {
@@ -18,9 +18,9 @@ export const createMockAuthRequest = (
       ...headers,
     },
   });
-  
+
   (req.json as jest.Mock) = jest.fn().mockResolvedValue(body);
-  
+
   return req;
 };
 
@@ -47,21 +47,21 @@ export const expectValidationError = async (
   expect(response.status).toBe(400);
   expect(data.success).toBe(false);
   expect(data.message).toBe('Validation error');
-  
+
   if (expectedField) {
     expect(data.errors).toBeDefined();
     expect(Array.isArray(data.errors)).toBe(true);
     const fieldError = data.errors.find((err: any) => err.field === expectedField);
     expect(fieldError).toBeDefined();
   }
-  
+
   if (expectedErrors) {
     expectedErrors.forEach(error => {
       const hasError = data.errors.some((err: any) => err.message.includes(error));
       expect(hasError).toBe(true);
     });
   }
-  
+
   return data;
 };
 
@@ -92,13 +92,13 @@ export const setupUserServiceMock = (
   shouldReject = false
 ) => {
   const { UserService } = require('@/lib/services/UserService');
-  
+
   if (shouldReject) {
     UserService[method] = jest.fn().mockRejectedValue(returnValue);
   } else {
     UserService[method] = jest.fn().mockResolvedValue(returnValue);
   }
-  
+
   return UserService[method];
 };
 
@@ -121,7 +121,7 @@ export const runMissingFieldTest = async (
 ) => {
   const invalidData = { ...validData };
   delete invalidData[fieldToRemove];
-  
+
   await runValidationErrorTest(
     apiFunction,
     invalidData,
@@ -135,10 +135,10 @@ export const runInvalidFormatTest = async (
   validData: any,
   field: string,
   invalidValue: any,
-  expectedError?: string
+  _expectedError?: string
 ) => {
   const invalidData = { ...validData, [field]: invalidValue };
-  
+
   const request = createMockAuthRequest(invalidData);
   const response = await apiFunction(request);
   await expectValidationError(response, field);
@@ -185,6 +185,6 @@ export const createMockUser = (overrides: any = {}) => ({
   ...overrides,
 });
 
-export const createMockVerifiedUser = () => createMockUser({ 
-  isEmailVerified: true 
+export const createMockVerifiedUser = () => createMockUser({
+  isEmailVerified: true
 });
