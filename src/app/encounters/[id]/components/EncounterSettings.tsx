@@ -2,19 +2,23 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useEncounterSettings } from '@/lib/hooks/useEncounterSettings';
 import type { IEncounter } from '@/lib/models/encounter/interfaces';
 
 interface SettingRowProps {
   id: string;
   label: string;
   checked: boolean;
+  disabled?: boolean;
   onChange: (_checked: boolean) => void;
 }
 
 /**
- * Reusable setting row component
+ * Reusable setting row component for encounter settings
  */
-function SettingRow({ id, label, checked, onChange }: SettingRowProps) {
+function SettingRow({ id, label, checked, disabled, onChange }: SettingRowProps) {
   return (
     <div className="flex items-center justify-between">
       <Label htmlFor={id} className="text-sm">
@@ -23,6 +27,7 @@ function SettingRow({ id, label, checked, onChange }: SettingRowProps) {
       <Switch
         id={id}
         checked={checked}
+        disabled={disabled}
         onCheckedChange={onChange}
       />
     </div>
@@ -56,10 +61,10 @@ interface EncounterSettingsProps {
  */
 export function EncounterSettings({ encounter }: EncounterSettingsProps) {
   const settings = encounter.settings;
+  const { loading, error, updateSettings, retry } = useEncounterSettings(encounter._id?.toString() || '');
 
   const handleSettingChange = (key: string, value: boolean) => {
-    // TODO: Implement settings update
-    console.log(`Setting ${key} changed to:`, value);
+    updateSettings({ [key]: value });
   };
 
   return (
@@ -68,12 +73,25 @@ export function EncounterSettings({ encounter }: EncounterSettingsProps) {
         <CardTitle>Encounter Settings</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Error Display */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription className="flex items-center justify-between">
+              <span>{error}</span>
+              <Button variant="outline" size="sm" onClick={retry}>
+                Retry
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Combat Settings */}
         <div className="space-y-3">
           <SettingRow
             id="auto-roll-initiative"
             label="Auto-roll Initiative"
             checked={settings.autoRollInitiative}
+            disabled={loading}
             onChange={(checked) => handleSettingChange('autoRollInitiative', checked)}
           />
 
@@ -81,6 +99,7 @@ export function EncounterSettings({ encounter }: EncounterSettingsProps) {
             id="track-resources"
             label="Track Resources"
             checked={settings.trackResources}
+            disabled={loading}
             onChange={(checked) => handleSettingChange('trackResources', checked)}
           />
 
@@ -88,6 +107,7 @@ export function EncounterSettings({ encounter }: EncounterSettingsProps) {
             id="enable-lair-actions"
             label="Enable Lair Actions"
             checked={settings.enableLairActions}
+            disabled={loading}
             onChange={(checked) => handleSettingChange('enableLairActions', checked)}
           />
 
@@ -95,6 +115,7 @@ export function EncounterSettings({ encounter }: EncounterSettingsProps) {
             id="player-visibility"
             label="Allow Player Visibility"
             checked={settings.allowPlayerVisibility}
+            disabled={loading}
             onChange={(checked) => handleSettingChange('allowPlayerVisibility', checked)}
           />
 
@@ -102,6 +123,7 @@ export function EncounterSettings({ encounter }: EncounterSettingsProps) {
             id="grid-movement"
             label="Enable Grid Movement"
             checked={settings.enableGridMovement}
+            disabled={loading}
             onChange={(checked) => handleSettingChange('enableGridMovement', checked)}
           />
         </div>

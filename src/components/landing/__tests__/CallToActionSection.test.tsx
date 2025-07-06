@@ -42,13 +42,13 @@ describe('CallToActionSection Component', () => {
       /get.*started|sign.*up|try.*free|start.*free/i
     );
     expect(primaryCTA).toBeInTheDocument();
-    expect(primaryCTA.closest('a')).toHaveAttribute('href', '/signup');
+    expect(primaryCTA.closest('a')).toHaveAttribute('href', '/auth/signup');
   });
 
   it('includes secondary call-to-action for existing users', () => {
     const secondaryCTA = screen.getByText(/sign.*in|log.*in/i);
     expect(secondaryCTA).toBeInTheDocument();
-    expect(secondaryCTA.closest('a')).toHaveAttribute('href', '/signin');
+    expect(secondaryCTA.closest('a')).toHaveAttribute('href', '/auth/signin');
   });
 
   it('emphasizes free trial or free tier to reduce friction', () => {
@@ -73,8 +73,8 @@ describe('CallToActionSection Component', () => {
 
     expect(getStartedButton).toBeInTheDocument();
     expect(signInButton).toBeInTheDocument();
-    expect(getStartedButton.closest('a')).toHaveAttribute('href', '/signup');
-    expect(signInButton.closest('a')).toHaveAttribute('href', '/signin');
+    expect(getStartedButton.closest('a')).toHaveAttribute('href', '/auth/signup');
+    expect(signInButton.closest('a')).toHaveAttribute('href', '/auth/signin');
   });
 
   it('includes benefit-focused copy to reinforce value proposition', () => {
