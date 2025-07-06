@@ -16,7 +16,7 @@ export const createMockRequest = (
   } = {}
 ) => {
   const headers = new Headers(options.headers || {});
-  
+
   const mockRequest = {
     json: jest.fn().mockResolvedValue(options.body || {}),
     method: options.method || 'GET',

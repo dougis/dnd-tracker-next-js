@@ -6,7 +6,7 @@ import { connectToDatabase } from '@/lib/db';
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     await connectToDatabase();
-    
+
     const userId = request.headers.get('x-user-id');
     if (!userId) {
       return NextResponse.json(
@@ -19,28 +19,42 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const type = searchParams.get('type');
     const search = searchParams.get('search');
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 50;
-    const offset = searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : 0;
+    const page = searchParams.get('page') ? parseInt(searchParams.get('page')!) : 1;
 
-    const filters: any = {};
-    if (type) filters.type = type;
-    if (search) filters.search = search;
-
-    const characters = await CharacterService.searchCharacters(
-      userId,
-      filters,
-      { limit, offset }
-    );
-
-    return NextResponse.json({
-      success: true,
-      data: characters.characters,
-      pagination: {
-        total: characters.total,
-        limit,
-        offset,
-        hasMore: offset + limit < characters.total
+    // Handle different query types
+    let result;
+    if (search) {
+      result = await CharacterService.searchCharacters(search, userId);
+      if (result.success) {
+        return NextResponse.json({
+          success: true,
+          data: result.data,
+        });
       }
-    });
+    } else if (type) {
+      result = await CharacterService.getCharactersByType(type as any, userId);
+      if (result.success) {
+        return NextResponse.json({
+          success: true,
+          data: result.data,
+        });
+      }
+    } else {
+      // Get all characters by owner with pagination
+      const paginatedResult = await CharacterService.getCharactersByOwner(userId, page, limit);
+      if (paginatedResult.success) {
+        return NextResponse.json({
+          success: true,
+          data: paginatedResult.data.items,
+          pagination: paginatedResult.data.pagination
+        });
+      }
+    }
+
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch characters' },
+      { status: 500 }
+    );
   } catch (error) {
     console.error('GET /api/characters error:', error);
     return NextResponse.json(
@@ -53,7 +67,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     await connectToDatabase();
-    
+
     const userId = request.headers.get('x-user-id');
     if (!userId) {
       return NextResponse.json(
@@ -77,19 +91,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const character = await CharacterService.createCharacter(userId, validation.data);
+    const result = await CharacterService.createCharacter(userId, validation.data);
+
+    if (!result.success) {
+      return NextResponse.json(
+        { success: false, error: result.error },
+        { status: 400 }
+      );
+    }
 
     return NextResponse.json(
       {
         success: true,
-        data: character,
+        data: result.data,
         message: 'Character created successfully'
       },
       { status: 201 }
     );
   } catch (error) {
     console.error('POST /api/characters error:', error);
-    
+
     if (error instanceof Error && error.message.includes('validation')) {
       return NextResponse.json(
         { success: false, error: 'Validation failed', details: error.message },

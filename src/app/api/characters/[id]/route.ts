@@ -13,7 +13,7 @@ export async function GET(
 ): Promise<NextResponse> {
   try {
     await connectToDatabase();
-    
+
     const userId = request.headers.get('x-user-id');
     if (!userId) {
       return NextResponse.json(
@@ -23,22 +23,22 @@ export async function GET(
     }
 
     const { id } = await context.params;
-    const character = await CharacterService.getCharacterById(userId, id);
+    const result = await CharacterService.getCharacterById(id, userId);
 
-    if (!character) {
+    if (!result.success) {
       return NextResponse.json(
-        { success: false, error: 'Character not found' },
+        { success: false, error: result.error },
         { status: 404 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      data: character
+      data: result.data
     });
   } catch (error) {
     console.error('GET /api/characters/[id] error:', error);
-    
+
     if (error instanceof Error) {
       if (error.message.includes('not found')) {
         return NextResponse.json(
@@ -67,7 +67,7 @@ export async function PUT(
 ): Promise<NextResponse> {
   try {
     await connectToDatabase();
-    
+
     const userId = request.headers.get('x-user-id');
     if (!userId) {
       return NextResponse.json(
@@ -92,23 +92,23 @@ export async function PUT(
       );
     }
 
-    const character = await CharacterService.updateCharacter(userId, id, validation.data);
+    const result = await CharacterService.updateCharacter(id, userId, validation.data);
 
-    if (!character) {
+    if (!result.success) {
       return NextResponse.json(
-        { success: false, error: 'Character not found' },
+        { success: false, error: result.error },
         { status: 404 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      data: character,
+      data: result.data,
       message: 'Character updated successfully'
     });
   } catch (error) {
     console.error('PUT /api/characters/[id] error:', error);
-    
+
     if (error instanceof Error) {
       if (error.message.includes('not found')) {
         return NextResponse.json(
@@ -143,7 +143,7 @@ export async function DELETE(
 ): Promise<NextResponse> {
   try {
     await connectToDatabase();
-    
+
     const userId = request.headers.get('x-user-id');
     if (!userId) {
       return NextResponse.json(
@@ -153,11 +153,11 @@ export async function DELETE(
     }
 
     const { id } = await context.params;
-    const success = await CharacterService.deleteCharacter(userId, id);
+    const result = await CharacterService.deleteCharacter(id, userId);
 
-    if (!success) {
+    if (!result.success) {
       return NextResponse.json(
-        { success: false, error: 'Character not found' },
+        { success: false, error: result.error },
         { status: 404 }
       );
     }
@@ -168,7 +168,7 @@ export async function DELETE(
     });
   } catch (error) {
     console.error('DELETE /api/characters/[id] error:', error);
-    
+
     if (error instanceof Error) {
       if (error.message.includes('not found')) {
         return NextResponse.json(

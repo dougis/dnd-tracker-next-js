@@ -1,14 +1,12 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { GET, PUT, DELETE } from '../route';
 import { CharacterService } from '@/lib/services/CharacterService';
-import { CharacterType } from '@/lib/validations/character';
 import {
   TEST_USER_ID,
   TEST_CHARACTER_ID,
   createMockParams,
   createMockRequest,
   createTestCharacter,
-  expectSuccessResponse,
   expectErrorResponse,
 } from '../../__tests__/test-helpers';
 
@@ -126,7 +124,7 @@ describe('/api/characters/[id] API Route', () => {
 
       const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'x-user-id': TEST_USER_ID
         },
@@ -156,7 +154,7 @@ describe('/api/characters/[id] API Route', () => {
 
       const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'x-user-id': TEST_USER_ID
         },
@@ -177,7 +175,7 @@ describe('/api/characters/[id] API Route', () => {
 
       const request = createMockRequest(`http://localhost:3000/api/characters/${TEST_CHARACTER_ID}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'x-user-id': 'other-user-id'
         },

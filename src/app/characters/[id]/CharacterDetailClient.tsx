@@ -22,7 +22,7 @@ export function CharacterDetailClient({ id }: CharacterDetailClientProps) {
     try {
       // Create shareable URL
       const shareUrl = `${window.location.origin}/characters/${character._id}`;
-      
+
       // Try to use the native Web Share API if available
       if (navigator.share) {
         await navigator.share({
