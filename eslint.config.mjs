@@ -1,11 +1,16 @@
-const { FlatCompat } = require('@eslint/eslintrc');
+import { FlatCompat } from '@eslint/eslintrc';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
 /** @type {import('eslint').Linter.Config[]} */
-module.exports = [
+export default [
   // Global ignores
   {
     ignores: [
