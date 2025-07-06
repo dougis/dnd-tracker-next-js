@@ -130,80 +130,37 @@ export function useInitiativeTracker({
     }
 
     try {
-      const initiativeData = {
-        encounterName: encounter.name,
-        round: encounter.combatState.currentRound,
-        turn: encounter.combatState.currentTurn,
-        initiativeOrder: encounter.combatState.initiativeOrder.map(entry => {
-          const participant = encounter.participants.find(p =>
-            p.characterId.toString() === entry.participantId.toString()
-          );
-          return {
-            name: participant?.name || 'Unknown',
-            initiative: entry.initiative,
-            dexterity: entry.dexterity,
-            hasActed: entry.hasActed,
-            hitPoints: participant ? `${participant.currentHitPoints}/${participant.maxHitPoints}` : 'Unknown',
-            armorClass: participant?.armorClass || 'Unknown',
-            conditions: participant?.conditions || []
-          };
-        }),
-        exportedAt: new Date().toISOString()
-      };
-
-      const dataStr = JSON.stringify(initiativeData, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(dataBlob);
-
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${encounter.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_initiative_round_${encounter.combatState.currentRound}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      URL.revokeObjectURL(url);
+      const { buildExportData, createDownloadLink, generateExportFilename } = require('@/components/combat/useInitiativeHelpers');
+      const exportData = buildExportData(encounter);
+      const filename = generateExportFilename(encounter.name, encounter.combatState.currentRound);
+      createDownloadLink(exportData, filename);
     } catch {
       setError('Failed to export initiative data');
     }
   }, [encounter]);
 
-  const handleShareInitiative = useCallback(() => {
+  const handleShareInitiative = useCallback(async () => {
     if (!encounter.combatState.isActive) {
       setError('Combat must be active to share initiative data');
       return;
     }
 
     try {
-      const shareText = `Initiative Order - ${encounter.name} (Round ${encounter.combatState.currentRound})\n\n` +
-        encounter.combatState.initiativeOrder.map((entry, index) => {
-          const participant = encounter.participants.find(p =>
-            p.characterId.toString() === entry.participantId.toString()
-          );
-          const activeIndicator = index === encounter.combatState.currentTurn ? '→ ' : '   ';
-          const actedIndicator = entry.hasActed ? ' ✓' : '';
-          return `${activeIndicator}${entry.initiative}: ${participant?.name || 'Unknown'} (${participant?.currentHitPoints}/${participant?.maxHitPoints} HP)${actedIndicator}`;
-        }).join('\n');
+      const { buildShareText, copyToClipboard } = require('@/components/combat/useInitiativeHelpers');
+      const shareText = buildShareText(encounter);
 
       if (navigator.share) {
-        navigator.share({
-          title: `Initiative Order - ${encounter.name}`,
-          text: shareText,
-        }).catch(() => {
+        try {
+          await navigator.share({
+            title: `Initiative Order - ${encounter.name}`,
+            text: shareText,
+          });
+        } catch {
           // Fallback to clipboard
-          navigator.clipboard.writeText(shareText);
-        });
-      } else if (navigator.clipboard) {
-        navigator.clipboard.writeText(shareText);
+          await copyToClipboard(shareText);
+        }
       } else {
-        // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = shareText;
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
+        await copyToClipboard(shareText);
       }
     } catch {
       setError('Failed to share initiative data');
