@@ -2,8 +2,7 @@ import { NextRequest } from 'next/server';
 import { ZodError } from 'zod';
 import { UserService } from '@/lib/services/UserService';
 import { userProfileUpdateSchema } from '@/lib/validations/user';
-import { withAuthAndAccess, createSuccessResponse, handleServiceError } from '@/lib/api/route-helpers';
-import { NextResponse } from 'next/server';
+import { withAuthAndAccess, createSuccessResponse, handleServiceError, handleZodValidationError } from '@/lib/api/route-helpers';
 
 export async function PATCH(
   request: NextRequest,
@@ -26,17 +25,7 @@ export async function PATCH(
       );
     } catch (error) {
       if (error instanceof ZodError) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: 'Validation error',
-            errors: error.errors.map((err: any) => ({
-              field: err.path.join('.'),
-              message: err.message,
-            })),
-          },
-          { status: 400 }
-        );
+        return handleZodValidationError(error);
       }
       throw error; // Let withAuthAndAccess handle unexpected errors
     }

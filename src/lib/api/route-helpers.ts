@@ -61,17 +61,38 @@ export function createSuccessResponse(data: any, message?: string) {
   });
 }
 
+function createErrorDetails(result: any, defaultMessage: string) {
+  return result.error?.details || [
+    { field: '', message: result.error?.message || defaultMessage || 'Unknown error' },
+  ];
+}
+
 export function handleServiceError(result: any, defaultMessage: string, defaultStatus: number = 400) {
+  const message = result.error?.message || defaultMessage;
+  const status = result.error?.statusCode || defaultStatus;
+
+  const responseBody: any = {
+    success: false,
+    message,
+  };
+
+  if (defaultStatus === 400) {
+    responseBody.errors = createErrorDetails(result, defaultMessage);
+  }
+
+  return NextResponse.json(responseBody, { status });
+}
+
+export function handleZodValidationError(error: any) {
   return NextResponse.json(
     {
       success: false,
-      message: result.error?.message || defaultMessage,
-      ...(defaultStatus === 400 && {
-        errors: result.error?.details || [
-          { field: '', message: result.error?.message || 'Unknown error' },
-        ],
-      }),
+      message: 'Validation error',
+      errors: error.errors.map((err: any) => ({
+        field: err.path.join('.'),
+        message: err.message,
+      })),
     },
-    { status: result.error?.statusCode || defaultStatus }
+    { status: 400 }
   );
 }

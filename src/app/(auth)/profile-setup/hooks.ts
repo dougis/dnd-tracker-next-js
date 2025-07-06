@@ -130,7 +130,7 @@ export function useProfileForm(initialDisplayName: string = '', userId?: string)
         handleApiError(error);
       }
     }
-  }, [userId, createFormDataObject, setError, setSuccess, setSubmitting, submitProfileData, handleValidationError, handleApiError]);
+  }, [userId, createFormDataObject, submitProfileData, handleValidationError, handleApiError, setError, setSubmitting, setSuccess]);
 
   return {
     formState,
