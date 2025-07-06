@@ -2,46 +2,36 @@
  * @jest-environment jsdom
  */
 import { makeRequest } from '../apiUtils';
+import { createMockResponse, createMockErrorResponse, createMockCallbacks } from './__test-helpers__/combatTestHelpers';
 
 // Mock fetch
 global.fetch = jest.fn();
 
 describe('apiUtils', () => {
-  let mockSetIsLoading: jest.Mock;
-  let mockSetError: jest.Mock;
-  let mockOnEncounterUpdate: jest.Mock;
+  let mockCallbacks: ReturnType<typeof createMockCallbacks>;
 
   beforeEach(() => {
-    mockSetIsLoading = jest.fn();
-    mockSetError = jest.fn();
-    mockOnEncounterUpdate = jest.fn();
+    mockCallbacks = createMockCallbacks();
     (fetch as jest.Mock).mockClear();
   });
 
   describe('makeRequest', () => {
     it('should make successful API request', async () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          success: true,
-          encounter: { id: 'test-encounter' }
-        })
-      };
+      const testEncounter = { id: 'test-encounter' };
+      const mockResponse = createMockResponse(true, testEncounter);
       (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
       const config = {
         url: '/test/url',
         method: 'POST',
         body: { test: 'data' },
-        setIsLoading: mockSetIsLoading,
-        setError: mockSetError,
-        onEncounterUpdate: mockOnEncounterUpdate
+        ...mockCallbacks
       };
 
       const result = await makeRequest(config);
 
-      expect(mockSetIsLoading).toHaveBeenCalledWith(true);
-      expect(mockSetError).toHaveBeenCalledWith(null);
+      expect(mockCallbacks.setIsLoading).toHaveBeenCalledWith(true);
+      expect(mockCallbacks.setError).toHaveBeenCalledWith(null);
       expect(fetch).toHaveBeenCalledWith('/test/url', {
         method: 'POST',
         headers: {
@@ -49,25 +39,22 @@ describe('apiUtils', () => {
         },
         body: JSON.stringify({ test: 'data' })
       });
-      expect(mockOnEncounterUpdate).toHaveBeenCalledWith({ id: 'test-encounter' });
-      expect(mockSetIsLoading).toHaveBeenCalledWith(false);
+      expect(mockCallbacks.onEncounterUpdate).toHaveBeenCalledWith(testEncounter);
+      expect(mockCallbacks.setIsLoading).toHaveBeenCalledWith(false);
       expect(result).toEqual({
         success: true,
-        encounter: { id: 'test-encounter' }
+        encounter: testEncounter
       });
     });
 
     it('should use default method PATCH when not specified', async () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({ success: true })
-      };
+      const mockResponse = createMockResponse();
       (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
       const config = {
         url: '/test/url',
-        setIsLoading: mockSetIsLoading,
-        setError: mockSetError
+        setIsLoading: mockCallbacks.setIsLoading,
+        setError: mockCallbacks.setError
       };
 
       await makeRequest(config);
@@ -82,16 +69,13 @@ describe('apiUtils', () => {
     });
 
     it('should handle request without body', async () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({ success: true })
-      };
+      const mockResponse = createMockResponse();
       (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
       const config = {
         url: '/test/url',
-        setIsLoading: mockSetIsLoading,
-        setError: mockSetError
+        setIsLoading: mockCallbacks.setIsLoading,
+        setError: mockCallbacks.setError
       };
 
       await makeRequest(config);
@@ -106,40 +90,31 @@ describe('apiUtils', () => {
     });
 
     it('should handle API error responses', async () => {
-      const mockResponse = {
-        ok: false,
-        json: jest.fn().mockResolvedValue({
-          message: 'API Error Message'
-        })
-      };
+      const mockResponse = createMockErrorResponse('API Error Message');
       (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
       const config = {
         url: '/test/url',
-        setIsLoading: mockSetIsLoading,
-        setError: mockSetError
+        ...mockCallbacks
       };
 
       await expect(makeRequest(config)).rejects.toThrow('API Error Message');
-      expect(mockSetError).toHaveBeenCalledWith('API Error Message');
-      expect(mockSetIsLoading).toHaveBeenCalledWith(false);
+      expect(mockCallbacks.setError).toHaveBeenCalledWith('API Error Message');
+      expect(mockCallbacks.setIsLoading).toHaveBeenCalledWith(false);
     });
 
     it('should handle API error without message', async () => {
-      const mockResponse = {
-        ok: false,
-        json: jest.fn().mockResolvedValue({})
-      };
+      const mockResponse = createMockErrorResponse();
+      mockResponse.json.mockResolvedValue({});
       (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
       const config = {
         url: '/test/url',
-        setIsLoading: mockSetIsLoading,
-        setError: mockSetError
+        ...mockCallbacks
       };
 
       await expect(makeRequest(config)).rejects.toThrow('Failed to update encounter');
-      expect(mockSetError).toHaveBeenCalledWith('Failed to update encounter');
+      expect(mockCallbacks.setError).toHaveBeenCalledWith('Failed to update encounter');
     });
 
     it('should handle network errors', async () => {
@@ -147,13 +122,12 @@ describe('apiUtils', () => {
 
       const config = {
         url: '/test/url',
-        setIsLoading: mockSetIsLoading,
-        setError: mockSetError
+        ...mockCallbacks
       };
 
       await expect(makeRequest(config)).rejects.toThrow('Network error');
-      expect(mockSetError).toHaveBeenCalledWith('Network error');
-      expect(mockSetIsLoading).toHaveBeenCalledWith(false);
+      expect(mockCallbacks.setError).toHaveBeenCalledWith('Network error');
+      expect(mockCallbacks.setIsLoading).toHaveBeenCalledWith(false);
     });
 
     it('should handle unknown errors', async () => {
@@ -161,73 +135,56 @@ describe('apiUtils', () => {
 
       const config = {
         url: '/test/url',
-        setIsLoading: mockSetIsLoading,
-        setError: mockSetError
+        ...mockCallbacks
       };
 
       await expect(makeRequest(config)).rejects.toBe('Unknown error');
-      expect(mockSetError).toHaveBeenCalledWith('An unexpected error occurred');
-      expect(mockSetIsLoading).toHaveBeenCalledWith(false);
+      expect(mockCallbacks.setError).toHaveBeenCalledWith('An unexpected error occurred');
+      expect(mockCallbacks.setIsLoading).toHaveBeenCalledWith(false);
     });
 
     it('should not call onEncounterUpdate when no encounter in response', async () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          success: true
-          // No encounter field
-        })
-      };
+      const mockResponse = createMockResponse(true, null);
+      mockResponse.json.mockResolvedValue({ success: true });
       (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
       const config = {
         url: '/test/url',
-        setIsLoading: mockSetIsLoading,
-        setError: mockSetError,
-        onEncounterUpdate: mockOnEncounterUpdate
+        ...mockCallbacks
       };
 
       await makeRequest(config);
 
-      expect(mockOnEncounterUpdate).not.toHaveBeenCalled();
+      expect(mockCallbacks.onEncounterUpdate).not.toHaveBeenCalled();
     });
 
     it('should not call onEncounterUpdate when success is false', async () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          success: false,
-          encounter: { id: 'test-encounter' }
-        })
-      };
+      const mockResponse = createMockResponse(false, { id: 'test-encounter' });
+      mockResponse.json.mockResolvedValue({
+        success: false,
+        encounter: { id: 'test-encounter' }
+      });
       (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
       const config = {
         url: '/test/url',
-        setIsLoading: mockSetIsLoading,
-        setError: mockSetError,
-        onEncounterUpdate: mockOnEncounterUpdate
+        ...mockCallbacks
       };
 
       await makeRequest(config);
 
-      expect(mockOnEncounterUpdate).not.toHaveBeenCalled();
+      expect(mockCallbacks.onEncounterUpdate).not.toHaveBeenCalled();
     });
 
     it('should work without onEncounterUpdate callback', async () => {
-      const mockResponse = {
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          success: true,
-          encounter: { id: 'test-encounter' }
-        })
-      };
+      const testEncounter = { id: 'test-encounter' };
+      const mockResponse = createMockResponse(true, testEncounter);
       (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
       const config = {
         url: '/test/url',
-        setIsLoading: mockSetIsLoading,
-        setError: mockSetError
+        setIsLoading: mockCallbacks.setIsLoading,
+        setError: mockCallbacks.setError
         // No onEncounterUpdate
       };
 
@@ -235,7 +192,7 @@ describe('apiUtils', () => {
 
       expect(result).toEqual({
         success: true,
-        encounter: { id: 'test-encounter' }
+        encounter: testEncounter
       });
     });
   });

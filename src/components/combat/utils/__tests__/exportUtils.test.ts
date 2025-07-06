@@ -2,64 +2,32 @@
  * @jest-environment jsdom
  */
 import { buildExportData, generateExportFilename, createDownloadLink } from '../exportUtils';
-import { createTestEncounter, makeEncounterActive, PARTICIPANT_IDS } from '@/lib/models/encounter/__tests__/combat-test-helpers';
-
-// Mock DOM methods
-const mockLink = {
-  href: '',
-  download: '',
-  click: jest.fn(),
-};
-
-document.createElement = jest.fn().mockReturnValue(mockLink);
-document.body.appendChild = jest.fn();
-document.body.removeChild = jest.fn();
-
-// Mock URL API
-global.URL.createObjectURL = jest.fn().mockReturnValue('mock-url');
-global.URL.revokeObjectURL = jest.fn();
-
-// Mock Blob
-global.Blob = jest.fn().mockImplementation((content, options) => ({
-  content,
-  options,
-})) as any;
+import { 
+  createEncounterWithParticipants, 
+  createActiveEncounter,
+  createParticipantWithConditions,
+  setupDOMMocks,
+  resetDOMMocks 
+} from './__test-helpers__/combatTestHelpers';
 
 describe('exportUtils', () => {
+  let mockElements: ReturnType<typeof setupDOMMocks>;
+
   beforeEach(() => {
-    (document.createElement as jest.Mock).mockClear();
-    (document.body.appendChild as jest.Mock).mockClear();
-    (document.body.removeChild as jest.Mock).mockClear();
-    (URL.createObjectURL as jest.Mock).mockClear();
-    (URL.revokeObjectURL as jest.Mock).mockClear();
-    (global.Blob as jest.Mock).mockClear();
-    mockLink.click.mockClear();
+    mockElements = setupDOMMocks();
+  });
+
+  afterEach(() => {
+    resetDOMMocks();
   });
 
   describe('buildExportData', () => {
     it('should build export data with correct format', () => {
-      const encounter = createTestEncounter();
-      makeEncounterActive(encounter);
+      const encounter = createEncounterWithParticipants(5, 1);
       encounter.name = 'Test Encounter';
-      encounter.combatState.currentRound = 5;
-      encounter.combatState.currentTurn = 1;
-
-      encounter.participants = [
-        {
-          characterId: PARTICIPANT_IDS.FIRST,
-          name: 'Character 1',
-          type: 'Player',
-          maxHitPoints: 25,
-          currentHitPoints: 20,
-          temporaryHitPoints: 5,
-          armorClass: 16,
-          initiative: 18,
-          isPlayer: true,
-          isVisible: true,
-          notes: 'Test notes',
-          conditions: ['Blessed', 'Haste']
-        }
-      ];
+      
+      // Use the participant with conditions
+      encounter.participants = [createParticipantWithConditions(['Blessed', 'Haste'])];
 
       const result = buildExportData(encounter);
 
@@ -68,7 +36,7 @@ describe('exportUtils', () => {
       expect(result.turn).toBe(1);
       expect(result.initiativeOrder).toHaveLength(2);
       expect(result.initiativeOrder[0]).toEqual({
-        name: 'Character 1',
+        name: 'Conditioned Character',
         initiative: 20,
         dexterity: 15,
         hasActed: false,
@@ -81,8 +49,7 @@ describe('exportUtils', () => {
     });
 
     it('should handle unknown participants', () => {
-      const encounter = createTestEncounter();
-      makeEncounterActive(encounter);
+      const encounter = createActiveEncounter();
       encounter.participants = []; // No participants
 
       const result = buildExportData(encounter);
@@ -99,8 +66,7 @@ describe('exportUtils', () => {
     });
 
     it('should include hasActed status', () => {
-      const encounter = createTestEncounter();
-      makeEncounterActive(encounter);
+      const encounter = createActiveEncounter();
       encounter.combatState.initiativeOrder[0].hasActed = true;
       encounter.participants = [];
 
@@ -113,19 +79,19 @@ describe('exportUtils', () => {
   describe('generateExportFilename', () => {
     it('should generate valid filename with encounter name and round', () => {
       const result = generateExportFilename('My Test Encounter!', 3);
-
+      
       expect(result).toBe('my_test_encounter__initiative_round_3.json');
     });
 
     it('should handle special characters', () => {
       const result = generateExportFilename('Encounter #1 - Boss Fight!', 10);
-
+      
       expect(result).toBe('encounter__1___boss_fight__initiative_round_10.json');
     });
 
     it('should handle empty encounter name', () => {
       const result = generateExportFilename('', 1);
-
+      
       expect(result).toBe('_initiative_round_1.json');
     });
   });
@@ -143,11 +109,11 @@ describe('exportUtils', () => {
       );
       expect(URL.createObjectURL).toHaveBeenCalled();
       expect(document.createElement).toHaveBeenCalledWith('a');
-      expect(mockLink.href).toBe('mock-url');
-      expect(mockLink.download).toBe(filename);
-      expect(document.body.appendChild).toHaveBeenCalledWith(mockLink);
-      expect(mockLink.click).toHaveBeenCalled();
-      expect(document.body.removeChild).toHaveBeenCalledWith(mockLink);
+      expect(mockElements.mockLink.href).toBe('mock-url');
+      expect(mockElements.mockLink.download).toBe(filename);
+      expect(document.body.appendChild).toHaveBeenCalledWith(mockElements.mockLink);
+      expect(mockElements.mockLink.click).toHaveBeenCalled();
+      expect(document.body.removeChild).toHaveBeenCalledWith(mockElements.mockLink);
       expect(URL.revokeObjectURL).toHaveBeenCalledWith('mock-url');
     });
 
@@ -158,7 +124,7 @@ describe('exportUtils', () => {
         number: 42,
         boolean: true
       };
-
+      
       createDownloadLink(complexData, 'complex.json');
 
       expect(global.Blob).toHaveBeenCalledWith(
