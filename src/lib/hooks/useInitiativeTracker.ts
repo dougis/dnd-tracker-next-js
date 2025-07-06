@@ -44,37 +44,15 @@ export function useInitiativeTracker({
     method: string = 'PATCH',
     body?: any
   ) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const response = await fetch(`/api/encounters/${encounter._id}/${endpoint}`, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: body ? JSON.stringify(body) : undefined,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update encounter');
-      }
-
-      const data = await response.json();
-
-      if (data.success && data.encounter) {
-        onEncounterUpdate?.(data.encounter);
-      }
-
-      return data;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
+    const { makeRequest } = require('@/components/combat/useInitiativeHelpers');
+    return makeRequest({
+      url: `/api/encounters/${encounter._id}/${endpoint}`,
+      method,
+      body,
+      setIsLoading,
+      setError,
+      onEncounterUpdate
+    });
   }, [encounter._id, onEncounterUpdate]);
 
   const handleNextTurn = useCallback(async () => {

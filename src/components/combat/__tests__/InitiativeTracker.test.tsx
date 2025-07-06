@@ -47,14 +47,19 @@ describe('InitiativeTracker', () => {
 
     mockProps = {
       encounter: mockEncounter,
-      onNextTurn: jest.fn(),
-      onPreviousTurn: jest.fn(),
-      onPauseCombat: jest.fn(),
-      onResumeCombat: jest.fn(),
-      onEndCombat: jest.fn(),
-      onEditInitiative: jest.fn(),
-      onExportInitiative: jest.fn(),
-      onShareInitiative: jest.fn(),
+      combatActions: {
+        onNextTurn: jest.fn(),
+        onPreviousTurn: jest.fn(),
+        onPauseCombat: jest.fn(),
+        onResumeCombat: jest.fn(),
+        onExportInitiative: jest.fn(),
+        onShareInitiative: jest.fn(),
+      },
+      initiativeActions: {
+        onEditInitiative: jest.fn(),
+        onDelayAction: jest.fn(),
+        onReadyAction: jest.fn(),
+      },
     };
   });
 
@@ -101,7 +106,7 @@ describe('InitiativeTracker', () => {
     const nextButton = screen.getByText('Next Turn');
     fireEvent.click(nextButton);
 
-    expect(mockProps.onNextTurn).toHaveBeenCalledTimes(1);
+    expect(mockProps.combatActions.onNextTurn).toHaveBeenCalledTimes(1);
   });
 
   it('calls onPreviousTurn when Previous button is clicked', () => {
@@ -110,7 +115,7 @@ describe('InitiativeTracker', () => {
     const previousButton = screen.getByText('Previous');
     fireEvent.click(previousButton);
 
-    expect(mockProps.onPreviousTurn).toHaveBeenCalledTimes(1);
+    expect(mockProps.combatActions.onPreviousTurn).toHaveBeenCalledTimes(1);
   });
 
   it('disables Previous button at start of first round', () => {
@@ -143,7 +148,7 @@ describe('InitiativeTracker', () => {
     const pauseButton = screen.getByText('Pause');
     fireEvent.click(pauseButton);
 
-    expect(mockProps.onPauseCombat).toHaveBeenCalledTimes(1);
+    expect(mockProps.combatActions.onPauseCombat).toHaveBeenCalledTimes(1);
   });
 
   it('calls onResumeCombat when resume button is clicked', () => {
@@ -153,7 +158,7 @@ describe('InitiativeTracker', () => {
     const resumeButton = screen.getByText('Resume');
     fireEvent.click(resumeButton);
 
-    expect(mockProps.onResumeCombat).toHaveBeenCalledTimes(1);
+    expect(mockProps.combatActions.onResumeCombat).toHaveBeenCalledTimes(1);
   });
 
   it('displays participant conditions', () => {
@@ -207,7 +212,7 @@ describe('InitiativeTracker', () => {
       const exportButton = screen.getByRole('button', { name: /download initiative data/i });
       fireEvent.click(exportButton);
 
-      expect(mockProps.onExportInitiative).toHaveBeenCalledTimes(1);
+      expect(mockProps.combatActions.onExportInitiative).toHaveBeenCalledTimes(1);
     });
 
     it('calls onShareInitiative when share button is clicked', () => {
@@ -216,7 +221,7 @@ describe('InitiativeTracker', () => {
       const shareButton = screen.getByRole('button', { name: /share initiative data/i });
       fireEvent.click(shareButton);
 
-      expect(mockProps.onShareInitiative).toHaveBeenCalledTimes(1);
+      expect(mockProps.combatActions.onShareInitiative).toHaveBeenCalledTimes(1);
     });
   });
 

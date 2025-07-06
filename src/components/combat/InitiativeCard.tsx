@@ -1,9 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { IInitiativeEntry, IParticipantReference } from '@/lib/models/encounter/interfaces';
+import { CardContainer, InitiativeBadge, CharacterInfo, HPDisplay } from './InitiativeCardComponents';
 
 interface InitiativeCardProps {
   entry: IInitiativeEntry;
@@ -24,93 +23,15 @@ export function InitiativeCard({
   onDelayAction: _onDelayAction,
   onReadyAction: _onReadyAction
 }: InitiativeCardProps) {
-  const hpPercentage = (participant.currentHitPoints / participant.maxHitPoints) * 100;
-  const isInjured = hpPercentage < 100;
-  const isCritical = hpPercentage <= 25;
-
   return (
-    <div
-      className={`p-3 rounded-lg border transition-all ${
-        isActive
-          ? 'border-primary bg-primary/5 shadow-md'
-          : isNext
-          ? 'border-amber-200 bg-amber-50'
-          : 'border-border bg-card'
-      }`}
-    >
+    <CardContainer isActive={isActive} isNext={isNext}>
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          {/* Initiative Badge */}
-          <div
-            className={`text-lg font-bold px-2 py-1 rounded ${
-              isActive
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground'
-            }`}
-          >
-            {entry.initiative}
-          </div>
-
-          {/* Character Info */}
-          <div>
-            <div className="flex items-center space-x-2">
-              <h3 className={`font-semibold ${isActive ? 'text-primary' : ''}`}>
-                {participant.name}
-              </h3>
-              <Badge variant={participant.isPlayer ? 'default' : 'secondary'}>
-                {participant.type}
-              </Badge>
-              {entry.hasActed && (
-                <Badge variant="outline" className="text-xs">
-                  Acted
-                </Badge>
-              )}
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <span>AC {participant.armorClass}</span>
-              {participant.conditions.length > 0 && (
-                <div className="flex items-center space-x-1">
-                  {participant.conditions.map(condition => (
-                    <Badge key={condition} variant="destructive" className="text-xs">
-                      {condition}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          <InitiativeBadge initiative={entry.initiative} isActive={isActive} />
+          <CharacterInfo participant={participant} entry={entry} isActive={isActive} />
         </div>
-
-        {/* HP Display */}
-        <div className="text-right">
-          <div
-            className={`text-lg font-bold ${
-              isCritical
-                ? 'text-destructive'
-                : isInjured
-                ? 'text-amber-600'
-                : 'text-foreground'
-            }`}
-          >
-            {participant.currentHitPoints}/{participant.maxHitPoints}
-            {participant.temporaryHitPoints > 0 && (
-              <span className="text-blue-600 ml-1">
-                (+{participant.temporaryHitPoints})
-              </span>
-            )}
-          </div>
-          <Progress
-            value={Math.max(hpPercentage, 0)}
-            className={`w-20 h-2 ${
-              isCritical
-                ? '[&>div]:bg-destructive'
-                : isInjured
-                ? '[&>div]:bg-amber-500'
-                : '[&>div]:bg-green-500'
-            }`}
-          />
-        </div>
+        <HPDisplay participant={participant} />
       </div>
-    </div>
+    </CardContainer>
   );
 }

@@ -14,11 +14,14 @@ import {
   Share2
 } from 'lucide-react';
 
-interface CombatControlsProps {
+interface CombatState {
   currentRound: number;
   currentTurn: number;
   isPaused?: boolean;
   canGoPrevious: boolean;
+}
+
+interface CombatActions {
   onNextTurn?: () => void;
   onPreviousTurn?: () => void;
   onPauseCombat?: () => void;
@@ -27,17 +30,14 @@ interface CombatControlsProps {
   onShareInitiative?: () => void;
 }
 
+interface CombatControlsProps {
+  state: CombatState;
+  actions: CombatActions;
+}
+
 export function CombatControls({
-  currentRound,
-  currentTurn: _currentTurn,
-  isPaused = false,
-  canGoPrevious,
-  onNextTurn,
-  onPreviousTurn,
-  onPauseCombat,
-  onResumeCombat,
-  onExportInitiative,
-  onShareInitiative
+  state: { currentRound, currentTurn: _currentTurn, isPaused = false, canGoPrevious },
+  actions: { onNextTurn, onPreviousTurn, onPauseCombat, onResumeCombat, onExportInitiative, onShareInitiative }
 }: CombatControlsProps) {
   return (
     <Card>

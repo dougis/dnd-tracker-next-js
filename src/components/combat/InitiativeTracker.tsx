@@ -7,17 +7,25 @@ import { CombatControls } from './CombatControls';
 import { InitiativeList } from './InitiativeList';
 import { useInitiativeData } from './useInitiativeData';
 
-interface InitiativeTrackerProps {
-  encounter: IEncounter;
+interface CombatActions {
   onNextTurn?: () => void;
   onPreviousTurn?: () => void;
   onPauseCombat?: () => void;
   onResumeCombat?: () => void;
+  onExportInitiative?: () => void;
+  onShareInitiative?: () => void;
+}
+
+interface InitiativeActions {
   onEditInitiative?: (_participantId: string, _newInitiative: number) => void;
   onDelayAction?: (_participantId: string) => void;
   onReadyAction?: (_participantId: string, _triggerCondition: string) => void;
-  onExportInitiative?: () => void;
-  onShareInitiative?: () => void;
+}
+
+interface InitiativeTrackerProps {
+  encounter: IEncounter;
+  combatActions: CombatActions;
+  initiativeActions: InitiativeActions;
 }
 
 /**
@@ -33,15 +41,8 @@ interface InitiativeTrackerProps {
  */
 export function InitiativeTracker({
   encounter,
-  onNextTurn,
-  onPreviousTurn,
-  onPauseCombat,
-  onResumeCombat,
-  onEditInitiative,
-  onDelayAction,
-  onReadyAction,
-  onExportInitiative,
-  onShareInitiative
+  combatActions,
+  initiativeActions
 }: InitiativeTrackerProps) {
   const { initiativeWithParticipants, canGoPrevious, isPaused } = useInitiativeData(encounter);
 
@@ -58,23 +59,20 @@ export function InitiativeTracker({
   return (
     <div className="space-y-4">
       <CombatControls
-        currentRound={encounter.combatState.currentRound}
-        currentTurn={encounter.combatState.currentTurn}
-        isPaused={isPaused}
-        canGoPrevious={canGoPrevious}
-        onNextTurn={onNextTurn}
-        onPreviousTurn={onPreviousTurn}
-        onPauseCombat={onPauseCombat}
-        onResumeCombat={onResumeCombat}
-        onExportInitiative={onExportInitiative}
-        onShareInitiative={onShareInitiative}
+        state={{
+          currentRound: encounter.combatState.currentRound,
+          currentTurn: encounter.combatState.currentTurn,
+          isPaused,
+          canGoPrevious
+        }}
+        actions={combatActions}
       />
       <InitiativeList
         initiativeWithParticipants={initiativeWithParticipants}
         currentTurn={encounter.combatState.currentTurn}
-        onEditInitiative={onEditInitiative}
-        onDelayAction={onDelayAction}
-        onReadyAction={onReadyAction}
+        onEditInitiative={initiativeActions.onEditInitiative}
+        onDelayAction={initiativeActions.onDelayAction}
+        onReadyAction={initiativeActions.onReadyAction}
       />
     </div>
   );
