@@ -59,27 +59,52 @@ export class NPCTemplateFilters {
    */
   static applyAllFilters(templates: NPCTemplate[], filters: TemplateFilter): NPCTemplate[] {
     return templates.filter(template => {
-      // Category filter
-      if (filters.category && template.category !== filters.category) return false;
-
-      // Challenge rating filters
-      if (filters.minCR !== undefined && template.challengeRating < filters.minCR) return false;
-      if (filters.maxCR !== undefined && template.challengeRating > filters.maxCR) return false;
-
-      // Search filter
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        if (!template.name.toLowerCase().includes(searchLower) &&
-            !template.category.toLowerCase().includes(searchLower)) return false;
-      }
-
-      // Size filter
-      if (filters.size && template.size !== filters.size) return false;
-
-      // System filter
-      if (filters.isSystem !== undefined && template.isSystem !== filters.isSystem) return false;
-      return true;
+      return this.matchesCategory(template, filters.category) &&
+             this.matchesChallengeRating(template, filters.minCR, filters.maxCR) &&
+             this.matchesSearch(template, filters.search) &&
+             this.matchesSize(template, filters.size) &&
+             this.matchesSystemFlag(template, filters.isSystem);
     });
+  }
+
+  /**
+   * Check if template matches category filter
+   */
+  private static matchesCategory(template: NPCTemplate, category?: string): boolean {
+    return !category || template.category === category;
+  }
+
+  /**
+   * Check if template matches challenge rating filters
+   */
+  private static matchesChallengeRating(template: NPCTemplate, minCR?: number, maxCR?: number): boolean {
+    const withinMin = minCR === undefined || template.challengeRating >= minCR;
+    const withinMax = maxCR === undefined || template.challengeRating <= maxCR;
+    return withinMin && withinMax;
+  }
+
+  /**
+   * Check if template matches search filter
+   */
+  private static matchesSearch(template: NPCTemplate, search?: string): boolean {
+    if (!search) return true;
+    const searchLower = search.toLowerCase();
+    return template.name.toLowerCase().includes(searchLower) ||
+           template.category.toLowerCase().includes(searchLower);
+  }
+
+  /**
+   * Check if template matches size filter
+   */
+  private static matchesSize(template: NPCTemplate, size?: string): boolean {
+    return !size || template.size === size;
+  }
+
+  /**
+   * Check if template matches system flag filter
+   */
+  private static matchesSystemFlag(template: NPCTemplate, isSystem?: boolean): boolean {
+    return isSystem === undefined || template.isSystem === isSystem;
   }
 
   /**

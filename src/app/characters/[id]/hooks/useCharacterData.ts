@@ -1,28 +1,36 @@
 import { useEffect, useState } from 'react';
-import { CharacterService } from '@/lib/services/CharacterService';
+import { useSession } from 'next-auth/react';
 import type { ICharacter } from '@/lib/models/Character';
 
 export const useCharacterData = (id: string) => {
+  const { data: session } = useSession();
   const [character, setCharacter] = useState<ICharacter | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || !session?.user?.id) {
+      setLoading(false);
+      return;
+    }
 
     const fetchCharacter = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        // TODO: Get actual user ID from authentication
-        const userId = 'temp-user-id';
-        const result = await CharacterService.getCharacterById(id, userId);
+        const response = await fetch(`/api/characters/${id}`, {
+          headers: {
+            'x-user-id': session.user.id,
+          },
+        });
 
-        if (result.success) {
-          setCharacter(result.data);
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          setCharacter(data.data);
         } else {
-          setError(result.error.message);
+          setError(data.error || 'Character not found');
         }
       } catch (err) {
         console.error('Error fetching character:', err);
@@ -33,7 +41,7 @@ export const useCharacterData = (id: string) => {
     };
 
     fetchCharacter();
-  }, [id]);
+  }, [id, session?.user?.id]);
 
   return { character, loading, error };
 };
