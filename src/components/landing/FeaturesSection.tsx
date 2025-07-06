@@ -8,37 +8,37 @@ import { FeatureIcon } from './FeatureIcon';
 
 const features = [
   {
-    icon: '/features/initiative-tracker.png',
+    icon: '/features/initiative-tracker.svg',
     title: 'Initiative Tracking',
     description:
       'Automatic initiative rolling with dexterity tiebreakers. Never lose track of turn order again.',
   },
   {
-    icon: '/features/hp-management.png',
+    icon: '/features/hp-management.svg',
     title: 'HP & AC Management',
     description:
       'Real-time health tracking with damage calculation, healing, and temporary HP support.',
   },
   {
-    icon: '/features/character-management.png',
+    icon: '/features/character-management.svg',
     title: 'Character Management',
     description:
       'Complete character sheets with multiclass support and D&D 5e rule compliance.',
   },
   {
-    icon: '/features/encounter-builder.png',
+    icon: '/features/encounter-builder.svg',
     title: 'Encounter Builder',
     description:
       'Drag-and-drop encounter creation with CR calculation and balancing tools.',
   },
   {
-    icon: '/features/lair-actions.png',
+    icon: '/features/lair-actions.svg',
     title: 'Lair Actions',
     description:
       "Unique lair action support that competitors don't offer. Enhance your boss encounters.",
   },
   {
-    icon: '/features/mobile-ready.png',
+    icon: '/features/mobile-ready.svg',
     title: 'Mobile & Tablet Ready',
     description:
       'Responsive design optimized for mobile, tablet and desktop gaming sessions with real-time collaboration.',
