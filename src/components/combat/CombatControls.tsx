@@ -35,10 +35,9 @@ interface CombatControlsProps {
   actions: CombatActions;
 }
 
-export function CombatControls({
-  state: { currentRound, currentTurn: _currentTurn, isPaused = false, canGoPrevious },
-  actions: { onNextTurn, onPreviousTurn, onPauseCombat, onResumeCombat, onExportInitiative, onShareInitiative }
-}: CombatControlsProps) {
+export function CombatControls({ state, actions }: CombatControlsProps) {
+  const { currentRound, isPaused = false, canGoPrevious } = state;
+  const { onNextTurn, onPreviousTurn, onPauseCombat, onResumeCombat, onExportInitiative, onShareInitiative } = actions;
   return (
     <Card>
       <CardHeader className="pb-3">
