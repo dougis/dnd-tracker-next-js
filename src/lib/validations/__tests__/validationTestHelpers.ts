@@ -37,14 +37,14 @@ export function runValidationTests<T>(
   testCases.forEach(({ name, data, shouldPass, expectedErrors }) => {
     it(name, () => {
       const result = safeValidate(schema, data);
-      
+
       if (shouldPass) {
         expect(result.success).toBe(true);
         expect(result.data).toBeDefined();
       } else {
         expect(result.success).toBe(false);
         expect(result.error).toBeDefined();
-        
+
         if (expectedErrors) {
           const errorMessages = result.error?.issues.map(issue => issue.message) || [];
           expectedErrors.forEach(expectedError => {

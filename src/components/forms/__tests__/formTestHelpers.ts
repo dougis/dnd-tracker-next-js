@@ -4,7 +4,6 @@
  */
 
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ReactElement } from 'react';
 
 /**
  * Standard form props factory
@@ -40,7 +39,8 @@ export function createValidationTestData(fieldName: string, validValue: any, inv
  */
 export function renderFormComponent(Component: React.ComponentType<any>, props = {}) {
   const standardProps = createStandardFormProps(props);
-  return render(<Component {...standardProps} />);
+  const React = require('react');
+  return render(React.createElement(Component, standardProps));
 }
 
 /**
@@ -94,12 +94,12 @@ export function createFieldValidationTests(fieldName: string, validationData: Ar
     name: `should ${shouldBeValid ? 'accept' : 'reject'} ${label}`,
     test: (Component: React.ComponentType<any>, fieldName: string) => {
       const mockOnChange = jest.fn();
-      const props = shouldBeValid 
+      const props = shouldBeValid
         ? { [fieldName]: value, onChange: mockOnChange }
         : { [fieldName]: value, onChange: mockOnChange, errors: { [fieldName]: expectedError } };
-      
+
       renderFormComponent(Component, props);
-      
+
       if (shouldBeValid) {
         expect(screen.queryByText(expectedError || '')).not.toBeInTheDocument();
       } else {
@@ -153,10 +153,10 @@ export namespace CharacterFormHelpers {
   export function testClassLevelFields(className: string, level: number, mockOnChange: jest.Mock) {
     const classField = screen.getByLabelText(/class/i);
     const levelField = screen.getByLabelText(/level/i);
-    
+
     fireEvent.change(classField, { target: { value: className } });
     fireEvent.change(levelField, { target: { value: level.toString() } });
-    
+
     expect(mockOnChange).toHaveBeenCalledWith(
       expect.objectContaining({
         characterClass: className,
@@ -201,14 +201,16 @@ export namespace EncounterFormHelpers {
  */
 export namespace UITestHelpers {
   export function testComponentRendering(Component: React.ComponentType<any>, props = {}, expectedText?: string) {
-    render(<Component {...props}>{expectedText || 'Test Content'}</Component>);
+    const React = require('react');
+    render(React.createElement(Component, props, expectedText || 'Test Content'));
     if (expectedText) {
       expect(screen.getByText(expectedText)).toBeInTheDocument();
     }
   }
 
   export function testCSSClasses(Component: React.ComponentType<any>, props = {}, expectedClasses: string[]) {
-    const { container } = render(<Component data-testid="component" {...props} />);
+    const React = require('react');
+    const { container } = render(React.createElement(Component, { 'data-testid': 'component', ...props }));
     const element = container.querySelector('[data-testid="component"]');
     expectedClasses.forEach(className => {
       expect(element).toHaveClass(className);

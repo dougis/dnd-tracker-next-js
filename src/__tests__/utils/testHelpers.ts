@@ -102,7 +102,7 @@ export namespace DataDrivenTesting {
 
   export function runTestCases<T>(
     testCases: TestCase<T>[],
-    testFunction: (input: T, expected: any) => void | Promise<void>
+    testFunction: (_input: T, _expected: any) => void | Promise<void>
   ) {
     testCases.forEach(({ name, input, expected, setup, teardown }) => {
       it(name, async () => {
@@ -182,7 +182,8 @@ export namespace TestPatterns {
       it('renders without crashing', () => {
         expect(() => {
           const { render } = require('@testing-library/react');
-          render(<Component {...props} />);
+          const React = require('react');
+          render(React.createElement(Component, props));
         }).not.toThrow();
       });
     };
@@ -194,14 +195,15 @@ export namespace TestPatterns {
         it(`requires ${prop} prop`, () => {
           const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
           const { render } = require('@testing-library/react');
+          const React = require('react');
           const invalidProps = { ...requiredProps.reduce((acc, p) => ({ ...acc, [p]: 'test' }), {}), [prop]: undefined };
-          
-          render(<Component {...invalidProps} />);
-          
+
+          render(React.createElement(Component, invalidProps));
+
           expect(consoleSpy).toHaveBeenCalledWith(
             expect.stringContaining(`Warning: Failed prop type`)
           );
-          
+
           consoleSpy.mockRestore();
         });
       });
@@ -217,14 +219,15 @@ export namespace TestPatterns {
       eventTests.forEach(({ eventName, trigger, mockProp }) => {
         it(`handles ${eventName} event`, () => {
           const { render, fireEvent, screen } = require('@testing-library/react');
+          const React = require('react');
           const mockHandler = jest.fn();
           const props = { [mockProp]: mockHandler };
-          
-          render(<Component {...props} />);
-          
+
+          render(React.createElement(Component, props));
+
           const element = screen.getByRole(trigger) || screen.getByTestId(trigger);
           fireEvent[eventName](element);
-          
+
           expect(mockHandler).toHaveBeenCalled();
         });
       });
@@ -235,13 +238,15 @@ export namespace TestPatterns {
     return () => {
       it('shows loading state when loading', () => {
         const { render, screen } = require('@testing-library/react');
-        render(<Component {...{ [loadingProp]: true }} />);
+        const React = require('react');
+        render(React.createElement(Component, { [loadingProp]: true }));
         expect(screen.getByTestId('loading') || screen.getByText(/loading/i)).toBeInTheDocument();
       });
 
       it('hides loading state when not loading', () => {
         const { render, screen } = require('@testing-library/react');
-        render(<Component {...{ [loadingProp]: false }} />);
+        const React = require('react');
+        render(React.createElement(Component, { [loadingProp]: false }));
         expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
       });
     };
@@ -251,14 +256,16 @@ export namespace TestPatterns {
     return () => {
       it('shows error message when error exists', () => {
         const { render, screen } = require('@testing-library/react');
+        const React = require('react');
         const errorMessage = 'Test error message';
-        render(<Component {...{ [errorProp]: errorMessage }} />);
+        render(React.createElement(Component, { [errorProp]: errorMessage }));
         expect(screen.getByText(errorMessage)).toBeInTheDocument();
       });
 
       it('hides error message when no error', () => {
         const { render, screen } = require('@testing-library/react');
-        render(<Component {...{ [errorProp]: null }} />);
+        const React = require('react');
+        render(React.createElement(Component, { [errorProp]: null }));
         expect(screen.queryByText(/error/i)).not.toBeInTheDocument();
       });
     };

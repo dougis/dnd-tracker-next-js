@@ -2,10 +2,10 @@
  * @jest-environment jsdom
  */
 import { makeRequest } from '../apiUtils';
-import { 
-  createMockCallbacks, 
+import {
+  createMockCallbacks,
   executeApiTest,
-  generateApiTestCases 
+  generateApiTestCases
 } from './__test-helpers__/combatTestHelpers';
 
 // Mock fetch
@@ -22,7 +22,7 @@ describe('apiUtils', () => {
   describe('makeRequest', () => {
     // Data-driven tests to eliminate duplication
     const testCases = generateApiTestCases();
-    
+
     testCases.forEach(testCase => {
       it(testCase.name, async () => {
         await executeApiTest(makeRequest, {

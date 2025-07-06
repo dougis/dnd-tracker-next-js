@@ -220,7 +220,7 @@ export function createInitiativeTrackerProps(encounter: IEncounter, onUpdate?: j
 export function createTestCase<T = any>(
   description: string,
   setup: () => T | Promise<T>,
-  assertions: (result: T) => void | Promise<void>,
+  assertions: (_result: T) => void | Promise<void>,
   isAsync: boolean = false
 ) {
   if (isAsync) {
@@ -253,7 +253,7 @@ export async function executeApiTest(
   }
 ) {
   const { url, method = 'PATCH', body, expectedCalls = [], expectedResult, shouldSucceed = true, encounter, callbacks } = config;
-  
+
   if (shouldSucceed) {
     const mockResponse = createMockResponse(true, encounter || { id: 'test-encounter' });
     (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
@@ -268,22 +268,22 @@ export async function executeApiTest(
     body,
     ...callbacks
   };
-  
+
   if (shouldSucceed) {
     const result = await makeRequestFn(requestConfig);
-    
+
     expect(callbacks.setIsLoading).toHaveBeenCalledWith(true);
     expect(callbacks.setError).toHaveBeenCalledWith(null);
     expect(callbacks.setIsLoading).toHaveBeenCalledWith(false);
-    
+
     if (expectedResult) {
       expect(result).toEqual(expectedResult);
     }
-    
+
     expectedCalls.forEach(call => {
       expect(fetch).toHaveBeenCalledWith(call.url, call.options);
     });
-    
+
     return result;
   } else {
     await expect(makeRequestFn(requestConfig)).rejects.toThrow();
