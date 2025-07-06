@@ -99,7 +99,7 @@ describe('SignUpPage Component', () => {
       });
 
       expect(mockRouter.push).toHaveBeenCalledWith(
-        '/auth/verify-email?email=john.doe%40example.com'
+        '/verify-email?email=john.doe%40example.com'
       );
     });
   });
