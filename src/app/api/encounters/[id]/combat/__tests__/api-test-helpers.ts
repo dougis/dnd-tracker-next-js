@@ -251,11 +251,8 @@ export const buildMissingParticipantScenario = () => {
     }),
     expectedError: 'not found',
     setup: () => {
-      // Ensure combat is active but participant doesn't exist in encounter
-      const { mockEncounter } = setupBasicMocks();
-      mockEncounter.combatState.isActive = true;
       // The participant ID in the request won't match any in the encounter
-      return { mockEncounter };
+      // setupBasicMocks() was already called in beforeEach
     }
   };
 };
@@ -267,24 +264,20 @@ export const buildMissingCharacterScenario = () => {
     }),
     expectedError: 'Character',
     setup: () => {
-      // Ensure combat is active and participant exists but character doesn't
-      const { mockEncounter } = setupBasicMocks();
-      mockEncounter.combatState.isActive = true;
       // Override Character.findById to return null for the specific character
       (Character.findById as jest.Mock).mockResolvedValue(null);
-      return { mockEncounter };
     }
   };
 };
 
 export const buildEmptyInitiativeScenario = () => {
-  const { mockEncounter } = setupBasicMocks();
-  mockEncounter.combatState.initiativeOrder = [];
-
   return {
     request: createMockNextRequest({}),
     expectedError: 'No initiative order found',
-    mockEncounter,
+    setup: () => {
+      // Mock will be set up in beforeEach, but we need to clear initiative order
+      // This will be handled in the test itself
+    }
   };
 };
 

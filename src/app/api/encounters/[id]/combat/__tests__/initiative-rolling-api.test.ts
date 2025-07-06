@@ -118,28 +118,32 @@ describe('Initiative Rolling API Endpoints', () => {
     });
 
     it('should handle missing participant error', async () => {
-      const { request, expectedError, setup } = buildMissingParticipantScenario();
-      setup(); // Set up the scenario
+      const nonExistentId = new Types.ObjectId().toString();
+      const request = createMockNextRequest({ participantId: nonExistentId });
 
       await runErrorApiTest(
         rollInitiativePost,
         request,
         createMockParams(),
         400,
-        expectedError
+        'not found'
       );
     });
 
     it('should handle missing character error', async () => {
-      const { request, expectedError, setup } = buildMissingCharacterScenario();
-      setup(); // Override Character.findById to return null
+      const request = createMockNextRequest({ 
+        participantId: API_TEST_IDS.FIGHTER.toString() 
+      });
+      
+      // Override Character.findById to return null for this test
+      (Character.findById as jest.Mock).mockResolvedValueOnce(null);
 
       await runErrorApiTest(
         rollInitiativePost,
         request,
         createMockParams(),
         400,
-        expectedError
+        'Character'
       );
     });
   });
@@ -166,7 +170,22 @@ describe('Initiative Rolling API Endpoints', () => {
       );
 
       expect(rerollInitiative).toHaveBeenCalledWith(
-        mockEncounter.combatState.initiativeOrder,
+        expect.arrayContaining([
+          expect.objectContaining({
+            participantId: API_TEST_IDS.ROGUE,
+            initiative: 22,
+            dexterity: 18,
+            isActive: true,
+            hasActed: false,
+          }),
+          expect.objectContaining({
+            participantId: API_TEST_IDS.FIGHTER,
+            initiative: 16,
+            dexterity: 14,
+            isActive: false,
+            hasActed: true,
+          }),
+        ]),
         API_TEST_IDS.FIGHTER.toString()
       );
     });
@@ -185,7 +204,22 @@ describe('Initiative Rolling API Endpoints', () => {
       );
 
       expect(rerollInitiative).toHaveBeenCalledWith(
-        mockEncounter.combatState.initiativeOrder,
+        expect.arrayContaining([
+          expect.objectContaining({
+            participantId: API_TEST_IDS.ROGUE,
+            initiative: 22,
+            dexterity: 18,
+            isActive: true,
+            hasActed: false,
+          }),
+          expect.objectContaining({
+            participantId: API_TEST_IDS.FIGHTER,
+            initiative: 16,
+            dexterity: 14,
+            isActive: false,
+            hasActed: true,
+          }),
+        ]),
         undefined
       );
     });
@@ -207,6 +241,9 @@ describe('Initiative Rolling API Endpoints', () => {
 
     it('should handle empty initiative order error', async () => {
       const { request, expectedError } = buildEmptyInitiativeScenario();
+      
+      // Clear the initiative order to trigger the error
+      mockEncounter.combatState.initiativeOrder = [];
 
       await runErrorApiTest(
         rerollInitiativePost,

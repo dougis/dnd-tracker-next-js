@@ -177,9 +177,9 @@ export function setupSequentialMockRolls(mockRoll: jest.Mock, values: number[]):
 }
 
 /**
- * Expects an initiative entry to have the correct structure
+ * Expects optional fields on initiative entry to match expected values
  */
-export function expectInitiativeEntryStructure(
+function expectOptionalFields(
   entry: IInitiativeEntry | InitiativeEntryWithInfo,
   expected: Partial<{
     participantId: Types.ObjectId;
@@ -206,18 +206,55 @@ export function expectInitiativeEntryStructure(
   if (expected.initiative !== undefined) {
     expect(entry.initiative).toBe(expected.initiative);
   }
+}
+
+/**
+ * Expects extended entry fields to match expected values
+ */
+function expectExtendedFields(
+  entry: IInitiativeEntry | InitiativeEntryWithInfo,
+  expected: Partial<{
+    name: string;
+    type: 'pc' | 'npc' | 'monster';
+  }>
+): void {
   if (expected.name && 'name' in entry) {
     expect(entry.name).toBe(expected.name);
   }
   if (expected.type && 'type' in entry) {
     expect(entry.type).toBe(expected.type);
   }
+}
 
+/**
+ * Expects required entry types to be correct
+ */
+function expectRequiredTypes(entry: IInitiativeEntry | InitiativeEntryWithInfo): void {
   expect(typeof entry.initiative).toBe('number');
   expect(typeof entry.participantId).toBe('object');
   expect(typeof entry.dexterity).toBe('number');
   expect(typeof entry.isActive).toBe('boolean');
   expect(typeof entry.hasActed).toBe('boolean');
+}
+
+/**
+ * Expects an initiative entry to have the correct structure
+ */
+export function expectInitiativeEntryStructure(
+  entry: IInitiativeEntry | InitiativeEntryWithInfo,
+  expected: Partial<{
+    participantId: Types.ObjectId;
+    dexterity: number;
+    isActive: boolean;
+    hasActed: boolean;
+    initiative: number;
+    name: string;
+    type: 'pc' | 'npc' | 'monster';
+  }>
+): void {
+  expectOptionalFields(entry, expected);
+  expectExtendedFields(entry, expected);
+  expectRequiredTypes(entry);
 }
 
 /**
@@ -265,18 +302,6 @@ export function findInitiativeEntry(
   return entries.find(entry => entry.participantId.toString() === participantId.toString());
 }
 
-/**
- * Creates participants with specific initiative values for testing
- */
-export function createParticipantsWithInitiative(
-  baseParticipants: IParticipantWithAbilityScores[],
-  initiativeValues: number[]
-): IParticipantWithAbilityScores[] {
-  return baseParticipants.map((participant, index) => ({
-    ...participant,
-    initiative: initiativeValues[index] || 0,
-  }));
-}
 
 /**
  * Asserts that all participants in a list have the expected initiative values
