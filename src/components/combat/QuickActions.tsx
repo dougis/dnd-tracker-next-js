@@ -1,10 +1,8 @@
 'use client';
 
 import React from 'react';
-import { InitiativeGroup } from './InitiativeGroup';
-import { MassActionsGroup } from './MassActionsGroup';
-import { ManagementGroup } from './ManagementGroup';
-import { CustomActionsGroup } from './CustomActionsGroup';
+import { Button } from '@/components/ui/button';
+import { Dice6, Heart, Zap, XCircle, UserPlus, Settings } from 'lucide-react';
 
 export interface QuickAction {
   id: string;
@@ -50,46 +48,113 @@ export function QuickActions({
     customActions = [],
   } = settings || {};
 
-  const {
-    onRollInitiative,
-    onMassHeal,
-    onMassDamage,
-    onClearConditions,
-    onAddParticipant,
-    onEncounterSettings,
-  } = actions;
-
   const count = participantCount || 0;
 
   return (
     <div className="grid grid-cols-3 gap-2" data-testid="quick-actions-container">
-      <InitiativeGroup
-        onRollInitiative={onRollInitiative}
-        disabled={disabled}
-        show={showRollInitiative}
-      />
+      {showRollInitiative && (
+        <div className="col-span-3" data-testid="initiative-group">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={actions.onRollInitiative}
+            disabled={disabled}
+            className="w-full"
+            title="Roll initiative for all participants"
+            aria-label="Roll initiative for all participants"
+          >
+            <Dice6 className="h-4 w-4 mr-2" data-testid="dice-icon" />
+            Roll Initiative
+          </Button>
+        </div>
+      )}
 
-      <MassActionsGroup
-        onMassHeal={onMassHeal}
-        onMassDamage={onMassDamage}
-        onClearConditions={onClearConditions}
-        disabled={disabled}
-        participantCount={count}
-        show={showMassActions}
-      />
+      {showMassActions && (
+        <div className="col-span-3 grid grid-cols-3 gap-2" data-testid="mass-actions-group">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={actions.onMassHeal}
+            disabled={disabled}
+            title="Apply healing to multiple participants"
+            aria-label={`Apply healing to ${count} participants`}
+          >
+            <Heart className="h-4 w-4 mr-1" data-testid="heart-icon" />
+            Mass Heal ({count})
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={actions.onMassDamage}
+            disabled={disabled}
+            title="Apply damage to multiple participants"
+            aria-label={`Apply damage to ${count} participants`}
+          >
+            <Zap className="h-4 w-4 mr-1" data-testid="zap-icon" />
+            Mass Damage ({count})
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={actions.onClearConditions}
+            disabled={disabled}
+            title="Clear conditions from all participants"
+            aria-label={`Clear conditions from ${count} participants`}
+          >
+            <XCircle className="h-4 w-4 mr-1" data-testid="x-circle-icon" />
+            Clear Conditions ({count})
+          </Button>
+        </div>
+      )}
 
-      <ManagementGroup
-        onAddParticipant={onAddParticipant}
-        onEncounterSettings={onEncounterSettings}
-        disabled={disabled}
-        showParticipantManagement={showParticipantManagement}
-        showSettings={showSettings}
-      />
+      {(showParticipantManagement || showSettings) && (
+        <div className="col-span-3 grid grid-cols-2 gap-2" data-testid="management-group">
+          {showParticipantManagement && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={actions.onAddParticipant}
+              disabled={disabled}
+              title="Add new participant to encounter"
+              aria-label="Add new participant to encounter"
+            >
+              <UserPlus className="h-4 w-4 mr-1" data-testid="user-plus-icon" />
+              Add Participant
+            </Button>
+          )}
+          {showSettings && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={actions.onEncounterSettings}
+              disabled={disabled}
+              title="Open encounter settings"
+              aria-label="Open encounter settings"
+            >
+              <Settings className="h-4 w-4 mr-1" data-testid="settings-icon" />
+              Settings
+            </Button>
+          )}
+        </div>
+      )}
 
-      <CustomActionsGroup
-        customActions={customActions}
-        disabled={disabled}
-      />
+      {customActions.length > 0 && (
+        <div className="col-span-3 grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(customActions.length, 3)}, 1fr)` }}>
+          {customActions.map((action) => (
+            <Button
+              key={action.id}
+              variant="outline"
+              size="sm"
+              onClick={action.handler}
+              disabled={disabled}
+              title={action.label}
+              aria-label={action.label}
+            >
+              {action.label}
+            </Button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
