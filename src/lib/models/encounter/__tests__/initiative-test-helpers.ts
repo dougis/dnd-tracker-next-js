@@ -1,11 +1,11 @@
 import { Types } from 'mongoose';
 import { IParticipantWithAbilityScores, InitiativeEntryWithInfo, rollBulkInitiative } from '../initiative-rolling';
 import { IInitiativeEntry } from '../interfaces';
-import { 
-  TEST_IDS, 
-  createStandardParticipants, 
-  createParticipant, 
-  ParticipantConfig,
+import {
+  TEST_IDS,
+  createStandardParticipants,
+  createParticipant,
+  // Removed unused import: ParticipantConfig
   MockRollUtils,
   TestAssertions
 } from './base-test-helpers';

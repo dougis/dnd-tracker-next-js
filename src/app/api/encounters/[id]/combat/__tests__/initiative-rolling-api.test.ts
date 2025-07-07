@@ -11,8 +11,7 @@ import {
   buildRollAllScenario,
   buildSingleRollScenario,
   buildRerollScenario,
-  buildMissingParticipantScenario,
-  buildMissingCharacterScenario,
+  // Removed unused scenario builders: buildMissingParticipantScenario, buildMissingCharacterScenario
   buildEmptyInitiativeScenario,
   mockInitiativeRollingFunctions,
   expectSuccessfulResponse,
@@ -21,7 +20,7 @@ import {
   expectActiveParticipant,
   cleanupApiTest,
   runBasicApiTest,
-  runErrorApiTest,
+  // Removed unused function: runErrorApiTest
   expectAtLeastOneFunctionCalled,
   API_TEST_IDS,
 } from './api-test-helpers';
@@ -132,10 +131,10 @@ describe('Initiative Rolling API Endpoints', () => {
     });
 
     it('should handle missing character error', async () => {
-      const request = createMockNextRequest({ 
-        participantId: API_TEST_IDS.FIGHTER.toString() 
+      const request = createMockNextRequest({
+        participantId: API_TEST_IDS.FIGHTER.toString()
       });
-      
+
       // Override Character.findById to return null for this test
       (Character.findById as jest.Mock).mockResolvedValueOnce(null);
 
@@ -209,7 +208,7 @@ describe('Initiative Rolling API Endpoints', () => {
 
     it('should handle empty initiative order error', async () => {
       const { request } = buildEmptyInitiativeScenario();
-      
+
       // Clear the initiative order to trigger the error
       mockEncounter.combatState.initiativeOrder = [];
 

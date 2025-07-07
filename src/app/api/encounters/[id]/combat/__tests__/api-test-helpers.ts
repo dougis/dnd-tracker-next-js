@@ -1,11 +1,11 @@
 import { NextRequest } from 'next/server';
 import { Types } from 'mongoose';
 import { Character } from '@/lib/models/Character';
-import { EncounterService } from '@/lib/services/EncounterService';
-import { 
-  TEST_IDS, 
-  setupTestMocks, 
-  createMockRequest, 
+// Removed unused import: EncounterService
+import {
+  TEST_IDS,
+  setupTestMocks,
+  createMockRequest,
   createMockParams,
   TestAssertions,
   APITestUtils
@@ -62,10 +62,10 @@ export { createMockParams };
 // Simplified mock setup using unified helpers
 export const setupBasicMocks = () => {
   const { participants, characters, encounter } = setupTestMocks();
-  return { 
-    mockCharacters: characters, 
+  return {
+    mockCharacters: characters,
     mockEncounter: encounter,
-    mockParticipants: participants 
+    mockParticipants: participants
   };
 };
 

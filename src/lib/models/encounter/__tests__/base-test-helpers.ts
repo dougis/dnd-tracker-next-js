@@ -147,7 +147,7 @@ export function setupTestMocks() {
  */
 export function resetTestMocks() {
   jest.clearAllMocks();
-  
+
   // Reset specific mocks if they exist
   try {
     const mockRoll = jest.requireMock('../utils').rollInitiative;
@@ -325,7 +325,7 @@ export const APITestUtils = {
     handler: Function,
     request: NextRequest,
     params: any,
-    expectations: (result: any) => void
+    expectations: (_result: any) => void
   ) => {
     const response = await handler(request, params);
     const result = await response.json();
