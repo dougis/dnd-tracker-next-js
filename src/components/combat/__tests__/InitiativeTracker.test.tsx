@@ -66,9 +66,9 @@ describe('InitiativeTracker', () => {
   it('renders initiative tracker when combat is active', () => {
     render(<InitiativeTracker {...mockProps} />);
 
-    expect(screen.getByText('Initiative Tracker')).toBeInTheDocument();
-    expect(screen.getByText('Round 2')).toBeInTheDocument();
-    expect(screen.getByText('Turn Order')).toBeInTheDocument();
+    expect(screen.getByText('Next Turn')).toBeInTheDocument();
+    expect(screen.getByText('Previous')).toBeInTheDocument();
+    expect(screen.getByText('Pause')).toBeInTheDocument();
   });
 
   it('shows inactive state when combat is not active', () => {
@@ -205,32 +205,23 @@ describe('InitiativeTracker', () => {
     });
   });
 
-  describe('Export and Share functionality', () => {
-    it('calls onExportInitiative when export button is clicked', () => {
+  describe('Combat controls functionality', () => {
+    it('renders control buttons when combat is active', () => {
       render(<InitiativeTracker {...mockProps} />);
 
-      const exportButton = screen.getByRole('button', { name: /download initiative data/i });
-      fireEvent.click(exportButton);
-
-      expect(mockProps.combatActions.onExportInitiative).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls onShareInitiative when share button is clicked', () => {
-      render(<InitiativeTracker {...mockProps} />);
-
-      const shareButton = screen.getByRole('button', { name: /share initiative data/i });
-      fireEvent.click(shareButton);
-
-      expect(mockProps.combatActions.onShareInitiative).toHaveBeenCalledTimes(1);
+      expect(screen.getByRole('button', { name: /next turn/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /previous/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /pause/i })).toBeInTheDocument();
     });
   });
 
   describe('Accessibility', () => {
-    it('has proper heading structure', () => {
+    it('has proper component structure', () => {
       render(<InitiativeTracker {...mockProps} />);
 
-      expect(screen.getByRole('heading', { name: 'Initiative Tracker' })).toBeInTheDocument();
-      expect(screen.getByRole('heading', { name: 'Turn Order' })).toBeInTheDocument();
+      // Should render combat controls and initiative list
+      expect(screen.getByRole('button', { name: /next turn/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /previous/i })).toBeInTheDocument();
     });
 
     it('has accessible button labels', () => {

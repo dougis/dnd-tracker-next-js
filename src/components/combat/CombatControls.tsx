@@ -10,27 +10,42 @@ import {
   Square,
 } from 'lucide-react';
 
-interface CombatControlsProps {
+interface CombatActions {
   onNextTurn?: () => void;
   onPreviousTurn?: () => void;
   onPauseCombat?: () => void;
   onResumeCombat?: () => void;
   onEndCombat?: () => void;
+}
+
+interface CombatState {
   canGoPrevious: boolean;
   isPaused: boolean;
   enableKeyboardShortcuts: boolean;
 }
 
+interface CombatControlsProps {
+  actions: CombatActions;
+  state: CombatState;
+}
+
 export function CombatControlsSection({
-  onNextTurn,
-  onPreviousTurn,
-  onPauseCombat,
-  onResumeCombat,
-  onEndCombat,
-  canGoPrevious,
-  isPaused,
-  enableKeyboardShortcuts,
+  actions,
+  state,
 }: CombatControlsProps) {
+  const {
+    onNextTurn,
+    onPreviousTurn,
+    onPauseCombat,
+    onResumeCombat,
+    onEndCombat,
+  } = actions;
+
+  const {
+    canGoPrevious,
+    isPaused,
+    enableKeyboardShortcuts,
+  } = state;
   return (
     <div className="flex items-center justify-center space-x-2">
       <Button

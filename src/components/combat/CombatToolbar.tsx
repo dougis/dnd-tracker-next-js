@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -143,45 +143,46 @@ export function CombatToolbar({
     return 'active';
   }, [isActive, isPaused]);
 
+  // Keyboard shortcuts handler
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    // Ignore if user is typing in an input
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      return;
+    }
+
+    switch (event.code) {
+      case 'Space':
+        event.preventDefault();
+        onNextTurn?.();
+        break;
+      case 'Backspace':
+        event.preventDefault();
+        if (canGoPrevious) {
+          onPreviousTurn?.();
+        }
+        break;
+      case 'KeyP':
+        event.preventDefault();
+        if (isPaused) {
+          onResumeCombat?.();
+        } else {
+          onPauseCombat?.();
+        }
+        break;
+      case 'KeyE':
+        event.preventDefault();
+        onEndCombat?.();
+        break;
+    }
+  }, [onNextTurn, onPreviousTurn, onPauseCombat, onResumeCombat, onEndCombat, canGoPrevious, isPaused]);
+
   // Keyboard shortcuts
   useEffect(() => {
     if (!enableKeyboardShortcuts) return;
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Ignore if user is typing in an input
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-
-      switch (event.code) {
-        case 'Space':
-          event.preventDefault();
-          onNextTurn?.();
-          break;
-        case 'Backspace':
-          event.preventDefault();
-          if (canGoPrevious) {
-            onPreviousTurn?.();
-          }
-          break;
-        case 'KeyP':
-          event.preventDefault();
-          if (isPaused) {
-            onResumeCombat?.();
-          } else {
-            onPauseCombat?.();
-          }
-          break;
-        case 'KeyE':
-          event.preventDefault();
-          onEndCombat?.();
-          break;
-      }
-    };
-
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [enableKeyboardShortcuts, onNextTurn, onPreviousTurn, onPauseCombat, onResumeCombat, onEndCombat, canGoPrevious, isPaused]);
+  }, [enableKeyboardShortcuts, handleKeyDown]);
 
   return (
     <Card>
@@ -253,14 +254,18 @@ export function CombatToolbar({
       <CardContent className="space-y-4">
         {/* Essential Controls */}
         <CombatControlsSection
-          onNextTurn={onNextTurn}
-          onPreviousTurn={onPreviousTurn}
-          onPauseCombat={onPauseCombat}
-          onResumeCombat={onResumeCombat}
-          onEndCombat={onEndCombat}
-          canGoPrevious={canGoPrevious}
-          isPaused={isPaused}
-          enableKeyboardShortcuts={enableKeyboardShortcuts}
+          actions={{
+            onNextTurn,
+            onPreviousTurn,
+            onPauseCombat,
+            onResumeCombat,
+            onEndCombat,
+          }}
+          state={{
+            canGoPrevious,
+            isPaused,
+            enableKeyboardShortcuts,
+          }}
         />
 
         {/* Quick Actions */}

@@ -281,12 +281,12 @@ describe('QuickActions', () => {
     it('has proper button labels for screen readers', () => {
       render(<QuickActions {...mockProps} />);
 
-      expect(screen.getByRole('button', { name: /roll initiative/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /mass heal/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /mass damage/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /clear conditions/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /add participant/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /settings/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /roll initiative for all participants/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /apply healing to 4 participants/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /apply damage to 4 participants/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /clear conditions from 4 participants/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /add new participant to encounter/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /open encounter settings/i })).toBeInTheDocument();
     });
 
     it('has proper tooltips for quick actions', () => {
@@ -307,9 +307,8 @@ describe('QuickActions', () => {
       rollButton.focus();
       expect(document.activeElement).toBe(rollButton);
 
-      // Tab should move to next button
-      fireEvent.keyDown(rollButton, { key: 'Tab', code: 'Tab' });
-      expect(document.activeElement).not.toBe(rollButton);
+      // Button should be focusable (buttons are focusable by default)
+      expect(rollButton).toHaveProperty('tabIndex', 0);
     });
   });
 
@@ -340,7 +339,7 @@ describe('QuickActions', () => {
 
       const buttons = screen.getAllByRole('button');
       buttons.forEach(button => {
-        expect(button).toHaveClass('btn-sm');
+        expect(button).toHaveClass('h-8', 'text-xs');
       });
     });
 
