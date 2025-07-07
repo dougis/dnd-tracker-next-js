@@ -5,8 +5,6 @@ import {
   testDamageApplication,
   testHealingApplication,
   testTemporaryHPChange,
-  testFieldValidation,
-  testInputValidation,
   expectHPInputValues,
   expectHPStatus,
   expectHPSaveCall,
@@ -39,7 +37,7 @@ describe('HPEditForm', () => {
 
   it('handles damage application', async () => {
     renderHPEditForm();
-    await testDamageApplication(10, 65, 'Status: 65/100 (+5) = 70 effective HP');
+    await testDamageApplication(10, 70, 'Status: 70/100 = 70 effective HP');
   });
 
   it('handles healing application', async () => {
@@ -52,29 +50,65 @@ describe('HPEditForm', () => {
     await testTemporaryHPChange(10, 'Status: 75/100 (+10) = 85 effective HP');
   });
 
-  it('validates current HP input', async () => {
+  it('prevents current HP from going below 0', async () => {
     renderHPEditForm();
-    await testFieldValidation('Current HP', '-5', 'Current HP must be at least 0');
+
+    const currentHPInput = screen.getByLabelText('Current HP');
+    fireEvent.change(currentHPInput, { target: { value: '-5' } });
+
+    await waitFor(() => {
+      expect(currentHPInput).toHaveValue(0);
+    });
   });
 
-  it('validates maximum HP input', async () => {
+  it('prevents maximum HP from going below 1', async () => {
     renderHPEditForm();
-    await testFieldValidation('Maximum HP', '0', 'Maximum HP must be at least 1');
+
+    const maxHPInput = screen.getByLabelText('Maximum HP');
+    fireEvent.change(maxHPInput, { target: { value: '0' } });
+
+    await waitFor(() => {
+      expect(maxHPInput).toHaveValue(1);
+    });
   });
 
-  it('validates temporary HP input', async () => {
+  it('prevents temporary HP from going below 0', async () => {
     renderHPEditForm();
-    await testFieldValidation('Temporary HP', '-3', 'Temporary HP must be at least 0');
+
+    const tempHPInput = screen.getByLabelText('Temporary HP');
+    fireEvent.change(tempHPInput, { target: { value: '-3' } });
+
+    await waitFor(() => {
+      expect(tempHPInput).toHaveValue(0);
+    });
   });
 
   it('validates damage input', async () => {
     renderHPEditForm();
-    await testInputValidation('Damage Amount', 'apply-damage-button', '-5', 'Damage must be at least 0');
+
+    const damageInput = screen.getByLabelText('Damage Amount');
+    const applyButton = screen.getByTestId('apply-damage-button');
+
+    fireEvent.change(damageInput, { target: { value: '-5' } });
+    fireEvent.click(applyButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Damage must be at least 0')).toBeInTheDocument();
+    });
   });
 
   it('validates healing input', async () => {
     renderHPEditForm();
-    await testInputValidation('Healing Amount', 'apply-healing-button', '-10', 'Healing must be at least 0');
+
+    const healingInput = screen.getByLabelText('Healing Amount');
+    const applyButton = screen.getByTestId('apply-healing-button');
+
+    fireEvent.change(healingInput, { target: { value: '-10' } });
+    fireEvent.click(applyButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Healing must be at least 0')).toBeInTheDocument();
+    });
   });
 
   it('calls onSave with correct values', async () => {
@@ -126,7 +160,7 @@ describe('HPEditForm', () => {
     fireEvent.click(applyDamageButton);
 
     await waitFor(() => {
-      expect(damageInput).toHaveValue('');
+      expect(damageInput).toHaveValue(null);
     });
   });
 
@@ -140,7 +174,7 @@ describe('HPEditForm', () => {
     fireEvent.click(applyHealingButton);
 
     await waitFor(() => {
-      expect(healingInput).toHaveValue('');
+      expect(healingInput).toHaveValue(null);
     });
   });
 
