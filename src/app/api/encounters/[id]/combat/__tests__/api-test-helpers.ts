@@ -2,84 +2,31 @@ import { NextRequest } from 'next/server';
 import { Types } from 'mongoose';
 import { Character } from '@/lib/models/Character';
 import { EncounterService } from '@/lib/services/EncounterService';
+import { 
+  TEST_IDS, 
+  setupTestMocks, 
+  createMockRequest, 
+  createMockParams,
+  TestAssertions,
+  APITestUtils
+} from '@/lib/models/encounter/__tests__/base-test-helpers';
 
 /**
  * API Test Helpers for Initiative Rolling
- * Eliminates code duplication across API test files
+ * Built on unified base helpers to eliminate duplication
  */
 
-// Standard test IDs for consistent testing
-export const API_TEST_IDS = {
-  ENCOUNTER: new Types.ObjectId('507f1f77bcf86cd799439000'),
-  FIGHTER: new Types.ObjectId('507f1f77bcf86cd799439011'),
-  ROGUE: new Types.ObjectId('507f1f77bcf86cd799439012'),
-  WIZARD: new Types.ObjectId('507f1f77bcf86cd799439013'),
-} as const;
+// Re-export for backward compatibility
+export const API_TEST_IDS = TEST_IDS;
 
-// Mock character factory
-export const createMockCharacter = (
-  overrides?: Partial<{
-    _id: Types.ObjectId;
-    name: string;
-    abilityScores: { dexterity: number };
-  }>
-) => ({
-  _id: new Types.ObjectId(),
-  name: 'Test Character',
-  abilityScores: { dexterity: 14 },
-  ...overrides,
-});
-
-// Predefined character sets
-export const createFighterCharacter = () =>
-  createMockCharacter({
-    _id: API_TEST_IDS.FIGHTER,
-    name: 'Fighter',
-    abilityScores: { dexterity: 14 },
-  });
-
-export const createRogueCharacter = () =>
-  createMockCharacter({
-    _id: API_TEST_IDS.ROGUE,
-    name: 'Rogue',
-    abilityScores: { dexterity: 18 },
-  });
-
-export const createBasicCharacterSet = () => [
-  createFighterCharacter(),
-  createRogueCharacter(),
-];
-
-// Mock encounter factory
+/**
+ * Simplified factories using unified base helpers
+ */
 export const createMockEncounter = (overrides?: any) => {
-  const characters = createBasicCharacterSet();
-
-  return {
-    _id: API_TEST_IDS.ENCOUNTER,
-    participants: [
-      {
-        characterId: characters[0]._id,
-        name: characters[0].name,
-        type: 'pc',
-      },
-      {
-        characterId: characters[1]._id,
-        name: characters[1].name,
-        type: 'pc',
-      },
-    ],
-    combatState: {
-      isActive: true,
-      currentRound: 1,
-      currentTurn: 0,
-      initiativeOrder: [],
-    },
-    save: jest.fn().mockResolvedValue(true),
-    ...overrides,
-  };
+  const { encounter } = setupTestMocks();
+  return { ...encounter, ...overrides };
 };
 
-// Mock initiative entry factory
 export const createMockInitiativeEntry = (
   participantId: Types.ObjectId,
   name: string,
@@ -95,55 +42,31 @@ export const createMockInitiativeEntry = (
   ...overrides,
 });
 
-// Predefined initiative entries
 export const createBasicInitiativeEntries = () => [
   createMockInitiativeEntry(
-    API_TEST_IDS.ROGUE,
+    TEST_IDS.ROGUE,
     'Rogue',
     { initiative: 22, dexterity: 18 }
   ),
   createMockInitiativeEntry(
-    API_TEST_IDS.FIGHTER,
+    TEST_IDS.FIGHTER,
     'Fighter',
     { initiative: 16, dexterity: 14 }
   ),
 ];
 
-// NextRequest factory
-export const createMockNextRequest = (body: any = {}) => {
-  return new NextRequest('http://localhost:3000', {
-    method: 'POST',
-    body: JSON.stringify(body),
-  });
-};
+// Use unified helpers
+export const createMockNextRequest = createMockRequest;
+export { createMockParams };
 
-// Mock parameters factory
-export const createMockParams = (encounterId?: string) => ({
-  params: Promise.resolve({
-    id: encounterId || API_TEST_IDS.ENCOUNTER.toString()
-  })
-});
-
-// Common mock setup function
+// Simplified mock setup using unified helpers
 export const setupBasicMocks = () => {
-  const mockCharacters = createBasicCharacterSet();
-  const mockEncounter = createMockEncounter();
-
-  // Mock EncounterService
-  (EncounterService.getEncounterById as jest.Mock).mockResolvedValue({
-    success: true,
-    data: mockEncounter,
-  });
-
-  // Mock Character model
-  (Character.find as jest.Mock).mockResolvedValue(mockCharacters);
-  (Character.findById as jest.Mock).mockImplementation((id) => {
-    return Promise.resolve(
-      mockCharacters.find(c => c._id.toString() === id.toString())
-    );
-  });
-
-  return { mockCharacters, mockEncounter };
+  const { participants, characters, encounter } = setupTestMocks();
+  return { 
+    mockCharacters: characters, 
+    mockEncounter: encounter,
+    mockParticipants: participants 
+  };
 };
 
 // Setup mocks for reroll tests
@@ -173,36 +96,13 @@ export const setupRerollMocks = () => {
   return { mockCharacters, mockEncounter };
 };
 
-// Common assertion helpers
-export const expectSuccessfulResponse = (result: any) => {
-  expect(result.success).toBe(true);
-  expect(result.encounter).toBeDefined();
-};
-
-export const expectErrorResponse = (result: any, expectedError: string) => {
-  expect(result.success).toBe(false);
-  expect(result.error).toContain(expectedError);
-};
-
-export const expectEncounterSaved = (mockEncounter: any) => {
-  expect(mockEncounter.save).toHaveBeenCalled();
-};
-
-export const expectInitiativeOrderLength = (mockEncounter: any, expectedLength: number) => {
-  expect(mockEncounter.combatState.initiativeOrder).toHaveLength(expectedLength);
-};
-
-export const expectActiveParticipant = (mockEncounter: any, expectedIndex: number) => {
-  expect(mockEncounter.combatState.initiativeOrder[expectedIndex].isActive).toBe(true);
-  expect(mockEncounter.combatState.currentTurn).toBe(expectedIndex);
-};
-
-export const expectFunctionCalled = (mockFn: jest.Mock, expectedArgs?: any[]) => {
-  expect(mockFn).toHaveBeenCalled();
-  if (expectedArgs && expectedArgs.length > 0) {
-    expect(mockFn).toHaveBeenCalledWith(...expectedArgs);
-  }
-};
+// Use unified assertion helpers
+export const expectSuccessfulResponse = TestAssertions.successfulResponse;
+export const expectErrorResponse = TestAssertions.errorResponse;
+export const expectEncounterSaved = TestAssertions.encounterSaved;
+export const expectInitiativeOrderLength = TestAssertions.initiativeOrderLength;
+export const expectActiveParticipant = TestAssertions.activeParticipant;
+export const expectFunctionCalled = TestAssertions.functionCalled;
 
 // Test scenario builders
 export const buildRollAllScenario = () => ({
@@ -293,39 +193,13 @@ export const mockInitiativeRollingFunctions = () => {
   };
 };
 
-// Test cleanup
+// Use unified test utilities
 export const cleanupApiTest = () => {
   jest.clearAllMocks();
 };
 
-// Common test flow helpers
-export const runBasicApiTest = async (
-  handler: Function,
-  request: NextRequest,
-  params: any,
-  expectations: (_result: any) => void
-) => {
-  const response = await handler(request, params);
-  const result = await response.json();
-  expectations(result);
-  return { response, result };
-};
-
-export const runErrorApiTest = async (
-  handler: Function,
-  request: NextRequest,
-  params: any,
-  expectedStatus: number,
-  expectedError: string
-) => {
-  const response = await handler(request, params);
-  const result = await response.json();
-
-  expect(response.status).toBe(expectedStatus);
-  expectErrorResponse(result, expectedError);
-
-  return { response, result };
-};
+export const runBasicApiTest = APITestUtils.runBasicTest;
+export const runErrorApiTest = APITestUtils.runErrorTest;
 
 // Common test execution patterns
 export const setupMocksAndRunTest = async (

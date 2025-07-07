@@ -1,139 +1,71 @@
 import { Types } from 'mongoose';
 import { IParticipantWithAbilityScores, InitiativeEntryWithInfo, rollBulkInitiative } from '../initiative-rolling';
 import { IInitiativeEntry } from '../interfaces';
+import { 
+  TEST_IDS, 
+  createStandardParticipants, 
+  createParticipant, 
+  ParticipantConfig,
+  MockRollUtils,
+  TestAssertions
+} from './base-test-helpers';
 
 /**
- * Test helper utilities for initiative rolling tests
- * Eliminates code duplication and provides reusable test components
+ * Initiative-specific test helpers
+ * Built on top of unified base helpers to eliminate duplication
  */
 
-// Common participant IDs for consistent testing
-export const INITIATIVE_PARTICIPANT_IDS = {
-  FIGHTER: new Types.ObjectId('507f1f77bcf86cd799439011'),
-  ROGUE: new Types.ObjectId('507f1f77bcf86cd799439012'),
-  ORC: new Types.ObjectId('507f1f77bcf86cd799439013'),
-};
+// Re-export standard IDs for backward compatibility
+export const INITIATIVE_PARTICIPANT_IDS = TEST_IDS;
 
 /**
  * Creates a mock participant with customizable properties
+ * @deprecated Use createParticipant from base-test-helpers instead
  */
 export function createMockParticipant(overrides: Partial<IParticipantWithAbilityScores> = {}): IParticipantWithAbilityScores {
-  return {
-    characterId: new Types.ObjectId(),
-    name: 'Test Participant',
-    type: 'pc',
-    initiative: 0,
-    armorClass: 15,
-    maxHitPoints: 30,
-    currentHitPoints: 30,
-    temporaryHitPoints: 0,
-    conditions: [],
-    notes: '',
-    isPlayer: true,
-    isVisible: true,
-    abilityScores: {
-      strength: 10,
-      dexterity: 12,
-      constitution: 14,
-      intelligence: 10,
-      wisdom: 12,
-      charisma: 10,
-    },
-    ...overrides,
-  };
+  return createParticipant({
+    name: overrides.name || 'Test Participant',
+    type: (overrides.type as any) || 'pc',
+    dexterity: overrides.abilityScores?.dexterity || 12,
+    hitPoints: overrides.maxHitPoints,
+    armorClass: overrides.armorClass,
+    isPlayer: overrides.isPlayer,
+    isVisible: overrides.isVisible,
+    initiative: overrides.initiative,
+    id: overrides.characterId,
+  });
 }
 
 /**
- * Creates a Fighter participant with standard stats
+ * Get standard participants using unified helpers
  */
 export function createFighterParticipant(): IParticipantWithAbilityScores {
-  return createMockParticipant({
-    characterId: INITIATIVE_PARTICIPANT_IDS.FIGHTER,
-    name: 'Fighter',
-    type: 'pc',
-    armorClass: 18,
-    maxHitPoints: 45,
-    currentHitPoints: 45,
-    isPlayer: false,
-    abilityScores: {
-      strength: 16,
-      dexterity: 14, // +2 modifier
-      constitution: 16,
-      intelligence: 10,
-      wisdom: 12,
-      charisma: 8,
-    },
-  });
+  return createStandardParticipants().fighter;
 }
 
-/**
- * Creates a Rogue participant with standard stats
- */
 export function createRogueParticipant(): IParticipantWithAbilityScores {
-  return createMockParticipant({
-    characterId: INITIATIVE_PARTICIPANT_IDS.ROGUE,
-    name: 'Rogue',
-    type: 'pc',
-    armorClass: 15,
-    maxHitPoints: 38,
-    currentHitPoints: 38,
-    isPlayer: true,
-    abilityScores: {
-      strength: 10,
-      dexterity: 18, // +4 modifier
-      constitution: 14,
-      intelligence: 12,
-      wisdom: 14,
-      charisma: 10,
-    },
-  });
+  return createStandardParticipants().rogue;
 }
 
-/**
- * Creates an Orc participant with standard stats
- */
 export function createOrcParticipant(): IParticipantWithAbilityScores {
-  return createMockParticipant({
-    characterId: INITIATIVE_PARTICIPANT_IDS.ORC,
-    name: 'Orc Warrior',
-    type: 'npc',
-    armorClass: 13,
-    maxHitPoints: 15,
-    currentHitPoints: 15,
-    isPlayer: false,
-    abilityScores: {
-      strength: 16,
-      dexterity: 12, // +1 modifier
-      constitution: 16,
-      intelligence: 7,
-      wisdom: 11,
-      charisma: 10,
-    },
-  });
+  return createStandardParticipants().orc;
 }
 
-/**
- * Creates a standard set of participants for testing
- */
 export function createBasicParticipantSet(): IParticipantWithAbilityScores[] {
-  return [
-    createFighterParticipant(),
-    createRogueParticipant(),
-    createOrcParticipant(),
-  ];
+  const { fighter, rogue, orc } = createStandardParticipants();
+  return [fighter, rogue, orc];
 }
 
 /**
- * Creates a mock initiative entry
+ * Creates a mock initiative entry using unified helpers
  */
 export function createMockInitiativeEntry(overrides: Partial<IInitiativeEntry> = {}): IInitiativeEntry {
   return {
-    participantId: new Types.ObjectId(),
-    initiative: 10,
-    dexterity: 12,
-    isActive: false,
-    hasActed: false,
-    ...overrides,
+    participantId: overrides.participantId || new Types.ObjectId(),
+    initiative: overrides.initiative || 10,
+    dexterity: overrides.dexterity || 12,
+    isActive: overrides.isActive || false,
+    hasActed: overrides.hasActed || false,
   };
 }
 
@@ -143,14 +75,14 @@ export function createMockInitiativeEntry(overrides: Partial<IInitiativeEntry> =
 export function createBasicInitiativeOrder(): IInitiativeEntry[] {
   return [
     createMockInitiativeEntry({
-      participantId: INITIATIVE_PARTICIPANT_IDS.FIGHTER,
+      participantId: TEST_IDS.FIGHTER,
       initiative: 15,
       dexterity: 14,
       isActive: true,
       hasActed: false,
     }),
     createMockInitiativeEntry({
-      participantId: INITIATIVE_PARTICIPANT_IDS.ROGUE,
+      participantId: TEST_IDS.ROGUE,
       initiative: 12,
       dexterity: 18,
       isActive: false,
@@ -160,85 +92,18 @@ export function createBasicInitiativeOrder(): IInitiativeEntry[] {
 }
 
 /**
- * Sets up initiative rolling mock to return a specific value
+ * Mock roll utilities using unified helpers
  */
 export function setupInitiativeRollingMock(mockRoll: jest.Mock, returnValue: number): void {
-  mockRoll.mockReturnValueOnce(returnValue);
+  MockRollUtils.setupSingle(mockRoll, returnValue);
 }
 
-/**
- * Sets up sequential mock rolls for multiple participants
- */
 export function setupSequentialMockRolls(mockRoll: jest.Mock, values: number[]): void {
-  let mockChain = mockRoll;
-  values.forEach(value => {
-    mockChain = mockChain.mockReturnValueOnce(value);
-  });
+  MockRollUtils.setupSequential(mockRoll, values);
 }
 
 /**
- * Expects optional fields on initiative entry to match expected values
- */
-function expectOptionalFields(
-  entry: IInitiativeEntry | InitiativeEntryWithInfo,
-  expected: Partial<{
-    participantId: Types.ObjectId;
-    dexterity: number;
-    isActive: boolean;
-    hasActed: boolean;
-    initiative: number;
-    name: string;
-    type: 'pc' | 'npc' | 'monster';
-  }>
-): void {
-  if (expected.participantId) {
-    expect(entry.participantId).toEqual(expected.participantId);
-  }
-  if (expected.dexterity !== undefined) {
-    expect(entry.dexterity).toBe(expected.dexterity);
-  }
-  if (expected.isActive !== undefined) {
-    expect(entry.isActive).toBe(expected.isActive);
-  }
-  if (expected.hasActed !== undefined) {
-    expect(entry.hasActed).toBe(expected.hasActed);
-  }
-  if (expected.initiative !== undefined) {
-    expect(entry.initiative).toBe(expected.initiative);
-  }
-}
-
-/**
- * Expects extended entry fields to match expected values
- */
-function expectExtendedFields(
-  entry: IInitiativeEntry | InitiativeEntryWithInfo,
-  expected: Partial<{
-    name: string;
-    type: 'pc' | 'npc' | 'monster';
-  }>
-): void {
-  if (expected.name && 'name' in entry) {
-    expect(entry.name).toBe(expected.name);
-  }
-  if (expected.type && 'type' in entry) {
-    expect(entry.type).toBe(expected.type);
-  }
-}
-
-/**
- * Expects required entry types to be correct
- */
-function expectRequiredTypes(entry: IInitiativeEntry | InitiativeEntryWithInfo): void {
-  expect(typeof entry.initiative).toBe('number');
-  expect(typeof entry.participantId).toBe('object');
-  expect(typeof entry.dexterity).toBe('number');
-  expect(typeof entry.isActive).toBe('boolean');
-  expect(typeof entry.hasActed).toBe('boolean');
-}
-
-/**
- * Expects an initiative entry to have the correct structure
+ * Assertion helpers using unified base helpers
  */
 export function expectInitiativeEntryStructure(
   entry: IInitiativeEntry | InitiativeEntryWithInfo,
@@ -252,27 +117,11 @@ export function expectInitiativeEntryStructure(
     type: 'pc' | 'npc' | 'monster';
   }>
 ): void {
-  expectOptionalFields(entry, expected);
-  expectExtendedFields(entry, expected);
-  expectRequiredTypes(entry);
+  TestAssertions.initiativeEntryStructure(entry, expected);
 }
 
-/**
- * Expects initiative entries to be properly sorted
- */
 export function expectValidInitiativeOrder(entries: IInitiativeEntry[]): void {
-  for (let i = 0; i < entries.length - 1; i++) {
-    const current = entries[i];
-    const next = entries[i + 1];
-
-    // Higher initiative should come first
-    if (current.initiative === next.initiative) {
-      // If initiative is tied, higher dexterity should come first
-      expect(current.dexterity).toBeGreaterThanOrEqual(next.dexterity);
-    } else {
-      expect(current.initiative).toBeGreaterThan(next.initiative);
-    }
-  }
+  TestAssertions.validInitiativeOrder(entries);
 }
 
 /**

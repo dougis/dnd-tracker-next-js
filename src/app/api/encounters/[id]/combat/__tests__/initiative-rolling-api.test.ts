@@ -77,11 +77,11 @@ describe('Initiative Rolling API Endpoints', () => {
         expect.arrayContaining([
           expect.objectContaining({
             characterId: API_TEST_IDS.FIGHTER,
-            abilityScores: { dexterity: 14 },
+            abilityScores: expect.objectContaining({ dexterity: 14 }),
           }),
           expect.objectContaining({
             characterId: API_TEST_IDS.ROGUE,
-            abilityScores: { dexterity: 18 },
+            abilityScores: expect.objectContaining({ dexterity: 18 }),
           }),
         ])
       );
