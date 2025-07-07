@@ -34,12 +34,10 @@ async function rollSingleParticipantInitiative(
 }
 
 /**
- * Helper to find character for participant and validate
+ * Helper to find character for participant and validate using Map for O(1) lookup
  */
-function findCharacterForParticipant(participant: any, characters: any[]) {
-  const character = characters.find(
-    c => c._id.toString() === participant.characterId.toString()
-  );
+function findCharacterForParticipant(participant: any, characterMap: Map<string, any>) {
+  const character = characterMap.get(participant.characterId.toString());
 
   if (!character) {
     throw new Error(`Character with ID ${participant.characterId} not found`);
@@ -75,9 +73,14 @@ async function rollAllParticipantsInitiative(encounter: IEncounter): Promise<voi
     _id: { $in: encounter.participants.map(p => p.characterId) }
   });
 
-  // Map character data to participants using helper
+  // Create Map for O(1) character lookup performance
+  const characterMap = new Map(
+    participantCharacters.map(char => [char._id.toString(), char])
+  );
+
+  // Map character data to participants using helper with efficient lookup
   const participantsWithDexterity = encounter.participants.map(participant =>
-    findCharacterForParticipant(participant, participantCharacters)
+    findCharacterForParticipant(participant, characterMap)
   );
 
   // Roll initiative for all participants

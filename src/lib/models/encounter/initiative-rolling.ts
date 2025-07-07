@@ -15,7 +15,7 @@ export interface InitiativeRollResult {
  */
 export interface InitiativeEntryWithInfo extends IInitiativeEntry {
   name: string;
-  type: 'pc' | 'npc' | 'monster';
+  type: 'pc' | 'npc';
 }
 
 /**
@@ -82,7 +82,7 @@ export function rollBulkInitiative(
       isActive: false,
       hasActed: false,
       name: participant.name,
-      type: participant.type,
+      type: participant.type === 'monster' ? 'npc' : participant.type,
     };
   });
 
@@ -147,10 +147,26 @@ export function getInitiativeRollBreakdown(
   dexterity: number
 ): { d20Roll: number; modifier: number } {
   const modifier = calculateInitiativeModifier(dexterity);
-  const d20Roll = total - modifier;
+
+  // Reverse the minimum clamping logic from rollInitiativeWithModifier
+  // If total is 1 and would have been negative without clamping,
+  // we can't determine the exact d20 roll
+  let d20Roll = total - modifier;
+
+  // If the calculated d20 roll would result in a negative total before clamping,
+  // we know the minimum was applied, so the d20 roll must have been low enough
+  // to trigger the Math.max(1, ...) clamping
+  if (total === 1 && d20Roll + modifier < 1) {
+    // The actual d20 roll was low enough that d20Roll + modifier < 1
+    // We can estimate it was the calculated value, but constrain to valid d20 range
+    d20Roll = Math.max(1, d20Roll);
+  } else {
+    // Normal case - constrain to valid d20 range
+    d20Roll = Math.max(1, Math.min(20, d20Roll));
+  }
 
   return {
-    d20Roll: Math.max(1, Math.min(20, d20Roll)), // Ensure valid d20 range
+    d20Roll,
     modifier,
   };
 }

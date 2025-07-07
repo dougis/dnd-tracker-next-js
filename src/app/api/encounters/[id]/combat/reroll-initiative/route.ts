@@ -48,13 +48,11 @@ function restoreActiveParticipant(encounter: IEncounter, activeParticipantId: st
 
   if (newActiveIndex < 0) return;
 
-  // Reset all active states first
-  encounter.combatState.initiativeOrder.forEach(entry => {
-    entry.isActive = false;
+  // Reset all active states and set the new active participant in one pass
+  encounter.combatState.initiativeOrder.forEach((entry, index) => {
+    entry.isActive = (index === newActiveIndex);
   });
 
-  // Set the previously active participant as active again
-  encounter.combatState.initiativeOrder[newActiveIndex].isActive = true;
   encounter.combatState.currentTurn = newActiveIndex;
 }
 
