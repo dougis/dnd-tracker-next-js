@@ -103,6 +103,24 @@ export function setupSequentialMockRolls(mockRoll: jest.Mock, values: number[]):
 }
 
 /**
+ * Get and setup mock roll function - reduces duplication
+ */
+export function getMockRoll(returnValue: number): jest.Mock {
+  const mockRoll = jest.requireMock('../utils').rollInitiative;
+  setupInitiativeRollingMock(mockRoll, returnValue);
+  return mockRoll;
+}
+
+/**
+ * Get and setup sequential mock rolls - reduces duplication
+ */
+export function getMockRollSequential(values: number[]): jest.Mock {
+  const mockRoll = jest.requireMock('../utils').rollInitiative;
+  setupSequentialMockRolls(mockRoll, values);
+  return mockRoll;
+}
+
+/**
  * Assertion helpers using unified base helpers
  */
 export function expectInitiativeEntryStructure(

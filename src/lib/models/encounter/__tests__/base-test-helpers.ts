@@ -233,21 +233,20 @@ export const TestAssertions = {
     entry: IInitiativeEntry | InitiativeEntryWithInfo,
     expected: Partial<InitiativeEntryConfig>
   ) => {
-    if (expected.participantId) {
-      expect(entry.participantId).toEqual(expected.participantId);
-    }
-    if (expected.dexterity !== undefined) {
-      expect(entry.dexterity).toBe(expected.dexterity);
-    }
-    if (expected.isActive !== undefined) {
-      expect(entry.isActive).toBe(expected.isActive);
-    }
-    if (expected.hasActed !== undefined) {
-      expect(entry.hasActed).toBe(expected.hasActed);
-    }
-    if (expected.initiative !== undefined) {
-      expect(entry.initiative).toBe(expected.initiative);
-    }
+    // Validate expected values using array iteration to reduce complexity
+    const checks = [
+      { key: 'participantId', assertion: (val: any) => expect(entry.participantId).toEqual(val) },
+      { key: 'dexterity', assertion: (val: any) => expect(entry.dexterity).toBe(val) },
+      { key: 'isActive', assertion: (val: any) => expect(entry.isActive).toBe(val) },
+      { key: 'hasActed', assertion: (val: any) => expect(entry.hasActed).toBe(val) },
+      { key: 'initiative', assertion: (val: any) => expect(entry.initiative).toBe(val) }
+    ];
+
+    checks.forEach(({ key, assertion }) => {
+      if (expected[key as keyof InitiativeEntryConfig] !== undefined) {
+        assertion(expected[key as keyof InitiativeEntryConfig]);
+      }
+    });
 
     // Validate types
     expect(typeof entry.initiative).toBe('number');

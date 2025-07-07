@@ -18,8 +18,6 @@ import {
   createParticipantsWithInitiative,
   createFighterInitiativeEntry,
   createRogueInitiativeEntry,
-  setupInitiativeRollingMock,
-  setupSequentialMockRolls,
   resetInitiativeRollingMock,
   expectInitiativeEntryStructure,
   expectMultipleInitiativeStructures,
@@ -27,6 +25,8 @@ import {
   expectInitiativeOrderSort,
   expectValidInitiativeOrder,
   rollInitiativeWithMockAndExpect,
+  getMockRoll,
+  getMockRollSequential,
   INITIATIVE_PARTICIPANT_IDS,
 } from './initiative-test-helpers';
 
@@ -139,8 +139,7 @@ describe('Initiative Rolling System', () => {
     });
 
     it('should sort entries by initiative then dexterity', () => {
-      const mockRoll = jest.requireMock('../utils').rollInitiative;
-      setupSequentialMockRolls(mockRoll, [15, 10, 15]); // Fighter: 17, Rogue: 14, Orc: 16
+      getMockRollSequential([15, 10, 15]); // Fighter: 17, Rogue: 14, Orc: 16
       const entries = rollBulkInitiative(mockParticipants);
 
       // Should be sorted: Fighter (17), Orc (16), Rogue (14)
@@ -151,8 +150,7 @@ describe('Initiative Rolling System', () => {
     });
 
     it('should handle dexterity tiebreakers correctly', () => {
-      const mockRoll = jest.requireMock('../utils').rollInitiative;
-      setupSequentialMockRolls(mockRoll, [10, 8, 11]); // All result in initiative 12
+      getMockRollSequential([10, 8, 11]); // All result in initiative 12
       const entries = rollBulkInitiative(mockParticipants);
 
       // All have initiative 12, should be sorted by dexterity: Rogue (18), Fighter (14), Orc (12)
@@ -187,8 +185,7 @@ describe('Initiative Rolling System', () => {
     });
 
     it('should reroll initiative for a single participant', () => {
-      const mockRoll = jest.requireMock('../utils').rollInitiative;
-      setupInitiativeRollingMock(mockRoll, 10);
+      getMockRoll(10);
       const participantId = INITIATIVE_PARTICIPANT_IDS.FIGHTER.toString();
       const updatedEntries = rerollInitiative(mockInitiativeEntries, participantId);
 
@@ -213,8 +210,7 @@ describe('Initiative Rolling System', () => {
     });
 
     it('should reroll initiative for all participants when no participantId provided', () => {
-      const mockRoll = jest.requireMock('../utils').rollInitiative;
-      setupSequentialMockRolls(mockRoll, [10, 10]);
+      getMockRollSequential([10, 10]);
       const updatedEntries = rerollInitiative(mockInitiativeEntries);
 
       const fighterEntry = updatedEntries.find(e => e.participantId.toString() === INITIATIVE_PARTICIPANT_IDS.FIGHTER.toString());
@@ -229,8 +225,7 @@ describe('Initiative Rolling System', () => {
     });
 
     it('should preserve combat state flags during reroll', () => {
-      const mockRoll = jest.requireMock('../utils').rollInitiative;
-      setupInitiativeRollingMock(mockRoll, 10);
+      getMockRoll(10);
       const participantId = INITIATIVE_PARTICIPANT_IDS.FIGHTER.toString();
       const updatedEntries = rerollInitiative(mockInitiativeEntries, participantId);
 
@@ -261,8 +256,7 @@ describe('Initiative Rolling System', () => {
     });
 
     it('should sort entries after rerolling', () => {
-      const mockRoll = jest.requireMock('../utils').rollInitiative;
-      setupSequentialMockRolls(mockRoll, [5, 15]); // Fighter: 7, Rogue: 19
+      getMockRollSequential([5, 15]); // Fighter: 7, Rogue: 19
       const updatedEntries = rerollInitiative(mockInitiativeEntries);
 
       expectValidInitiativeOrder(updatedEntries);
@@ -288,8 +282,7 @@ describe('Initiative Rolling System', () => {
     });
 
     it('should update initiative for specified participant', () => {
-      const mockRoll = jest.requireMock('../utils').rollInitiative;
-      setupInitiativeRollingMock(mockRoll, 15);
+      getMockRoll(15);
       const participantId = INITIATIVE_PARTICIPANT_IDS.FIGHTER.toString();
       const newDexterity = 16;
 
@@ -303,8 +296,7 @@ describe('Initiative Rolling System', () => {
     });
 
     it('should not modify other participants', () => {
-      const mockRoll = jest.requireMock('../utils').rollInitiative;
-      setupInitiativeRollingMock(mockRoll, 12);
+      getMockRoll(12);
       const participantId = INITIATIVE_PARTICIPANT_IDS.FIGHTER.toString();
 
       const updatedEntries = rollSingleInitiative(mockInitiativeEntries, participantId, 14);
@@ -317,8 +309,7 @@ describe('Initiative Rolling System', () => {
     });
 
     it('should return sorted initiative order', () => {
-      const mockRoll = jest.requireMock('../utils').rollInitiative;
-      setupInitiativeRollingMock(mockRoll, 20);
+      getMockRoll(20);
       const participantId = INITIATIVE_PARTICIPANT_IDS.FIGHTER.toString();
 
       const updatedEntries = rollSingleInitiative(mockInitiativeEntries, participantId, 14);
@@ -329,8 +320,7 @@ describe('Initiative Rolling System', () => {
     });
 
     it('should handle non-existent participant gracefully', () => {
-      const mockRoll = jest.requireMock('../utils').rollInitiative;
-      setupInitiativeRollingMock(mockRoll, 15);
+      getMockRoll(15);
       const invalidId = new Types.ObjectId().toString();
 
       const updatedEntries = rollSingleInitiative(mockInitiativeEntries, invalidId, 14);

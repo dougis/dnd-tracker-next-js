@@ -34,6 +34,39 @@ async function rollSingleParticipantInitiative(
 }
 
 /**
+ * Helper to find character for participant and validate
+ */
+function findCharacterForParticipant(participant: any, characters: any[]) {
+  const character = characters.find(
+    c => c._id.toString() === participant.characterId.toString()
+  );
+
+  if (!character) {
+    throw new Error(`Character with ID ${participant.characterId} not found`);
+  }
+
+  return {
+    ...participant,
+    abilityScores: character.abilityScores,
+  };
+}
+
+/**
+ * Helper to convert initiative entry to combat state format
+ */
+function toInitiativeEntry(entry: any) {
+  return {
+    participantId: entry.participantId,
+    initiative: entry.initiative,
+    dexterity: entry.dexterity,
+    isActive: entry.isActive,
+    hasActed: entry.hasActed,
+    isDelayed: entry.isDelayed,
+    readyAction: entry.readyAction,
+  };
+}
+
+/**
  * Handles rolling initiative for all participants
  */
 async function rollAllParticipantsInitiative(encounter: IEncounter): Promise<void> {
@@ -42,35 +75,16 @@ async function rollAllParticipantsInitiative(encounter: IEncounter): Promise<voi
     _id: { $in: encounter.participants.map(p => p.characterId) }
   });
 
-  // Map character data to participants
-  const participantsWithDexterity = encounter.participants.map(participant => {
-    const character = participantCharacters.find(
-      c => c._id.toString() === participant.characterId.toString()
-    );
-
-    if (!character) {
-      throw new Error(`Character with ID ${participant.characterId} not found`);
-    }
-
-    return {
-      ...participant,
-      abilityScores: character.abilityScores,
-    };
-  });
+  // Map character data to participants using helper
+  const participantsWithDexterity = encounter.participants.map(participant =>
+    findCharacterForParticipant(participant, participantCharacters)
+  );
 
   // Roll initiative for all participants
   const initiativeEntries = rollBulkInitiative(participantsWithDexterity);
 
-  // Convert back to IInitiativeEntry format (remove name and type)
-  encounter.combatState.initiativeOrder = initiativeEntries.map(entry => ({
-    participantId: entry.participantId,
-    initiative: entry.initiative,
-    dexterity: entry.dexterity,
-    isActive: entry.isActive,
-    hasActed: entry.hasActed,
-    isDelayed: entry.isDelayed,
-    readyAction: entry.readyAction,
-  }));
+  // Convert back to IInitiativeEntry format using helper
+  encounter.combatState.initiativeOrder = initiativeEntries.map(toInitiativeEntry);
 
   // Set first participant as active if combat is active
   if (encounter.combatState.isActive && encounter.combatState.initiativeOrder.length > 0) {
