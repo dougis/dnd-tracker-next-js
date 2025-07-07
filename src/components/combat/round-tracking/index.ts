@@ -1,6 +1,6 @@
 /**
  * Round tracking system for D&D combat encounters
- * 
+ *
  * This module provides comprehensive round tracking functionality including:
  * - Round counter with increment/decrement controls
  * - Round-based effect tracking and expiration

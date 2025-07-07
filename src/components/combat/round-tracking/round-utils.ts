@@ -41,7 +41,7 @@ export function formatDuration(totalSeconds: number): string {
   }
 
   const seconds = Math.ceil(totalSeconds);
-  
+
   if (seconds < 60) {
     return `${seconds}s`;
   }
@@ -123,14 +123,14 @@ export function calculateEffectRemainingDuration(effect: Effect, currentRound: n
     return 0;
   }
 
-  // Handle invalid round data  
+  // Handle invalid round data
   if (currentRound < effect.startRound) {
     return effect.duration; // Effect hasn't started yet
   }
 
   const elapsedRounds = currentRound - effect.startRound;
   const remaining = effect.duration - elapsedRounds;
-  
+
   return Math.max(0, remaining);
 }
 
@@ -227,7 +227,7 @@ export function getExpiredEffects(effects: Effect[], currentRound: number): Effe
  * Gets triggers that are due this round
  */
 export function getDueTriggers(triggers: Trigger[], currentRound: number): Trigger[] {
-  return triggers.filter(trigger => 
+  return triggers.filter(trigger =>
     trigger.isActive && trigger.triggerRound === currentRound
   );
 }
@@ -257,7 +257,7 @@ export function getCombatPhase(currentRound: number, maxRounds?: number): string
   }
 
   const progress = currentRound / maxRounds;
-  
+
   if (progress <= 0.33) {
     return 'early';
   } else if (progress <= 0.66) {
@@ -330,7 +330,7 @@ export function searchHistory(
   return history
     .map(entry => ({
       ...entry,
-      events: entry.events.filter(event => 
+      events: entry.events.filter(event =>
         event.toLowerCase().includes(lowerQuery)
       ),
     }))

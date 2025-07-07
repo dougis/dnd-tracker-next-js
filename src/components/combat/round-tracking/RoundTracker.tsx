@@ -12,11 +12,9 @@ import {
   Edit3,
   Save,
   X,
-  Clock,
   TrendingUp,
   AlertTriangle,
   Download,
-  Users,
   Zap,
 } from 'lucide-react';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
@@ -46,9 +44,9 @@ interface RoundTrackerProps {
   estimatedRoundDuration?: number;
   showHistory?: boolean;
   effectsError?: string;
-  onRoundChange: (newRound: number) => void;
-  onEffectExpiry?: (expiredEffectIds: string[]) => void;
-  onTriggerAction?: (triggerId: string) => void;
+  onRoundChange: (_newRound: number) => void;
+  onEffectExpiry?: (_expiredEffectIds: string[]) => void;
+  onTriggerAction?: (_triggerId: string) => void;
   onExport?: () => void;
 }
 
@@ -72,22 +70,12 @@ export function RoundTracker({
   const [editError, setEditError] = useState<string | null>(null);
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(true);
 
-  // Handle null encounter
-  if (!encounter) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <p className="text-muted-foreground">No combat active</p>
-        </CardContent>
-      </Card>
-    );
-  }
+  const currentRound = Math.max(1, encounter?.combatState?.currentRound || 1);
 
-  const currentRound = Math.max(1, encounter.combatState.currentRound || 1);
-
+  // All hooks must be called before any early returns
   // Duration calculations
   const duration = useMemo(() => {
-    if (!encounter.combatState.startedAt) {
+    if (!encounter?.combatState?.startedAt) {
       return {
         total: 0,
         average: 0,
@@ -96,9 +84,10 @@ export function RoundTracker({
       };
     }
 
-    const totalSeconds = Math.floor((Date.now() - encounter.combatState.startedAt.getTime()) / 1000);
+    const startedAt = encounter.combatState.startedAt;
+    const totalSeconds = Math.floor((Date.now() - startedAt.getTime()) / 1000);
     const averageSeconds = totalSeconds / currentRound;
-    const remainingSeconds = maxRounds && estimatedRoundDuration 
+    const remainingSeconds = maxRounds && estimatedRoundDuration
       ? (maxRounds - currentRound) * (estimatedRoundDuration || averageSeconds)
       : null;
 
@@ -108,7 +97,7 @@ export function RoundTracker({
       remaining: remainingSeconds,
       formatted: formatDuration(totalSeconds),
     };
-  }, [encounter.combatState.startedAt, currentRound, maxRounds, estimatedRoundDuration]);
+  }, [encounter?.combatState?.startedAt, currentRound, maxRounds, estimatedRoundDuration]);
 
   // Effect processing
   const effectsByParticipant = useMemo(() => {
@@ -137,6 +126,17 @@ export function RoundTracker({
     return isOvertime(currentRound, maxRounds);
   }, [currentRound, maxRounds]);
 
+  // Handle null encounter after all hooks
+  if (!encounter) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-8">
+          <p className="text-muted-foreground">No combat active</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Round control handlers
   const handleNextRound = () => {
     if (expiringEffects.length > 0 && onEffectExpiry) {
@@ -159,7 +159,7 @@ export function RoundTracker({
 
   const handleSaveRound = () => {
     const newRound = parseInt(editRoundValue, 10);
-    
+
     if (isNaN(newRound) || newRound < 1) {
       setEditError('Round must be at least 1');
       return;
@@ -230,9 +230,9 @@ export function RoundTracker({
                   </Button>
                 </div>
               )}
-              
+
               {/* Combat phase badge */}
-              <Badge 
+              <Badge
                 variant={isInOvertime ? "destructive" : "secondary"}
                 className="text-xs"
               >
@@ -276,7 +276,7 @@ export function RoundTracker({
               <ChevronLeft className="h-4 w-4 mr-1" />
               Previous Round
             </Button>
-            
+
             <Button
               variant="default"
               size="sm"
@@ -296,7 +296,7 @@ export function RoundTracker({
                 <div className="font-medium">Total</div>
                 <div className="text-muted-foreground">{duration.formatted}</div>
               </div>
-              
+
               {estimatedRoundDuration && (
                 <div className="text-center">
                   <div className="font-medium">Per Round</div>
@@ -305,7 +305,7 @@ export function RoundTracker({
                   </div>
                 </div>
               )}
-              
+
               {duration.remaining !== null && (
                 <div className="text-center">
                   <div className="font-medium">Estimated</div>
@@ -314,7 +314,7 @@ export function RoundTracker({
                   </div>
                 </div>
               )}
-              
+
               <div className="text-center">
                 <div className="font-medium">Average</div>
                 <div className="text-muted-foreground">
@@ -347,7 +347,7 @@ export function RoundTracker({
 
               {Object.entries(effectsByParticipant).map(([participantId, participantEffects]) => {
                 // Find participant name
-                const participant = encounter.participants.find(
+                const participant = encounter?.participants?.find(
                   p => p.characterId.toString() === participantId
                 );
                 const participantName = participant?.name || `Participant ${participantId}`;
@@ -357,12 +357,12 @@ export function RoundTracker({
                     <h4 className="text-sm font-medium text-muted-foreground">
                       {participantName}
                     </h4>
-                    
+
                     <div className="grid gap-2">
                       {participantEffects.map((effect) => {
                         const remaining = Math.max(0, effect.duration - (currentRound - effect.startRound));
                         const isExpiring = remaining === 1;
-                        
+
                         return (
                           <div
                             key={effect.id}
@@ -378,7 +378,7 @@ export function RoundTracker({
                                 {effect.description}
                               </div>
                             </div>
-                            
+
                             <div className="text-right">
                               <div className="text-sm font-medium">
                                 {remaining} rounds
@@ -413,7 +413,7 @@ export function RoundTracker({
                   <h4 className="text-sm font-medium text-orange-600 dark:text-orange-400">
                     Due This Round
                   </h4>
-                  
+
                   {dueTriggers.map((trigger) => (
                     <div
                       key={trigger.id}
@@ -426,7 +426,7 @@ export function RoundTracker({
                           {trigger.description}
                         </div>
                       </div>
-                      
+
                       <Button
                         variant="outline"
                         size="sm"
@@ -446,7 +446,7 @@ export function RoundTracker({
                   <h4 className="text-sm font-medium text-muted-foreground">
                     Upcoming
                   </h4>
-                  
+
                   {upcomingTriggers.slice(0, 3).map((trigger) => (
                     <div
                       key={trigger.id}
@@ -458,7 +458,7 @@ export function RoundTracker({
                           {trigger.description}
                         </div>
                       </div>
-                      
+
                       <div className="text-right text-sm">
                         <div className="font-medium">Round {trigger.triggerRound}</div>
                         <div className="text-xs text-muted-foreground">
@@ -467,7 +467,7 @@ export function RoundTracker({
                       </div>
                     </div>
                   ))}
-                  
+
                   {upcomingTriggers.length > 3 && (
                     <div className="text-xs text-muted-foreground text-center">
                       +{upcomingTriggers.length - 3} more triggers
@@ -482,7 +482,7 @@ export function RoundTracker({
                   <h4 className="text-sm font-medium text-muted-foreground">
                     Completed
                   </h4>
-                  
+
                   {triggers
                     .filter(t => !t.isActive)
                     .slice(-2)
@@ -496,7 +496,7 @@ export function RoundTracker({
                             {trigger.name}
                           </div>
                         </div>
-                        
+
                         <div className="text-xs text-muted-foreground">
                           Triggered in Round {trigger.triggeredRound}
                         </div>
@@ -514,7 +514,7 @@ export function RoundTracker({
                 <TrendingUp className="h-4 w-4" />
                 Session Summary
               </h3>
-              
+
               <div className="text-sm text-muted-foreground">
                 {formatRoundSummary(sessionSummary)}
               </div>

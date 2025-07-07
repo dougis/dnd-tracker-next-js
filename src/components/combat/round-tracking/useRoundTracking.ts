@@ -22,8 +22,8 @@ interface RoundTrackingOptions {
   initialTriggers?: Trigger[];
   maxHistoryRounds?: number;
   maxRounds?: number;
-  onEffectExpiry?: (expiredEffectIds: string[]) => void;
-  onTriggerActivation?: (triggerId: string, trigger: Trigger) => void;
+  onEffectExpiry?: (_expiredEffectIds: string[]) => void;
+  onTriggerActivation?: (_triggerId: string, _trigger: Trigger) => void;
 }
 
 interface RoundDuration {
@@ -49,7 +49,7 @@ interface RoundTrackingState {
 
 export function useRoundTracking(
   encounter: IEncounter | null,
-  onUpdate: (updates: Partial<IEncounter['combatState']>) => void,
+  onUpdate: (_updates: Partial<IEncounter['combatState']>) => void,
   options: RoundTrackingOptions = {}
 ) {
   const {
@@ -136,7 +136,7 @@ export function useRoundTracking(
     if (process.env.NODE_ENV === 'test') {
       try {
         onUpdate(updates);
-      } catch (error) {
+      } catch {
         setState(prev => ({
           ...prev,
           error: 'Failed to update encounter',
@@ -148,7 +148,7 @@ export function useRoundTracking(
     updateTimeoutRef.current = setTimeout(() => {
       try {
         onUpdate(updates);
-      } catch (error) {
+      } catch {
         setState(prev => ({
           ...prev,
           error: 'Failed to update encounter',
@@ -158,7 +158,7 @@ export function useRoundTracking(
   }, [onUpdate]);
 
   // Clear error when successful operations occur
-  const clearError = useCallback(() => {
+  const _clearError = useCallback(() => {
     setState(prev => prev.error ? { ...prev, error: null } : prev);
   }, []);
 
@@ -178,7 +178,7 @@ export function useRoundTracking(
 
   const nextRound = useCallback(() => {
     const newRound = state.currentRound + 1;
-    
+
     // Check for expiring effects
     const expiredEffects = getExpiredEffects(state.effects, newRound);
     if (expiredEffects.length > 0 && onEffectExpiry) {
@@ -186,7 +186,7 @@ export function useRoundTracking(
     }
 
     // Remove expired effects
-    const remainingEffects = state.effects.filter(effect => 
+    const remainingEffects = state.effects.filter(effect =>
       calculateEffectRemainingDuration(effect, newRound) > 0
     );
 
@@ -293,7 +293,7 @@ export function useRoundTracking(
     setState(prev => {
       const updatedHistory = [...prev.history];
       const currentRoundEntry = updatedHistory.find(entry => entry.round === prev.currentRound);
-      
+
       if (currentRoundEntry) {
         currentRoundEntry.events.push(event);
       } else {
@@ -315,7 +315,7 @@ export function useRoundTracking(
   // Session summary functions
   const getSessionSummary = useCallback((): SessionSummary => {
     const totalActions = state.history.reduce((total, entry) => total + entry.events.length, 0);
-    
+
     return {
       totalRounds: state.currentRound,
       totalDuration: duration.totalSeconds,
@@ -367,7 +367,7 @@ export function useRoundTracking(
         error: null,
       }));
     }
-  }, [encounter?.combatState?.currentRound, state.currentRound]);
+  }, [encounter, state.currentRound]);
 
   return {
     // Current state

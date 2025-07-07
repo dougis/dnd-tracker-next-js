@@ -39,17 +39,17 @@ describe('RoundHistory', () => {
   describe('Collapsed State', () => {
     it('hides history content when collapsed', () => {
       render(<RoundHistory {...defaultProps} />);
-      
+
       expect(screen.queryByText('Combat started')).not.toBeInTheDocument();
       expect(screen.queryByText('Wizard casts Fireball')).not.toBeInTheDocument();
     });
 
     it('calls onToggle when expand button is clicked', () => {
       render(<RoundHistory {...defaultProps} />);
-      
+
       const toggleButton = screen.getByRole('button', { name: /show history/i });
       fireEvent.click(toggleButton);
-      
+
       expect(defaultProps.onToggle).toHaveBeenCalledWith(false);
     });
 
@@ -61,7 +61,7 @@ describe('RoundHistory', () => {
       ];
 
       render(<RoundHistory {...defaultProps} history={historyWithManyEvents} />);
-      
+
       expect(screen.getByText('3 rounds recorded')).toBeInTheDocument();
       expect(screen.getByText('6 total events')).toBeInTheDocument();
     });
@@ -72,7 +72,7 @@ describe('RoundHistory', () => {
 
     it('shows all history content when expanded', () => {
       render(<RoundHistory {...expandedProps} />);
-      
+
       expect(screen.getByText('Combat started')).toBeInTheDocument();
       expect(screen.getByText('Rogue attacks Goblin')).toBeInTheDocument();
       expect(screen.getByText('Wizard casts Fireball')).toBeInTheDocument();
@@ -81,30 +81,30 @@ describe('RoundHistory', () => {
 
     it('calls onToggle when collapse button is clicked', () => {
       render(<RoundHistory {...expandedProps} />);
-      
+
       const toggleButton = screen.getByRole('button', { name: /hide history/i });
       fireEvent.click(toggleButton);
-      
+
       expect(defaultProps.onToggle).toHaveBeenCalledWith(true);
     });
 
     it('displays round numbers', () => {
       render(<RoundHistory {...expandedProps} />);
-      
+
       expect(screen.getByText('Round 1')).toBeInTheDocument();
       expect(screen.getByText('Round 2')).toBeInTheDocument();
     });
 
     it('groups events by round', () => {
       render(<RoundHistory {...expandedProps} />);
-      
+
       const round1Section = screen.getByText('Round 1').closest('[data-testid="round-section"]');
       const round2Section = screen.getByText('Round 2').closest('[data-testid="round-section"]');
-      
+
       expect(round1Section).toHaveTextContent('Combat started');
       expect(round1Section).toHaveTextContent('Rogue attacks Goblin');
       expect(round1Section).not.toHaveTextContent('Wizard casts Fireball');
-      
+
       expect(round2Section).toHaveTextContent('Wizard casts Fireball');
       expect(round2Section).toHaveTextContent('Goblin takes damage');
       expect(round2Section).not.toHaveTextContent('Combat started');
@@ -122,7 +122,7 @@ describe('RoundHistory', () => {
       ];
 
       render(<RoundHistory {...expandedProps} history={historyWithTimestamps} />);
-      
+
       expect(screen.getByText('12:00')).toBeInTheDocument();
       expect(screen.getByText('12:01')).toBeInTheDocument();
     });
@@ -131,20 +131,20 @@ describe('RoundHistory', () => {
   describe('Empty History', () => {
     it('shows empty state message', () => {
       render(<RoundHistory {...defaultProps} history={[]} />);
-      
+
       expect(screen.getByText('No combat history recorded')).toBeInTheDocument();
     });
 
     it('disables toggle button when empty', () => {
       render(<RoundHistory {...defaultProps} history={[]} />);
-      
+
       const toggleButton = screen.getByRole('button', { name: /show history/i });
       expect(toggleButton).toBeDisabled();
     });
 
     it('shows zero count when empty', () => {
       render(<RoundHistory {...defaultProps} history={[]} />);
-      
+
       expect(screen.getByText('0 rounds recorded')).toBeInTheDocument();
     });
   });
@@ -159,16 +159,16 @@ describe('RoundHistory', () => {
 
     it('shows search input when searchable prop is true', () => {
       render(<RoundHistory {...defaultProps} history={longHistory} searchable={true} isCollapsed={false} />);
-      
+
       expect(screen.getByPlaceholderText(/search history/i)).toBeInTheDocument();
     });
 
     it('filters events based on search query', () => {
       render(<RoundHistory {...defaultProps} history={longHistory} searchable={true} isCollapsed={false} />);
-      
+
       const searchInput = screen.getByPlaceholderText(/search history/i);
       fireEvent.change(searchInput, { target: { value: 'Wizard' } });
-      
+
       expect(screen.getByText('Wizard casts Fireball')).toBeInTheDocument();
       expect(screen.getByText('Wizard casts Magic Missile')).toBeInTheDocument();
       expect(screen.queryByText('Rogue attacks Goblin')).not.toBeInTheDocument();
@@ -176,30 +176,30 @@ describe('RoundHistory', () => {
 
     it('shows no results message when search yields no matches', () => {
       render(<RoundHistory {...defaultProps} history={longHistory} searchable={true} isCollapsed={false} />);
-      
+
       const searchInput = screen.getByPlaceholderText(/search history/i);
       fireEvent.change(searchInput, { target: { value: 'Dragon' } });
-      
+
       expect(screen.getByText('No matching events found')).toBeInTheDocument();
     });
 
     it('highlights search terms in results', () => {
       render(<RoundHistory {...defaultProps} history={longHistory} searchable={true} isCollapsed={false} />);
-      
+
       const searchInput = screen.getByPlaceholderText(/search history/i);
       fireEvent.change(searchInput, { target: { value: 'Fireball' } });
-      
+
       const highlightedText = screen.getByText('Fireball');
       expect(highlightedText).toHaveClass('highlight'); // Assuming CSS class for highlighting
     });
 
     it('clears search when input is cleared', () => {
       render(<RoundHistory {...defaultProps} history={longHistory} searchable={true} isCollapsed={false} />);
-      
+
       const searchInput = screen.getByPlaceholderText(/search history/i);
       fireEvent.change(searchInput, { target: { value: 'Wizard' } });
       fireEvent.change(searchInput, { target: { value: '' } });
-      
+
       // All events should be visible again
       expect(screen.getByText('Combat started')).toBeInTheDocument();
       expect(screen.getByText('Rogue attacks Goblin')).toBeInTheDocument();
@@ -209,23 +209,23 @@ describe('RoundHistory', () => {
   describe('Export Functionality', () => {
     it('shows export button when exportable prop is true', () => {
       render(<RoundHistory {...defaultProps} exportable={true} />);
-      
+
       expect(screen.getByRole('button', { name: /export history/i })).toBeInTheDocument();
     });
 
     it('calls onExport when export button is clicked', () => {
       const onExport = jest.fn();
       render(<RoundHistory {...defaultProps} exportable={true} onExport={onExport} />);
-      
+
       const exportButton = screen.getByRole('button', { name: /export history/i });
       fireEvent.click(exportButton);
-      
+
       expect(onExport).toHaveBeenCalledWith(TEST_HISTORY);
     });
 
     it('disables export button when history is empty', () => {
       render(<RoundHistory {...defaultProps} history={[]} exportable={true} />);
-      
+
       const exportButton = screen.getByRole('button', { name: /export history/i });
       expect(exportButton).toBeDisabled();
     });
@@ -252,7 +252,7 @@ describe('RoundHistory', () => {
       }));
 
       render(<RoundHistory {...defaultProps} history={longHistory} virtualized={true} isCollapsed={false} />);
-      
+
       // Should only render visible items
       const visibleEvents = screen.getAllByText(/Event \d+/);
       expect(visibleEvents.length).toBeLessThan(50); // Much less than total
@@ -262,7 +262,7 @@ describe('RoundHistory', () => {
   describe('Accessibility', () => {
     it('has proper heading structure', () => {
       render(<RoundHistory {...defaultProps} isCollapsed={false} />);
-      
+
       expect(screen.getByRole('heading', { name: 'Round History' })).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: 'Round 1' })).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: 'Round 2' })).toBeInTheDocument();
@@ -270,34 +270,34 @@ describe('RoundHistory', () => {
 
     it('has accessible toggle button', () => {
       render(<RoundHistory {...defaultProps} />);
-      
+
       const toggleButton = screen.getByRole('button', { name: /show history/i });
       expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
     });
 
     it('updates aria-expanded when toggled', () => {
       render(<RoundHistory {...defaultProps} isCollapsed={false} />);
-      
+
       const toggleButton = screen.getByRole('button', { name: /hide history/i });
       expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
     });
 
     it('has proper list semantics', () => {
       render(<RoundHistory {...defaultProps} isCollapsed={false} />);
-      
+
       const historyList = screen.getByRole('list');
       expect(historyList).toBeInTheDocument();
-      
+
       const listItems = screen.getAllByRole('listitem');
       expect(listItems.length).toBeGreaterThan(0);
     });
 
     it('announces changes to screen readers', () => {
       render(<RoundHistory {...defaultProps} />);
-      
+
       const toggleButton = screen.getByRole('button', { name: /show history/i });
       fireEvent.click(toggleButton);
-      
+
       expect(screen.getByLabelText(/history expanded/i)).toBeInTheDocument();
     });
   });
@@ -311,14 +311,14 @@ describe('RoundHistory', () => {
       ] as any;
 
       render(<RoundHistory {...defaultProps} history={malformedHistory} isCollapsed={false} />);
-      
+
       // Should not crash and should show valid events
       expect(screen.getByText('Valid event')).toBeInTheDocument();
     });
 
     it('shows error state when history fails to load', () => {
       render(<RoundHistory {...defaultProps} error="Failed to load history" />);
-      
+
       expect(screen.getByText('Failed to load history')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
     });
@@ -326,10 +326,10 @@ describe('RoundHistory', () => {
     it('calls onRetry when retry button is clicked', () => {
       const onRetry = jest.fn();
       render(<RoundHistory {...defaultProps} error="Failed to load history" onRetry={onRetry} />);
-      
+
       const retryButton = screen.getByRole('button', { name: /retry/i });
       fireEvent.click(retryButton);
-      
+
       expect(onRetry).toHaveBeenCalled();
     });
   });
@@ -344,7 +344,7 @@ describe('RoundHistory', () => {
       };
 
       render(<RoundHistory {...defaultProps} isCollapsed={false} eventFormatter={customFormatter} />);
-      
+
       expect(screen.getByText('⚔️ Rogue attacks Goblin')).toBeInTheDocument();
       expect(screen.getByText('Combat started')).toBeInTheDocument(); // Not formatted
     });
@@ -353,7 +353,7 @@ describe('RoundHistory', () => {
       const customRoundFormatter = (round: number) => `Turn ${round}`;
 
       render(<RoundHistory {...defaultProps} isCollapsed={false} roundFormatter={customRoundFormatter} />);
-      
+
       expect(screen.getByText('Turn 1')).toBeInTheDocument();
       expect(screen.getByText('Turn 2')).toBeInTheDocument();
     });
@@ -362,7 +362,7 @@ describe('RoundHistory', () => {
       const customEmptyMessage = 'No combat actions recorded yet';
 
       render(<RoundHistory {...defaultProps} history={[]} emptyMessage={customEmptyMessage} />);
-      
+
       expect(screen.getByText(customEmptyMessage)).toBeInTheDocument();
     });
   });

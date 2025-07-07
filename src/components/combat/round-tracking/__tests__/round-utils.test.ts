@@ -283,7 +283,7 @@ describe('round-utils', () => {
 
       expect(calculateEffectRemainingDuration(effect, currentRound)).toBe(2);
       expect(isEffectExpiring(effect, currentRound)).toBe(false); // Should be false, 2 rounds remaining
-      
+
       // Test with the Haste effect which should be expiring
       const hasteEffect = TEST_EFFECTS[2]; // Haste effect (duration 1, startRound 2)
       expect(calculateEffectRemainingDuration(hasteEffect, currentRound)).toBe(1);
@@ -294,26 +294,26 @@ describe('round-utils', () => {
       const currentRound = 3;
       const maxRounds = 10;
       const startTime = new Date(Date.now() - 360000); // 6 minutes ago
-      
+
       const avgDuration = calculateAverageRoundDuration(startTime, currentRound);
       expect(avgDuration).toBe(120); // 6 minutes / 3 rounds = 2 minutes per round
-      
+
       const remaining = calculateRemainingDuration(currentRound, maxRounds, avgDuration);
       expect(remaining).toBe(840); // 7 rounds * 120s = 840s
-      
+
       const formattedRemaining = formatDuration(remaining);
       expect(formattedRemaining).toBe('14m');
     });
 
     it('processes multiple effects and triggers', () => {
       const currentRound = 2;
-      
+
       // Test effect processing
-      const expiringEffects = TEST_EFFECTS.filter(effect => 
+      const expiringEffects = TEST_EFFECTS.filter(effect =>
         isEffectExpiring(effect, currentRound)
       );
       expect(expiringEffects).toHaveLength(1); // Only the haste effect
-      
+
       // Test trigger processing
       const activeTriggers = filterActiveTriggers(TEST_TRIGGERS);
       const sortedTriggers = sortTriggersByRound(activeTriggers);
@@ -347,7 +347,7 @@ describe('round-utils', () => {
 
   describe('Performance', () => {
     it('handles large numbers of effects efficiently', () => {
-      const manyEffects = Array.from({ length: 1000 }, (_, i) => 
+      const manyEffects = Array.from({ length: 1000 }, (_, i) =>
         createMockEffect({ id: `effect-${i}`, startRound: i % 10 + 1 })
       );
 
@@ -360,7 +360,7 @@ describe('round-utils', () => {
     });
 
     it('handles large numbers of triggers efficiently', () => {
-      const manyTriggers = Array.from({ length: 1000 }, (_, i) => 
+      const manyTriggers = Array.from({ length: 1000 }, (_, i) =>
         createMockTrigger({ id: `trigger-${i}`, triggerRound: i % 20 + 1 })
       );
 
@@ -370,7 +370,7 @@ describe('round-utils', () => {
 
       expect(end - start).toBeLessThan(50); // Should be reasonably fast
       expect(sorted).toHaveLength(1000);
-      
+
       // Verify sorting is correct
       for (let i = 1; i < sorted.length; i++) {
         expect(sorted[i].triggerRound).toBeGreaterThanOrEqual(sorted[i - 1].triggerRound);

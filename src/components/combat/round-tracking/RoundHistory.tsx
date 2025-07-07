@@ -29,16 +29,16 @@ interface HistoryEntry {
 interface RoundHistoryProps {
   history: HistoryEntry[];
   isCollapsed: boolean;
-  onToggle: (collapsed: boolean) => void;
+  onToggle: (_collapsed: boolean) => void;
   searchable?: boolean;
   exportable?: boolean;
   virtualized?: boolean;
   maxVisibleRounds?: number;
-  eventFormatter?: (event: string) => string;
-  roundFormatter?: (round: number) => string;
+  eventFormatter?: (_event: string) => string;
+  roundFormatter?: (_round: number) => string;
   emptyMessage?: string;
   error?: string;
-  onExport?: (history: HistoryEntry[]) => void;
+  onExport?: (_history: HistoryEntry[]) => void;
   onRetry?: () => void;
 }
 
@@ -69,7 +69,7 @@ export function RoundHistory({
     return searchHistory(
       history.map(entry => ({
         round: entry.round,
-        events: entry.events.map(event => 
+        events: entry.events.map(event =>
           typeof event === 'string' ? event : event.text
         ),
       })),
@@ -91,7 +91,7 @@ export function RoundHistory({
   const stats = useMemo(() => {
     const totalRounds = history.length;
     const totalEvents = history.reduce((total, entry) => total + entry.events.length, 0);
-    
+
     return { totalRounds, totalEvents };
   }, [history]);
 
@@ -101,7 +101,7 @@ export function RoundHistory({
       const formattedText = eventFormatter ? eventFormatter(event) : event;
       return { text: formattedText };
     }
-    
+
     const formattedText = eventFormatter ? eventFormatter(event.text) : event.text;
     return { text: formattedText, timestamp: event.timestamp };
   };
@@ -192,7 +192,7 @@ export function RoundHistory({
               </Badge>
             )}
           </CardTitle>
-          
+
           <div className="flex items-center gap-2">
             {searchable && stats.totalRounds > 0 && (
               <Button
@@ -205,7 +205,7 @@ export function RoundHistory({
                 <Search className="h-4 w-4" />
               </Button>
             )}
-            
+
             {exportable && (
               <Button
                 variant="ghost"
@@ -218,7 +218,7 @@ export function RoundHistory({
                 <Download className="h-4 w-4" />
               </Button>
             )}
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -309,7 +309,7 @@ export function RoundHistory({
                         {entry.events.length} events
                       </Badge>
                     </h4>
-                    
+
                     <ul className="space-y-1 text-sm">
                       {entry.events.map((event, eventIndex) => {
                         const formatted = formatEvent(event);

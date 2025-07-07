@@ -161,7 +161,7 @@ export function createRoundTrackerMocks(): RoundTrackerMocks {
 export function setupRoundTrackerTest(roundNumber = 2) {
   const encounter = createMockEncounterWithRound(roundNumber);
   const mocks = createRoundTrackerMocks();
-  
+
   const defaultProps = {
     encounter,
     ...mocks,
@@ -198,7 +198,7 @@ export function setupRoundTrackingHook(
   options: any = {}
 ) {
   const mocks = createUseRoundTrackingMocks();
-  
+
   const hookOptions = {
     initialEffects: [],
     initialTriggers: [],
@@ -241,8 +241,8 @@ export async function clickEffectButton(effectName: string, action: 'remove' | '
 }
 
 export async function activateTrigger(triggerName: string) {
-  const activateButton = screen.getByRole('button', { 
-    name: new RegExp(`activate ${triggerName}`, 'i') 
+  const activateButton = screen.getByRole('button', {
+    name: new RegExp(`activate ${triggerName}`, 'i')
   });
   fireEvent.click(activateButton);
   await waitFor(() => {
@@ -285,12 +285,12 @@ export function expectHistoryEntry(round: number, event: string) {
 
 export function expectSessionSummary(summary: MockSessionSummary) {
   expect(screen.getByText(`${summary.totalRounds} rounds`)).toBeInTheDocument();
-  
+
   if (summary.totalDuration) {
     const minutes = Math.floor(summary.totalDuration / 60);
     expect(screen.getByText(`${minutes}m total`)).toBeInTheDocument();
   }
-  
+
   if (summary.totalActions) {
     expect(screen.getByText(`${summary.totalActions} actions`)).toBeInTheDocument();
   }
@@ -430,7 +430,7 @@ export function renderRoundTrackerWithScenario(scenarioName: keyof typeof TEST_S
   const scenario = getScenario(scenarioName);
   const encounter = createScenarioEncounter(scenario);
   const mocks = createRoundTrackerMocks();
-  
+
   const props = {
     encounter,
     effects: scenario.effects,
@@ -442,7 +442,7 @@ export function renderRoundTrackerWithScenario(scenarioName: keyof typeof TEST_S
 
   // Dynamic import to avoid circular dependencies in tests
   const RoundTracker = require('../RoundTracker').RoundTracker;
-  
+
   return {
     ...render(React.createElement(RoundTracker, props)),
     encounter,
@@ -452,13 +452,13 @@ export function renderRoundTrackerWithScenario(scenarioName: keyof typeof TEST_S
 }
 
 export function renderUseRoundTrackingWithScenario(
-  scenarioName: keyof typeof TEST_SCENARIOS, 
+  scenarioName: keyof typeof TEST_SCENARIOS,
   overrides = {}
 ) {
   const scenario = getScenario(scenarioName);
   const encounter = createScenarioEncounter(scenario);
   const mocks = createUseRoundTrackingMocks();
-  
+
   const options = {
     initialEffects: scenario.effects,
     initialTriggers: scenario.triggers,
@@ -467,7 +467,7 @@ export function renderUseRoundTrackingWithScenario(
   };
 
   const useRoundTracking = require('../useRoundTracking').useRoundTracking;
-  
+
   return {
     ...renderHook(() => useRoundTracking(encounter, mocks.onUpdate, options)),
     encounter,
