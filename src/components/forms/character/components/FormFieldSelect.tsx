@@ -6,8 +6,8 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface SelectOption {
-  value: string;
-  label: string;
+  readonly value: string;
+  readonly label: string;
 }
 
 interface FormFieldSelectProps<T extends Record<string, any>> {
@@ -16,9 +16,9 @@ interface FormFieldSelectProps<T extends Record<string, any>> {
   label: string;
   required?: boolean;
   placeholder?: string;
-  options: SelectOption[];
+  options: readonly SelectOption[];
   className?: string;
-  onValueChange?: (value: string) => void;
+  onValueChange?: (_value: string) => void;
 }
 
 export function FormFieldSelect<T extends Record<string, any>>({
@@ -39,9 +39,9 @@ export function FormFieldSelect<T extends Record<string, any>>({
         <FormItem className={className}>
           <FormLabel>{label}{required && ' *'}</FormLabel>
           <Select
-            onValueChange={(value) => {
-              field.onChange(value);
-              onValueChange?.(value);
+            onValueChange={(selectedValue) => {
+              field.onChange(selectedValue);
+              onValueChange?.(selectedValue);
             }}
             defaultValue={field.value}
           >
