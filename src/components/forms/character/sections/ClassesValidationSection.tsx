@@ -14,41 +14,8 @@ interface ClassesValidationSectionProps {
   form: UseFormReturn<CharacterCreation>;
 }
 
-const CHARACTER_CLASS_OPTIONS = [
-  { value: 'artificer', label: 'Artificer' },
-  { value: 'barbarian', label: 'Barbarian' },
-  { value: 'bard', label: 'Bard' },
-  { value: 'cleric', label: 'Cleric' },
-  { value: 'druid', label: 'Druid' },
-  { value: 'fighter', label: 'Fighter' },
-  { value: 'monk', label: 'Monk' },
-  { value: 'paladin', label: 'Paladin' },
-  { value: 'ranger', label: 'Ranger' },
-  { value: 'rogue', label: 'Rogue' },
-  { value: 'sorcerer', label: 'Sorcerer' },
-  { value: 'warlock', label: 'Warlock' },
-  { value: 'wizard', label: 'Wizard' },
-];
-
-// Helper function to get hit die for each class
-const getHitDieForClass = (className: CharacterClass): number => {
-  const hitDieMap: Record<string, number> = {
-    'barbarian': 12,
-    'fighter': 10,
-    'paladin': 10,
-    'ranger': 10,
-    'bard': 8,
-    'cleric': 8,
-    'druid': 8,
-    'monk': 8,
-    'rogue': 8,
-    'warlock': 8,
-    'artificer': 8,
-    'sorcerer': 6,
-    'wizard': 6,
-  };
-  return hitDieMap[className] || 8;
-};
+import { CHARACTER_CLASS_OPTIONS } from '../constants';
+import { getHitDieForClass } from '../utils';
 
 export function ClassesValidationSection({ form }: ClassesValidationSectionProps) {
   const { fields, append, remove } = useFieldArray({

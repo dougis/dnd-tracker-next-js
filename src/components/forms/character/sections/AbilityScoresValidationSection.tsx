@@ -5,29 +5,12 @@ import { UseFormReturn } from 'react-hook-form';
 import { CharacterCreation } from '@/lib/validations/character';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { ABILITY_SCORES } from '../constants';
+import { getAbilityModifier, formatModifier } from '../utils';
 
 interface AbilityScoresValidationSectionProps {
   form: UseFormReturn<CharacterCreation>;
 }
-
-const ABILITY_SCORES = [
-  { key: 'strength', label: 'Strength', abbr: 'STR' },
-  { key: 'dexterity', label: 'Dexterity', abbr: 'DEX' },
-  { key: 'constitution', label: 'Constitution', abbr: 'CON' },
-  { key: 'intelligence', label: 'Intelligence', abbr: 'INT' },
-  { key: 'wisdom', label: 'Wisdom', abbr: 'WIS' },
-  { key: 'charisma', label: 'Charisma', abbr: 'CHA' },
-] as const;
-
-// Calculate modifier for an ability score
-const getAbilityModifier = (score: number): number => {
-  return Math.floor((score - 10) / 2);
-};
-
-// Format modifier with + or - sign
-const formatModifier = (modifier: number): string => {
-  return modifier >= 0 ? `+${modifier}` : `${modifier}`;
-};
 
 export function AbilityScoresValidationSection({ form }: AbilityScoresValidationSectionProps) {
   const abilityScores = form.watch('abilityScores');

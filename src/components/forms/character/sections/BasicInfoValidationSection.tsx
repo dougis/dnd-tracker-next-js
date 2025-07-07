@@ -7,48 +7,11 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FormGroup } from '@/components/forms/FormGroup';
+import { CHARACTER_TYPE_OPTIONS, CHARACTER_RACE_OPTIONS, SIZE_OPTIONS } from '../constants';
 
 interface BasicInfoValidationSectionProps {
   form: UseFormReturn<CharacterCreation>;
 }
-
-const CHARACTER_TYPE_OPTIONS = [
-  { value: 'pc', label: 'Player Character' },
-  { value: 'npc', label: 'Non-Player Character' },
-];
-
-const CHARACTER_RACE_OPTIONS = [
-  { value: 'human', label: 'Human' },
-  { value: 'elf', label: 'Elf' },
-  { value: 'dwarf', label: 'Dwarf' },
-  { value: 'halfling', label: 'Halfling' },
-  { value: 'dragonborn', label: 'Dragonborn' },
-  { value: 'gnome', label: 'Gnome' },
-  { value: 'half-elf', label: 'Half-Elf' },
-  { value: 'half-orc', label: 'Half-Orc' },
-  { value: 'tiefling', label: 'Tiefling' },
-  { value: 'aasimar', label: 'Aasimar' },
-  { value: 'firbolg', label: 'Firbolg' },
-  { value: 'goliath', label: 'Goliath' },
-  { value: 'kenku', label: 'Kenku' },
-  { value: 'lizardfolk', label: 'Lizardfolk' },
-  { value: 'tabaxi', label: 'Tabaxi' },
-  { value: 'triton', label: 'Triton' },
-  { value: 'yuan-ti', label: 'Yuan-Ti Pureblood' },
-  { value: 'goblin', label: 'Goblin' },
-  { value: 'hobgoblin', label: 'Hobgoblin' },
-  { value: 'orc', label: 'Orc' },
-  { value: 'custom', label: 'Custom' },
-];
-
-const SIZE_OPTIONS = [
-  { value: 'tiny', label: 'Tiny' },
-  { value: 'small', label: 'Small' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'large', label: 'Large' },
-  { value: 'huge', label: 'Huge' },
-  { value: 'gargantuan', label: 'Gargantuan' },
-];
 
 export function BasicInfoValidationSection({ form }: BasicInfoValidationSectionProps) {
   const raceValue = form.watch('race');

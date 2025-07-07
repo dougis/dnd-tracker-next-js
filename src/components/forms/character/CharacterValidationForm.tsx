@@ -14,6 +14,8 @@ import { CharacterPreview } from './CharacterPreview';
 import { useCharacterSubmit } from './hooks/useCharacterSubmit';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { DEFAULT_CHARACTER_VALUES } from './constants';
+import { transformToPreviewFormat } from './utils';
 
 interface CharacterValidationFormProps {
   ownerId: string;
@@ -34,39 +36,7 @@ export function CharacterValidationForm({
   const { resolver } = useFormValidation(characterCreationSchema);
 
   const defaultValues: CharacterCreation = {
-    name: '',
-    type: 'pc',
-    race: 'human',
-    customRace: '',
-    size: 'medium',
-    classes: [{ class: 'fighter', level: 1, hitDie: 10 }],
-    abilityScores: {
-      strength: 10,
-      dexterity: 10,
-      constitution: 10,
-      intelligence: 10,
-      wisdom: 10,
-      charisma: 10,
-    },
-    hitPoints: {
-      maximum: 10,
-      current: 10,
-      temporary: 0,
-    },
-    armorClass: 10,
-    speed: 30,
-    proficiencyBonus: 2,
-    savingThrows: {
-      strength: false,
-      dexterity: false,
-      constitution: false,
-      intelligence: false,
-      wisdom: false,
-      charisma: false,
-    },
-    skills: {},
-    equipment: [],
-    spells: [],
+    ...DEFAULT_CHARACTER_VALUES,
     ...initialValues,
   };
 
@@ -152,30 +122,7 @@ export function CharacterValidationForm({
             <div className="lg:col-span-1">
               <div className="sticky top-4">
                 <CharacterPreview
-                  basicInfo={{
-                    name: formValues.name || '',
-                    type: formValues.type || 'pc',
-                    race: formValues.race || 'human',
-                    customRace: formValues.customRace,
-                  }}
-                  abilityScores={formValues.abilityScores || {
-                    strength: 10,
-                    dexterity: 10,
-                    constitution: 10,
-                    intelligence: 10,
-                    wisdom: 10,
-                    charisma: 10,
-                  }}
-                  classes={formValues.classes?.map(cls => ({
-                    className: cls.class,
-                    level: cls.level,
-                  })) || [{ className: 'fighter', level: 1 }]}
-                  combatStats={{
-                    hitPoints: formValues.hitPoints || { maximum: 10, current: 10, temporary: 0 },
-                    armorClass: formValues.armorClass || 10,
-                    speed: formValues.speed,
-                    proficiencyBonus: formValues.proficiencyBonus,
-                  }}
+                  {...transformToPreviewFormat(formValues)}
                   isValid={isFormValid}
                 />
               </div>
