@@ -22,6 +22,7 @@ export interface UseHPTrackingReturn {
   applyDamage: (_damage: number) => void;
   applyHealing: (_healing: number) => void;
   setTemporaryHP: (_tempHP: number) => void;
+  addTemporaryHP: (_tempHP: number) => void;
   setCurrentHP: (_currentHP: number) => void;
   setMaxHP: (_maxHP: number) => void;
 }
@@ -97,6 +98,15 @@ export function useHPTracking(
     notifyUpdate(currentHP, maxHP, clampedTempHP);
   }, [currentHP, maxHP, notifyUpdate]);
 
+  const addTemporaryHP = useCallback((newTempHP: number) => {
+    const clampedTempHP = Math.max(0, newTempHP);
+
+    // Temporary HP doesn't stack - take the higher value
+    const finalTempHP = Math.max(tempHP, clampedTempHP);
+    setTempHPState(finalTempHP);
+    notifyUpdate(currentHP, maxHP, finalTempHP);
+  }, [currentHP, maxHP, tempHP, notifyUpdate]);
+
   const setCurrentHP = useCallback((newCurrentHP: number) => {
     const clampedHP = Math.max(0, Math.min(maxHP, newCurrentHP));
     setCurrentHPState(clampedHP);
@@ -122,6 +132,7 @@ export function useHPTracking(
     applyDamage,
     applyHealing,
     setTemporaryHP,
+    addTemporaryHP,
     setCurrentHP,
     setMaxHP,
   };

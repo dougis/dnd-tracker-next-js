@@ -98,7 +98,7 @@ describe('useHPTracking', () => {
     const { result } = renderHPTrackingHook();
 
     act(() => {
-      result.current.setTemporaryHP(10);
+      result.current.addTemporaryHP(10);
     });
 
     expect(result.current.tempHP).toBe(10);
@@ -108,7 +108,7 @@ describe('useHPTracking', () => {
     const { result } = renderHPTrackingHook();
 
     act(() => {
-      result.current.setTemporaryHP(3);
+      result.current.addTemporaryHP(3);
     });
 
     expect(result.current.tempHP).toBe(5);
