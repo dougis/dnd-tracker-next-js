@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
 import { RoundHistory } from './RoundHistory';
@@ -18,7 +18,7 @@ import {
   useEffectProcessing,
   useTriggerProcessing,
 } from './tracker-hooks';
-import { Effect, Trigger, SessionSummary as SessionSummaryType } from './round-utils';
+import { Effect, Trigger, SessionSummary as SessionSummaryType, calculateEffectRemainingDuration } from './round-utils';
 
 interface CombatData {
   encounter: IEncounter | null;
@@ -78,6 +78,8 @@ export function RoundTracker({
     onExport,
   } = handlers;
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(true);
+  const [announceRound, setAnnounceRound] = useState<number | null>(null);
+  const previousRoundRef = useRef<number>(0);
 
   // Calculate current round with safety check
   const currentRound = Math.max(1, encounter?.combatState?.currentRound || 1);
@@ -85,20 +87,36 @@ export function RoundTracker({
   // Custom hooks for state management
   const roundState = useRoundState(currentRound, onRoundChange);
   const duration = useDurationCalculations(encounter, currentRound, maxRounds, estimatedRoundDuration);
-  const { effectsByParticipant, expiringEffects } = useEffectProcessing(effects, currentRound);
+  const { effectsByParticipant } = useEffectProcessing(effects, currentRound);
   const { dueTriggers, upcomingTriggers, combatPhase, isInOvertime } = useTriggerProcessing(
     triggers,
     currentRound,
     maxRounds
   );
 
+  // Track round changes for screen reader announcements
+  useEffect(() => {
+    if (previousRoundRef.current !== 0 && previousRoundRef.current !== currentRound) {
+      setAnnounceRound(currentRound);
+      setTimeout(() => setAnnounceRound(null), 100);
+    }
+    previousRoundRef.current = currentRound;
+  }, [currentRound]);
+
   // Event handlers
   const handleNextRound = useCallback(() => {
-    if (expiringEffects.length > 0 && onEffectExpiry) {
-      onEffectExpiry(expiringEffects.map(e => e.id));
+    const nextRound = currentRound + 1;
+    // Check for effects that will expire when moving to the next round
+    const effectsToExpire = effects.filter(effect => {
+      const remaining = calculateEffectRemainingDuration(effect, nextRound);
+      return remaining <= 0;
+    });
+
+    if (effectsToExpire.length > 0 && onEffectExpiry) {
+      onEffectExpiry(effectsToExpire.map(e => e.id));
     }
-    onRoundChange(currentRound + 1);
-  }, [expiringEffects, onEffectExpiry, onRoundChange, currentRound]);
+    onRoundChange(nextRound);
+  }, [effects, onEffectExpiry, onRoundChange, currentRound]);
 
   const handlePreviousRound = useCallback(() => {
     if (currentRound > 1) {
@@ -183,9 +201,11 @@ export function RoundTracker({
       )}
 
       {/* Screen reader announcements */}
-      <div className="sr-only" aria-live="polite">
-        <span>Round changed to {currentRound}</span>
-      </div>
+      {announceRound && (
+        <div className="sr-only" aria-live="polite">
+          <span>Round changed to {announceRound}</span>
+        </div>
+      )}
     </div>
   );
 }

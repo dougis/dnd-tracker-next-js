@@ -269,6 +269,11 @@ describe('RoundTracker', () => {
       render(<RoundTracker {...convertToNewProps({ showHistory: true, history: mockHistory })} />);
 
       expect(screen.getByText('Round History')).toBeInTheDocument();
+
+      // History should be collapsed by default, so expand it
+      const historyButton = screen.getByRole('button', { name: /show history/i });
+      fireEvent.click(historyButton);
+
       expect(screen.getByText('Combat started')).toBeInTheDocument();
       expect(screen.getByText('Wizard casts Fireball')).toBeInTheDocument();
     });
@@ -367,16 +372,16 @@ describe('RoundTracker', () => {
       const summary = {
         totalRounds: 5,
         totalDuration: 1800, // 30 minutes
-        participantActions: 15,
+        totalActions: 15,
         damageDealt: 120,
         healingApplied: 45,
       };
 
       render(<RoundTracker {...convertToNewProps({ sessionSummary: summary })} />);
 
-      expect(screen.getByText('5 rounds')).toBeInTheDocument();
-      expect(screen.getByText('30m total')).toBeInTheDocument();
-      expect(screen.getByText('15 actions')).toBeInTheDocument();
+      expect(screen.getByText('Session Summary')).toBeInTheDocument();
+      // The summary is formatted as a single string with bullet separators
+      expect(screen.getByText(/5 rounds.*30m total.*15 actions/)).toBeInTheDocument();
     });
 
     it('calculates average round duration', () => {
@@ -387,7 +392,7 @@ describe('RoundTracker', () => {
 
       render(<RoundTracker {...convertToNewProps({ sessionSummary: summary })} />);
 
-      expect(screen.getByText('1m/round avg')).toBeInTheDocument();
+      expect(screen.getByText(/1m\/round avg/)).toBeInTheDocument();
     });
   });
 
@@ -407,11 +412,16 @@ describe('RoundTracker', () => {
     });
 
     it('announces round changes to screen readers', () => {
-      render(<RoundTracker {...mockProps} />);
+      const { rerender } = render(<RoundTracker {...mockProps} />);
 
-      const nextRoundButton = screen.getByRole('button', { name: /next round/i });
-      fireEvent.click(nextRoundButton);
+      // Initially no announcement
+      expect(screen.queryByText(/Round changed to/)).not.toBeInTheDocument();
 
+      // Update the round to trigger announcement
+      mockEncounter.combatState.currentRound = 3;
+      rerender(<RoundTracker {...mockProps} />);
+
+      // Should show announcement
       expect(screen.getByText('Round changed to 3')).toBeInTheDocument();
     });
 

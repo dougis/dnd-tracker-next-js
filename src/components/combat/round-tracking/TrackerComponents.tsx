@@ -327,7 +327,9 @@ export function TriggersSection({
   duration,
   onTriggerAction,
 }: TriggersSectionProps) {
-  if (dueTriggers.length === 0 && upcomingTriggers.length === 0) {
+  // Show triggers section if there are due, upcoming, or completed triggers
+  const hasCompletedTriggers = triggers.some(t => !t.isActive);
+  if (dueTriggers.length === 0 && upcomingTriggers.length === 0 && !hasCompletedTriggers) {
     return null;
   }
 
