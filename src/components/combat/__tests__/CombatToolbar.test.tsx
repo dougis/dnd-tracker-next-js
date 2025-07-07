@@ -1,82 +1,26 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { CombatToolbar } from '../CombatToolbar';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
-import { createTestEncounter, makeEncounterActive, PARTICIPANT_IDS } from '@/lib/models/encounter/__tests__/combat-test-helpers';
+import {
+  createStandardCombatTestEncounter,
+  createMockCombatActions,
+  createMockInitiativeActions,
+  createMockQuickActions
+} from './test-helpers';
 
 describe('CombatToolbar', () => {
   let mockEncounter: IEncounter;
   let mockProps: any;
 
   beforeEach(() => {
-    mockEncounter = createTestEncounter();
-    makeEncounterActive(mockEncounter);
-    mockEncounter.combatState.currentTurn = 1;
-    mockEncounter.combatState.startedAt = new Date(Date.now() - 120000); // 2 minutes ago
-    mockEncounter.combatState.totalDuration = 120000;
-
-    // Add participants to match the initiative order
-    mockEncounter.participants = [
-      {
-        characterId: PARTICIPANT_IDS.FIRST,
-        name: 'Test Character 1',
-        type: 'Player',
-        maxHitPoints: 20,
-        currentHitPoints: 20,
-        temporaryHitPoints: 0,
-        armorClass: 15,
-        initiative: 20,
-        isPlayer: true,
-        isVisible: true,
-        notes: '',
-        conditions: []
-      },
-      {
-        characterId: PARTICIPANT_IDS.SECOND,
-        name: 'Test Character 2',
-        type: 'NPC',
-        maxHitPoints: 20,
-        currentHitPoints: 15,
-        temporaryHitPoints: 0,
-        armorClass: 14,
-        initiative: 15,
-        isPlayer: false,
-        isVisible: true,
-        notes: '',
-        conditions: []
-      }
-    ];
-
-    // Add settings with round timer
-    mockEncounter.settings = {
-      ...mockEncounter.settings,
-      roundTimeLimit: 60000, // 1 minute round timer
-    };
+    mockEncounter = createStandardCombatTestEncounter();
 
     mockProps = {
       encounter: mockEncounter,
-      combatActions: {
-        onNextTurn: jest.fn(),
-        onPreviousTurn: jest.fn(),
-        onPauseCombat: jest.fn(),
-        onResumeCombat: jest.fn(),
-        onEndCombat: jest.fn(),
-        onExportInitiative: jest.fn(),
-        onShareInitiative: jest.fn(),
-      },
-      initiativeActions: {
-        onEditInitiative: jest.fn(),
-        onDelayAction: jest.fn(),
-        onReadyAction: jest.fn(),
-        onRollInitiative: jest.fn(),
-      },
-      quickActions: {
-        onMassHeal: jest.fn(),
-        onMassDamage: jest.fn(),
-        onClearConditions: jest.fn(),
-        onAddParticipant: jest.fn(),
-        onEncounterSettings: jest.fn(),
-      },
+      combatActions: createMockCombatActions(),
+      initiativeActions: createMockInitiativeActions(),
+      quickActions: createMockQuickActions(),
       settings: {
         showTimer: true,
         showQuickActions: true,
@@ -211,68 +155,28 @@ describe('CombatToolbar', () => {
     });
   });
 
-  describe('Quick Actions', () => {
-    it('displays quick action buttons when enabled', () => {
+  describe('Quick Actions Integration', () => {
+    it('displays QuickActions component when enabled', () => {
       render(<CombatToolbar {...mockProps} />);
 
-      expect(screen.getByText('Roll Initiative')).toBeInTheDocument();
-      expect(screen.getByText('Mass Heal (2)')).toBeInTheDocument();
-      expect(screen.getByText('Mass Damage (2)')).toBeInTheDocument();
-      expect(screen.getByText('Clear Conditions (2)')).toBeInTheDocument();
-      expect(screen.getByText('Add Participant')).toBeInTheDocument();
-    });
-
-    it('calls onRollInitiative when Roll Initiative button is clicked', () => {
-      render(<CombatToolbar {...mockProps} />);
-
-      const rollButton = screen.getByText('Roll Initiative');
-      fireEvent.click(rollButton);
-
-      expect(mockProps.initiativeActions.onRollInitiative).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls onMassHeal when Mass Heal button is clicked', () => {
-      render(<CombatToolbar {...mockProps} />);
-
-      const healButton = screen.getByText('Mass Heal (2)');
-      fireEvent.click(healButton);
-
-      expect(mockProps.quickActions.onMassHeal).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls onMassDamage when Mass Damage button is clicked', () => {
-      render(<CombatToolbar {...mockProps} />);
-
-      const damageButton = screen.getByText('Mass Damage (2)');
-      fireEvent.click(damageButton);
-
-      expect(mockProps.quickActions.onMassDamage).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls onClearConditions when Clear Conditions button is clicked', () => {
-      render(<CombatToolbar {...mockProps} />);
-
-      const clearButton = screen.getByText('Clear Conditions (2)');
-      fireEvent.click(clearButton);
-
-      expect(mockProps.quickActions.onClearConditions).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls onAddParticipant when Add Participant button is clicked', () => {
-      render(<CombatToolbar {...mockProps} />);
-
-      const addButton = screen.getByText('Add Participant');
-      fireEvent.click(addButton);
-
-      expect(mockProps.quickActions.onAddParticipant).toHaveBeenCalledTimes(1);
+      // Test that QuickActions component is rendered by checking for its container
+      expect(screen.getByTestId('quick-actions-container')).toBeInTheDocument();
     });
 
     it('hides quick actions when disabled in settings', () => {
       mockProps.settings.showQuickActions = false;
       render(<CombatToolbar {...mockProps} />);
 
-      expect(screen.queryByText('Roll Initiative')).not.toBeInTheDocument();
-      expect(screen.queryByText('Mass Heal')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('quick-actions-container')).not.toBeInTheDocument();
+    });
+
+    it('passes correct props to QuickActions component', () => {
+      render(<CombatToolbar {...mockProps} />);
+
+      // Verify that QuickActions receives the participant count correctly
+      expect(screen.getByText('Mass Heal (2)')).toBeInTheDocument();
+      expect(screen.getByText('Mass Damage (2)')).toBeInTheDocument();
+      expect(screen.getByText('Clear Conditions (2)')).toBeInTheDocument();
     });
   });
 

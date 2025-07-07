@@ -25,8 +25,8 @@ export function calculateCombatDuration(
   const effectiveStartTime = localStartedAt || startedAt;
   if (!effectiveStartTime) return 0;
 
-  const effectivePausedAt = shouldIgnoreExternalPause 
-    ? localPausedAt 
+  const effectivePausedAt = shouldIgnoreExternalPause
+    ? localPausedAt
     : (localPausedAt || pausedAt);
   const endTime = effectivePausedAt || new Date(currentTime);
   const duration = endTime.getTime() - effectiveStartTime.getTime();
@@ -54,18 +54,18 @@ export function getTimerStates(
   localPausedAt: Date | undefined,
   pausedAt: Date | undefined
 ) {
-  const isPaused = Boolean(shouldIgnoreExternalPause 
-    ? localPausedAt 
+  const isPaused = Boolean(shouldIgnoreExternalPause
+    ? localPausedAt
     : (localPausedAt || pausedAt));
-  
-  const isRoundWarning = hasRoundTimer && 
-    roundTimeRemaining <= WARNING_THRESHOLD && 
+
+  const isRoundWarning = hasRoundTimer &&
+    roundTimeRemaining <= WARNING_THRESHOLD &&
     roundTimeRemaining > CRITICAL_THRESHOLD;
-  
-  const isRoundCritical = hasRoundTimer && 
-    roundTimeRemaining <= CRITICAL_THRESHOLD && 
+
+  const isRoundCritical = hasRoundTimer &&
+    roundTimeRemaining <= CRITICAL_THRESHOLD &&
     roundTimeRemaining > 0;
-  
+
   const isRoundExpired = hasRoundTimer && roundTimeRemaining === 0;
 
   return { isPaused, isRoundWarning, isRoundCritical, isRoundExpired };

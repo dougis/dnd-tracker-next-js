@@ -143,6 +143,33 @@ export function CombatToolbar({
     return 'active';
   }, [isActive, isPaused]);
 
+  // Individual key handlers to reduce complexity
+  const handleSpaceKey = useCallback((event: KeyboardEvent) => {
+    event.preventDefault();
+    onNextTurn?.();
+  }, [onNextTurn]);
+
+  const handleBackspaceKey = useCallback((event: KeyboardEvent) => {
+    event.preventDefault();
+    if (canGoPrevious) {
+      onPreviousTurn?.();
+    }
+  }, [onPreviousTurn, canGoPrevious]);
+
+  const handlePauseKey = useCallback((event: KeyboardEvent) => {
+    event.preventDefault();
+    if (isPaused) {
+      onResumeCombat?.();
+    } else {
+      onPauseCombat?.();
+    }
+  }, [onPauseCombat, onResumeCombat, isPaused]);
+
+  const handleEndKey = useCallback((event: KeyboardEvent) => {
+    event.preventDefault();
+    onEndCombat?.();
+  }, [onEndCombat]);
+
   // Keyboard shortcuts handler
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     // Ignore if user is typing in an input
@@ -152,29 +179,19 @@ export function CombatToolbar({
 
     switch (event.code) {
       case 'Space':
-        event.preventDefault();
-        onNextTurn?.();
+        handleSpaceKey(event);
         break;
       case 'Backspace':
-        event.preventDefault();
-        if (canGoPrevious) {
-          onPreviousTurn?.();
-        }
+        handleBackspaceKey(event);
         break;
       case 'KeyP':
-        event.preventDefault();
-        if (isPaused) {
-          onResumeCombat?.();
-        } else {
-          onPauseCombat?.();
-        }
+        handlePauseKey(event);
         break;
       case 'KeyE':
-        event.preventDefault();
-        onEndCombat?.();
+        handleEndKey(event);
         break;
     }
-  }, [onNextTurn, onPreviousTurn, onPauseCombat, onResumeCombat, onEndCombat, canGoPrevious, isPaused]);
+  }, [handleSpaceKey, handleBackspaceKey, handlePauseKey, handleEndKey]);
 
   // Keyboard shortcuts
   useEffect(() => {

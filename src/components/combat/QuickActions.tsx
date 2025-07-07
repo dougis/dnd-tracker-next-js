@@ -68,7 +68,7 @@ export function QuickActions({
         disabled={disabled}
         show={showRollInitiative}
       />
-      
+
       <MassActionsGroup
         onMassHeal={onMassHeal}
         onMassDamage={onMassDamage}
@@ -77,7 +77,7 @@ export function QuickActions({
         participantCount={count}
         show={showMassActions}
       />
-      
+
       <ManagementGroup
         onAddParticipant={onAddParticipant}
         onEncounterSettings={onEncounterSettings}
@@ -85,7 +85,7 @@ export function QuickActions({
         showParticipantManagement={showParticipantManagement}
         showSettings={showSettings}
       />
-      
+
       <CustomActionsGroup
         customActions={customActions}
         disabled={disabled}

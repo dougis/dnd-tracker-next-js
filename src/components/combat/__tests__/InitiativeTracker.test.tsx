@@ -2,64 +2,23 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { InitiativeTracker } from '../InitiativeTracker';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
-import { createTestEncounter, makeEncounterActive, PARTICIPANT_IDS } from '@/lib/models/encounter/__tests__/combat-test-helpers';
+import {
+  createStandardCombatTestEncounter,
+  createMockCombatActions,
+  createMockInitiativeActions
+} from './test-helpers';
 
 describe('InitiativeTracker', () => {
   let mockEncounter: IEncounter;
   let mockProps: any;
 
   beforeEach(() => {
-    mockEncounter = createTestEncounter();
-    makeEncounterActive(mockEncounter);
-    mockEncounter.combatState.currentTurn = 1;
-
-    // Add participants to match the initiative order
-    mockEncounter.participants = [
-      {
-        characterId: PARTICIPANT_IDS.FIRST,
-        name: 'Test Character 1',
-        type: 'Player',
-        maxHitPoints: 20,
-        currentHitPoints: 20,
-        temporaryHitPoints: 0,
-        armorClass: 15,
-        initiative: 20,
-        isPlayer: true,
-        isVisible: true,
-        notes: '',
-        conditions: []
-      },
-      {
-        characterId: PARTICIPANT_IDS.SECOND,
-        name: 'Test Character 2',
-        type: 'NPC',
-        maxHitPoints: 20,
-        currentHitPoints: 15,
-        temporaryHitPoints: 0,
-        armorClass: 14,
-        initiative: 15,
-        isPlayer: false,
-        isVisible: true,
-        notes: '',
-        conditions: []
-      }
-    ];
+    mockEncounter = createStandardCombatTestEncounter();
 
     mockProps = {
       encounter: mockEncounter,
-      combatActions: {
-        onNextTurn: jest.fn(),
-        onPreviousTurn: jest.fn(),
-        onPauseCombat: jest.fn(),
-        onResumeCombat: jest.fn(),
-        onExportInitiative: jest.fn(),
-        onShareInitiative: jest.fn(),
-      },
-      initiativeActions: {
-        onEditInitiative: jest.fn(),
-        onDelayAction: jest.fn(),
-        onReadyAction: jest.fn(),
-      },
+      combatActions: createMockCombatActions(),
+      initiativeActions: createMockInitiativeActions(),
     };
   });
 

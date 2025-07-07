@@ -4,8 +4,6 @@ import {
   calculateCombatDuration,
   calculateRoundTimeRemaining,
   getTimerStates,
-  WARNING_THRESHOLD,
-  CRITICAL_THRESHOLD,
 } from './timer-helpers';
 
 interface CombatTimerProps {
