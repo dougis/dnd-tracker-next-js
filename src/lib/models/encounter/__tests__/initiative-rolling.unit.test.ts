@@ -5,6 +5,11 @@ import {
   generateInitiativeEntries,
   rerollInitiative,
   calculateInitiativeModifier,
+  rollSingleInitiative,
+  getInitiativeRollBreakdown,
+  getDefaultInitiativePreferences,
+  shouldAutoRoll,
+  canReroll,
   IParticipantWithAbilityScores,
 } from '../initiative-rolling';
 import { IInitiativeEntry } from '../interfaces';
@@ -268,6 +273,165 @@ describe('Initiative Rolling System', () => {
       expect(updatedEntries[0].dexterity).toBe(18); // Rogue's dexterity
       expect(updatedEntries[1].initiative).toBe(7);
       expect(updatedEntries[1].dexterity).toBe(14); // Fighter's dexterity
+    });
+  });
+
+  describe('rollSingleInitiative', () => {
+    let mockInitiativeEntries: IInitiativeEntry[];
+
+    beforeEach(() => {
+      const mockParticipants = createBasicParticipantSet();
+      mockInitiativeEntries = generateInitiativeEntries(mockParticipants, false);
+      // Set up mock entries with specific initiative values
+      mockInitiativeEntries[0].initiative = 15; // Fighter
+      mockInitiativeEntries[1].initiative = 12; // Rogue
+    });
+
+    it('should update initiative for specified participant', () => {
+      const mockRoll = jest.requireMock('../utils').rollInitiative;
+      setupInitiativeRollingMock(mockRoll, 15);
+      const participantId = INITIATIVE_PARTICIPANT_IDS.FIGHTER.toString();
+      const newDexterity = 16;
+
+      const updatedEntries = rollSingleInitiative(mockInitiativeEntries, participantId, newDexterity);
+      
+      const fighterEntry = updatedEntries.find(e => e.participantId.toString() === participantId);
+      expectInitiativeEntryStructure(fighterEntry!, { 
+        initiative: 18, // 15 + 3 (16 dex modifier)
+        dexterity: 16
+      });
+    });
+
+    it('should not modify other participants', () => {
+      const mockRoll = jest.requireMock('../utils').rollInitiative;
+      setupInitiativeRollingMock(mockRoll, 12);
+      const participantId = INITIATIVE_PARTICIPANT_IDS.FIGHTER.toString();
+      
+      const updatedEntries = rollSingleInitiative(mockInitiativeEntries, participantId, 14);
+      
+      const rogueEntry = updatedEntries.find(e => e.participantId.toString() === INITIATIVE_PARTICIPANT_IDS.ROGUE.toString());
+      expectInitiativeEntryStructure(rogueEntry!, { 
+        initiative: 12, // Original value unchanged
+        dexterity: 18 // Original value unchanged
+      });
+    });
+
+    it('should return sorted initiative order', () => {
+      const mockRoll = jest.requireMock('../utils').rollInitiative;
+      setupInitiativeRollingMock(mockRoll, 20);
+      const participantId = INITIATIVE_PARTICIPANT_IDS.FIGHTER.toString();
+      
+      const updatedEntries = rollSingleInitiative(mockInitiativeEntries, participantId, 14);
+      
+      expectValidInitiativeOrder(updatedEntries);
+      // Fighter should now be first with 22 initiative (20 + 2)
+      expect(updatedEntries[0].initiative).toBe(22);
+    });
+
+    it('should handle non-existent participant gracefully', () => {
+      const mockRoll = jest.requireMock('../utils').rollInitiative;
+      setupInitiativeRollingMock(mockRoll, 15);
+      const invalidId = new Types.ObjectId().toString();
+      
+      const updatedEntries = rollSingleInitiative(mockInitiativeEntries, invalidId, 14);
+      
+      // Should return entries unchanged
+      expect(updatedEntries).toHaveLength(mockInitiativeEntries.length);
+      expectValidInitiativeOrder(updatedEntries);
+    });
+  });
+
+  describe('getInitiativeRollBreakdown', () => {
+    it('should calculate d20 roll from total and dexterity', () => {
+      const result = getInitiativeRollBreakdown(18, 14); // Total: 18, Dex: 14 (+2)
+      expect(result.d20Roll).toBe(16); // 18 - 2 = 16
+      expect(result.modifier).toBe(2);
+    });
+
+    it('should handle edge cases for d20 rolls', () => {
+      // Test minimum d20 roll (1)
+      const minResult = getInitiativeRollBreakdown(3, 14); // Total: 3, Dex: 14 (+2), should be d20: 1
+      expect(minResult.d20Roll).toBe(1);
+      expect(minResult.modifier).toBe(2);
+
+      // Test maximum d20 roll (20)
+      const maxResult = getInitiativeRollBreakdown(24, 14); // Total: 24, Dex: 14 (+2), should be d20: 20
+      expect(maxResult.d20Roll).toBe(20);
+      expect(maxResult.modifier).toBe(2);
+    });
+
+    it('should handle negative dexterity modifiers', () => {
+      const result = getInitiativeRollBreakdown(8, 6); // Total: 8, Dex: 6 (-2)
+      expect(result.d20Roll).toBe(10); // 8 - (-2) = 10
+      expect(result.modifier).toBe(-2);
+    });
+
+    it('should constrain d20 roll to valid range', () => {
+      // Test value that would exceed 20
+      const highResult = getInitiativeRollBreakdown(30, 8); // Total: 30, Dex: 8 (-1)
+      expect(highResult.d20Roll).toBe(20); // Capped at 20
+      expect(highResult.modifier).toBe(-1);
+
+      // Test value that would be below 1
+      const lowResult = getInitiativeRollBreakdown(1, 18); // Total: 1, Dex: 18 (+4)
+      expect(lowResult.d20Roll).toBe(1); // Capped at 1
+      expect(lowResult.modifier).toBe(4);
+    });
+  });
+
+  describe('getDefaultInitiativePreferences', () => {
+    it('should return correct default preferences', () => {
+      const preferences = getDefaultInitiativePreferences();
+      
+      expect(preferences.autoRollOnCombatStart).toBe(false);
+      expect(preferences.showRollBreakdown).toBe(true);
+      expect(preferences.allowPlayerRerolls).toBe(true);
+      expect(preferences.tiebreakByDexterity).toBe(true);
+    });
+
+    it('should return a new object each time', () => {
+      const preferences1 = getDefaultInitiativePreferences();
+      const preferences2 = getDefaultInitiativePreferences();
+      
+      expect(preferences1).not.toBe(preferences2); // Different objects
+      expect(preferences1).toEqual(preferences2); // Same values
+    });
+  });
+
+  describe('shouldAutoRoll', () => {
+    it('should return true when autoRollOnCombatStart is true', () => {
+      const preferences = { ...getDefaultInitiativePreferences(), autoRollOnCombatStart: true };
+      expect(shouldAutoRoll(preferences)).toBe(true);
+    });
+
+    it('should return false when autoRollOnCombatStart is false', () => {
+      const preferences = { ...getDefaultInitiativePreferences(), autoRollOnCombatStart: false };
+      expect(shouldAutoRoll(preferences)).toBe(false);
+    });
+  });
+
+  describe('canReroll', () => {
+    const defaultPreferences = getDefaultInitiativePreferences();
+
+    it('should allow reroll for NPCs regardless of preferences', () => {
+      const restrictivePreferences = { ...defaultPreferences, allowPlayerRerolls: false };
+      expect(canReroll(restrictivePreferences, 'npc')).toBe(true);
+    });
+
+    it('should allow reroll for PCs when allowPlayerRerolls is true', () => {
+      const permissivePreferences = { ...defaultPreferences, allowPlayerRerolls: true };
+      expect(canReroll(permissivePreferences, 'pc')).toBe(true);
+    });
+
+    it('should not allow reroll for PCs when allowPlayerRerolls is false', () => {
+      const restrictivePreferences = { ...defaultPreferences, allowPlayerRerolls: false };
+      expect(canReroll(restrictivePreferences, 'pc')).toBe(false);
+    });
+
+    it('should handle both participant types consistently', () => {
+      const preferences = { ...defaultPreferences, allowPlayerRerolls: true };
+      expect(canReroll(preferences, 'pc')).toBe(true);
+      expect(canReroll(preferences, 'npc')).toBe(true);
     });
   });
 });
