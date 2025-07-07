@@ -92,13 +92,10 @@ export function useHPTracking(
   }, [currentHP, maxHP, tempHP, notifyUpdate]);
 
   const setTemporaryHP = useCallback((newTempHP: number) => {
-    if (newTempHP < 0) return;
-
-    // Temporary HP doesn't stack - take the higher value
-    const finalTempHP = Math.max(tempHP, newTempHP);
-    setTempHPState(finalTempHP);
-    notifyUpdate(currentHP, maxHP, finalTempHP);
-  }, [currentHP, maxHP, tempHP, notifyUpdate]);
+    const clampedTempHP = Math.max(0, newTempHP);
+    setTempHPState(clampedTempHP);
+    notifyUpdate(currentHP, maxHP, clampedTempHP);
+  }, [currentHP, maxHP, notifyUpdate]);
 
   const setCurrentHP = useCallback((newCurrentHP: number) => {
     const clampedHP = Math.max(0, Math.min(maxHP, newCurrentHP));

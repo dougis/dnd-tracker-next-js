@@ -25,13 +25,13 @@ export function HPQuickActions({
 
   const validateDamage = (value: string): boolean => {
     const { isValid, error } = validateDamageInput(value);
-    onErrorChange({ ...errors, damage: error });
+    onErrorChange({ damage: error, healing: errors.healing });
     return isValid;
   };
 
   const validateHealing = (value: string): boolean => {
     const { isValid, error } = validateHealingInput(value);
-    onErrorChange({ ...errors, healing: error });
+    onErrorChange({ damage: errors.damage, healing: error });
     return isValid;
   };
 
