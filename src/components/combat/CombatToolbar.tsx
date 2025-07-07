@@ -94,14 +94,15 @@ export function CombatToolbar({
 
   const { onRollInitiative } = initiativeActions;
 
-  // Combat state calculations
+  // Combat state calculations with memoization
   const combatState = encounter?.combatState;
   const isActive = combatState?.isActive || false;
   const isPaused = Boolean(combatState?.pausedAt);
   const currentRound = combatState?.currentRound || 0;
   const currentTurn = combatState?.currentTurn || 0;
-  const initiativeOrder = combatState?.initiativeOrder || [];
-  const participants = encounter?.participants || [];
+
+  const initiativeOrder = useMemo(() => combatState?.initiativeOrder || [], [combatState?.initiativeOrder]);
+  const participants = useMemo(() => encounter?.participants || [], [encounter?.participants]);
   const settings_roundTimeLimit = encounter?.settings?.roundTimeLimit;
 
   // Calculate if Previous button should be disabled
@@ -109,14 +110,11 @@ export function CombatToolbar({
 
   // Combat timer hook
   const {
-    combatDuration,
     formattedDuration,
     hasRoundTimer,
-    roundTimeRemaining,
     formattedRoundTime,
     isRoundWarning,
     isRoundCritical,
-    isRoundExpired,
     isPaused: timerPaused,
   } = useCombatTimer({
     startedAt: combatState?.startedAt,
@@ -131,7 +129,7 @@ export function CombatToolbar({
     const pcs = participants.filter(p => p.isPlayer).length;
     const npcs = participants.filter(p => !p.isPlayer).length;
     const alive = participants.filter(p => p.currentHitPoints > 0).length;
-    
+
     return { total, pcs, npcs, alive };
   }, [participants]);
 
@@ -140,9 +138,9 @@ export function CombatToolbar({
     if (!isActive || initiativeOrder.length === 0 || currentTurn >= initiativeOrder.length) {
       return null;
     }
-    
+
     const activeEntry = initiativeOrder[currentTurn];
-    return participants.find(p => 
+    return participants.find(p =>
       p.characterId.toString() === activeEntry.participantId.toString()
     );
   }, [isActive, initiativeOrder, currentTurn, participants]);
@@ -231,7 +229,7 @@ export function CombatToolbar({
                 {hasRoundTimer && (
                   <div className="flex items-center space-x-1">
                     <span className="text-xs text-muted-foreground">Round Timer:</span>
-                    <span 
+                    <span
                       className={getRoundTimerClass()}
                       aria-label={`Round timer: ${formattedRoundTime} remaining`}
                     >
@@ -282,7 +280,7 @@ export function CombatToolbar({
             {activeParticipant && (
               <span>Active: {activeParticipant.name}</span>
             )}
-            <Badge 
+            <Badge
               variant={combatPhase === 'active' ? 'default' : combatPhase === 'paused' ? 'secondary' : 'outline'}
             >
               Combat {combatPhase === 'active' ? 'Active' : combatPhase === 'paused' ? 'Paused' : 'Inactive'}
