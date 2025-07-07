@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
 import {
   Effect,
@@ -10,6 +10,7 @@ import {
   getUpcomingTriggers,
   isOvertime,
   getCombatPhase,
+  calculateEffectRemainingDuration,
 } from './round-utils';
 
 /**
@@ -138,5 +139,58 @@ export function useTriggerProcessing(
     upcomingTriggers,
     combatPhase,
     isInOvertime,
+  };
+}
+
+/**
+ * Hook for managing screen reader announcements
+ */
+export function useScreenReaderAnnouncements(currentRound: number) {
+  const [announceRound, setAnnounceRound] = useState<number | null>(null);
+  const previousRoundRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (previousRoundRef.current !== 0 && previousRoundRef.current !== currentRound) {
+      setAnnounceRound(currentRound);
+      setTimeout(() => setAnnounceRound(null), 100);
+    }
+    previousRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  return announceRound;
+}
+
+/**
+ * Hook for round navigation handlers
+ */
+export function useRoundNavigation(
+  currentRound: number,
+  effects: Effect[],
+  onRoundChange: (_round: number) => void,
+  onEffectExpiry?: (_expiredEffectIds: string[]) => void
+) {
+  const handleNextRound = useCallback(() => {
+    const nextRound = currentRound + 1;
+    // Check for effects that will expire when moving to the next round
+    const effectsToExpire = effects.filter(effect => {
+      const remaining = calculateEffectRemainingDuration(effect, nextRound);
+      return remaining <= 0;
+    });
+
+    if (effectsToExpire.length > 0 && onEffectExpiry) {
+      onEffectExpiry(effectsToExpire.map(e => e.id));
+    }
+    onRoundChange(nextRound);
+  }, [effects, onEffectExpiry, onRoundChange, currentRound]);
+
+  const handlePreviousRound = useCallback(() => {
+    if (currentRound > 1) {
+      onRoundChange(currentRound - 1);
+    }
+  }, [currentRound, onRoundChange]);
+
+  return {
+    handleNextRound,
+    handlePreviousRound,
   };
 }

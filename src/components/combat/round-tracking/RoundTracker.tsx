@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
 import { RoundHistory } from './RoundHistory';
@@ -17,8 +17,10 @@ import {
   useDurationCalculations,
   useEffectProcessing,
   useTriggerProcessing,
+  useScreenReaderAnnouncements,
+  useRoundNavigation,
 } from './tracker-hooks';
-import { Effect, Trigger, SessionSummary as SessionSummaryType, calculateEffectRemainingDuration } from './round-utils';
+import { Effect, Trigger, SessionSummary as SessionSummaryType } from './round-utils';
 
 interface CombatData {
   encounter: IEncounter | null;
@@ -78,8 +80,6 @@ export function RoundTracker({
     onExport,
   } = handlers;
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(true);
-  const [announceRound, setAnnounceRound] = useState<number | null>(null);
-  const previousRoundRef = useRef<number>(0);
 
   // Calculate current round with safety check
   const currentRound = Math.max(1, encounter?.combatState?.currentRound || 1);
@@ -94,35 +94,14 @@ export function RoundTracker({
     maxRounds
   );
 
-  // Track round changes for screen reader announcements
-  useEffect(() => {
-    if (previousRoundRef.current !== 0 && previousRoundRef.current !== currentRound) {
-      setAnnounceRound(currentRound);
-      setTimeout(() => setAnnounceRound(null), 100);
-    }
-    previousRoundRef.current = currentRound;
-  }, [currentRound]);
-
-  // Event handlers
-  const handleNextRound = useCallback(() => {
-    const nextRound = currentRound + 1;
-    // Check for effects that will expire when moving to the next round
-    const effectsToExpire = effects.filter(effect => {
-      const remaining = calculateEffectRemainingDuration(effect, nextRound);
-      return remaining <= 0;
-    });
-
-    if (effectsToExpire.length > 0 && onEffectExpiry) {
-      onEffectExpiry(effectsToExpire.map(e => e.id));
-    }
-    onRoundChange(nextRound);
-  }, [effects, onEffectExpiry, onRoundChange, currentRound]);
-
-  const handlePreviousRound = useCallback(() => {
-    if (currentRound > 1) {
-      onRoundChange(currentRound - 1);
-    }
-  }, [currentRound, onRoundChange]);
+  // Screen reader announcements and navigation
+  const announceRound = useScreenReaderAnnouncements(currentRound);
+  const { handleNextRound, handlePreviousRound } = useRoundNavigation(
+    currentRound,
+    effects,
+    onRoundChange,
+    onEffectExpiry
+  );
 
   // Handle null encounter after all hooks
   if (!encounter) {
