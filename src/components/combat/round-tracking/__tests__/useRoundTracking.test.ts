@@ -14,15 +14,22 @@ describe('useRoundTracking', () => {
     mockOnUpdate = jest.fn();
   });
 
+  // Helper function for most tests - disable debouncing for predictable behavior
+  const useRoundTrackingWithDefaults = (
+    encounter = mockEncounter, 
+    onUpdate = mockOnUpdate, 
+    options = {}
+  ) => useRoundTracking(encounter, onUpdate, { enableDebouncing: false, ...options });
+
   describe('Round Management', () => {
     it('initializes with current round from encounter', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       expect(result.current.currentRound).toBe(2);
     });
 
     it('advances to next round', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       act(() => {
         result.current.nextRound();
@@ -36,7 +43,7 @@ describe('useRoundTracking', () => {
 
     it('goes to previous round', () => {
       mockEncounter.combatState.currentRound = 3;
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       act(() => {
         result.current.previousRound();
@@ -50,7 +57,7 @@ describe('useRoundTracking', () => {
 
     it('does not go below round 1', () => {
       mockEncounter.combatState.currentRound = 1;
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       act(() => {
         result.current.previousRound();
@@ -61,7 +68,7 @@ describe('useRoundTracking', () => {
     });
 
     it('sets specific round number', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       act(() => {
         result.current.setRound(5);
@@ -74,7 +81,7 @@ describe('useRoundTracking', () => {
     });
 
     it('validates round number when setting', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       act(() => {
         result.current.setRound(-1);
@@ -86,7 +93,7 @@ describe('useRoundTracking', () => {
     });
 
     it('clears error after successful round change', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       act(() => {
         result.current.setRound(-1);
@@ -105,7 +112,7 @@ describe('useRoundTracking', () => {
   describe('Duration Tracking', () => {
     it('calculates round duration', () => {
       mockEncounter.combatState.startedAt = new Date(Date.now() - 300000); // 5 minutes ago
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       expect(result.current.duration.totalSeconds).toBe(300);
       expect(result.current.duration.averageRoundDuration).toBe(150); // 300s / 2 rounds
@@ -120,7 +127,7 @@ describe('useRoundTracking', () => {
 
     it('handles undefined start time', () => {
       mockEncounter.combatState.startedAt = undefined;
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       expect(result.current.duration.totalSeconds).toBe(0);
       expect(result.current.duration.averageRoundDuration).toBe(0);
@@ -128,7 +135,7 @@ describe('useRoundTracking', () => {
 
     it('formats duration as human readable', () => {
       mockEncounter.combatState.startedAt = new Date(Date.now() - 3900000); // 65 minutes ago
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       expect(result.current.duration.formatted).toBe('1h 5m');
     });
@@ -155,7 +162,7 @@ describe('useRoundTracking', () => {
     ];
 
     it('adds new effect', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       act(() => {
         result.current.addEffect({
@@ -284,7 +291,7 @@ describe('useRoundTracking', () => {
     ];
 
     it('adds new trigger', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       act(() => {
         result.current.addTrigger({
@@ -350,7 +357,7 @@ describe('useRoundTracking', () => {
 
   describe('History Management', () => {
     it('records round changes in history', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       act(() => {
         result.current.nextRound();
@@ -362,7 +369,7 @@ describe('useRoundTracking', () => {
     });
 
     it('adds custom events to history', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       act(() => {
         result.current.addHistoryEvent('Wizard casts Fireball');
@@ -374,7 +381,7 @@ describe('useRoundTracking', () => {
     });
 
     it('groups events by round', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       act(() => {
         result.current.addHistoryEvent('First event');
@@ -391,7 +398,7 @@ describe('useRoundTracking', () => {
     });
 
     it('clears history when requested', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       act(() => {
         result.current.addHistoryEvent('Test event');
@@ -405,7 +412,7 @@ describe('useRoundTracking', () => {
   describe('Session Summary', () => {
     it('calculates session statistics', () => {
       mockEncounter.combatState.startedAt = new Date(Date.now() - 600000); // 10 minutes ago
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       act(() => {
         result.current.addHistoryEvent('Attack action');
@@ -421,7 +428,7 @@ describe('useRoundTracking', () => {
     });
 
     it('exports round data', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTrackingWithDefaults());
 
       act(() => {
         result.current.addHistoryEvent('Test event');
@@ -445,7 +452,7 @@ describe('useRoundTracking', () => {
   describe('Performance and Memory', () => {
     it('debounces rapid round changes', () => {
       jest.useFakeTimers();
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate, { enableDebouncing: true }));
 
       act(() => {
         result.current.nextRound();
@@ -479,7 +486,7 @@ describe('useRoundTracking', () => {
 
     it('cleans up timers on unmount', () => {
       const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
-      const { unmount } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate));
+      const { unmount } = renderHook(() => useRoundTrackingWithDefaults());
 
       unmount();
 
@@ -505,17 +512,26 @@ describe('useRoundTracking', () => {
     });
 
     it('handles update callback errors gracefully', () => {
+      jest.useFakeTimers();
       const errorCallback = jest.fn().mockImplementation(() => {
         throw new Error('Update failed');
       });
 
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, errorCallback));
+      // Enable debouncing for this test so the error handling works as expected
+      const { result } = renderHook(() => useRoundTracking(mockEncounter, errorCallback, { enableDebouncing: true }));
 
       act(() => {
         result.current.nextRound();
       });
 
+      // Advance timers to trigger the debounced update
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
+
       expect(result.current.error).toBe('Failed to update encounter');
+      
+      jest.useRealTimers();
     });
   });
 });
