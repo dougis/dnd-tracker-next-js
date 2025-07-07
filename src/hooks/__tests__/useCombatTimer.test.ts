@@ -29,7 +29,7 @@ describe('useCombatTimer', () => {
     it('pauses timer when combat is paused', () => {
       const startTime = new Date(Date.now() - 120000);
       const pausedTime = new Date(Date.now() - 60000); // Paused 1 minute ago
-      
+
       const { result } = renderHook(() =>
         useCombatTimer({
           startedAt: startTime,
@@ -189,7 +189,7 @@ describe('useCombatTimer', () => {
     it('pauses round timer when combat is paused', () => {
       const startTime = new Date(Date.now() - 30000);
       const pausedTime = new Date(Date.now() - 10000); // Paused 10 seconds ago
-      
+
       const { result } = renderHook(() =>
         useCombatTimer({
           startedAt: startTime,
@@ -254,7 +254,7 @@ describe('useCombatTimer', () => {
     it('provides resume functionality', () => {
       const startTime = new Date(Date.now() - 60000);
       const pausedTime = new Date(Date.now() - 30000);
-      
+
       const { result } = renderHook(() =>
         useCombatTimer({
           startedAt: startTime,
@@ -298,7 +298,7 @@ describe('useCombatTimer', () => {
     it('triggers callback on round timer warning', () => {
       const onWarning = jest.fn();
       const startTime = new Date(Date.now() - 46000); // 46 seconds ago
-      
+
       renderHook(() =>
         useCombatTimer({
           startedAt: startTime,
@@ -315,7 +315,7 @@ describe('useCombatTimer', () => {
     it('triggers callback on round timer critical', () => {
       const onCritical = jest.fn();
       const startTime = new Date(Date.now() - 56000); // 56 seconds ago
-      
+
       renderHook(() =>
         useCombatTimer({
           startedAt: startTime,
@@ -332,7 +332,7 @@ describe('useCombatTimer', () => {
     it('triggers callback on round timer expired', () => {
       const onExpired = jest.fn();
       const startTime = new Date(Date.now() - 70000); // 70 seconds ago
-      
+
       renderHook(() =>
         useCombatTimer({
           startedAt: startTime,
@@ -350,7 +350,7 @@ describe('useCombatTimer', () => {
       const onWarning = jest.fn();
       const startTime = new Date(Date.now() - 46000);
       const pausedTime = new Date(Date.now() - 5000);
-      
+
       renderHook(() =>
         useCombatTimer({
           startedAt: startTime,
@@ -413,7 +413,7 @@ describe('useCombatTimer', () => {
     it('handles paused time after start time', () => {
       const startTime = new Date(Date.now() - 60000);
       const pausedTime = new Date(Date.now() - 30000);
-      
+
       const { result } = renderHook(() =>
         useCombatTimer({
           startedAt: startTime,

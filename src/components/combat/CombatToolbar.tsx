@@ -6,20 +6,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
-  Play,
-  Pause,
-  SkipForward,
-  SkipBack,
   Settings,
   Download,
   Share2,
-  Square,
-  Clock,
 } from 'lucide-react';
 
 import { IEncounter } from '@/lib/models/encounter/interfaces';
 import { useCombatTimer } from '@/hooks/useCombatTimer';
 import { QuickActions } from './QuickActions';
+import { CombatTimer } from './CombatTimer';
+import { CombatStatus } from './CombatStatus';
+import { CombatControlsSection } from './CombatControls';
 
 interface CombatActions {
   onNextTurn?: () => void;
@@ -109,14 +106,7 @@ export function CombatToolbar({
   const canGoPrevious = !(currentRound === 1 && currentTurn === 0);
 
   // Combat timer hook
-  const {
-    formattedDuration,
-    hasRoundTimer,
-    formattedRoundTime,
-    isRoundWarning,
-    isRoundCritical,
-    isPaused: timerPaused,
-  } = useCombatTimer({
+  const timerData = useCombatTimer({
     startedAt: combatState?.startedAt,
     pausedAt: combatState?.pausedAt,
     isActive,
@@ -133,16 +123,17 @@ export function CombatToolbar({
     return { total, pcs, npcs, alive };
   }, [participants]);
 
-  // Get active participant
-  const activeParticipant = useMemo(() => {
+  // Get active participant name
+  const activeParticipantName = useMemo(() => {
     if (!isActive || initiativeOrder.length === 0 || currentTurn >= initiativeOrder.length) {
-      return null;
+      return undefined;
     }
 
     const activeEntry = initiativeOrder[currentTurn];
-    return participants.find(p =>
+    const participant = participants.find(p =>
       p.characterId.toString() === activeEntry.participantId.toString()
     );
+    return participant?.name;
   }, [isActive, initiativeOrder, currentTurn, participants]);
 
   // Combat phase
@@ -192,13 +183,6 @@ export function CombatToolbar({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [enableKeyboardShortcuts, onNextTurn, onPreviousTurn, onPauseCombat, onResumeCombat, onEndCombat, canGoPrevious, isPaused]);
 
-  // Round timer styling
-  const getRoundTimerClass = () => {
-    if (isRoundCritical) return 'text-destructive';
-    if (isRoundWarning) return 'text-warning';
-    return 'text-muted-foreground';
-  };
-
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -219,25 +203,14 @@ export function CombatToolbar({
           <div className="flex items-center space-x-2">
             {/* Combat Timer */}
             {showTimer && isActive && (
-              <div className="flex items-center space-x-3 text-sm">
-                <div className="flex items-center space-x-1">
-                  <Clock className="h-4 w-4" />
-                  <span aria-label={`Combat duration: ${formattedDuration.replace(':', ' minutes ')}`}>
-                    {timerPaused ? 'Paused' : formattedDuration}
-                  </span>
-                </div>
-                {hasRoundTimer && (
-                  <div className="flex items-center space-x-1">
-                    <span className="text-xs text-muted-foreground">Round Timer:</span>
-                    <span
-                      className={getRoundTimerClass()}
-                      aria-label={`Round timer: ${formattedRoundTime} remaining`}
-                    >
-                      {formattedRoundTime}
-                    </span>
-                  </div>
-                )}
-              </div>
+              <CombatTimer
+                formattedDuration={timerData.formattedDuration}
+                hasRoundTimer={timerData.hasRoundTimer}
+                formattedRoundTime={timerData.formattedRoundTime}
+                isRoundWarning={timerData.isRoundWarning}
+                isRoundCritical={timerData.isRoundCritical}
+                isPaused={timerData.isPaused}
+              />
             )}
             <Button
               variant="ghost"
@@ -270,79 +243,25 @@ export function CombatToolbar({
         </div>
 
         {/* Status Display */}
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <div className="flex items-center space-x-4">
-            <span>Participants: {participantStats.total}</span>
-            <span>PCs: {participantStats.pcs}</span>
-            <span>NPCs: {participantStats.npcs}</span>
-          </div>
-          <div className="flex items-center space-x-4">
-            {activeParticipant && (
-              <span>Active: {activeParticipant.name}</span>
-            )}
-            <Badge
-              variant={combatPhase === 'active' ? 'default' : combatPhase === 'paused' ? 'secondary' : 'outline'}
-            >
-              Combat {combatPhase === 'active' ? 'Active' : combatPhase === 'paused' ? 'Paused' : 'Inactive'}
-            </Badge>
-          </div>
-        </div>
+        <CombatStatus
+          participantStats={participantStats}
+          activeParticipantName={activeParticipantName}
+          combatPhase={combatPhase}
+        />
       </CardHeader>
 
       <CardContent className="space-y-4">
         {/* Essential Controls */}
-        <div className="flex items-center justify-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onPreviousTurn}
-            disabled={!canGoPrevious}
-            title={enableKeyboardShortcuts ? 'Previous Turn (Backspace)' : 'Previous Turn'}
-          >
-            <SkipBack className="h-4 w-4 mr-1" />
-            Previous
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={onNextTurn}
-            className="px-6"
-            title={enableKeyboardShortcuts ? 'Next Turn (Space)' : 'Next Turn'}
-          >
-            <SkipForward className="h-4 w-4 mr-1" />
-            Next Turn
-          </Button>
-          {isPaused ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onResumeCombat}
-              title={enableKeyboardShortcuts ? 'Resume Combat (P)' : 'Resume Combat'}
-            >
-              <Play className="h-4 w-4 mr-1" />
-              Resume
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onPauseCombat}
-              title={enableKeyboardShortcuts ? 'Pause Combat (P)' : 'Pause Combat'}
-            >
-              <Pause className="h-4 w-4 mr-1" />
-              Pause
-            </Button>
-          )}
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={onEndCombat}
-            title={enableKeyboardShortcuts ? 'End Combat (E)' : 'End Combat'}
-          >
-            <Square className="h-4 w-4 mr-1" />
-            End Combat
-          </Button>
-        </div>
+        <CombatControlsSection
+          onNextTurn={onNextTurn}
+          onPreviousTurn={onPreviousTurn}
+          onPauseCombat={onPauseCombat}
+          onResumeCombat={onResumeCombat}
+          onEndCombat={onEndCombat}
+          canGoPrevious={canGoPrevious}
+          isPaused={isPaused}
+          enableKeyboardShortcuts={enableKeyboardShortcuts}
+        />
 
         {/* Quick Actions */}
         {showQuickActions && (

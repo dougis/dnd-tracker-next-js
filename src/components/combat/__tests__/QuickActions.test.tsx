@@ -32,9 +32,9 @@ describe('QuickActions', () => {
       render(<QuickActions {...mockProps} />);
 
       expect(screen.getByText('Roll Initiative')).toBeInTheDocument();
-      expect(screen.getByText('Mass Heal')).toBeInTheDocument();
-      expect(screen.getByText('Mass Damage')).toBeInTheDocument();
-      expect(screen.getByText('Clear Conditions')).toBeInTheDocument();
+      expect(screen.getByText('Mass Heal (4)')).toBeInTheDocument();
+      expect(screen.getByText('Mass Damage (4)')).toBeInTheDocument();
+      expect(screen.getByText('Clear Conditions (4)')).toBeInTheDocument();
       expect(screen.getByText('Add Participant')).toBeInTheDocument();
       expect(screen.getByText('Settings')).toBeInTheDocument();
     });
@@ -43,7 +43,7 @@ describe('QuickActions', () => {
       render(<QuickActions {...mockProps} />);
 
       const rollButton = screen.getByText('Roll Initiative');
-      expect(rollButton).toHaveClass('btn-outline');
+      expect(rollButton).toHaveClass('border', 'border-input');
     });
 
     it('shows participant count in relevant buttons', () => {
@@ -208,7 +208,7 @@ describe('QuickActions', () => {
     it('calls custom action handlers when clicked', () => {
       const customHandler1 = jest.fn();
       const customHandler2 = jest.fn();
-      
+
       mockProps.settings.customActions = [
         {
           id: 'custom1',
@@ -404,20 +404,20 @@ describe('QuickActions', () => {
   describe('Performance', () => {
     it('memoizes action handlers to prevent unnecessary re-renders', () => {
       const { rerender } = render(<QuickActions {...mockProps} />);
-      
+
       // Re-render with same props
       rerender(<QuickActions {...mockProps} />);
-      
+
       // Actions should not be called during re-render
       expect(mockProps.actions.onRollInitiative).not.toHaveBeenCalled();
     });
 
     it('updates efficiently when participant count changes', () => {
       const { rerender } = render(<QuickActions {...mockProps} />);
-      
+
       mockProps.participantCount = 6;
       rerender(<QuickActions {...mockProps} />);
-      
+
       expect(screen.getByText('Mass Heal (6)')).toBeInTheDocument();
     });
   });

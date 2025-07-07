@@ -1,4 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  formatTime,
+  calculateCombatDuration,
+  calculateRoundTimeRemaining,
+  getTimerStates,
+  WARNING_THRESHOLD,
+  CRITICAL_THRESHOLD,
+} from './timer-helpers';
 
 interface CombatTimerProps {
   startedAt?: Date;
@@ -14,7 +22,7 @@ interface CombatTimerReturn {
   // Combat Duration
   combatDuration: number;
   formattedDuration: string;
-  
+
   // Round Timer
   hasRoundTimer: boolean;
   roundTimeRemaining: number;
@@ -22,18 +30,16 @@ interface CombatTimerReturn {
   isRoundWarning: boolean;
   isRoundCritical: boolean;
   isRoundExpired: boolean;
-  
+
   // Timer State
   isPaused: boolean;
-  
+
   // Timer Controls
   pause: () => void;
   resume: () => void;
   reset: () => void;
 }
 
-const WARNING_THRESHOLD = 15000; // 15 seconds
-const CRITICAL_THRESHOLD = 5000; // 5 seconds
 
 export function useCombatTimer({
   startedAt,
@@ -79,46 +85,35 @@ export function useCombatTimer({
   }, [isActive, pausedAt, localPausedAt, shouldIgnoreExternalPause]);
 
   // Calculate combat duration
-  const combatDuration = (() => {
-    if (!isActive) return 0;
-    
-    const effectiveStartTime = localStartedAt || startedAt;
-    if (!effectiveStartTime) return 0;
-    
-    const effectivePausedAt = shouldIgnoreExternalPause ? localPausedAt : (localPausedAt || pausedAt);
-    const endTime = effectivePausedAt || new Date(currentTime);
-    const duration = endTime.getTime() - effectiveStartTime.getTime();
-    
-    return Math.max(0, duration);
-  })();
+  const combatDuration = calculateCombatDuration(
+    isActive,
+    localStartedAt,
+    startedAt,
+    shouldIgnoreExternalPause,
+    localPausedAt,
+    pausedAt,
+    currentTime
+  );
 
   // Calculate round timer
   const hasRoundTimer = Boolean(roundTimeLimit);
-  const roundTimeRemaining = (() => {
-    if (!hasRoundTimer || !isActive || !startedAt) return 0;
-    
-    const elapsed = combatDuration;
-    const remaining = roundTimeLimit! - elapsed;
-    
-    return Math.max(0, remaining);
-  })();
+  const roundTimeRemaining = calculateRoundTimeRemaining(
+    hasRoundTimer,
+    isActive,
+    startedAt,
+    roundTimeLimit,
+    combatDuration
+  );
 
-  // Timer states  
-  const isPaused = Boolean(shouldIgnoreExternalPause ? localPausedAt : (localPausedAt || pausedAt));
-  const isRoundWarning = hasRoundTimer && roundTimeRemaining <= WARNING_THRESHOLD && roundTimeRemaining > CRITICAL_THRESHOLD;
-  const isRoundCritical = hasRoundTimer && roundTimeRemaining <= CRITICAL_THRESHOLD && roundTimeRemaining > 0;
-  const isRoundExpired = hasRoundTimer && roundTimeRemaining === 0;
+  // Timer states
+  const { isPaused, isRoundWarning, isRoundCritical, isRoundExpired } = getTimerStates(
+    hasRoundTimer,
+    roundTimeRemaining,
+    shouldIgnoreExternalPause,
+    localPausedAt,
+    pausedAt
+  );
 
-  // Format time helpers
-  const formatTime = useCallback((milliseconds: number): string => {
-    if (milliseconds === 0) return '0:00';
-    
-    const totalSeconds = Math.floor(milliseconds / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  }, []);
 
   // Trigger callbacks for round timer events
   useEffect(() => {
@@ -175,7 +170,7 @@ export function useCombatTimer({
     // Combat Duration
     combatDuration,
     formattedDuration: formatTime(combatDuration),
-    
+
     // Round Timer
     hasRoundTimer,
     roundTimeRemaining,
@@ -183,10 +178,10 @@ export function useCombatTimer({
     isRoundWarning,
     isRoundCritical,
     isRoundExpired,
-    
+
     // Timer State
     isPaused,
-    
+
     // Timer Controls
     pause,
     resume,
