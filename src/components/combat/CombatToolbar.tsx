@@ -91,15 +91,13 @@ export function CombatToolbar({
 
   const { onRollInitiative } = initiativeActions;
 
-  // Combat state calculations with memoization
   const combatState = encounter?.combatState;
+  const participants = encounter?.participants || [];
   const isActive = combatState?.isActive || false;
   const isPaused = Boolean(combatState?.pausedAt);
   const currentRound = combatState?.currentRound || 0;
   const currentTurn = combatState?.currentTurn || 0;
-
   const initiativeOrder = combatState?.initiativeOrder || [];
-  const participants = encounter?.participants || [];
   const canGoPrevious = !(currentRound === 1 && currentTurn === 0);
 
   const timerData = useCombatTimer({
@@ -116,19 +114,41 @@ export function CombatToolbar({
     alive: participants.filter(p => p.currentHitPoints > 0).length,
   };
 
-  const activeParticipantName = !isActive || currentTurn >= initiativeOrder.length ? undefined :
-    participants.find(p => p.characterId.toString() === initiativeOrder[currentTurn]?.participantId.toString())?.name;
+  const getActiveParticipantName = () => {
+    if (!isActive || currentTurn >= initiativeOrder.length) return undefined;
+    const currentParticipant = participants.find(p =>
+      p.characterId.toString() === initiativeOrder[currentTurn]?.participantId.toString()
+    );
+    return currentParticipant?.name;
+  };
 
-  const combatPhase = !isActive ? 'inactive' : isPaused ? 'paused' : 'active';
+  const getCombatPhase = () => {
+    if (!isActive) return 'inactive';
+    return isPaused ? 'paused' : 'active';
+  };
+
+  const activeParticipantName = getActiveParticipantName();
+  const combatPhase = getCombatPhase();
+
+  const isInputElement = (target: EventTarget | null) => {
+    const element = target as Element;
+    return element.tagName === 'INPUT' || element.tagName === 'TEXTAREA';
+  };
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    if ((event.target as Element).tagName === 'INPUT' || (event.target as Element).tagName === 'TEXTAREA') return;
+    if (isInputElement(event.target)) return;
     event.preventDefault();
 
-    if (event.code === 'Space') onNextTurn?.();
-    else if (event.code === 'Backspace' && canGoPrevious) onPreviousTurn?.();
-    else if (event.code === 'KeyP') isPaused ? onResumeCombat?.() : onPauseCombat?.();
-    else if (event.code === 'KeyE') onEndCombat?.();
+    const code = event.code;
+    if (code === 'Space') {
+      onNextTurn?.();
+    } else if (code === 'Backspace' && canGoPrevious) {
+      onPreviousTurn?.();
+    } else if (code === 'KeyP') {
+      isPaused ? onResumeCombat?.() : onPauseCombat?.();
+    } else if (code === 'KeyE') {
+      onEndCombat?.();
+    }
   }, [onNextTurn, onPreviousTurn, onPauseCombat, onResumeCombat, onEndCombat, canGoPrevious, isPaused]);
 
   // Keyboard shortcuts
