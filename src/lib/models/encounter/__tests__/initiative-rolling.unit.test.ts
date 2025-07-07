@@ -294,9 +294,9 @@ describe('Initiative Rolling System', () => {
       const newDexterity = 16;
 
       const updatedEntries = rollSingleInitiative(mockInitiativeEntries, participantId, newDexterity);
-      
+
       const fighterEntry = updatedEntries.find(e => e.participantId.toString() === participantId);
-      expectInitiativeEntryStructure(fighterEntry!, { 
+      expectInitiativeEntryStructure(fighterEntry!, {
         initiative: 18, // 15 + 3 (16 dex modifier)
         dexterity: 16
       });
@@ -306,11 +306,11 @@ describe('Initiative Rolling System', () => {
       const mockRoll = jest.requireMock('../utils').rollInitiative;
       setupInitiativeRollingMock(mockRoll, 12);
       const participantId = INITIATIVE_PARTICIPANT_IDS.FIGHTER.toString();
-      
+
       const updatedEntries = rollSingleInitiative(mockInitiativeEntries, participantId, 14);
-      
+
       const rogueEntry = updatedEntries.find(e => e.participantId.toString() === INITIATIVE_PARTICIPANT_IDS.ROGUE.toString());
-      expectInitiativeEntryStructure(rogueEntry!, { 
+      expectInitiativeEntryStructure(rogueEntry!, {
         initiative: 12, // Original value unchanged
         dexterity: 18 // Original value unchanged
       });
@@ -320,9 +320,9 @@ describe('Initiative Rolling System', () => {
       const mockRoll = jest.requireMock('../utils').rollInitiative;
       setupInitiativeRollingMock(mockRoll, 20);
       const participantId = INITIATIVE_PARTICIPANT_IDS.FIGHTER.toString();
-      
+
       const updatedEntries = rollSingleInitiative(mockInitiativeEntries, participantId, 14);
-      
+
       expectValidInitiativeOrder(updatedEntries);
       // Fighter should now be first with 22 initiative (20 + 2)
       expect(updatedEntries[0].initiative).toBe(22);
@@ -332,9 +332,9 @@ describe('Initiative Rolling System', () => {
       const mockRoll = jest.requireMock('../utils').rollInitiative;
       setupInitiativeRollingMock(mockRoll, 15);
       const invalidId = new Types.ObjectId().toString();
-      
+
       const updatedEntries = rollSingleInitiative(mockInitiativeEntries, invalidId, 14);
-      
+
       // Should return entries unchanged
       expect(updatedEntries).toHaveLength(mockInitiativeEntries.length);
       expectValidInitiativeOrder(updatedEntries);
@@ -382,7 +382,7 @@ describe('Initiative Rolling System', () => {
   describe('getDefaultInitiativePreferences', () => {
     it('should return correct default preferences', () => {
       const preferences = getDefaultInitiativePreferences();
-      
+
       expect(preferences.autoRollOnCombatStart).toBe(false);
       expect(preferences.showRollBreakdown).toBe(true);
       expect(preferences.allowPlayerRerolls).toBe(true);
@@ -392,7 +392,7 @@ describe('Initiative Rolling System', () => {
     it('should return a new object each time', () => {
       const preferences1 = getDefaultInitiativePreferences();
       const preferences2 = getDefaultInitiativePreferences();
-      
+
       expect(preferences1).not.toBe(preferences2); // Different objects
       expect(preferences1).toEqual(preferences2); // Same values
     });
