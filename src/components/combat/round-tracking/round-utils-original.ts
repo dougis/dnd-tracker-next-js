@@ -1,6 +1,6 @@
 /**
  * Utility functions for round tracking functionality
- * Refactored for reduced complexity and improved maintainability
+ * Provides calculations and formatting for round-based combat mechanics
  */
 
 // Type definitions for round tracking
@@ -31,33 +31,11 @@ export interface SessionSummary {
   participantActions?: number;
 }
 
-// Constants for combat phase calculation
-const COMBAT_PHASE_THRESHOLDS = {
-  EARLY: 0.33,
-  MIDDLE: 0.66,
-  LATE: 1.0
-} as const;
-
-// Helper functions for formatDuration
-function formatSeconds(seconds: number): string {
-  return `${seconds}s`;
-}
-
-function formatMinutes(minutes: number, seconds: number): string {
-  return seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`;
-}
-
-function formatHours(hours: number, minutes: number, seconds: number): string {
-  let result = `${hours}h`;
-  if (minutes > 0) result += ` ${minutes}m`;
-  if (seconds > 0) result += ` ${seconds}s`;
-  return result;
-}
-
 /**
  * Formats duration in seconds to human-readable string
  */
 export function formatDuration(totalSeconds: number): string {
+  // Handle invalid inputs
   if (!Number.isFinite(totalSeconds) || totalSeconds < 0) {
     return '0s';
   }
@@ -65,20 +43,29 @@ export function formatDuration(totalSeconds: number): string {
   const seconds = Math.ceil(totalSeconds);
 
   if (seconds < 60) {
-    return formatSeconds(seconds);
+    return `${seconds}s`;
   }
 
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
 
   if (minutes < 60) {
-    return formatMinutes(minutes, remainingSeconds);
+    return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
   }
 
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
+  const remainingSecondsAfterHours = remainingSeconds;
 
-  return formatHours(hours, remainingMinutes, remainingSeconds);
+  let result = `${hours}h`;
+  if (remainingMinutes > 0) {
+    result += ` ${remainingMinutes}m`;
+  }
+  if (remainingSecondsAfterHours > 0) {
+    result += ` ${remainingSecondsAfterHours}s`;
+  }
+
+  return result;
 }
 
 /**
@@ -131,12 +118,14 @@ export function validateRoundNumber(round: number): boolean {
  * Calculates remaining duration for a specific effect
  */
 export function calculateEffectRemainingDuration(effect: Effect, currentRound: number): number {
+  // Handle invalid effect data
   if (effect.duration <= 0) {
     return 0;
   }
 
+  // Handle invalid round data
   if (currentRound < effect.startRound) {
-    return effect.duration;
+    return effect.duration; // Effect hasn't started yet
   }
 
   const elapsedRounds = currentRound - effect.startRound;
@@ -167,29 +156,28 @@ export function filterActiveTriggers(triggers: Trigger[] | undefined): Trigger[]
   return triggers.filter(trigger => trigger.isActive);
 }
 
-// Helper functions for formatRoundSummary
-function addBasicSummaryParts(summary: SessionSummary): string[] {
+/**
+ * Formats session summary into human-readable string
+ */
+export function formatRoundSummary(summary: SessionSummary): string {
   const parts: string[] = [];
+
+  // Basic round and duration info
   parts.push(`${summary.totalRounds} rounds`);
   parts.push(`${formatDuration(summary.totalDuration)} total`);
-  return parts;
-}
 
-function addAverageDurationPart(summary: SessionSummary): string | null {
+  // Calculate average round duration
   if (summary.totalRounds > 0) {
     const avgDuration = summary.totalDuration / summary.totalRounds;
-    return `${formatDuration(avgDuration)}/round avg`;
+    parts.push(`${formatDuration(avgDuration)}/round avg`);
   }
-  return null;
-}
 
-function addOptionalSummaryParts(summary: SessionSummary): string[] {
-  const parts: string[] = [];
-
+  // Optional action count
   if (summary.totalActions !== undefined) {
     parts.push(`${summary.totalActions} actions`);
   }
 
+  // Optional damage and healing
   if (summary.damageDealt !== undefined) {
     parts.push(`${summary.damageDealt} damage`);
   }
@@ -197,19 +185,6 @@ function addOptionalSummaryParts(summary: SessionSummary): string[] {
   if (summary.healingApplied !== undefined) {
     parts.push(`${summary.healingApplied} healing`);
   }
-
-  return parts;
-}
-
-/**
- * Formats session summary into human-readable string
- */
-export function formatRoundSummary(summary: SessionSummary): string {
-  const parts = [
-    ...addBasicSummaryParts(summary),
-    addAverageDurationPart(summary),
-    ...addOptionalSummaryParts(summary)
-  ].filter(Boolean);
 
   return parts.join(' • ');
 }
@@ -273,27 +248,6 @@ export function isOvertime(currentRound: number, maxRounds?: number): boolean {
   return maxRounds !== undefined && currentRound > maxRounds;
 }
 
-// Helper functions for getCombatPhase
-function calculateCombatProgress(currentRound: number, maxRounds: number): number {
-  return currentRound / maxRounds;
-}
-
-function determinePhaseFromProgress(progress: number): string {
-  if (progress <= COMBAT_PHASE_THRESHOLDS.EARLY) {
-    return 'early';
-  }
-
-  if (progress <= COMBAT_PHASE_THRESHOLDS.MIDDLE) {
-    return 'middle';
-  }
-
-  if (progress <= COMBAT_PHASE_THRESHOLDS.LATE) {
-    return 'late';
-  }
-
-  return 'overtime';
-}
-
 /**
  * Calculates combat phase based on round and max rounds
  */
@@ -302,8 +256,17 @@ export function getCombatPhase(currentRound: number, maxRounds?: number): string
     return 'ongoing';
   }
 
-  const progress = calculateCombatProgress(currentRound, maxRounds);
-  return determinePhaseFromProgress(progress);
+  const progress = currentRound / maxRounds;
+
+  if (progress <= 0.33) {
+    return 'early';
+  } else if (progress <= 0.66) {
+    return 'middle';
+  } else if (progress <= 1.0) {
+    return 'late';
+  } else {
+    return 'overtime';
+  }
 }
 
 /**
@@ -348,34 +311,8 @@ export function limitHistorySize(
     return history;
   }
 
+  // Keep the most recent rounds
   return history.slice(-maxRounds);
-}
-
-// Helper functions for searchHistory
-function normalizeQuery(query: string): string {
-  return query.toLowerCase().trim();
-}
-
-function filterEventsByQuery(events: string[], query: string): string[] {
-  return events.filter(event =>
-    event.toLowerCase().includes(query)
-  );
-}
-
-function filterHistoryEntry(
-  entry: { round: number; events: string[] },
-  query: string
-): { round: number; events: string[] } | null {
-  const filteredEvents = filterEventsByQuery(entry.events, query);
-
-  if (filteredEvents.length === 0) {
-    return null;
-  }
-
-  return {
-    ...entry,
-    events: filteredEvents
-  };
 }
 
 /**
@@ -385,28 +322,19 @@ export function searchHistory(
   history: { round: number; events: string[] }[],
   query: string
 ): { round: number; events: string[] }[] {
-  const normalizedQuery = normalizeQuery(query);
-
-  if (!normalizedQuery) {
+  if (!query.trim()) {
     return history;
   }
 
+  const lowerQuery = query.toLowerCase();
   return history
-    .map(entry => filterHistoryEntry(entry, normalizedQuery))
-    .filter(entry => entry !== null);
-}
-
-// Helper functions for validation
-function validateStringField(value: any): boolean {
-  return typeof value === 'string' && value.length > 0;
-}
-
-function validatePositiveNumber(value: any): boolean {
-  return typeof value === 'number' && value > 0;
-}
-
-function validateNonNegativeInteger(value: any): boolean {
-  return typeof value === 'number' && value >= 1 && Number.isInteger(value);
+    .map(entry => ({
+      ...entry,
+      events: entry.events.filter(event =>
+        event.toLowerCase().includes(lowerQuery)
+      ),
+    }))
+    .filter(entry => entry.events.length > 0);
 }
 
 /**
@@ -414,10 +342,12 @@ function validateNonNegativeInteger(value: any): boolean {
  */
 export function validateEffect(effect: Effect): boolean {
   return (
-    validateStringField(effect.id) &&
-    validateStringField(effect.name) &&
-    validatePositiveNumber(effect.duration) &&
-    validateNonNegativeInteger(effect.startRound)
+    typeof effect.id === 'string' &&
+    typeof effect.name === 'string' &&
+    typeof effect.duration === 'number' &&
+    effect.duration > 0 &&
+    typeof effect.startRound === 'number' &&
+    effect.startRound >= 1
   );
 }
 
@@ -426,9 +356,10 @@ export function validateEffect(effect: Effect): boolean {
  */
 export function validateTrigger(trigger: Trigger): boolean {
   return (
-    validateStringField(trigger.id) &&
-    validateStringField(trigger.name) &&
-    validateNonNegativeInteger(trigger.triggerRound) &&
+    typeof trigger.id === 'string' &&
+    typeof trigger.name === 'string' &&
+    typeof trigger.triggerRound === 'number' &&
+    trigger.triggerRound >= 1 &&
     typeof trigger.isActive === 'boolean'
   );
 }

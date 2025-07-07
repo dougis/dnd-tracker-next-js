@@ -14,6 +14,11 @@ export { RoundTracker } from './RoundTracker';
 export { RoundHistory } from './RoundHistory';
 export { useRoundTracking } from './useRoundTracking';
 export * from './round-utils';
+export * from './history-utils';
+export * from './tracker-hooks';
+export * from './history-hooks';
+export * from './TrackerComponents';
+export * from './HistoryComponents';
 
 // Type exports
 export type {
@@ -21,3 +26,9 @@ export type {
   Trigger,
   SessionSummary,
 } from './round-utils';
+
+export type {
+  HistoryEvent,
+  HistoryEntry,
+  HistoryStats,
+} from './history-utils';
