@@ -138,7 +138,7 @@ export function useRoundTracking(
     if (!enableDebouncing) {
       try {
         onUpdate(updates);
-      } catch (_error) {
+      } catch {
         setState(prev => ({
           ...prev,
           error: 'Failed to update encounter',
@@ -152,7 +152,7 @@ export function useRoundTracking(
     updateTimeoutRef.current = setTimeout(() => {
       try {
         onUpdate(updates);
-      } catch (_error) {
+      } catch {
         setState(prev => ({
           ...prev,
           error: 'Failed to update encounter',
