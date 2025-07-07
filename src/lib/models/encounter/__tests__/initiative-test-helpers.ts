@@ -1,5 +1,11 @@
 import { Types } from 'mongoose';
-import { IParticipantWithAbilityScores, InitiativeEntryWithInfo, rollBulkInitiative } from '../initiative-rolling';
+import {
+  IParticipantWithAbilityScores,
+  InitiativeEntryWithInfo,
+  rollBulkInitiative,
+  generateInitiativeEntries,
+  rerollInitiative
+} from '../initiative-rolling';
 import { IInitiativeEntry } from '../interfaces';
 import {
   TEST_IDS,
@@ -103,21 +109,30 @@ export function setupSequentialMockRolls(mockRoll: jest.Mock, values: number[]):
 }
 
 /**
+ * Unified mock roll setup - reduces duplication
+ */
+function setupMockRoll(setup: 'single' | 'sequential', value: number | number[]): jest.Mock {
+  const mockRoll = jest.requireMock('../utils').rollInitiative;
+  if (setup === 'single') {
+    setupInitiativeRollingMock(mockRoll, value as number);
+  } else {
+    setupSequentialMockRolls(mockRoll, value as number[]);
+  }
+  return mockRoll;
+}
+
+/**
  * Get and setup mock roll function - reduces duplication
  */
 export function getMockRoll(returnValue: number): jest.Mock {
-  const mockRoll = jest.requireMock('../utils').rollInitiative;
-  setupInitiativeRollingMock(mockRoll, returnValue);
-  return mockRoll;
+  return setupMockRoll('single', returnValue);
 }
 
 /**
  * Get and setup sequential mock rolls - reduces duplication
  */
 export function getMockRollSequential(values: number[]): jest.Mock {
-  const mockRoll = jest.requireMock('../utils').rollInitiative;
-  setupSequentialMockRolls(mockRoll, values);
-  return mockRoll;
+  return setupMockRoll('sequential', values);
 }
 
 /**
@@ -287,13 +302,27 @@ export function resetInitiativeRollingMock(): void {
 }
 
 /**
- * Creates a Fighter initiative entry with defaults
+ * Unified character entry factory - reduces duplication
  */
-export function createFighterInitiativeEntry(overrides: Partial<IInitiativeEntry> = {}): IInitiativeEntry {
+function createCharacterInitiativeEntry(
+  character: 'fighter' | 'rogue',
+  overrides: Partial<IInitiativeEntry> = {}
+): IInitiativeEntry {
+  const configs = {
+    fighter: {
+      participantId: INITIATIVE_PARTICIPANT_IDS.FIGHTER,
+      initiative: 15,
+      dexterity: 14
+    },
+    rogue: {
+      participantId: INITIATIVE_PARTICIPANT_IDS.ROGUE,
+      initiative: 12,
+      dexterity: 18
+    }
+  };
+
   return createMockInitiativeEntry({
-    participantId: INITIATIVE_PARTICIPANT_IDS.FIGHTER,
-    initiative: 15,
-    dexterity: 14,
+    ...configs[character],
     isActive: false,
     hasActed: false,
     ...overrides,
@@ -301,17 +330,17 @@ export function createFighterInitiativeEntry(overrides: Partial<IInitiativeEntry
 }
 
 /**
+ * Creates a Fighter initiative entry with defaults
+ */
+export function createFighterInitiativeEntry(overrides: Partial<IInitiativeEntry> = {}): IInitiativeEntry {
+  return createCharacterInitiativeEntry('fighter', overrides);
+}
+
+/**
  * Creates a Rogue initiative entry with defaults
  */
 export function createRogueInitiativeEntry(overrides: Partial<IInitiativeEntry> = {}): IInitiativeEntry {
-  return createMockInitiativeEntry({
-    participantId: INITIATIVE_PARTICIPANT_IDS.ROGUE,
-    initiative: 12,
-    dexterity: 18,
-    isActive: false,
-    hasActed: false,
-    ...overrides,
-  });
+  return createCharacterInitiativeEntry('rogue', overrides);
 }
 
 /**
@@ -330,4 +359,76 @@ export function expectInitiativeOrderSort(entries: (IInitiativeEntry | Initiativ
       expect(participant?.name).toBe(expectedNames[index]);
     }
   });
+}
+
+/**
+ * Utility functions to reduce unit test duplication
+ */
+export function createStandardInitiativeEntries(): IInitiativeEntry[] {
+  return [
+    createFighterInitiativeEntry({
+      participantId: INITIATIVE_PARTICIPANT_IDS.FIGHTER,
+      initiative: 15,
+      dexterity: 14,
+      isActive: true,
+      hasActed: false,
+    }),
+    createRogueInitiativeEntry({
+      participantId: INITIATIVE_PARTICIPANT_IDS.ROGUE,
+      initiative: 12,
+      dexterity: 18,
+      isActive: false,
+      hasActed: true,
+    }),
+  ];
+}
+
+export function findEntryByParticipantId(
+  entries: IInitiativeEntry[],
+  participantId: string | Types.ObjectId
+): IInitiativeEntry | undefined {
+  return entries.find(e => e.participantId.toString() === participantId.toString());
+}
+
+export function expectEntryWithValues(
+  entry: IInitiativeEntry | undefined,
+  expected: { initiative?: number; dexterity?: number; isActive?: boolean; hasActed?: boolean }
+): void {
+  expect(entry).toBeDefined();
+  if (entry) {
+    expectInitiativeEntryStructure(entry, expected);
+  }
+}
+
+export function setupBasicMockInitiativeEntries(): IInitiativeEntry[] {
+  const mockParticipants = createBasicParticipantSet();
+  const entries = generateInitiativeEntries(mockParticipants, false);
+  // Set up with specific values
+  entries[0].initiative = 15; // Fighter
+  entries[1].initiative = 12; // Rogue
+  return entries;
+}
+
+export function testSingleParticipantReroll(
+  entries: IInitiativeEntry[],
+  participantId: string,
+  expectedInitiative: number,
+  expectedDexterity: number
+): void {
+  const updatedEntries = rerollInitiative(entries, participantId);
+  const targetEntry = findEntryByParticipantId(updatedEntries, participantId);
+  expectEntryWithValues(targetEntry, {
+    initiative: expectedInitiative,
+    dexterity: expectedDexterity
+  });
+}
+
+export function testPreserveCombatFlags(
+  entries: IInitiativeEntry[],
+  participantId: string,
+  expectedFlags: { isActive: boolean; hasActed: boolean }
+): void {
+  const updatedEntries = rerollInitiative(entries, participantId);
+  const targetEntry = findEntryByParticipantId(updatedEntries, participantId);
+  expectEntryWithValues(targetEntry, expectedFlags);
 }

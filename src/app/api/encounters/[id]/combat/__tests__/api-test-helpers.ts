@@ -142,44 +142,39 @@ export const buildRerollScenario = (participantId?: string) => ({
   ],
 });
 
-// Error scenario builders
-export const buildMissingParticipantScenario = () => {
-  const nonExistentId = new Types.ObjectId().toString();
-  return {
-    request: createMockNextRequest({
-      participantId: nonExistentId
-    }),
-    expectedError: 'not found',
-    setup: () => {
-      // The participant ID in the request won't match any in the encounter
-      // setupBasicMocks() was already called in beforeEach
+// Error scenario builders - consolidated to reduce duplication
+export const buildErrorScenario = (
+  type: 'missingParticipant' | 'missingCharacter' | 'emptyInitiative',
+  customSetup?: () => void
+) => {
+  const scenarios = {
+    missingParticipant: {
+      request: createMockNextRequest({ participantId: new Types.ObjectId().toString() }),
+      expectedError: 'not found',
+      setup: () => {}
+    },
+    missingCharacter: {
+      request: createMockNextRequest({ participantId: API_TEST_IDS.FIGHTER.toString() }),
+      expectedError: 'Character',
+      setup: () => (Character.findById as jest.Mock).mockResolvedValue(null)
+    },
+    emptyInitiative: {
+      request: createMockNextRequest({}),
+      expectedError: 'No initiative order found',
+      setup: () => {}
     }
+  };
+
+  const scenario = scenarios[type];
+  return {
+    ...scenario,
+    setup: customSetup || scenario.setup
   };
 };
 
-export const buildMissingCharacterScenario = () => {
-  return {
-    request: createMockNextRequest({
-      participantId: API_TEST_IDS.FIGHTER.toString()
-    }),
-    expectedError: 'Character',
-    setup: () => {
-      // Override Character.findById to return null for the specific character
-      (Character.findById as jest.Mock).mockResolvedValue(null);
-    }
-  };
-};
-
-export const buildEmptyInitiativeScenario = () => {
-  return {
-    request: createMockNextRequest({}),
-    expectedError: 'No initiative order found',
-    setup: () => {
-      // Mock will be set up in beforeEach, but we need to clear initiative order
-      // This will be handled in the test itself
-    }
-  };
-};
+export const buildMissingParticipantScenario = () => buildErrorScenario('missingParticipant');
+export const buildMissingCharacterScenario = () => buildErrorScenario('missingCharacter');
+export const buildEmptyInitiativeScenario = () => buildErrorScenario('emptyInitiative');
 
 // Mock initiative rolling functions
 export const mockInitiativeRollingFunctions = () => {
@@ -229,4 +224,41 @@ export const expectFunctionCallCounts = (
 export const expectAtLeastOneFunctionCalled = (functions: jest.Mock[]) => {
   const totalCalls = functions.reduce((sum, fn) => sum + fn.mock.calls.length, 0);
   expect(totalCalls).toBeGreaterThan(0);
+};
+
+/**
+ * Utility functions to eliminate API test code duplication
+ */
+export const setupRollInitiativeTest = (
+  mockFunction: jest.Mock,
+  returnValue: any,
+  request: NextRequest
+) => {
+  mockFunction.mockReturnValue(returnValue);
+  return { request, handler: createMockParams() };
+};
+
+export const runStandardApiTest = async (
+  handler: Function,
+  request: NextRequest,
+  expectations: (_result: any) => void
+) => {
+  const response = await handler(request, createMockParams());
+  const result = await response.json();
+  expectations(result);
+  return { response, result };
+};
+
+export const expectStandardSuccessResponse = (mockEncounter: any) => (result: any) => {
+  expectSuccessfulResponse(result);
+  expectEncounterSaved(mockEncounter);
+};
+
+export const createMockWithParticipant = (participantId: string) => {
+  return createMockNextRequest({ participantId });
+};
+
+export const expectResponseWithStatus = (status: number) => (response: any, result: any) => {
+  expect(response.status).toBeGreaterThanOrEqual(status);
+  expect(result).toBeDefined();
 };

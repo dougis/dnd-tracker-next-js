@@ -233,27 +233,9 @@ export const TestAssertions = {
     entry: IInitiativeEntry | InitiativeEntryWithInfo,
     expected: Partial<InitiativeEntryConfig>
   ) => {
-    // Validate expected values using array iteration to reduce complexity
-    const checks = [
-      { key: 'participantId', assertion: (val: any) => expect(entry.participantId).toEqual(val) },
-      { key: 'dexterity', assertion: (val: any) => expect(entry.dexterity).toBe(val) },
-      { key: 'isActive', assertion: (val: any) => expect(entry.isActive).toBe(val) },
-      { key: 'hasActed', assertion: (val: any) => expect(entry.hasActed).toBe(val) },
-      { key: 'initiative', assertion: (val: any) => expect(entry.initiative).toBe(val) }
-    ];
-
-    checks.forEach(({ key, assertion }) => {
-      if (expected[key as keyof InitiativeEntryConfig] !== undefined) {
-        assertion(expected[key as keyof InitiativeEntryConfig]);
-      }
-    });
-
-    // Validate types
-    expect(typeof entry.initiative).toBe('number');
-    expect(typeof entry.participantId).toBe('object');
-    expect(typeof entry.dexterity).toBe('number');
-    expect(typeof entry.isActive).toBe('boolean');
-    expect(typeof entry.hasActed).toBe('boolean');
+    // Validate expected values using helper functions to reduce complexity
+    validateExpectedFields(entry, expected);
+    validateEntryTypes(entry);
   },
 
   validInitiativeOrder: (entries: IInitiativeEntry[]) => {
@@ -319,6 +301,36 @@ export function setupTestEnvironment() {
 /**
  * API test helper patterns
  */
+/**
+ * Helper functions to reduce complexity in TestAssertions
+ */
+function validateExpectedFields(
+  entry: IInitiativeEntry | InitiativeEntryWithInfo,
+  expected: Partial<InitiativeEntryConfig>
+): void {
+  const checks = [
+    { key: 'participantId', assertion: (val: any) => expect(entry.participantId).toEqual(val) },
+    { key: 'dexterity', assertion: (val: any) => expect(entry.dexterity).toBe(val) },
+    { key: 'isActive', assertion: (val: any) => expect(entry.isActive).toBe(val) },
+    { key: 'hasActed', assertion: (val: any) => expect(entry.hasActed).toBe(val) },
+    { key: 'initiative', assertion: (val: any) => expect(entry.initiative).toBe(val) }
+  ];
+
+  checks.forEach(({ key, assertion }) => {
+    if (expected[key as keyof InitiativeEntryConfig] !== undefined) {
+      assertion(expected[key as keyof InitiativeEntryConfig]);
+    }
+  });
+}
+
+function validateEntryTypes(entry: IInitiativeEntry | InitiativeEntryWithInfo): void {
+  expect(typeof entry.initiative).toBe('number');
+  expect(typeof entry.participantId).toBe('object');
+  expect(typeof entry.dexterity).toBe('number');
+  expect(typeof entry.isActive).toBe('boolean');
+  expect(typeof entry.hasActed).toBe('boolean');
+}
+
 export const APITestUtils = {
   runBasicTest: async (
     handler: Function,

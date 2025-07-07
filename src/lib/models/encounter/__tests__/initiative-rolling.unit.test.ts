@@ -16,8 +16,6 @@ import { IInitiativeEntry } from '../interfaces';
 import {
   createBasicParticipantSet,
   createParticipantsWithInitiative,
-  createFighterInitiativeEntry,
-  createRogueInitiativeEntry,
   resetInitiativeRollingMock,
   expectInitiativeEntryStructure,
   expectMultipleInitiativeStructures,
@@ -27,6 +25,12 @@ import {
   rollInitiativeWithMockAndExpect,
   getMockRoll,
   getMockRollSequential,
+  createStandardInitiativeEntries,
+  findEntryByParticipantId,
+  expectEntryWithValues,
+  setupBasicMockInitiativeEntries,
+  testSingleParticipantReroll,
+  testPreserveCombatFlags,
   INITIATIVE_PARTICIPANT_IDS,
 } from './initiative-test-helpers';
 
@@ -166,93 +170,51 @@ describe('Initiative Rolling System', () => {
     let mockInitiativeEntries: IInitiativeEntry[];
 
     beforeEach(() => {
-      mockInitiativeEntries = [
-        createFighterInitiativeEntry({
-          participantId: INITIATIVE_PARTICIPANT_IDS.FIGHTER,
-          initiative: 15,
-          dexterity: 14,
-          isActive: true,
-          hasActed: false,
-        }),
-        createRogueInitiativeEntry({
-          participantId: INITIATIVE_PARTICIPANT_IDS.ROGUE,
-          initiative: 12,
-          dexterity: 18,
-          isActive: false,
-          hasActed: true,
-        }),
-      ];
+      mockInitiativeEntries = createStandardInitiativeEntries();
     });
 
     it('should reroll initiative for a single participant', () => {
       getMockRoll(10);
       const participantId = INITIATIVE_PARTICIPANT_IDS.FIGHTER.toString();
+      testSingleParticipantReroll(mockInitiativeEntries, participantId, 12, 14);
+
+      // Verify Rogue remains unchanged
       const updatedEntries = rerollInitiative(mockInitiativeEntries, participantId);
-
-      // Find the fighter entry (might be in different position due to sorting)
-      const fighterEntry = updatedEntries.find(e => e.participantId.toString() === participantId);
-      const rogueEntry = updatedEntries.find(e => e.participantId.toString() === INITIATIVE_PARTICIPANT_IDS.ROGUE.toString());
-
-      expect(fighterEntry).toBeDefined();
-      expect(rogueEntry).toBeDefined();
-
-      // Fighter should have new initiative value (10 + 2 = 12)
-      expectInitiativeEntryStructure(fighterEntry!, {
-        initiative: 12,
-        dexterity: 14,
-      });
-
-      // Rogue should remain unchanged
-      expectInitiativeEntryStructure(rogueEntry!, {
-        initiative: 12,
-        dexterity: 18,
-      });
+      const rogueEntry = findEntryByParticipantId(updatedEntries, INITIATIVE_PARTICIPANT_IDS.ROGUE);
+      expectEntryWithValues(rogueEntry, { initiative: 12, dexterity: 18 });
     });
 
     it('should reroll initiative for all participants when no participantId provided', () => {
       getMockRollSequential([10, 10]);
       const updatedEntries = rerollInitiative(mockInitiativeEntries);
 
-      const fighterEntry = updatedEntries.find(e => e.participantId.toString() === INITIATIVE_PARTICIPANT_IDS.FIGHTER.toString());
-      const rogueEntry = updatedEntries.find(e => e.participantId.toString() === INITIATIVE_PARTICIPANT_IDS.ROGUE.toString());
+      const fighterEntry = findEntryByParticipantId(updatedEntries, INITIATIVE_PARTICIPANT_IDS.FIGHTER);
+      const rogueEntry = findEntryByParticipantId(updatedEntries, INITIATIVE_PARTICIPANT_IDS.ROGUE);
 
-      expect(fighterEntry).toBeDefined();
-      expect(rogueEntry).toBeDefined();
-
-      // Both should have new initiative values
-      expectInitiativeEntryStructure(fighterEntry!, { initiative: 12 }); // 10 + 2
-      expectInitiativeEntryStructure(rogueEntry!, { initiative: 14 }); // 10 + 4
+      expectEntryWithValues(fighterEntry, { initiative: 12 }); // 10 + 2
+      expectEntryWithValues(rogueEntry, { initiative: 14 }); // 10 + 4
     });
 
     it('should preserve combat state flags during reroll', () => {
       getMockRoll(10);
       const participantId = INITIATIVE_PARTICIPANT_IDS.FIGHTER.toString();
+      testPreserveCombatFlags(mockInitiativeEntries, participantId, { isActive: true, hasActed: false });
+
+      // Also check Rogue's flags are preserved
       const updatedEntries = rerollInitiative(mockInitiativeEntries, participantId);
-
-      const fighterEntry = updatedEntries.find(e => e.participantId.toString() === participantId);
-      const rogueEntry = updatedEntries.find(e => e.participantId.toString() === INITIATIVE_PARTICIPANT_IDS.ROGUE.toString());
-
-      // Should preserve isActive and hasActed flags
-      expectInitiativeEntryStructure(fighterEntry!, {
-        isActive: true,
-        hasActed: false,
-      });
-      expectInitiativeEntryStructure(rogueEntry!, {
-        isActive: false,
-        hasActed: true,
-      });
+      const rogueEntry = findEntryByParticipantId(updatedEntries, INITIATIVE_PARTICIPANT_IDS.ROGUE);
+      expectEntryWithValues(rogueEntry, { isActive: false, hasActed: true });
     });
 
     it('should handle invalid participant ID gracefully', () => {
       const invalidId = new Types.ObjectId().toString();
       const updatedEntries = rerollInitiative(mockInitiativeEntries, invalidId);
 
-      // Should return entries with same initiative values (no reroll happened)
-      const fighterEntry = updatedEntries.find(e => e.participantId.toString() === INITIATIVE_PARTICIPANT_IDS.FIGHTER.toString());
-      const rogueEntry = updatedEntries.find(e => e.participantId.toString() === INITIATIVE_PARTICIPANT_IDS.ROGUE.toString());
+      const fighterEntry = findEntryByParticipantId(updatedEntries, INITIATIVE_PARTICIPANT_IDS.FIGHTER);
+      const rogueEntry = findEntryByParticipantId(updatedEntries, INITIATIVE_PARTICIPANT_IDS.ROGUE);
 
-      expectInitiativeEntryStructure(fighterEntry!, { initiative: 15 }); // Original value
-      expectInitiativeEntryStructure(rogueEntry!, { initiative: 12 }); // Original value
+      expectEntryWithValues(fighterEntry, { initiative: 15 }); // Original value
+      expectEntryWithValues(rogueEntry, { initiative: 12 }); // Original value
     });
 
     it('should sort entries after rerolling', () => {
@@ -274,11 +236,7 @@ describe('Initiative Rolling System', () => {
     let mockInitiativeEntries: IInitiativeEntry[];
 
     beforeEach(() => {
-      const mockParticipants = createBasicParticipantSet();
-      mockInitiativeEntries = generateInitiativeEntries(mockParticipants, false);
-      // Set up mock entries with specific initiative values
-      mockInitiativeEntries[0].initiative = 15; // Fighter
-      mockInitiativeEntries[1].initiative = 12; // Rogue
+      mockInitiativeEntries = setupBasicMockInitiativeEntries();
     });
 
     it('should update initiative for specified participant', () => {
@@ -287,12 +245,8 @@ describe('Initiative Rolling System', () => {
       const newDexterity = 16;
 
       const updatedEntries = rollSingleInitiative(mockInitiativeEntries, participantId, newDexterity);
-
-      const fighterEntry = updatedEntries.find(e => e.participantId.toString() === participantId);
-      expectInitiativeEntryStructure(fighterEntry!, {
-        initiative: 18, // 15 + 3 (16 dex modifier)
-        dexterity: 16
-      });
+      const fighterEntry = findEntryByParticipantId(updatedEntries, participantId);
+      expectEntryWithValues(fighterEntry, { initiative: 18, dexterity: 16 }); // 15 + 3 (16 dex modifier)
     });
 
     it('should not modify other participants', () => {
@@ -300,12 +254,8 @@ describe('Initiative Rolling System', () => {
       const participantId = INITIATIVE_PARTICIPANT_IDS.FIGHTER.toString();
 
       const updatedEntries = rollSingleInitiative(mockInitiativeEntries, participantId, 14);
-
-      const rogueEntry = updatedEntries.find(e => e.participantId.toString() === INITIATIVE_PARTICIPANT_IDS.ROGUE.toString());
-      expectInitiativeEntryStructure(rogueEntry!, {
-        initiative: 12, // Original value unchanged
-        dexterity: 18 // Original value unchanged
-      });
+      const rogueEntry = findEntryByParticipantId(updatedEntries, INITIATIVE_PARTICIPANT_IDS.ROGUE);
+      expectEntryWithValues(rogueEntry, { initiative: 12, dexterity: 18 }); // Original values unchanged
     });
 
     it('should return sorted initiative order', () => {

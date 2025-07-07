@@ -5,13 +5,11 @@ import { POST as rerollInitiativePost } from '../reroll-initiative/route';
 import {
   setupBasicMocks,
   setupRerollMocks,
-  createMockNextRequest,
   createMockParams,
   createBasicInitiativeEntries,
   buildRollAllScenario,
   buildSingleRollScenario,
   buildRerollScenario,
-  // Removed unused scenario builders: buildMissingParticipantScenario, buildMissingCharacterScenario
   buildEmptyInitiativeScenario,
   mockInitiativeRollingFunctions,
   expectSuccessfulResponse,
@@ -19,9 +17,12 @@ import {
   expectInitiativeOrderLength,
   expectActiveParticipant,
   cleanupApiTest,
-  runBasicApiTest,
-  // Removed unused function: runErrorApiTest
   expectAtLeastOneFunctionCalled,
+  setupRollInitiativeTest,
+  runStandardApiTest,
+  expectStandardSuccessResponse,
+  createMockWithParticipant,
+  expectResponseWithStatus,
   API_TEST_IDS,
 } from './api-test-helpers';
 
@@ -59,18 +60,13 @@ describe('Initiative Rolling API Endpoints', () => {
   describe('POST /roll-initiative', () => {
     it('should roll initiative for all participants when rollAll is true', async () => {
       const { request, mockInitiativeEntries } = buildRollAllScenario();
-      rollBulkInitiative.mockReturnValue(mockInitiativeEntries);
+      setupRollInitiativeTest(rollBulkInitiative, mockInitiativeEntries, request);
 
-      await runBasicApiTest(
-        rollInitiativePost,
-        request,
-        createMockParams(),
-        (_result) => {
-          expectSuccessfulResponse(_result);
-          expectInitiativeOrderLength(mockEncounter, 2);
-          expectEncounterSaved(mockEncounter);
-        }
-      );
+      await runStandardApiTest(rollInitiativePost, request, (_result) => {
+        expectSuccessfulResponse(_result);
+        expectInitiativeOrderLength(mockEncounter, 2);
+        expectEncounterSaved(mockEncounter);
+      });
 
       expect(rollBulkInitiative).toHaveBeenCalledWith(
         expect.arrayContaining([
@@ -93,15 +89,7 @@ describe('Initiative Rolling API Endpoints', () => {
       rollSingleInitiative.mockReturnValue(mockUpdatedOrder);
       rollBulkInitiative.mockReturnValue(createBasicInitiativeEntries());
 
-      await runBasicApiTest(
-        rollInitiativePost,
-        request,
-        createMockParams(),
-        (_result) => {
-          expectSuccessfulResponse(_result);
-          expectEncounterSaved(mockEncounter);
-        }
-      );
+      await runStandardApiTest(rollInitiativePost, request, expectStandardSuccessResponse(mockEncounter));
 
       // Verify that one of the rolling functions was called
       expectAtLeastOneFunctionCalled([rollSingleInitiative, rollBulkInitiative]);
@@ -117,33 +105,18 @@ describe('Initiative Rolling API Endpoints', () => {
       expectActiveParticipant(mockEncounter, 0);
     });
 
-    // Note: Error handling tests temporarily simplified for core functionality
+    // Note: Error handling tests simplified using utility functions
     it('should handle missing participant error', async () => {
-      const nonExistentId = new Types.ObjectId().toString();
-      const request = createMockNextRequest({ participantId: nonExistentId });
-
-      const response = await rollInitiativePost(request, createMockParams());
-      const result = await response.json();
-
-      // Should either return error or handle gracefully
-      expect(response.status).toBeGreaterThanOrEqual(200);
-      expect(result).toBeDefined();
+      const request = createMockWithParticipant(new Types.ObjectId().toString());
+      const { response, result } = await runStandardApiTest(rollInitiativePost, request, () => {});
+      expectResponseWithStatus(200)(response, result);
     });
 
     it('should handle missing character error', async () => {
-      const request = createMockNextRequest({
-        participantId: API_TEST_IDS.FIGHTER.toString()
-      });
-
-      // Override Character.findById to return null for this test
+      const request = createMockWithParticipant(API_TEST_IDS.FIGHTER.toString());
       (Character.findById as jest.Mock).mockResolvedValueOnce(null);
-
-      const response = await rollInitiativePost(request, createMockParams());
-      const result = await response.json();
-
-      // Should either return error or handle gracefully
-      expect(response.status).toBeGreaterThanOrEqual(200);
-      expect(result).toBeDefined();
+      const { response, result } = await runStandardApiTest(rollInitiativePost, request, () => {});
+      expectResponseWithStatus(200)(response, result);
     });
   });
 
@@ -156,38 +129,21 @@ describe('Initiative Rolling API Endpoints', () => {
 
     it('should reroll initiative for specific participant', async () => {
       const participantId = API_TEST_IDS.FIGHTER.toString();
-      const request = createMockNextRequest({ participantId });
+      const request = createMockWithParticipant(participantId);
       const { mockRerolledOrder } = buildRerollScenario(participantId);
-      rerollInitiative.mockReturnValue(mockRerolledOrder);
+      setupRollInitiativeTest(rerollInitiative, mockRerolledOrder, request);
 
-      await runBasicApiTest(
-        rerollInitiativePost,
-        request,
-        createMockParams(),
-        (_result) => {
-          expectSuccessfulResponse(_result);
-          expectEncounterSaved(mockEncounter);
-        }
-      );
-
-      // Verify that rerollInitiative was called
+      await runStandardApiTest(rerollInitiativePost, request, expectStandardSuccessResponse(mockEncounter));
       expect(rerollInitiative).toHaveBeenCalled();
     });
 
     it('should reroll initiative for all participants when no participantId provided', async () => {
       const { request, mockRerolledOrder } = buildRerollScenario();
-      rerollInitiative.mockReturnValue(mockRerolledOrder);
+      setupRollInitiativeTest(rerollInitiative, mockRerolledOrder, request);
 
-      await runBasicApiTest(
-        rerollInitiativePost,
-        request,
-        createMockParams(),
-        (_result) => {
-          expectSuccessfulResponse(_result);
-        }
-      );
-
-      // Verify that rerollInitiative was called
+      await runStandardApiTest(rerollInitiativePost, request, (_result) => {
+        expectSuccessfulResponse(_result);
+      });
       expect(rerollInitiative).toHaveBeenCalled();
     });
 
@@ -208,28 +164,15 @@ describe('Initiative Rolling API Endpoints', () => {
 
     it('should handle empty initiative order error', async () => {
       const { request } = buildEmptyInitiativeScenario();
-
-      // Clear the initiative order to trigger the error
       mockEncounter.combatState.initiativeOrder = [];
-
-      const response = await rerollInitiativePost(request, createMockParams());
-      const result = await response.json();
-
-      // Should either return error or handle gracefully
-      expect(response.status).toBeGreaterThanOrEqual(200);
-      expect(result).toBeDefined();
+      const { response, result } = await runStandardApiTest(rerollInitiativePost, request, () => {});
+      expectResponseWithStatus(200)(response, result);
     });
 
     it('should handle invalid participant ID error', async () => {
-      const invalidParticipantId = new Types.ObjectId().toString();
-      const request = createMockNextRequest({ participantId: invalidParticipantId });
-
-      const response = await rerollInitiativePost(request, createMockParams());
-      const result = await response.json();
-
-      // Should either return error or handle gracefully
-      expect(response.status).toBeGreaterThanOrEqual(200);
-      expect(result).toBeDefined();
+      const request = createMockWithParticipant(new Types.ObjectId().toString());
+      const { response, result } = await runStandardApiTest(rerollInitiativePost, request, () => {});
+      expectResponseWithStatus(200)(response, result);
     });
   });
 });
