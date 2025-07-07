@@ -143,7 +143,10 @@ export function CharacterCreationForm({
               onChange={updateCombatStats}
               errors={errors.combatStats}
               abilityScores={formData.abilityScores}
-              classes={formData.classes}
+              classes={formData.classes.map(cls => ({
+                className: cls.class,
+                level: cls.level,
+              }))}
             />
           </div>
 
@@ -152,7 +155,10 @@ export function CharacterCreationForm({
               <CharacterPreview
                 basicInfo={formData.basicInfo}
                 abilityScores={formData.abilityScores}
-                classes={formData.classes}
+                classes={formData.classes.map(cls => ({
+                  className: cls.class,
+                  level: cls.level,
+                }))}
                 combatStats={formData.combatStats}
                 isValid={isFormValid}
               />
