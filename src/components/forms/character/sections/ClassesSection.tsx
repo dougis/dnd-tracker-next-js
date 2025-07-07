@@ -9,8 +9,9 @@ import { Plus, X } from 'lucide-react';
 import { CharacterClass } from '@/lib/validations/character';
 
 interface ClassData {
-  className: CharacterClass;
+  class: CharacterClass;
   level: number;
+  hitDie: number;
 }
 
 interface ClassesSectionProps {
@@ -36,11 +37,31 @@ const CHARACTER_CLASS_OPTIONS: FormSelectOption[] = [
 ];
 
 export function ClassesSection({ value, onChange, errors }: ClassesSectionProps) {
+  // Helper function to get hit die for each class
+  const getHitDieForClass = (className: CharacterClass): number => {
+    const hitDieMap: Record<string, number> = {
+      'barbarian': 12,
+      'fighter': 10,
+      'paladin': 10,
+      'ranger': 10,
+      'bard': 8,
+      'cleric': 8,
+      'druid': 8,
+      'monk': 8,
+      'rogue': 8,
+      'warlock': 8,
+      'artificer': 8,
+      'sorcerer': 6,
+      'wizard': 6,
+    };
+    return hitDieMap[className] || 8;
+  };
+
   const addClass = () => {
     if (value.length < 3) {
       onChange([
         ...value,
-        { className: 'fighter', level: 1 },
+        { class: 'fighter', level: 1, hitDie: 10 },
       ]);
     }
   };
@@ -54,10 +75,17 @@ export function ClassesSection({ value, onChange, errors }: ClassesSectionProps)
 
   const updateClass = (index: number, field: keyof ClassData, newValue: string | number) => {
     const newClasses = [...value];
-    newClasses[index] = {
+    const updatedClass = {
       ...newClasses[index],
       [field]: newValue,
     };
+
+    // Auto-update hitDie when class changes
+    if (field === 'class') {
+      updatedClass.hitDie = getHitDieForClass(newValue as CharacterClass);
+    }
+
+    newClasses[index] = updatedClass;
     onChange(newClasses);
   };
 
@@ -103,9 +131,9 @@ export function ClassesSection({ value, onChange, errors }: ClassesSectionProps)
               <div className="flex-2">
                 <FormSelect
                   label="Character Class"
-                  value={classData.className}
+                  value={classData.class}
                   onValueChange={(newValue) =>
-                    updateClass(index, 'className', newValue as CharacterClass)
+                    updateClass(index, 'class', newValue as CharacterClass)
                   }
                   options={CHARACTER_CLASS_OPTIONS}
                   error={errors[`class-${index}`]}
@@ -125,6 +153,22 @@ export function ClassesSection({ value, onChange, errors }: ClassesSectionProps)
                   min={1}
                   max={20}
                   required
+                />
+              </div>
+              <div className="flex-1">
+                <FormInput
+                  label="Hit Die"
+                  value={classData.hitDie.toString()}
+                  onChange={(e) =>
+                    updateClass(index, 'hitDie', parseInt(e.target.value) || 8)
+                  }
+                  error={errors[`hitDie-${index}`]}
+                  type="number"
+                  min={4}
+                  max={12}
+                  step={2}
+                  required
+                  helperText="Usually auto-set by class"
                 />
               </div>
             </FormGroup>

@@ -4,13 +4,14 @@ import React from 'react';
 import { FormInput } from '@/components/forms/FormInput';
 import { FormSelect, FormSelectOption } from '@/components/forms/FormSelect';
 import { FormGroup } from '@/components/forms/FormGroup';
-import { CharacterType, CharacterRace } from '@/lib/validations/character';
+import { CharacterType, CharacterRace, Size } from '@/lib/validations/character';
 
 interface BasicInfoData {
   name: string;
   type: CharacterType;
   race: CharacterRace | 'custom';
   customRace: string;
+  size: Size;
 }
 
 interface BasicInfoSectionProps {
@@ -46,6 +47,15 @@ const CHARACTER_RACE_OPTIONS: FormSelectOption[] = [
   { value: 'hobgoblin', label: 'Hobgoblin' },
   { value: 'orc', label: 'Orc' },
   { value: 'custom', label: 'Custom' },
+];
+
+const SIZE_OPTIONS: FormSelectOption[] = [
+  { value: 'tiny', label: 'Tiny' },
+  { value: 'small', label: 'Small' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'large', label: 'Large' },
+  { value: 'huge', label: 'Huge' },
+  { value: 'gargantuan', label: 'Gargantuan' },
 ];
 
 export function BasicInfoSection({ value, onChange, errors }: BasicInfoSectionProps) {
@@ -96,34 +106,48 @@ export function BasicInfoSection({ value, onChange, errors }: BasicInfoSectionPr
         </div>
       </FormGroup>
 
-      <div className="space-y-4">
-        <FormSelect
-          label="Race"
-          value={value.race}
-          onValueChange={(newValue) => handleFieldChange('race', newValue)}
-          options={CHARACTER_RACE_OPTIONS}
-          error={errors.race}
-          required
-          placeholder="Select character race"
-        />
+      <FormGroup direction="row" spacing="md" data-testid="race-size-group">
+        <div className="flex-1">
+          <FormSelect
+            label="Race"
+            value={value.race}
+            onValueChange={(newValue) => handleFieldChange('race', newValue)}
+            options={CHARACTER_RACE_OPTIONS}
+            error={errors.race}
+            required
+            placeholder="Select character race"
+          />
+        </div>
 
-        {value.race === 'custom' && (
-          <div>
-            <FormInput
-              label="Custom Race Name"
-              value={value.customRace}
-              onChange={(e) => handleFieldChange('customRace', e.target.value)}
-              error={errors.customRace}
-              helperText="Enter the name of your custom race"
-              required
-              maxLength={50}
-            />
-            <div className="text-xs text-muted-foreground mt-1">
-              {value.customRace.length}/50
-            </div>
+        <div className="flex-1">
+          <FormSelect
+            label="Size"
+            value={value.size}
+            onValueChange={(newValue) => handleFieldChange('size', newValue)}
+            options={SIZE_OPTIONS}
+            error={errors.size}
+            required
+            placeholder="Select character size"
+          />
+        </div>
+      </FormGroup>
+
+      {value.race === 'custom' && (
+        <div>
+          <FormInput
+            label="Custom Race Name"
+            value={value.customRace}
+            onChange={(e) => handleFieldChange('customRace', e.target.value)}
+            error={errors.customRace}
+            helperText="Enter the name of your custom race"
+            required
+            maxLength={50}
+          />
+          <div className="text-xs text-muted-foreground mt-1">
+            {value.customRace.length}/50
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
