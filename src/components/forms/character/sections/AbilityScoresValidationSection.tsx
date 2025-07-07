@@ -3,10 +3,9 @@
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { CharacterCreation } from '@/lib/validations/character';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { ABILITY_SCORES } from '../constants';
 import { getAbilityModifier, formatModifier } from '../utils';
+import { FormFieldNumber } from '../components';
 
 interface AbilityScoresValidationSectionProps {
   form: UseFormReturn<CharacterCreation>;
@@ -32,34 +31,21 @@ export function AbilityScoresValidationSection({ form }: AbilityScoresValidation
           const modifier = getAbilityModifier(score);
 
           return (
-            <FormField
-              key={key}
-              control={form.control}
-              name={`abilityScores.${key}`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-center block">
-                    {label} ({abbr})
-                  </FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        min={1}
-                        max={30}
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
-                        className="text-center text-lg font-semibold"
-                      />
-                      <div className="absolute -bottom-6 left-0 right-0 text-center text-xs text-muted-foreground">
-                        {formatModifier(modifier)}
-                      </div>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div key={key} className="relative">
+              <FormFieldNumber
+                form={form}
+                name={`abilityScores.${key}` as any}
+                label={`${label} (${abbr})`}
+                min={1}
+                max={30}
+                defaultValue={1}
+                inputClassName="text-center text-lg font-semibold"
+                labelClassName="text-center block"
+              />
+              <div className="absolute -bottom-6 left-0 right-0 text-center text-xs text-muted-foreground">
+                {formatModifier(modifier)}
+              </div>
+            </div>
           );
         })}
       </div>

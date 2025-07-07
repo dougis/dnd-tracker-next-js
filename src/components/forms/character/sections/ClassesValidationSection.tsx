@@ -3,19 +3,16 @@
 import React from 'react';
 import { UseFormReturn, useFieldArray } from 'react-hook-form';
 import { CharacterCreation, CharacterClass } from '@/lib/validations/character';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Plus, X } from 'lucide-react';
 import { FormGroup } from '@/components/forms/FormGroup';
+import { CHARACTER_CLASS_OPTIONS } from '../constants';
+import { getHitDieForClass } from '../utils';
+import { FormFieldSelect, FormFieldNumber } from '../components';
 
 interface ClassesValidationSectionProps {
   form: UseFormReturn<CharacterCreation>;
 }
-
-import { CHARACTER_CLASS_OPTIONS } from '../constants';
-import { getHitDieForClass } from '../utils';
 
 export function ClassesValidationSection({ form }: ClassesValidationSectionProps) {
   const { fields, append, remove } = useFieldArray({
@@ -75,88 +72,42 @@ export function ClassesValidationSection({ form }: ClassesValidationSectionProps
             </div>
 
             <FormGroup direction="row" spacing="md">
-              <div className="flex-2">
-                <FormField
-                  control={form.control}
-                  name={`classes.${index}.class`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Character Class *</FormLabel>
-                      <Select
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          // Auto-update hitDie when class changes
-                          const hitDie = getHitDieForClass(value as CharacterClass);
-                          form.setValue(`classes.${index}.hitDie`, hitDie);
-                        }}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select class" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {CHARACTER_CLASS_OPTIONS.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormFieldSelect
+                form={form}
+                name={`classes.${index}.class` as any}
+                label="Character Class"
+                required
+                placeholder="Select class"
+                options={CHARACTER_CLASS_OPTIONS}
+                className="flex-2"
+                onValueChange={(value) => {
+                  const hitDie = getHitDieForClass(value as CharacterClass);
+                  form.setValue(`classes.${index}.hitDie`, hitDie);
+                }}
+              />
 
-              <div className="flex-1">
-                <FormField
-                  control={form.control}
-                  name={`classes.${index}.level`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Level *</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={1}
-                          max={20}
-                          {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormFieldNumber
+                form={form}
+                name={`classes.${index}.level` as any}
+                label="Level"
+                required
+                min={1}
+                max={20}
+                defaultValue={1}
+                className="flex-1"
+              />
 
-              <div className="flex-1">
-                <FormField
-                  control={form.control}
-                  name={`classes.${index}.hitDie`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Hit Die *</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={4}
-                          max={12}
-                          step={2}
-                          {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 8)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Usually auto-set by class
-                      </div>
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormFieldNumber
+                form={form}
+                name={`classes.${index}.hitDie` as any}
+                label="Hit Die"
+                required
+                min={4}
+                max={12}
+                defaultValue={8}
+                description="Usually auto-set by class"
+                className="flex-1"
+              />
             </FormGroup>
           </div>
         ))}

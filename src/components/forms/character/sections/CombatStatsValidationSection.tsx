@@ -3,9 +3,8 @@
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { CharacterCreation } from '@/lib/validations/character';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { FormGroup } from '@/components/forms/FormGroup';
+import { FormFieldNumber } from '../components';
 
 interface CombatStatsValidationSectionProps {
   form: UseFormReturn<CharacterCreation>;
@@ -33,156 +32,77 @@ export function CombatStatsValidationSection({ form }: CombatStatsValidationSect
         <h4 className="text-sm font-medium">Hit Points</h4>
 
         <FormGroup direction="row" spacing="md">
-          <div className="flex-1">
-            <FormField
-              control={form.control}
-              name="hitPoints.maximum"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Maximum HP *</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={1000}
-                      {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormFieldNumber
+            form={form}
+            name="hitPoints.maximum"
+            label="Maximum HP"
+            required
+            min={1}
+            max={1000}
+            defaultValue={1}
+            className="flex-1"
+          />
 
-          <div className="flex-1">
-            <FormField
-              control={form.control}
-              name="hitPoints.current"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Current HP *</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={hitPoints?.maximum || 1000}
-                      {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                  <FormDescription>
-                    Max: {hitPoints?.maximum || 0}
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormFieldNumber
+            form={form}
+            name="hitPoints.current"
+            label="Current HP"
+            required
+            min={0}
+            max={hitPoints?.maximum || 1000}
+            description={`Max: ${hitPoints?.maximum || 0}`}
+            className="flex-1"
+          />
 
-          <div className="flex-1">
-            <FormField
-              control={form.control}
-              name="hitPoints.temporary"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Temporary HP</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={200}
-                      {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                  <FormDescription>
-                    Optional
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormFieldNumber
+            form={form}
+            name="hitPoints.temporary"
+            label="Temporary HP"
+            min={0}
+            max={200}
+            description="Optional"
+            className="flex-1"
+          />
         </FormGroup>
       </div>
 
       {/* Other Combat Stats */}
       <FormGroup direction="row" spacing="md">
-        <div className="flex-1">
-          <FormField
-            control={form.control}
-            name="armorClass"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Armor Class *</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={50}
-                    {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
-                  />
-                </FormControl>
-                <FormMessage />
-                <FormDescription>
-                  Current AC: {armorClass || 0}
-                </FormDescription>
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormFieldNumber
+          form={form}
+          name="armorClass"
+          label="Armor Class"
+          required
+          min={1}
+          max={50}
+          defaultValue={1}
+          description={`Current AC: ${armorClass || 0}`}
+          className="flex-1"
+        />
 
-        <div className="flex-1">
-          <FormField
-            control={form.control}
-            name="speed"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Speed (feet) *</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={120}
-                    {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value) || 30)}
-                  />
-                </FormControl>
-                <FormMessage />
-                <FormDescription>
-                  Walking speed: {speed || 30} ft
-                </FormDescription>
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormFieldNumber
+          form={form}
+          name="speed"
+          label="Speed (feet)"
+          required
+          min={0}
+          max={120}
+          defaultValue={30}
+          description={`Walking speed: ${speed || 30} ft`}
+          className="flex-1"
+        />
 
-        <div className="flex-1">
-          <FormField
-            control={form.control}
-            name="proficiencyBonus"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Proficiency Bonus *</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min={2}
-                    max={6}
-                    {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value) || 2)}
-                  />
-                </FormControl>
-                <FormMessage />
-                <FormDescription>
-                  Bonus: +{proficiencyBonus || 2}
-                </FormDescription>
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormFieldNumber
+          form={form}
+          name="proficiencyBonus"
+          label="Proficiency Bonus"
+          required
+          min={2}
+          max={6}
+          defaultValue={2}
+          description={`Bonus: +${proficiencyBonus || 2}`}
+          className="flex-1"
+        />
       </FormGroup>
 
       {/* Combat Summary */}

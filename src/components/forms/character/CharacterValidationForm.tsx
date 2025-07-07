@@ -5,7 +5,8 @@ import { useForm } from 'react-hook-form';
 import { characterCreationSchema, CharacterCreation } from '@/lib/validations/character';
 import { useFormValidation } from '@/lib/validations/form-integration';
 import { Form } from '@/components/ui/form';
-import { FormModal } from '@/components/modals/FormModal';
+import { Modal } from '@/components/modals/Modal';
+import { Button } from '@/components/ui/button';
 import { BasicInfoValidationSection } from './sections/BasicInfoValidationSection';
 import { AbilityScoresValidationSection } from './sections/AbilityScoresValidationSection';
 import { ClassesValidationSection } from './sections/ClassesValidationSection';
@@ -70,21 +71,22 @@ export function CharacterValidationForm({
   const formValues = form.watch();
 
   return (
-    <FormModal
+    <Modal
       open={isOpen}
       onOpenChange={(open) => { if (!open) onCancel?.(); }}
-      onSubmit={isFormValid ? handleFormSubmit : undefined}
-      onCancel={onCancel}
-      isSubmitting={isSubmitting}
-      config={{
-        title: "Create Character",
-        description: "Build your character with real-time validation",
-        submitText: "Create Character",
-        cancelText: "Cancel",
-        size: "xl",
-      }}
+      size="xl"
     >
-      <Form {...form}>
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold leading-none tracking-tight">
+            Create Character
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Build your character with real-time validation
+          </p>
+        </div>
+
+        <Form {...form}>
         <div className="space-y-6">
           {submitError && (
             <Alert variant="destructive">
@@ -147,7 +149,27 @@ export function CharacterValidationForm({
             )}
           </div>
         </div>
-      </Form>
-    </FormModal>
+        </Form>
+
+        {/* Form Actions */}
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            onClick={handleFormSubmit}
+            disabled={!isFormValid || isSubmitting}
+          >
+            {isSubmitting ? 'Creating...' : 'Create Character'}
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 }
