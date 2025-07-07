@@ -90,6 +90,7 @@ export const makeEncounterActive = (encounter: IEncounter) => {
   encounter.combatState.isActive = true;
   encounter.combatState.currentRound = 2;
   encounter.combatState.currentTurn = 0;
+  encounter.combatState.startedAt = new Date();
   encounter.combatState.initiativeOrder = [
     createTestParticipant({
       participantId: PARTICIPANT_IDS.FIRST,

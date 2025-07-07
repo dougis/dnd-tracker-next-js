@@ -20,37 +20,63 @@ import {
 } from './tracker-hooks';
 import { Effect, Trigger, SessionSummary as SessionSummaryType } from './round-utils';
 
-interface RoundTrackerProps {
+interface CombatData {
   encounter: IEncounter | null;
   effects?: Effect[];
   triggers?: Trigger[];
   history?: { round: number; events: string[] }[];
   sessionSummary?: SessionSummaryType;
+  effectsError?: string;
+}
+
+interface CombatSettings {
   maxRounds?: number;
   estimatedRoundDuration?: number;
   showHistory?: boolean;
-  effectsError?: string;
+}
+
+interface CombatHandlers {
   onRoundChange: (_newRound: number) => void;
   onEffectExpiry?: (_expiredEffectIds: string[]) => void;
   onTriggerAction?: (_triggerId: string) => void;
   onExport?: () => void;
 }
 
+interface RoundTrackerProps {
+  data: CombatData;
+  settings?: CombatSettings;
+  handlers: CombatHandlers;
+}
+
 export function RoundTracker({
-  encounter,
-  effects = [],
-  triggers = [],
-  history = [],
-  sessionSummary,
-  maxRounds,
-  estimatedRoundDuration,
-  showHistory = false,
-  effectsError,
-  onRoundChange,
-  onEffectExpiry,
-  onTriggerAction,
-  onExport,
+  data,
+  settings = {},
+  handlers,
 }: RoundTrackerProps) {
+  // Destructure data
+  const {
+    encounter,
+    effects = [],
+    triggers = [],
+    history = [],
+    sessionSummary,
+    effectsError,
+  } = data;
+
+  // Destructure settings
+  const {
+    maxRounds,
+    estimatedRoundDuration,
+    showHistory = false,
+  } = settings;
+
+  // Destructure handlers
+  const {
+    onRoundChange,
+    onEffectExpiry,
+    onTriggerAction,
+    onExport,
+  } = handlers;
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(true);
 
   // Calculate current round with safety check

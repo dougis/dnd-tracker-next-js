@@ -16,8 +16,8 @@ describe('useRoundTracking', () => {
 
   // Helper function for most tests - disable debouncing for predictable behavior
   const useRoundTrackingWithDefaults = (
-    encounter = mockEncounter, 
-    onUpdate = mockOnUpdate, 
+    encounter = mockEncounter,
+    onUpdate = mockOnUpdate,
     options = {}
   ) => useRoundTracking(encounter, onUpdate, { enableDebouncing: false, ...options });
 
@@ -530,7 +530,7 @@ describe('useRoundTracking', () => {
       });
 
       expect(result.current.error).toBe('Failed to update encounter');
-      
+
       jest.useRealTimers();
     });
   });

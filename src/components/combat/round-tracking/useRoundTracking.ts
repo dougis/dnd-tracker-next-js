@@ -138,7 +138,7 @@ export function useRoundTracking(
     if (!enableDebouncing) {
       try {
         onUpdate(updates);
-      } catch (error) {
+      } catch (_error) {
         setState(prev => ({
           ...prev,
           error: 'Failed to update encounter',
@@ -152,7 +152,7 @@ export function useRoundTracking(
     updateTimeoutRef.current = setTimeout(() => {
       try {
         onUpdate(updates);
-      } catch (error) {
+      } catch (_error) {
         setState(prev => ({
           ...prev,
           error: 'Failed to update encounter',
@@ -182,7 +182,7 @@ export function useRoundTracking(
 
   const nextRound = useCallback(() => {
     let newRound: number;
-    
+
     setState(prev => {
       newRound = prev.currentRound + 1;
 
@@ -216,7 +216,7 @@ export function useRoundTracking(
 
   const previousRound = useCallback(() => {
     let newRound: number | null = null;
-    
+
     setState(prev => {
       if (prev.currentRound <= 1) {
         return prev; // Cannot go below round 1

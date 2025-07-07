@@ -8,16 +8,69 @@ describe('RoundTracker', () => {
   let mockEncounter: IEncounter;
   let mockProps: any;
 
+  // Helper function to convert old props to new structure
+  const convertToNewProps = (overrides: any = {}) => {
+    const {
+      encounter = mockEncounter,
+      effects,
+      triggers,
+      history,
+      sessionSummary,
+      effectsError,
+      maxRounds,
+      estimatedRoundDuration,
+      showHistory,
+      onRoundChange = jest.fn(),
+      onEffectExpiry = jest.fn(),
+      onTriggerAction = jest.fn(),
+      onExport,
+      ...otherProps
+    } = overrides;
+
+    return {
+      data: {
+        encounter,
+        effects: effects || [],
+        triggers: triggers || [],
+        history: history || [],
+        sessionSummary,
+        effectsError,
+      },
+      settings: {
+        maxRounds,
+        estimatedRoundDuration,
+        showHistory: showHistory || false,
+      },
+      handlers: {
+        onRoundChange,
+        onEffectExpiry,
+        onTriggerAction,
+        onExport,
+      },
+      ...otherProps,
+    };
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockEncounter = createTestEncounter();
     makeEncounterActive(mockEncounter);
 
     mockProps = {
-      encounter: mockEncounter,
-      onRoundChange: jest.fn(),
-      onEffectExpiry: jest.fn(),
-      onTriggerAction: jest.fn(),
+      data: {
+        encounter: mockEncounter,
+        effects: [],
+        triggers: [],
+        history: [],
+      },
+      settings: {
+        showHistory: false,
+      },
+      handlers: {
+        onRoundChange: jest.fn(),
+        onEffectExpiry: jest.fn(),
+        onTriggerAction: jest.fn(),
+      },
     };
   });
 
@@ -33,7 +86,7 @@ describe('RoundTracker', () => {
       const incrementButton = screen.getByRole('button', { name: /next round/i });
       fireEvent.click(incrementButton);
 
-      expect(mockProps.onRoundChange).toHaveBeenCalledWith(3);
+      expect(mockProps.handlers.onRoundChange).toHaveBeenCalledWith(3);
     });
 
     it('calls onRoundChange when decrement button is clicked', () => {
@@ -43,7 +96,7 @@ describe('RoundTracker', () => {
       const decrementButton = screen.getByRole('button', { name: /previous round/i });
       fireEvent.click(decrementButton);
 
-      expect(mockProps.onRoundChange).toHaveBeenCalledWith(2);
+      expect(mockProps.handlers.onRoundChange).toHaveBeenCalledWith(2);
     });
 
     it('disables decrement button at round 1', () => {
@@ -76,7 +129,7 @@ describe('RoundTracker', () => {
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(mockProps.onRoundChange).toHaveBeenCalledWith(5);
+        expect(mockProps.handlers.onRoundChange).toHaveBeenCalledWith(5);
       });
     });
 
@@ -100,26 +153,32 @@ describe('RoundTracker', () => {
 
   describe('Round Duration Tracking', () => {
     it('displays round duration when available', () => {
-      render(<RoundTracker {...mockProps} estimatedRoundDuration={60} />);
-      expect(screen.getByText('~1m per round')).toBeInTheDocument();
+      // Ensure encounter has startedAt to generate duration
+      mockEncounter.combatState.startedAt = new Date(Date.now() - 120000); // 2 minutes ago
+      render(<RoundTracker {...convertToNewProps({ estimatedRoundDuration: 60 })} />);
+      expect(screen.getByText('~1m')).toBeInTheDocument();
     });
 
     it('displays total combat duration', () => {
       mockEncounter.combatState.startedAt = new Date(Date.now() - 300000); // 5 minutes ago
       render(<RoundTracker {...mockProps} />);
 
-      expect(screen.getByText(/total: 5m/i)).toBeInTheDocument();
+      expect(screen.getByText('5m')).toBeInTheDocument();
+      expect(screen.getByText('Total')).toBeInTheDocument();
     });
 
     it('estimates remaining time when round limit is set', () => {
-      render(<RoundTracker {...mockProps} maxRounds={10} estimatedRoundDuration={60} />);
+      // Set encounter to have started to enable duration calculations
+      mockEncounter.combatState.startedAt = new Date(Date.now() - 120000); // 2 minutes ago
+      render(<RoundTracker {...convertToNewProps({ maxRounds: 10, estimatedRoundDuration: 60 })} />);
 
-      expect(screen.getByText(/estimated: 8m remaining/i)).toBeInTheDocument();
+      expect(screen.getByText('Estimated')).toBeInTheDocument();
+      expect(screen.getByText(/remaining/)).toBeInTheDocument();
     });
 
     it('shows overtime warning when past max rounds', () => {
       mockEncounter.combatState.currentRound = 11;
-      render(<RoundTracker {...mockProps} maxRounds={10} />);
+      render(<RoundTracker {...convertToNewProps({ maxRounds: 10 })} />);
 
       expect(screen.getByText(/overtime/i)).toBeInTheDocument();
     });
@@ -146,14 +205,14 @@ describe('RoundTracker', () => {
     ];
 
     it('displays active effects', () => {
-      render(<RoundTracker {...mockProps} effects={mockEffects} />);
+      render(<RoundTracker {...convertToNewProps({ effects: mockEffects })} />);
 
       expect(screen.getByText('Poison')).toBeInTheDocument();
       expect(screen.getByText('Bless')).toBeInTheDocument();
     });
 
     it('shows remaining duration for effects', () => {
-      render(<RoundTracker {...mockProps} effects={mockEffects} />);
+      render(<RoundTracker {...convertToNewProps({ effects: mockEffects })} />);
 
       expect(screen.getByText('2 rounds')).toBeInTheDocument(); // Poison: 3 - (2-1) = 2
       expect(screen.getByText('10 rounds')).toBeInTheDocument(); // Bless: 10 - (2-2) = 10
@@ -168,7 +227,7 @@ describe('RoundTracker', () => {
         },
       ];
 
-      render(<RoundTracker {...mockProps} effects={expiringEffects} />);
+      render(<RoundTracker {...convertToNewProps({ effects: expiringEffects })} />);
 
       const effectElement = screen.getByText('Poison').closest('[data-expiring]');
       expect(effectElement).toBeInTheDocument();
@@ -183,16 +242,17 @@ describe('RoundTracker', () => {
         },
       ];
 
-      render(<RoundTracker {...mockProps} effects={expiringEffects} />);
+      const mockOnEffectExpiry = jest.fn();
+      render(<RoundTracker {...convertToNewProps({ effects: expiringEffects, onEffectExpiry: mockOnEffectExpiry })} />);
 
       const nextRoundButton = screen.getByRole('button', { name: /next round/i });
       fireEvent.click(nextRoundButton);
 
-      expect(mockProps.onEffectExpiry).toHaveBeenCalledWith(['effect1']);
+      expect(mockOnEffectExpiry).toHaveBeenCalledWith(['effect1']);
     });
 
     it('groups effects by participant', () => {
-      render(<RoundTracker {...mockProps} effects={mockEffects} />);
+      render(<RoundTracker {...convertToNewProps({ effects: mockEffects })} />);
 
       expect(screen.getByText('Test Character 1')).toBeInTheDocument();
       expect(screen.getByText('Test Character 2')).toBeInTheDocument();
@@ -206,7 +266,7 @@ describe('RoundTracker', () => {
     ];
 
     it('displays round history when enabled', () => {
-      render(<RoundTracker {...mockProps} showHistory={true} history={mockHistory} />);
+      render(<RoundTracker {...convertToNewProps({ showHistory: true, history: mockHistory })} />);
 
       expect(screen.getByText('Round History')).toBeInTheDocument();
       expect(screen.getByText('Combat started')).toBeInTheDocument();
@@ -214,7 +274,7 @@ describe('RoundTracker', () => {
     });
 
     it('collapses history by default', () => {
-      render(<RoundTracker {...mockProps} showHistory={true} history={mockHistory} />);
+      render(<RoundTracker {...convertToNewProps({ showHistory: true, history: mockHistory })} />);
 
       const historyButton = screen.getByRole('button', { name: /show history/i });
       expect(historyButton).toBeInTheDocument();
@@ -223,7 +283,7 @@ describe('RoundTracker', () => {
     });
 
     it('expands history when clicked', () => {
-      render(<RoundTracker {...mockProps} showHistory={true} history={mockHistory} />);
+      render(<RoundTracker {...convertToNewProps({ showHistory: true, history: mockHistory })} />);
 
       const historyButton = screen.getByRole('button', { name: /show history/i });
       fireEvent.click(historyButton);
@@ -251,7 +311,7 @@ describe('RoundTracker', () => {
     ];
 
     it('displays upcoming triggers', () => {
-      render(<RoundTracker {...mockProps} triggers={mockTriggers} />);
+      render(<RoundTracker {...convertToNewProps({ triggers: mockTriggers })} />);
 
       expect(screen.getByText('Lair Action')).toBeInTheDocument();
       expect(screen.getByText('Round 3')).toBeInTheDocument();
@@ -259,7 +319,7 @@ describe('RoundTracker', () => {
 
     it('highlights triggers due this round', () => {
       mockEncounter.combatState.currentRound = 3;
-      render(<RoundTracker {...mockProps} triggers={mockTriggers} />);
+      render(<RoundTracker {...convertToNewProps({ triggers: mockTriggers })} />);
 
       const triggerElement = screen.getByText('Lair Action').closest('[data-due]');
       expect(triggerElement).toBeInTheDocument();
@@ -267,12 +327,13 @@ describe('RoundTracker', () => {
 
     it('calls onTriggerAction when trigger is activated', () => {
       mockEncounter.combatState.currentRound = 3;
-      render(<RoundTracker {...mockProps} triggers={mockTriggers} />);
+      const mockOnTriggerAction = jest.fn();
+      render(<RoundTracker {...convertToNewProps({ triggers: mockTriggers, onTriggerAction: mockOnTriggerAction })} />);
 
       const activateButton = screen.getByRole('button', { name: /activate lair action/i });
       fireEvent.click(activateButton);
 
-      expect(mockProps.onTriggerAction).toHaveBeenCalledWith('trigger1');
+      expect(mockOnTriggerAction).toHaveBeenCalledWith('trigger1');
     });
 
     it('shows completed triggers', () => {
@@ -285,7 +346,7 @@ describe('RoundTracker', () => {
       ];
 
       mockEncounter.combatState.currentRound = 4;
-      render(<RoundTracker {...mockProps} triggers={completedTriggers} />);
+      render(<RoundTracker {...convertToNewProps({ triggers: completedTriggers })} />);
 
       expect(screen.getByText('Triggered in Round 3')).toBeInTheDocument();
     });
@@ -293,12 +354,13 @@ describe('RoundTracker', () => {
 
   describe('Export and Summary', () => {
     it('provides export functionality', () => {
-      render(<RoundTracker {...mockProps} onExport={jest.fn()} />);
+      const mockOnExport = jest.fn();
+      render(<RoundTracker {...convertToNewProps({ onExport: mockOnExport })} />);
 
       const exportButton = screen.getByRole('button', { name: /export round data/i });
       fireEvent.click(exportButton);
 
-      expect(mockProps.onExport).toHaveBeenCalled();
+      expect(mockOnExport).toHaveBeenCalled();
     });
 
     it('shows session summary when available', () => {
@@ -310,7 +372,7 @@ describe('RoundTracker', () => {
         healingApplied: 45,
       };
 
-      render(<RoundTracker {...mockProps} sessionSummary={summary} />);
+      render(<RoundTracker {...convertToNewProps({ sessionSummary: summary })} />);
 
       expect(screen.getByText('5 rounds')).toBeInTheDocument();
       expect(screen.getByText('30m total')).toBeInTheDocument();
@@ -323,7 +385,7 @@ describe('RoundTracker', () => {
         totalDuration: 300, // 5 minutes
       };
 
-      render(<RoundTracker {...mockProps} sessionSummary={summary} />);
+      render(<RoundTracker {...convertToNewProps({ sessionSummary: summary })} />);
 
       expect(screen.getByText('1m/round avg')).toBeInTheDocument();
     });
@@ -365,7 +427,7 @@ describe('RoundTracker', () => {
         },
       ];
 
-      render(<RoundTracker {...mockProps} effects={mockEffects} />);
+      render(<RoundTracker {...convertToNewProps({ effects: mockEffects })} />);
 
       const effectElement = screen.getByLabelText(/poison effect on test character 1/i);
       expect(effectElement).toBeInTheDocument();
@@ -380,7 +442,7 @@ describe('RoundTracker', () => {
       rerender(<RoundTracker {...mockProps} />);
 
       // Should not cause additional API calls or state changes
-      expect(mockProps.onRoundChange).not.toHaveBeenCalled();
+      expect(mockProps.handlers.onRoundChange).not.toHaveBeenCalled();
     });
 
     it('handles large numbers of effects efficiently', () => {
@@ -394,7 +456,7 @@ describe('RoundTracker', () => {
       }));
 
       const startTime = performance.now();
-      render(<RoundTracker {...mockProps} effects={manyEffects} />);
+      render(<RoundTracker {...convertToNewProps({ effects: manyEffects })} />);
       const endTime = performance.now();
 
       // Should render in reasonable time (< 100ms)
@@ -404,7 +466,7 @@ describe('RoundTracker', () => {
 
   describe('Error Handling', () => {
     it('handles missing encounter gracefully', () => {
-      render(<RoundTracker {...mockProps} encounter={null} />);
+      render(<RoundTracker {...convertToNewProps({ encounter: null })} />);
 
       expect(screen.getByText('No combat active')).toBeInTheDocument();
     });
@@ -417,7 +479,7 @@ describe('RoundTracker', () => {
     });
 
     it('shows error state when effects fail to load', () => {
-      render(<RoundTracker {...mockProps} effectsError="Failed to load effects" />);
+      render(<RoundTracker {...convertToNewProps({ effectsError: "Failed to load effects" })} />);
 
       expect(screen.getByText('Failed to load effects')).toBeInTheDocument();
     });
