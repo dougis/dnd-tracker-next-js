@@ -20,11 +20,7 @@ export function CombatTimer({
   isRoundCritical,
   isPaused,
 }: CombatTimerProps) {
-  const getRoundTimerClass = () => {
-    if (isRoundCritical) return 'text-destructive';
-    if (isRoundWarning) return 'text-warning';
-    return 'text-muted-foreground';
-  };
+  const roundTimerClass = isRoundCritical ? 'text-destructive' : isRoundWarning ? 'text-warning' : 'text-muted-foreground';
 
   return (
     <div className="flex items-center space-x-3 text-sm">
@@ -38,7 +34,7 @@ export function CombatTimer({
         <div className="flex items-center space-x-1">
           <span className="text-xs text-muted-foreground">Round Timer:</span>
           <span
-            className={getRoundTimerClass()}
+            className={roundTimerClass}
             aria-label={`Round timer: ${formattedRoundTime} remaining`}
           >
             {formattedRoundTime}

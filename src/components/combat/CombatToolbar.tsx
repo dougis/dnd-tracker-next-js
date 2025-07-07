@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -98,54 +98,37 @@ export function CombatToolbar({
   const currentRound = combatState?.currentRound || 0;
   const currentTurn = combatState?.currentTurn || 0;
 
-  const initiativeOrder = useMemo(() => combatState?.initiativeOrder || [], [combatState?.initiativeOrder]);
-  const participants = useMemo(() => encounter?.participants || [], [encounter?.participants]);
-  const settings_roundTimeLimit = encounter?.settings?.roundTimeLimit;
-
-  // Calculate if Previous button should be disabled
+  const initiativeOrder = combatState?.initiativeOrder || [];
+  const participants = encounter?.participants || [];
   const canGoPrevious = !(currentRound === 1 && currentTurn === 0);
 
-  // Combat timer hook
   const timerData = useCombatTimer({
     startedAt: combatState?.startedAt,
     pausedAt: combatState?.pausedAt,
     isActive,
-    roundTimeLimit: settings_roundTimeLimit,
+    roundTimeLimit: encounter?.settings?.roundTimeLimit,
   });
 
-  // Calculate participant statistics
-  const participantStats = useMemo(() => ({
+  const participantStats = {
     total: participants.length,
     pcs: participants.filter(p => p.isPlayer).length,
     npcs: participants.filter(p => !p.isPlayer).length,
     alive: participants.filter(p => p.currentHitPoints > 0).length,
-  }), [participants]);
+  };
 
-  // Get active participant name
-  const activeParticipantName = useMemo(() => {
-    if (!isActive || initiativeOrder.length === 0 || currentTurn >= initiativeOrder.length) {
-      return undefined;
-    }
-    const activeEntry = initiativeOrder[currentTurn];
-    return participants.find(p => p.characterId.toString() === activeEntry.participantId.toString())?.name;
-  }, [isActive, initiativeOrder, currentTurn, participants]);
+  const activeParticipantName = !isActive || currentTurn >= initiativeOrder.length ? undefined :
+    participants.find(p => p.characterId.toString() === initiativeOrder[currentTurn]?.participantId.toString())?.name;
 
-  // Combat phase
   const combatPhase = !isActive ? 'inactive' : isPaused ? 'paused' : 'active';
 
-  // Simplified keyboard shortcuts handler
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    const target = event.target as Element;
-    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
-
+    if ((event.target as Element).tagName === 'INPUT' || (event.target as Element).tagName === 'TEXTAREA') return;
     event.preventDefault();
 
-    switch (event.code) {
-      case 'Space': onNextTurn?.(); break;
-      case 'Backspace': canGoPrevious && onPreviousTurn?.(); break;
-      case 'KeyP': isPaused ? onResumeCombat?.() : onPauseCombat?.(); break;
-      case 'KeyE': onEndCombat?.(); break;
-    }
+    if (event.code === 'Space') onNextTurn?.();
+    else if (event.code === 'Backspace' && canGoPrevious) onPreviousTurn?.();
+    else if (event.code === 'KeyP') isPaused ? onResumeCombat?.() : onPauseCombat?.();
+    else if (event.code === 'KeyE') onEndCombat?.();
   }, [onNextTurn, onPreviousTurn, onPauseCombat, onResumeCombat, onEndCombat, canGoPrevious, isPaused]);
 
   // Keyboard shortcuts

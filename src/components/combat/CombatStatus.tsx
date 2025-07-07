@@ -20,21 +20,8 @@ export function CombatStatus({
   activeParticipantName,
   combatPhase,
 }: CombatStatusProps) {
-  const getBadgeVariant = () => {
-    switch (combatPhase) {
-      case 'active': return 'default';
-      case 'paused': return 'secondary';
-      default: return 'outline';
-    }
-  };
-
-  const getPhaseLabel = () => {
-    switch (combatPhase) {
-      case 'active': return 'Combat Active';
-      case 'paused': return 'Combat Paused';
-      default: return 'Combat Inactive';
-    }
-  };
+  const badgeVariant = combatPhase === 'active' ? 'default' : combatPhase === 'paused' ? 'secondary' : 'outline';
+  const phaseLabel = combatPhase === 'active' ? 'Combat Active' : combatPhase === 'paused' ? 'Combat Paused' : 'Combat Inactive';
 
   return (
     <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -47,8 +34,8 @@ export function CombatStatus({
         {activeParticipantName && (
           <span>Active: {activeParticipantName}</span>
         )}
-        <Badge variant={getBadgeVariant()}>
-          {getPhaseLabel()}
+        <Badge variant={badgeVariant}>
+          {phaseLabel}
         </Badge>
       </div>
     </div>

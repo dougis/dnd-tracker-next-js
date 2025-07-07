@@ -1,3 +1,5 @@
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
 import { createTestEncounter, makeEncounterActive, PARTICIPANT_IDS } from '@/lib/models/encounter/__tests__/combat-test-helpers';
 
@@ -90,5 +92,52 @@ export function createMockQuickActions() {
     onClearConditions: jest.fn(),
     onAddParticipant: jest.fn(),
     onEncounterSettings: jest.fn(),
+  };
+}
+
+/**
+ * Common test patterns for button interactions
+ */
+export function expectButtonToExist(text: string) {
+  expect(screen.getByText(text)).toBeInTheDocument();
+}
+
+export function clickButtonAndExpectCall(buttonText: string, mockFn: jest.Mock) {
+  const button = screen.getByText(buttonText);
+  fireEvent.click(button);
+  expect(mockFn).toHaveBeenCalledTimes(1);
+}
+
+export function expectButtonToBeDisabled(text: string) {
+  expect(screen.getByText(text)).toBeDisabled();
+}
+
+export function expectElementToBeInDocument(text: string) {
+  expect(screen.getByText(text)).toBeInTheDocument();
+}
+
+export function expectElementByRole(role: string, name: string) {
+  expect(screen.getByRole(role, { name: new RegExp(name, 'i') })).toBeInTheDocument();
+}
+
+export function renderWithEncounter(component: React.ReactElement, encounter?: IEncounter) {
+  const _testEncounter = encounter || createStandardCombatTestEncounter();
+  return render(component);
+}
+
+export function setupBasicCombatTest() {
+  const mockEncounter = createStandardCombatTestEncounter();
+  const mockCombatActions = createMockCombatActions();
+  const mockInitiativeActions = createMockInitiativeActions();
+
+  return {
+    mockEncounter,
+    mockCombatActions,
+    mockInitiativeActions,
+    mockProps: {
+      encounter: mockEncounter,
+      combatActions: mockCombatActions,
+      initiativeActions: mockInitiativeActions,
+    }
   };
 }

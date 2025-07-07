@@ -51,12 +51,17 @@ export function useCombatTimer({
     return () => clearInterval(intervalRef.current);
   }, [isActive, pausedAt]);
 
-  const combatDuration = !isActive || !startedAt ? 0 :
-    Math.max(0, (pausedAt || new Date(currentTime)).getTime() - startedAt.getTime());
+  let combatDuration = 0;
+  if (isActive && startedAt) {
+    const endTime = pausedAt || new Date(currentTime);
+    combatDuration = Math.max(0, endTime.getTime() - startedAt.getTime());
+  }
 
   const hasRoundTimer = Boolean(roundTimeLimit);
-  const roundTimeRemaining = !hasRoundTimer || !roundTimeLimit ? 0 :
-    Math.max(0, roundTimeLimit - combatDuration);
+  let roundTimeRemaining = 0;
+  if (hasRoundTimer && roundTimeLimit) {
+    roundTimeRemaining = Math.max(0, roundTimeLimit - combatDuration);
+  }
 
   const isPaused = Boolean(pausedAt);
 
