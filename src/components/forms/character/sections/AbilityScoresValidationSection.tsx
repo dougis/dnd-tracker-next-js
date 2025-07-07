@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, FieldPath } from 'react-hook-form';
 import { CharacterCreation } from '@/lib/validations/character';
 import { ABILITY_SCORES } from '../constants';
-import { getAbilityModifier, formatModifier } from '../utils';
+import { getAbilityModifier, formatModifier, calculateAbilityScoreStats } from '../utils';
 import { FormFieldNumber } from '../components';
 
 interface AbilityScoresValidationSectionProps {
@@ -34,7 +34,7 @@ export function AbilityScoresValidationSection({ form }: AbilityScoresValidation
             <div key={key} className="relative">
               <FormFieldNumber
                 form={form}
-                name={`abilityScores.${key}` as any}
+                name={`abilityScores.${key}` as FieldPath<CharacterCreation>}
                 label={`${label} (${abbr})`}
                 min={1}
                 max={30}
@@ -54,22 +54,29 @@ export function AbilityScoresValidationSection({ form }: AbilityScoresValidation
       <div className="p-4 bg-muted rounded-lg">
         <div className="text-sm font-medium mb-2">Ability Score Summary</div>
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <div>
-            <span className="text-muted-foreground">Total:</span>{' '}
-            {Object.values(abilityScores || {}).reduce((sum, score) => sum + (score || 0), 0)}
-          </div>
-          <div>
-            <span className="text-muted-foreground">Average:</span>{' '}
-            {Math.round(Object.values(abilityScores || {}).reduce((sum, score) => sum + (score || 0), 0) / 6 * 10) / 10}
-          </div>
-          <div>
-            <span className="text-muted-foreground">Highest:</span>{' '}
-            {Math.max(...Object.values(abilityScores || {}))}
-          </div>
-          <div>
-            <span className="text-muted-foreground">Lowest:</span>{' '}
-            {Math.min(...Object.values(abilityScores || {}))}
-          </div>
+          {(() => {
+            const stats = calculateAbilityScoreStats(abilityScores || {});
+            return (
+              <>
+                <div>
+                  <span className="text-muted-foreground">Total:</span>{' '}
+                  {stats.total}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Average:</span>{' '}
+                  {stats.average}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Highest:</span>{' '}
+                  {stats.highest}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Lowest:</span>{' '}
+                  {stats.lowest}
+                </div>
+              </>
+            );
+          })()}
         </div>
       </div>
     </div>

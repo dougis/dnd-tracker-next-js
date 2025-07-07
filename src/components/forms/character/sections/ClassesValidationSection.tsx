@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { UseFormReturn, useFieldArray } from 'react-hook-form';
+import { UseFormReturn, useFieldArray, FieldPath } from 'react-hook-form';
 import { CharacterCreation, CharacterClass } from '@/lib/validations/character';
 import { Button } from '@/components/ui/button';
 import { Plus, X } from 'lucide-react';
@@ -74,7 +74,7 @@ export function ClassesValidationSection({ form }: ClassesValidationSectionProps
             <FormGroup direction="row" spacing="md">
               <FormFieldSelect
                 form={form}
-                name={`classes.${index}.class` as any}
+                name={`classes.${index}.class` as FieldPath<CharacterCreation>}
                 label="Character Class"
                 required
                 placeholder="Select class"
@@ -82,13 +82,13 @@ export function ClassesValidationSection({ form }: ClassesValidationSectionProps
                 className="flex-2"
                 onValueChange={(value) => {
                   const hitDie = getHitDieForClass(value as CharacterClass);
-                  form.setValue(`classes.${index}.hitDie`, hitDie);
+                  form.setValue(`classes.${index}.hitDie` as FieldPath<CharacterCreation>, hitDie);
                 }}
               />
 
               <FormFieldNumber
                 form={form}
-                name={`classes.${index}.level` as any}
+                name={`classes.${index}.level` as FieldPath<CharacterCreation>}
                 label="Level"
                 required
                 min={1}
@@ -99,7 +99,7 @@ export function ClassesValidationSection({ form }: ClassesValidationSectionProps
 
               <FormFieldNumber
                 form={form}
-                name={`classes.${index}.hitDie` as any}
+                name={`classes.${index}.hitDie` as FieldPath<CharacterCreation>}
                 label="Hit Die"
                 required
                 min={4}

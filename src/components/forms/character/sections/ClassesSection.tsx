@@ -7,6 +7,7 @@ import { FormGroup } from '@/components/forms/FormGroup';
 import { Button } from '@/components/ui/button';
 import { Plus, X } from 'lucide-react';
 import { CharacterClass } from '@/lib/validations/character';
+import { getHitDieForClass } from '../utils';
 
 interface ClassData {
   class: CharacterClass;
@@ -37,25 +38,6 @@ const CHARACTER_CLASS_OPTIONS: FormSelectOption[] = [
 ];
 
 export function ClassesSection({ value, onChange, errors }: ClassesSectionProps) {
-  // Helper function to get hit die for each class
-  const getHitDieForClass = (className: CharacterClass): number => {
-    const hitDieMap: Record<string, number> = {
-      'barbarian': 12,
-      'fighter': 10,
-      'paladin': 10,
-      'ranger': 10,
-      'bard': 8,
-      'cleric': 8,
-      'druid': 8,
-      'monk': 8,
-      'rogue': 8,
-      'warlock': 8,
-      'artificer': 8,
-      'sorcerer': 6,
-      'wizard': 6,
-    };
-    return hitDieMap[className] || 8;
-  };
 
   const addClass = () => {
     if (value.length < 3) {

@@ -49,8 +49,8 @@ export function CombatStatsValidationSection({ form }: CombatStatsValidationSect
             label="Current HP"
             required
             min={0}
-            max={hitPoints?.maximum || 1000}
-            description={`Max: ${hitPoints?.maximum || 0}`}
+            max={hitPoints?.maximum ?? 1000}
+            description={`Max: ${hitPoints?.maximum ?? 0}`}
             className="flex-1"
           />
 
@@ -76,7 +76,7 @@ export function CombatStatsValidationSection({ form }: CombatStatsValidationSect
           min={1}
           max={50}
           defaultValue={1}
-          description={`Current AC: ${armorClass || 0}`}
+          description={`Current AC: ${armorClass ?? 0}`}
           className="flex-1"
         />
 
@@ -88,7 +88,7 @@ export function CombatStatsValidationSection({ form }: CombatStatsValidationSect
           min={0}
           max={120}
           defaultValue={30}
-          description={`Walking speed: ${speed || 30} ft`}
+          description={`Walking speed: ${speed ?? 30} ft`}
           className="flex-1"
         />
 
@@ -100,7 +100,7 @@ export function CombatStatsValidationSection({ form }: CombatStatsValidationSect
           min={2}
           max={6}
           defaultValue={2}
-          description={`Bonus: +${proficiencyBonus || 2}`}
+          description={`Bonus: +${proficiencyBonus ?? 2}`}
           className="flex-1"
         />
       </FormGroup>
@@ -111,20 +111,20 @@ export function CombatStatsValidationSection({ form }: CombatStatsValidationSect
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
           <div>
             <span className="text-muted-foreground">HP:</span>{' '}
-            {hitPoints?.current || 0}/{hitPoints?.maximum || 0}
-            {(hitPoints?.temporary || 0) > 0 && ` (+${hitPoints.temporary})`}
+            {hitPoints?.current ?? 0}/{hitPoints?.maximum ?? 0}
+            {(hitPoints?.temporary ?? 0) > 0 && ` (+${hitPoints.temporary})`}
           </div>
           <div>
             <span className="text-muted-foreground">AC:</span>{' '}
-            {armorClass || 0}
+            {armorClass ?? 0}
           </div>
           <div>
             <span className="text-muted-foreground">Speed:</span>{' '}
-            {speed || 30} ft
+            {speed ?? 30} ft
           </div>
           <div>
             <span className="text-muted-foreground">Prof:</span>{' '}
-            +{proficiencyBonus || 2}
+            +{proficiencyBonus ?? 2}
           </div>
         </div>
       </div>

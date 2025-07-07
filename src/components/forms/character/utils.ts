@@ -32,6 +32,17 @@ export const formatModifier = (modifier: number): string => {
   return modifier >= 0 ? `+${modifier}` : `${modifier}`;
 };
 
+// Calculate ability score statistics
+export const calculateAbilityScoreStats = (abilityScores: Record<string, number>) => {
+  const values = Object.values(abilityScores || {});
+  const total = values.reduce((sum, score) => sum + (score || 0), 0);
+  const average = Math.round(total / 6 * 10) / 10;
+  const highest = Math.max(...values);
+  const lowest = Math.min(...values);
+
+  return { total, average, highest, lowest };
+};
+
 // Transform CharacterCreation to CharacterPreview format
 export const transformToPreviewFormat = (formValues: CharacterCreation) => ({
   basicInfo: {
