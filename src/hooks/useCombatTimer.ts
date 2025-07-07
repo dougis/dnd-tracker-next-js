@@ -45,22 +45,18 @@ export function useCombatTimer({
   useEffect(() => {
     if (isActive && !pausedAt) {
       intervalRef.current = setInterval(() => setCurrentTime(Date.now()), 1000);
-    } else if (intervalRef.current) {
+    } else {
       clearInterval(intervalRef.current);
     }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    return () => clearInterval(intervalRef.current);
   }, [isActive, pausedAt]);
 
-  const combatDuration = isActive && startedAt
-    ? Math.max(0, (pausedAt || new Date(currentTime)).getTime() - startedAt.getTime())
-    : 0;
+  const combatDuration = !isActive || !startedAt ? 0 :
+    Math.max(0, (pausedAt || new Date(currentTime)).getTime() - startedAt.getTime());
 
   const hasRoundTimer = Boolean(roundTimeLimit);
-  const roundTimeRemaining = hasRoundTimer && roundTimeLimit
-    ? Math.max(0, roundTimeLimit - combatDuration)
-    : 0;
+  const roundTimeRemaining = !hasRoundTimer || !roundTimeLimit ? 0 :
+    Math.max(0, roundTimeLimit - combatDuration);
 
   const isPaused = Boolean(pausedAt);
 

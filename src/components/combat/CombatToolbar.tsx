@@ -114,53 +114,38 @@ export function CombatToolbar({
   });
 
   // Calculate participant statistics
-  const participantStats = useMemo(() => {
-    const total = participants.length;
-    const pcs = participants.filter(p => p.isPlayer).length;
-    const npcs = participants.filter(p => !p.isPlayer).length;
-    const alive = participants.filter(p => p.currentHitPoints > 0).length;
-
-    return { total, pcs, npcs, alive };
-  }, [participants]);
+  const participantStats = useMemo(() => ({
+    total: participants.length,
+    pcs: participants.filter(p => p.isPlayer).length,
+    npcs: participants.filter(p => !p.isPlayer).length,
+    alive: participants.filter(p => p.currentHitPoints > 0).length,
+  }), [participants]);
 
   // Get active participant name
   const activeParticipantName = useMemo(() => {
     if (!isActive || initiativeOrder.length === 0 || currentTurn >= initiativeOrder.length) {
       return undefined;
     }
-
     const activeEntry = initiativeOrder[currentTurn];
-    const participant = participants.find(p =>
-      p.characterId.toString() === activeEntry.participantId.toString()
-    );
-    return participant?.name;
+    return participants.find(p => p.characterId.toString() === activeEntry.participantId.toString())?.name;
   }, [isActive, initiativeOrder, currentTurn, participants]);
 
   // Combat phase
-  const combatPhase = useMemo(() => {
-    if (!isActive) return 'inactive';
-    if (isPaused) return 'paused';
-    return 'active';
-  }, [isActive, isPaused]);
+  const combatPhase = !isActive ? 'inactive' : isPaused ? 'paused' : 'active';
 
   // Simplified keyboard shortcuts handler
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    // Ignore if user is typing in an input
-    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
-      return;
-    }
+    const target = event.target as Element;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
 
     event.preventDefault();
 
-    const keyActions = {
-      'Space': () => onNextTurn?.(),
-      'Backspace': () => canGoPrevious && onPreviousTurn?.(),
-      'KeyP': () => isPaused ? onResumeCombat?.() : onPauseCombat?.(),
-      'KeyE': () => onEndCombat?.()
-    } as const;
-
-    const action = keyActions[event.code as keyof typeof keyActions];
-    action?.();
+    switch (event.code) {
+      case 'Space': onNextTurn?.(); break;
+      case 'Backspace': canGoPrevious && onPreviousTurn?.(); break;
+      case 'KeyP': isPaused ? onResumeCombat?.() : onPauseCombat?.(); break;
+      case 'KeyE': onEndCombat?.(); break;
+    }
   }, [onNextTurn, onPreviousTurn, onPauseCombat, onResumeCombat, onEndCombat, canGoPrevious, isPaused]);
 
   // Keyboard shortcuts
