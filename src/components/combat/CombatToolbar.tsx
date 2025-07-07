@@ -65,6 +65,64 @@ interface CombatToolbarProps {
   settings?: ToolbarSettings;
 }
 
+// Header badges component
+function HeaderBadges({ currentRound, isActive, currentTurn, initiativeOrder }: {
+  currentRound: number;
+  isActive: boolean;
+  currentTurn: number;
+  initiativeOrder: any[];
+}) {
+  return (
+    <div className="flex items-center space-x-2">
+      <Badge variant="secondary">Round {currentRound}</Badge>
+      {isActive && (
+        <Badge variant="outline">
+          Turn {Math.min(currentTurn + 1, initiativeOrder.length)} of {initiativeOrder.length}
+        </Badge>
+      )}
+    </div>
+  );
+}
+
+// Toolbar action buttons component
+function ToolbarActionButtons({ onExportInitiative, onShareInitiative, onEncounterSettings }: {
+  onExportInitiative?: () => void;
+  onShareInitiative?: () => void;
+  onEncounterSettings?: () => void;
+}) {
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onExportInitiative}
+        className="text-muted-foreground hover:text-foreground"
+        aria-label="Download initiative data"
+      >
+        <Download className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onShareInitiative}
+        className="text-muted-foreground hover:text-foreground"
+        aria-label="Share initiative data"
+      >
+        <Share2 className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onEncounterSettings}
+        className="text-muted-foreground hover:text-foreground"
+        aria-label="Combat Settings"
+      >
+        <Settings className="h-4 w-4" />
+      </Button>
+    </>
+  );
+}
+
 export function CombatToolbar({
   encounter,
   combatActions = {},
@@ -167,14 +225,12 @@ export function CombatToolbar({
             <h2>
               <CardTitle className="text-lg">Initiative Tracker</CardTitle>
             </h2>
-            <div className="flex items-center space-x-2">
-              <Badge variant="secondary">Round {currentRound}</Badge>
-              {isActive && (
-                <Badge variant="outline">
-                  Turn {Math.min(currentTurn + 1, initiativeOrder.length)} of {initiativeOrder.length}
-                </Badge>
-              )}
-            </div>
+            <HeaderBadges
+              currentRound={currentRound}
+              isActive={isActive}
+              currentTurn={currentTurn}
+              initiativeOrder={initiativeOrder}
+            />
           </div>
           <div className="flex items-center space-x-2">
             {/* Combat Timer */}
@@ -188,33 +244,11 @@ export function CombatToolbar({
                 isPaused={timerData.isPaused}
               />
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onExportInitiative}
-              className="text-muted-foreground hover:text-foreground"
-              aria-label="Download initiative data"
-            >
-              <Download className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onShareInitiative}
-              className="text-muted-foreground hover:text-foreground"
-              aria-label="Share initiative data"
-            >
-              <Share2 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={quickActions.onEncounterSettings}
-              className="text-muted-foreground hover:text-foreground"
-              aria-label="Combat Settings"
-            >
-              <Settings className="h-4 w-4" />
-            </Button>
+            <ToolbarActionButtons
+              onExportInitiative={onExportInitiative}
+              onShareInitiative={onShareInitiative}
+              onEncounterSettings={quickActions.onEncounterSettings}
+            />
           </div>
         </div>
 
