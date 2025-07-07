@@ -1,20 +1,14 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { QuickActions } from '../QuickActions';
+import { createMockQuickActions } from './test-helpers';
 
 describe('QuickActions', () => {
   let mockProps: any;
 
   beforeEach(() => {
     mockProps = {
-      actions: {
-        onRollInitiative: jest.fn(),
-        onMassHeal: jest.fn(),
-        onMassDamage: jest.fn(),
-        onClearConditions: jest.fn(),
-        onAddParticipant: jest.fn(),
-        onEncounterSettings: jest.fn(),
-      },
+      actions: createMockQuickActions(),
       disabled: false,
       participantCount: 4,
       settings: {

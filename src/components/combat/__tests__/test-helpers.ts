@@ -84,6 +84,7 @@ export function createMockInitiativeActions() {
  */
 export function createMockQuickActions() {
   return {
+    onRollInitiative: jest.fn(),
     onMassHeal: jest.fn(),
     onMassDamage: jest.fn(),
     onClearConditions: jest.fn(),
