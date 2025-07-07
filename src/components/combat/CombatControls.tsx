@@ -29,31 +29,40 @@ interface CombatControlsProps {
   state: CombatState;
 }
 
-export function CombatControlsSection({
-  actions,
-  state,
-}: CombatControlsProps) {
-  const {
-    onNextTurn,
-    onPreviousTurn,
-    onPauseCombat,
-    onResumeCombat,
-    onEndCombat,
-  } = actions;
+export function CombatControlsSection({ actions, state }: CombatControlsProps) {
+  const getTitle = (base: string, shortcut?: string) =>
+    state.enableKeyboardShortcuts && shortcut ? `${base} (${shortcut})` : base;
 
-  const {
-    canGoPrevious,
-    isPaused,
-    enableKeyboardShortcuts,
-  } = state;
+  const pauseResumeButton = state.isPaused ? (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={actions.onResumeCombat}
+      title={getTitle('Resume Combat', 'P')}
+    >
+      <Play className="h-4 w-4 mr-1" />
+      Resume
+    </Button>
+  ) : (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={actions.onPauseCombat}
+      title={getTitle('Pause Combat', 'P')}
+    >
+      <Pause className="h-4 w-4 mr-1" />
+      Pause
+    </Button>
+  );
+
   return (
     <div className="flex items-center justify-center space-x-2">
       <Button
         variant="outline"
         size="sm"
-        onClick={onPreviousTurn}
-        disabled={!canGoPrevious}
-        title={enableKeyboardShortcuts ? 'Previous Turn (Backspace)' : 'Previous Turn'}
+        onClick={actions.onPreviousTurn}
+        disabled={!state.canGoPrevious}
+        title={getTitle('Previous Turn', 'Backspace')}
       >
         <SkipBack className="h-4 w-4 mr-1" />
         Previous
@@ -61,39 +70,19 @@ export function CombatControlsSection({
       <Button
         variant="default"
         size="sm"
-        onClick={onNextTurn}
+        onClick={actions.onNextTurn}
         className="px-6"
-        title={enableKeyboardShortcuts ? 'Next Turn (Space)' : 'Next Turn'}
+        title={getTitle('Next Turn', 'Space')}
       >
         <SkipForward className="h-4 w-4 mr-1" />
         Next Turn
       </Button>
-      {isPaused ? (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onResumeCombat}
-          title={enableKeyboardShortcuts ? 'Resume Combat (P)' : 'Resume Combat'}
-        >
-          <Play className="h-4 w-4 mr-1" />
-          Resume
-        </Button>
-      ) : (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onPauseCombat}
-          title={enableKeyboardShortcuts ? 'Pause Combat (P)' : 'Pause Combat'}
-        >
-          <Pause className="h-4 w-4 mr-1" />
-          Pause
-        </Button>
-      )}
+      {pauseResumeButton}
       <Button
         variant="destructive"
         size="sm"
-        onClick={onEndCombat}
-        title={enableKeyboardShortcuts ? 'End Combat (E)' : 'End Combat'}
+        onClick={actions.onEndCombat}
+        title={getTitle('End Combat', 'E')}
       >
         <Square className="h-4 w-4 mr-1" />
         End Combat

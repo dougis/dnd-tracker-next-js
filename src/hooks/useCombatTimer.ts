@@ -62,27 +62,7 @@ export function useCombatTimer({
     setLocalStartedAt(undefined); // Use prop startedAt unless reset locally
   }, [startedAt]);
 
-  // Update timer every second when active
-  useEffect(() => {
-    const effectivePausedAt = shouldIgnoreExternalPause ? localPausedAt : (localPausedAt || pausedAt);
-    if (isActive && !effectivePausedAt) {
-      intervalRef.current = setInterval(() => {
-        setCurrentTime(Date.now());
-      }, 1000);
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isActive, pausedAt, localPausedAt, shouldIgnoreExternalPause]);
-
-  // Calculate combat duration
+  // Calculate derived values
   const combatDuration = calculateCombatDuration(
     isActive,
     localStartedAt,
@@ -93,7 +73,6 @@ export function useCombatTimer({
     currentTime
   );
 
-  // Calculate round timer
   const hasRoundTimer = Boolean(roundTimeLimit);
   const roundTimeRemaining = calculateRoundTimeRemaining(
     hasRoundTimer,
@@ -103,7 +82,6 @@ export function useCombatTimer({
     combatDuration
   );
 
-  // Timer states
   const { isPaused, isRoundWarning, isRoundCritical, isRoundExpired } = getTimerStates(
     hasRoundTimer,
     roundTimeRemaining,
@@ -112,9 +90,18 @@ export function useCombatTimer({
     pausedAt
   );
 
-
-  // Trigger callbacks for round timer events
+  // Combined timer and event management effect
   useEffect(() => {
+    const effectivePausedAt = shouldIgnoreExternalPause ? localPausedAt : (localPausedAt || pausedAt);
+
+    // Timer management
+    if (isActive && !effectivePausedAt) {
+      intervalRef.current = setInterval(() => setCurrentTime(Date.now()), 1000);
+    } else if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    // Event triggers (only when not paused)
     if (!isPaused) {
       if (isRoundWarning && !warningTriggeredRef.current) {
         onRoundWarning?.();
@@ -127,20 +114,16 @@ export function useCombatTimer({
         expiredTriggeredRef.current = true;
       }
     }
-  }, [isRoundWarning, isRoundCritical, isRoundExpired, isPaused, onRoundWarning, onRoundCritical, onRoundExpired]);
 
-  // Reset warning flags when timer resets or warning states change
-  useEffect(() => {
-    if (!isRoundWarning) {
-      warningTriggeredRef.current = false;
-    }
-    if (!isRoundCritical) {
-      criticalTriggeredRef.current = false;
-    }
-    if (!isRoundExpired) {
-      expiredTriggeredRef.current = false;
-    }
-  }, [isRoundWarning, isRoundCritical, isRoundExpired]);
+    // Reset flags when states change
+    if (!isRoundWarning) warningTriggeredRef.current = false;
+    if (!isRoundCritical) criticalTriggeredRef.current = false;
+    if (!isRoundExpired) expiredTriggeredRef.current = false;
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isActive, pausedAt, localPausedAt, shouldIgnoreExternalPause, isPaused, isRoundWarning, isRoundCritical, isRoundExpired, onRoundWarning, onRoundCritical, onRoundExpired]);
 
   // Timer controls
   const pause = useCallback(() => {

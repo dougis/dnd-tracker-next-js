@@ -143,55 +143,25 @@ export function CombatToolbar({
     return 'active';
   }, [isActive, isPaused]);
 
-  // Individual key handlers to reduce complexity
-  const handleSpaceKey = useCallback((event: KeyboardEvent) => {
-    event.preventDefault();
-    onNextTurn?.();
-  }, [onNextTurn]);
-
-  const handleBackspaceKey = useCallback((event: KeyboardEvent) => {
-    event.preventDefault();
-    if (canGoPrevious) {
-      onPreviousTurn?.();
-    }
-  }, [onPreviousTurn, canGoPrevious]);
-
-  const handlePauseKey = useCallback((event: KeyboardEvent) => {
-    event.preventDefault();
-    if (isPaused) {
-      onResumeCombat?.();
-    } else {
-      onPauseCombat?.();
-    }
-  }, [onPauseCombat, onResumeCombat, isPaused]);
-
-  const handleEndKey = useCallback((event: KeyboardEvent) => {
-    event.preventDefault();
-    onEndCombat?.();
-  }, [onEndCombat]);
-
-  // Keyboard shortcuts handler
+  // Simplified keyboard shortcuts handler
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     // Ignore if user is typing in an input
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
       return;
     }
 
-    switch (event.code) {
-      case 'Space':
-        handleSpaceKey(event);
-        break;
-      case 'Backspace':
-        handleBackspaceKey(event);
-        break;
-      case 'KeyP':
-        handlePauseKey(event);
-        break;
-      case 'KeyE':
-        handleEndKey(event);
-        break;
-    }
-  }, [handleSpaceKey, handleBackspaceKey, handlePauseKey, handleEndKey]);
+    event.preventDefault();
+
+    const keyActions = {
+      'Space': () => onNextTurn?.(),
+      'Backspace': () => canGoPrevious && onPreviousTurn?.(),
+      'KeyP': () => isPaused ? onResumeCombat?.() : onPauseCombat?.(),
+      'KeyE': () => onEndCombat?.()
+    } as const;
+
+    const action = keyActions[event.code as keyof typeof keyActions];
+    action?.();
+  }, [onNextTurn, onPreviousTurn, onPauseCombat, onResumeCombat, onEndCombat, canGoPrevious, isPaused]);
 
   // Keyboard shortcuts
   useEffect(() => {

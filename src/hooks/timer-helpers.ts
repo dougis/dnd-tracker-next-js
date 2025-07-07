@@ -25,13 +25,10 @@ export function calculateCombatDuration(
   const effectiveStartTime = localStartedAt || startedAt;
   if (!effectiveStartTime) return 0;
 
-  const effectivePausedAt = shouldIgnoreExternalPause
-    ? localPausedAt
-    : (localPausedAt || pausedAt);
+  const effectivePausedAt = shouldIgnoreExternalPause ? localPausedAt : (localPausedAt || pausedAt);
   const endTime = effectivePausedAt || new Date(currentTime);
-  const duration = endTime.getTime() - effectiveStartTime.getTime();
 
-  return Math.max(0, duration);
+  return Math.max(0, endTime.getTime() - effectiveStartTime.getTime());
 }
 
 export function calculateRoundTimeRemaining(
@@ -42,9 +39,7 @@ export function calculateRoundTimeRemaining(
   combatDuration: number
 ): number {
   if (!hasRoundTimer || !isActive || !startedAt || !roundTimeLimit) return 0;
-
-  const remaining = roundTimeLimit - combatDuration;
-  return Math.max(0, remaining);
+  return Math.max(0, roundTimeLimit - combatDuration);
 }
 
 export function getTimerStates(
@@ -54,19 +49,16 @@ export function getTimerStates(
   localPausedAt: Date | undefined,
   pausedAt: Date | undefined
 ) {
-  const isPaused = Boolean(shouldIgnoreExternalPause
-    ? localPausedAt
-    : (localPausedAt || pausedAt));
+  const isPaused = Boolean(shouldIgnoreExternalPause ? localPausedAt : (localPausedAt || pausedAt));
 
-  const isRoundWarning = hasRoundTimer &&
-    roundTimeRemaining <= WARNING_THRESHOLD &&
-    roundTimeRemaining > CRITICAL_THRESHOLD;
+  if (!hasRoundTimer) {
+    return { isPaused, isRoundWarning: false, isRoundCritical: false, isRoundExpired: false };
+  }
 
-  const isRoundCritical = hasRoundTimer &&
-    roundTimeRemaining <= CRITICAL_THRESHOLD &&
-    roundTimeRemaining > 0;
-
-  const isRoundExpired = hasRoundTimer && roundTimeRemaining === 0;
-
-  return { isPaused, isRoundWarning, isRoundCritical, isRoundExpired };
+  return {
+    isPaused,
+    isRoundWarning: roundTimeRemaining <= WARNING_THRESHOLD && roundTimeRemaining > CRITICAL_THRESHOLD,
+    isRoundCritical: roundTimeRemaining <= CRITICAL_THRESHOLD && roundTimeRemaining > 0,
+    isRoundExpired: roundTimeRemaining === 0
+  };
 }
