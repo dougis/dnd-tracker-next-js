@@ -33,87 +33,103 @@ export async function POST(request: NextRequest) {
     const userId = 'temp-user-id'; // Replace with actual user ID from auth
 
     const { operation, encounterIds, options } = validatedBody;
+    const { results, errors } = await processBatchOperation(operation, encounterIds, userId, options);
 
-    const results = [];
-    const errors = [];
-
-    for (const encounterId of encounterIds) {
-      try {
-        let result: any;
-
-        switch (operation) {
-          case 'export':
-            result = await handleBatchExport(encounterId, userId, options);
-            break;
-          case 'template':
-            result = await handleBatchTemplate(encounterId, userId, options);
-            break;
-          case 'delete':
-            result = await handleBatchDelete(encounterId, userId);
-            break;
-          case 'archive':
-            result = await handleBatchArchive(encounterId, userId, options);
-            break;
-          case 'publish':
-            result = await handleBatchPublish(encounterId, userId, options);
-            break;
-          default:
-            throw new Error(`Unsupported operation: ${operation}`);
-        }
-
-        if (result.success) {
-          results.push({
-            encounterId,
-            status: 'success',
-            data: result.data || null,
-          });
-        } else {
-          errors.push({
-            encounterId,
-            status: 'error',
-            error: result.error?.message || 'Operation failed',
-          });
-        }
-      } catch (error) {
-        errors.push({
-          encounterId,
-          status: 'error',
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
-      }
-    }
-
-    const response = {
-      success: true,
-      operation,
-      results,
-      errors: errors.length > 0 ? errors : undefined,
-      summary: {
-        totalProcessed: encounterIds.length,
-        successful: results.length,
-        failed: errors.length,
-      },
-    };
-
+    const response = buildBatchResponse(operation, results, errors, encounterIds.length);
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Batch operation error:', error);
+    return handleBatchError(error);
+  }
+}
 
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Invalid request data',
-          details: error.errors.map(e => e.message).join(', '),
-        },
-        { status: 400 }
-      );
+async function processBatchOperation(operation: string, encounterIds: string[], userId: string, options: any) {
+  const results: any[] = [];
+  const errors: any[] = [];
+
+  for (const encounterId of encounterIds) {
+    try {
+      const result = await executeBatchOperation(operation, encounterId, userId, options);
+      processBatchResult(result, encounterId, results, errors);
+    } catch (error) {
+      addBatchError(error, encounterId, errors);
     }
+  }
 
+  return { results, errors };
+}
+
+async function executeBatchOperation(operation: string, encounterId: string, userId: string, options: any) {
+  const handlers = {
+    export: () => handleBatchExport(encounterId, userId, options),
+    template: () => handleBatchTemplate(encounterId, userId, options),
+    delete: () => handleBatchDelete(encounterId, userId),
+    archive: () => handleBatchArchive(encounterId, userId, options),
+    publish: () => handleBatchPublish(encounterId, userId, options),
+  };
+
+  const handler = handlers[operation as keyof typeof handlers];
+  if (!handler) {
+    throw new Error(`Unsupported operation: ${operation}`);
+  }
+
+  return await handler();
+}
+
+function processBatchResult(result: any, encounterId: string, results: any[], errors: any[]) {
+  if (result.success) {
+    results.push({
+      encounterId,
+      status: 'success',
+      data: result.data || null,
+    });
+  } else {
+    errors.push({
+      encounterId,
+      status: 'error',
+      error: result.error?.message || 'Operation failed',
+    });
+  }
+}
+
+function addBatchError(error: any, encounterId: string, errors: any[]) {
+  errors.push({
+    encounterId,
+    status: 'error',
+    error: error instanceof Error ? error.message : 'Unknown error',
+  });
+}
+
+function buildBatchResponse(operation: string, results: any[], errors: any[], total: number) {
+  return {
+    success: true,
+    operation,
+    results,
+    errors: errors.length > 0 ? errors : undefined,
+    summary: {
+      totalProcessed: total,
+      successful: results.length,
+      failed: errors.length,
+    },
+  };
+}
+
+function handleBatchError(error: any): NextResponse {
+  console.error('Batch operation error:', error);
+
+  if (error instanceof z.ZodError) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      {
+        error: 'Invalid request data',
+        details: error.errors.map(e => e.message).join(', '),
+      },
+      { status: 400 }
     );
   }
+
+  return NextResponse.json(
+    { error: 'Internal server error' },
+    { status: 500 }
+  );
 }
 
 async function handleBatchExport(encounterId: string, userId: string, options: any) {
@@ -138,14 +154,13 @@ async function handleBatchTemplate(encounterId: string, userId: string, options:
     return encounterResult;
   }
 
-  const encounter = encounterResult.data!;
+  const encounter = (encounterResult as any).data!;
   const templateName = `${options.templatePrefix} - ${encounter.name}`;
 
   return await EncounterServiceImportExport.createTemplate(encounterId, userId, templateName);
 }
 
-async function handleBatchDelete(encounterId: string, userId: string) {
-  // Check ownership before deletion
+async function checkEncounterOwnership(encounterId: string, userId: string, operation: string) {
   const encounterResult = await EncounterService.getEncounterById(encounterId);
   if (!encounterResult.success) {
     return encounterResult;
@@ -156,36 +171,33 @@ async function handleBatchDelete(encounterId: string, userId: string) {
     return {
       success: false,
       error: {
-        message: 'You do not have permission to delete this encounter',
+        message: `You do not have permission to ${operation} this encounter`,
         code: 'INSUFFICIENT_PERMISSIONS',
       },
     };
+  }
+
+  return { success: true, data: encounter };
+}
+
+async function handleBatchDelete(encounterId: string, userId: string) {
+  const ownershipCheck = await checkEncounterOwnership(encounterId, userId, 'delete');
+  if (!ownershipCheck.success) {
+    return ownershipCheck;
   }
 
   return await EncounterService.deleteEncounter(encounterId);
 }
 
 async function handleBatchArchive(encounterId: string, userId: string, options: any) {
-  // Check ownership before archiving
-  const encounterResult = await EncounterService.getEncounterById(encounterId);
-  if (!encounterResult.success) {
-    return encounterResult;
+  const ownershipCheck = await checkEncounterOwnership(encounterId, userId, 'archive');
+  if (!ownershipCheck.success) {
+    return ownershipCheck;
   }
 
-  const encounter = encounterResult.data!;
-  if (encounter.ownerId.toString() !== userId) {
-    return {
-      success: false,
-      error: {
-        message: 'You do not have permission to archive this encounter',
-        code: 'INSUFFICIENT_PERMISSIONS',
-      },
-    };
-  }
-
+  const encounter = (ownershipCheck as any).data!;
   const updateData = {
     status: 'archived' as const,
-    // Add archive reason to description if provided
     description: options.archiveReason
       ? `${encounter.description}\n\n[Archived: ${options.archiveReason}]`
       : encounter.description,
@@ -195,21 +207,9 @@ async function handleBatchArchive(encounterId: string, userId: string, options: 
 }
 
 async function handleBatchPublish(encounterId: string, userId: string, options: any) {
-  // Check ownership before publishing
-  const encounterResult = await EncounterService.getEncounterById(encounterId);
-  if (!encounterResult.success) {
-    return encounterResult;
-  }
-
-  const encounter = encounterResult.data!;
-  if (encounter.ownerId.toString() !== userId) {
-    return {
-      success: false,
-      error: {
-        message: 'You do not have permission to publish this encounter',
-        code: 'INSUFFICIENT_PERMISSIONS',
-      },
-    };
+  const ownershipCheck = await checkEncounterOwnership(encounterId, userId, 'publish');
+  if (!ownershipCheck.success) {
+    return ownershipCheck;
   }
 
   const updateData = {

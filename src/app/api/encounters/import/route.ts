@@ -26,19 +26,7 @@ export async function POST(request: NextRequest) {
       ...validatedBody.options,
     };
 
-    let result;
-
-    if (validatedBody.format === 'json') {
-      result = await EncounterServiceImportExport.importFromJson(
-        validatedBody.data,
-        options
-      );
-    } else {
-      result = await EncounterServiceImportExport.importFromXml(
-        validatedBody.data,
-        options
-      );
-    }
+    const result = await performImport(validatedBody.data, validatedBody.format, options);
 
     if (!result.success) {
       return NextResponse.json(
@@ -50,31 +38,47 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      encounter: {
-        id: result.data?._id,
-        name: result.data?.name,
-        description: result.data?.description,
-        participantCount: result.data?.participants?.length || 0,
-      },
-    });
+    return createSuccessResponse(result.data);
   } catch (error) {
-    console.error('Import error:', error);
+    return handleImportError(error);
+  }
+}
 
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Invalid request data',
-          details: error.errors.map(e => e.message).join(', '),
-        },
-        { status: 400 }
-      );
-    }
+async function performImport(data: string, format: string, options: ImportOptions) {
+  if (format === 'json') {
+    return await EncounterServiceImportExport.importFromJson(data, options);
+  } else {
+    return await EncounterServiceImportExport.importFromXml(data, options);
+  }
+}
 
+function createSuccessResponse(encounter: any) {
+  return NextResponse.json({
+    success: true,
+    encounter: {
+      id: encounter?._id,
+      name: encounter?.name,
+      description: encounter?.description,
+      participantCount: encounter?.participants?.length || 0,
+    },
+  });
+}
+
+function handleImportError(error: any): NextResponse {
+  console.error('Import error:', error);
+
+  if (error instanceof z.ZodError) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      {
+        error: 'Invalid request data',
+        details: error.errors.map(e => e.message).join(', '),
+      },
+      { status: 400 }
     );
   }
+
+  return NextResponse.json(
+    { error: 'Internal server error' },
+    { status: 500 }
+  );
 }

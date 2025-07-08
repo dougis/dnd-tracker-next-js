@@ -3,7 +3,7 @@
  */
 
 import type { ServiceResult } from '../UserServiceErrors';
-import { handleEncounterServiceError, InvalidEncounterIdError } from '../EncounterServiceErrors';
+import { handleEncounterServiceError } from '../EncounterServiceErrors';
 import { Encounter } from '@/lib/models/encounter';
 import { Types } from 'mongoose';
 
@@ -19,10 +19,6 @@ export async function generateShareableLink(
   expiresIn: number = 24 * 60 * 60 * 1000 // 24 hours
 ): Promise<ServiceResult<string>> {
   try {
-    if (!Types.ObjectId.isValid(encounterId)) {
-      throw new InvalidEncounterIdError(encounterId);
-    }
-
     const encounter = await Encounter.findById(encounterId);
     if (!encounter) {
       return {

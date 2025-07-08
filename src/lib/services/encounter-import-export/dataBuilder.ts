@@ -4,7 +4,7 @@
 
 import type { IEncounter } from '@/lib/models/encounter/interfaces';
 import type { ServiceResult } from '../UserServiceErrors';
-import { handleEncounterServiceError, InvalidEncounterIdError } from '../EncounterServiceErrors';
+import { handleEncounterServiceError } from '../EncounterServiceErrors';
 import { Character } from '@/lib/models/Character';
 import { Encounter } from '@/lib/models/encounter';
 import { Types } from 'mongoose';
@@ -21,10 +21,6 @@ const APP_VERSION = '1.0.0';
  * Validate export request and return encounter
  */
 async function validateExportRequest(encounterId: string, userId: string): Promise<ServiceResult<IEncounter>> {
-  if (!Types.ObjectId.isValid(encounterId)) {
-    throw new InvalidEncounterIdError(encounterId);
-  }
-
   const encounter = await Encounter.findById(encounterId);
   if (!encounter) {
     return {

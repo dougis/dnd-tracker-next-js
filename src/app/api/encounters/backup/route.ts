@@ -13,91 +13,105 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const query = Object.fromEntries(searchParams.entries());
-
     const validatedQuery = backupQuerySchema.parse(query);
 
     // TODO: Get user ID from authentication
     const userId = 'temp-user-id'; // Replace with actual user ID from auth
 
-    // Get all encounters for the user
-    const encountersResult = await EncounterService.getEncountersByOwner(userId);
+    const encounters = await getUserEncounters(userId);
+    const backupData = await createBackupData(encounters, userId, validatedQuery);
 
-    if (!encountersResult.success) {
-      return NextResponse.json(
-        { error: encountersResult.error?.message || 'Failed to get encounters' },
-        { status: 400 }
-      );
-    }
+    return createBackupResponse(backupData, validatedQuery.format);
+  } catch (error) {
+    return handleBackupError(error);
+  }
+}
 
-    const encounters = encountersResult.data || [];
+async function getUserEncounters(userId: string) {
+  const encountersResult = await EncounterService.getEncountersByOwner(userId);
 
-    // Export all encounters
-    const backupData = {
-      metadata: {
-        backupDate: new Date().toISOString(),
-        userId,
-        encounterCount: encounters.length,
-        format: validatedQuery.format,
-      },
-      encounters: [] as any[],
+  if (!encountersResult.success) {
+    throw new Error(encountersResult.error?.message || 'Failed to get encounters');
+  }
+
+  return encountersResult.data || [];
+}
+
+async function createBackupData(encounters: any[], userId: string, validatedQuery: any) {
+  const backupData = {
+    metadata: {
+      backupDate: new Date().toISOString(),
+      userId,
+      encounterCount: encounters.length,
+      format: validatedQuery.format,
+    },
+    encounters: [] as any[],
+  };
+
+  for (const encounter of encounters) {
+    const exportOptions = {
+      includeCharacterSheets: validatedQuery.includeCharacterSheets,
+      includePrivateNotes: validatedQuery.includePrivateNotes,
+      includeIds: true,
+      stripPersonalData: false,
     };
 
-    for (const encounter of encounters) {
-      const exportOptions = {
-        includeCharacterSheets: validatedQuery.includeCharacterSheets,
-        includePrivateNotes: validatedQuery.includePrivateNotes,
-        includeIds: true,
-        stripPersonalData: false,
-      };
+    const exportResult = await exportEncounter(encounter._id.toString(), userId, validatedQuery.format, exportOptions);
 
-      const exportResult = validatedQuery.format === 'json'
-        ? await EncounterServiceImportExport.exportToJson(encounter._id.toString(), userId, exportOptions)
-        : await EncounterServiceImportExport.exportToXml(encounter._id.toString(), userId, exportOptions);
-
-      if (exportResult.success) {
-        backupData.encounters.push(
-          validatedQuery.format === 'json'
-            ? JSON.parse(exportResult.data!)
-            : exportResult.data
-        );
-      }
-    }
-
-    const contentType = validatedQuery.format === 'json'
-      ? 'application/json'
-      : 'application/xml';
-
-    const filename = `encounters-backup-${Date.now()}.${validatedQuery.format}`;
-
-    const responseData = validatedQuery.format === 'json'
-      ? JSON.stringify(backupData, null, 2)
-      : convertBackupToXml(backupData);
-
-    return new NextResponse(responseData, {
-      status: 200,
-      headers: {
-        'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename="${filename}"`,
-      },
-    });
-  } catch (error) {
-    console.error('Backup error:', error);
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Invalid request parameters',
-          details: error.errors.map(e => e.message).join(', '),
-        },
-        { status: 400 }
+    if (exportResult.success) {
+      backupData.encounters.push(
+        validatedQuery.format === 'json'
+          ? JSON.parse(exportResult.data!)
+          : exportResult.data
       );
     }
+  }
 
+  return backupData;
+}
+
+async function exportEncounter(encounterId: string, userId: string, format: string, exportOptions: any) {
+  if (format === 'json') {
+    return await EncounterServiceImportExport.exportToJson(encounterId, userId, exportOptions);
+  } else {
+    return await EncounterServiceImportExport.exportToXml(encounterId, userId, exportOptions);
+  }
+}
+
+function createBackupResponse(backupData: any, format: string) {
+  const contentType = format === 'json' ? 'application/json' : 'application/xml';
+  const filename = `encounters-backup-${Date.now()}.${format}`;
+
+  const responseData = format === 'json'
+    ? JSON.stringify(backupData, null, 2)
+    : convertBackupToXml(backupData);
+
+  return new NextResponse(responseData, {
+    status: 200,
+    headers: {
+      'Content-Type': contentType,
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    },
+  });
+}
+
+function handleBackupError(error: any): NextResponse {
+  console.error('Backup error:', error);
+
+  if (error instanceof z.ZodError) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      {
+        error: 'Invalid request parameters',
+        details: error.errors.map(e => e.message).join(', '),
+      },
+      { status: 400 }
     );
   }
+
+  return NextResponse.json(
+    { error: 'Internal server error' },
+    { status: 500 }
+  );
 }
 
 function convertBackupToXml(backupData: any): string {
