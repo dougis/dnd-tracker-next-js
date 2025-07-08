@@ -4,6 +4,7 @@ import { Encounter } from '../../models/encounter';
 import { Character } from '../../models/Character';
 import type { IEncounter } from '../../models/encounter/interfaces';
 import type { ICharacter } from '../../models/Character';
+import { createTestExportData, createInvalidExportData } from './encounter-import-export-test-helpers';
 
 // Mock the dependencies
 jest.mock('../../models/encounter', () => ({
@@ -365,48 +366,13 @@ describe('EncounterServiceImportExport', () => {
   describe('importFromJson', () => {
     it('should import encounter from JSON successfully', async () => {
       // Arrange
-      const exportData = {
-        metadata: {
-          exportedAt: new Date().toISOString(),
-          exportedBy: mockUserId,
-          format: 'json',
-          version: '1.0.0',
-          appVersion: '1.0.0',
-        },
+      const exportData = createTestExportData({
+        metadata: { exportedBy: mockUserId },
         encounter: {
           name: 'Imported Encounter',
           description: 'Test import',
-          tags: ['test'],
-          difficulty: 'medium',
-          estimatedDuration: 30,
-          targetLevel: 3,
-          status: 'draft',
-          isPublic: false,
-          settings: {
-            allowPlayerVisibility: true,
-            autoRollInitiative: false,
-            trackResources: true,
-            enableLairActions: false,
-            enableGridMovement: false,
-            gridSize: 5,
-          },
-          participants: [
-            {
-              id: 'temp-1',
-              name: 'Test Character',
-              type: 'pc',
-              maxHitPoints: 25,
-              currentHitPoints: 25,
-              temporaryHitPoints: 0,
-              armorClass: 15,
-              isPlayer: true,
-              isVisible: true,
-              notes: '',
-              conditions: [],
-            },
-          ],
         },
-      };
+      });
 
       const mockCreatedEncounter = {
         ...testEncounter,
@@ -448,16 +414,7 @@ describe('EncounterServiceImportExport', () => {
 
     it('should return error for invalid schema', async () => {
       // Arrange
-      const invalidData = {
-        metadata: {
-          exportedAt: new Date().toISOString(),
-          format: 'json',
-          // Missing required fields
-        },
-        encounter: {
-          // Missing required fields
-        },
-      };
+      const invalidData = createInvalidExportData();
 
       // Act
       const result = await EncounterServiceImportExport.importFromJson(
