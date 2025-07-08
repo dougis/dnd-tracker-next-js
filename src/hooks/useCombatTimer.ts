@@ -8,6 +8,74 @@ function formatTime(milliseconds: number): string {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
+// Helper function to calculate combat duration
+function calculateCombatDuration(isActive: boolean, startedAt?: Date, pausedAt?: Date, currentTime?: number): number {
+  if (!isActive || !startedAt) return 0;
+  const endTime = pausedAt || new Date(currentTime || Date.now());
+  return Math.max(0, endTime.getTime() - startedAt.getTime());
+}
+
+// Helper function to calculate round time remaining
+function calculateRoundTimeRemaining(hasRoundTimer: boolean, roundTimeLimit?: number, combatDuration?: number): number {
+  if (!hasRoundTimer || !roundTimeLimit) return 0;
+  return Math.max(0, roundTimeLimit - (combatDuration || 0));
+}
+
+// Helper function to calculate threshold states
+function calculateThresholdStates(hasRoundTimer: boolean, roundTimeLimit?: number, roundTimeRemaining?: number) {
+  if (!hasRoundTimer || !roundTimeLimit) {
+    return { isRoundWarning: false, isRoundCritical: false, isRoundExpired: false };
+  }
+
+  const warningThreshold = roundTimeLimit * 0.25;
+  const criticalThreshold = roundTimeLimit * 0.1;
+  const remaining = roundTimeRemaining || 0;
+
+  return {
+    isRoundWarning: remaining <= warningThreshold && remaining > criticalThreshold,
+    isRoundCritical: remaining <= criticalThreshold && remaining > 0,
+    isRoundExpired: remaining === 0
+  };
+}
+
+// Helper function to handle callback triggering
+function useCallbackTrigger({
+  isActive,
+  isPaused,
+  isRoundWarning,
+  isRoundCritical,
+  isRoundExpired,
+  onRoundWarning,
+  onRoundCritical,
+  onRoundExpired,
+  callbacksTriggered
+}: {
+  isActive: boolean;
+  isPaused: boolean;
+  isRoundWarning: boolean;
+  isRoundCritical: boolean;
+  isRoundExpired: boolean;
+  onRoundWarning?: () => void;
+  onRoundCritical?: () => void;
+  onRoundExpired?: () => void;
+  callbacksTriggered: React.MutableRefObject<{ warning: boolean; critical: boolean; expired: boolean }>;
+}) {
+  useEffect(() => {
+    if (!isActive || isPaused) return;
+
+    if (isRoundExpired && !callbacksTriggered.current.expired) {
+      onRoundExpired?.();
+      callbacksTriggered.current.expired = true;
+    } else if (isRoundCritical && !callbacksTriggered.current.critical) {
+      onRoundCritical?.();
+      callbacksTriggered.current.critical = true;
+    } else if (isRoundWarning && !callbacksTriggered.current.warning) {
+      onRoundWarning?.();
+      callbacksTriggered.current.warning = true;
+    }
+  }, [isRoundWarning, isRoundCritical, isRoundExpired, isActive, isPaused, onRoundWarning, onRoundCritical, onRoundExpired, callbacksTriggered]);
+}
+
 interface CombatTimerProps {
   startedAt?: Date;
   pausedAt?: Date;
@@ -51,7 +119,9 @@ export function useCombatTimer({
   // Handle effective pause state: local overrides external
   const effectivePausedAt = localPausedAt === null ? undefined : (localPausedAt || pausedAt);
   const effectiveStartedAt = localStartedAt || startedAt;
+  const isPaused = Boolean(effectivePausedAt);
 
+  // Timer interval management
   useEffect(() => {
     if (isActive && !effectivePausedAt) {
       intervalRef.current = setInterval(() => setCurrentTime(Date.now()), 1000);
@@ -61,44 +131,26 @@ export function useCombatTimer({
     return () => clearInterval(intervalRef.current);
   }, [isActive, effectivePausedAt]);
 
-  let combatDuration = 0;
-  if (isActive && effectiveStartedAt) {
-    const endTime = effectivePausedAt || new Date(currentTime);
-    combatDuration = Math.max(0, endTime.getTime() - effectiveStartedAt.getTime());
-  }
-
+  // Calculate durations and states
+  const combatDuration = calculateCombatDuration(isActive, effectiveStartedAt, effectivePausedAt, currentTime);
   const hasRoundTimer = Boolean(roundTimeLimit);
-  let roundTimeRemaining = 0;
-  if (hasRoundTimer && roundTimeLimit) {
-    roundTimeRemaining = Math.max(0, roundTimeLimit - combatDuration);
-  }
+  const roundTimeRemaining = calculateRoundTimeRemaining(hasRoundTimer, roundTimeLimit, combatDuration);
+  const { isRoundWarning, isRoundCritical, isRoundExpired } = calculateThresholdStates(hasRoundTimer, roundTimeLimit, roundTimeRemaining);
 
-  // Calculate warning/critical states
-  const warningThreshold = hasRoundTimer && roundTimeLimit ? roundTimeLimit * 0.25 : 0; // 25% remaining
-  const criticalThreshold = hasRoundTimer && roundTimeLimit ? roundTimeLimit * 0.1 : 0; // 10% remaining
+  // Handle callback triggering
+  useCallbackTrigger({
+    isActive,
+    isPaused,
+    isRoundWarning,
+    isRoundCritical,
+    isRoundExpired,
+    onRoundWarning,
+    onRoundCritical,
+    onRoundExpired,
+    callbacksTriggered
+  });
 
-  const isRoundWarning = hasRoundTimer && roundTimeRemaining <= warningThreshold && roundTimeRemaining > criticalThreshold;
-  const isRoundCritical = hasRoundTimer && roundTimeRemaining <= criticalThreshold && roundTimeRemaining > 0;
-  const isRoundExpired = hasRoundTimer && roundTimeRemaining === 0;
-
-  const isPaused = Boolean(effectivePausedAt);
-
-  // Trigger callbacks based on thresholds
-  useEffect(() => {
-    if (!isActive || isPaused) return;
-
-    if (isRoundExpired && !callbacksTriggered.current.expired) {
-      onRoundExpired?.();
-      callbacksTriggered.current.expired = true;
-    } else if (isRoundCritical && !callbacksTriggered.current.critical) {
-      onRoundCritical?.();
-      callbacksTriggered.current.critical = true;
-    } else if (isRoundWarning && !callbacksTriggered.current.warning) {
-      onRoundWarning?.();
-      callbacksTriggered.current.warning = true;
-    }
-  }, [isRoundWarning, isRoundCritical, isRoundExpired, isActive, isPaused, onRoundWarning, onRoundCritical, onRoundExpired]);
-
+  // Control functions
   const pause = useCallback(() => {
     if (!isPaused && isActive) {
       setLocalPausedAt(new Date());
@@ -107,7 +159,7 @@ export function useCombatTimer({
 
   const resume = useCallback(() => {
     if (isPaused && isActive) {
-      setLocalPausedAt(null); // null means "override external pausedAt to be undefined"
+      setLocalPausedAt(null);
     }
   }, [isPaused, isActive]);
 
