@@ -1,154 +1,129 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CombatToolbar } from '../CombatToolbar';
-import { IEncounter } from '@/lib/models/encounter/interfaces';
 import {
-  createStandardCombatTestEncounter,
-  createMockCombatActions,
-  createMockInitiativeActions,
-  createMockQuickActions
+  setupCombatToolbarTest,
+  expectInitiativeTrackerToExist,
+  expectCombatControlsToExist,
+  expectComponentState,
+  simulateKeyPress,
+  clickButtonAndExpectCall
 } from './test-helpers';
 
 describe('CombatToolbar', () => {
-  let mockEncounter: IEncounter;
-  let mockProps: any;
+  let testSetup: ReturnType<typeof setupCombatToolbarTest>;
 
   beforeEach(() => {
-    mockEncounter = createStandardCombatTestEncounter();
-
-    mockProps = {
-      encounter: mockEncounter,
-      combatActions: createMockCombatActions(),
-      initiativeActions: createMockInitiativeActions(),
-      quickActions: createMockQuickActions(),
-      settings: {
-        showTimer: true,
-        showQuickActions: true,
-        enableKeyboardShortcuts: true,
-        customActions: [],
-      },
-    };
+    testSetup = setupCombatToolbarTest();
   });
 
   describe('Essential Controls', () => {
     it('renders combat toolbar with essential controls', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
-      expect(screen.getByText('Initiative Tracker')).toBeInTheDocument();
-      expect(screen.getByText('Round 2')).toBeInTheDocument();
-      expect(screen.getByText('Next Turn')).toBeInTheDocument();
-      expect(screen.getByText('Previous')).toBeInTheDocument();
-      expect(screen.getByText('Pause')).toBeInTheDocument();
+      expectInitiativeTrackerToExist();
+      expectComponentState({ roundNumber: 2 });
+      expectCombatControlsToExist();
     });
 
     it('calls onNextTurn when Next Turn button is clicked', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
-      const nextButton = screen.getByText('Next Turn');
-      fireEvent.click(nextButton);
-
-      expect(mockProps.combatActions.onNextTurn).toHaveBeenCalledTimes(1);
+      clickButtonAndExpectCall('Next Turn', testSetup.mockCombatActions.onNextTurn);
     });
 
     it('calls onPreviousTurn when Previous button is clicked', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
-      const previousButton = screen.getByText('Previous');
-      fireEvent.click(previousButton);
-
-      expect(mockProps.combatActions.onPreviousTurn).toHaveBeenCalledTimes(1);
+      clickButtonAndExpectCall('Previous', testSetup.mockCombatActions.onPreviousTurn);
     });
 
     it('disables Previous button at start of first round', () => {
-      mockEncounter.combatState.currentRound = 1;
-      mockEncounter.combatState.currentTurn = 0;
-      render(<CombatToolbar {...mockProps} />);
+      const firstRoundSetup = setupCombatToolbarTest();
+      firstRoundSetup.mockEncounter.combatState.currentRound = 1;
+      firstRoundSetup.mockEncounter.combatState.currentTurn = 0;
+      render(<CombatToolbar {...firstRoundSetup.mockProps} />);
 
       const previousButton = screen.getByText('Previous');
       expect(previousButton).toBeDisabled();
     });
 
     it('shows pause button when combat is active', () => {
-      mockEncounter.combatState.pausedAt = undefined;
-      render(<CombatToolbar {...mockProps} />);
+      const activeSetup = setupCombatToolbarTest();
+      activeSetup.mockEncounter.combatState.pausedAt = undefined;
+      render(<CombatToolbar {...activeSetup.mockProps} />);
 
       expect(screen.getByText('Pause')).toBeInTheDocument();
     });
 
     it('shows resume button when combat is paused', () => {
-      mockEncounter.combatState.pausedAt = new Date();
-      render(<CombatToolbar {...mockProps} />);
+      const pausedSetup = setupCombatToolbarTest();
+      pausedSetup.mockEncounter.combatState.pausedAt = new Date();
+      render(<CombatToolbar {...pausedSetup.mockProps} />);
 
-      expect(screen.getByText('Resume')).toBeInTheDocument();
+      expectComponentState({ isPaused: true });
     });
 
     it('calls onPauseCombat when pause button is clicked', () => {
-      mockEncounter.combatState.pausedAt = undefined;
-      render(<CombatToolbar {...mockProps} />);
+      const activeSetup = setupCombatToolbarTest();
+      activeSetup.mockEncounter.combatState.pausedAt = undefined;
+      render(<CombatToolbar {...activeSetup.mockProps} />);
 
-      const pauseButton = screen.getByText('Pause');
-      fireEvent.click(pauseButton);
-
-      expect(mockProps.combatActions.onPauseCombat).toHaveBeenCalledTimes(1);
+      clickButtonAndExpectCall('Pause', activeSetup.mockCombatActions.onPauseCombat);
     });
 
     it('calls onResumeCombat when resume button is clicked', () => {
-      mockEncounter.combatState.pausedAt = new Date();
-      render(<CombatToolbar {...mockProps} />);
+      const pausedSetup = setupCombatToolbarTest();
+      pausedSetup.mockEncounter.combatState.pausedAt = new Date();
+      render(<CombatToolbar {...pausedSetup.mockProps} />);
 
-      const resumeButton = screen.getByText('Resume');
-      fireEvent.click(resumeButton);
-
-      expect(mockProps.combatActions.onResumeCombat).toHaveBeenCalledTimes(1);
+      clickButtonAndExpectCall('Resume', pausedSetup.mockCombatActions.onResumeCombat);
     });
 
     it('shows end combat button', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       expect(screen.getByText('End Combat')).toBeInTheDocument();
     });
 
     it('calls onEndCombat when end combat button is clicked', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
-      const endButton = screen.getByText('End Combat');
-      fireEvent.click(endButton);
-
-      expect(mockProps.combatActions.onEndCombat).toHaveBeenCalledTimes(1);
+      clickButtonAndExpectCall('End Combat', testSetup.mockCombatActions.onEndCombat);
     });
   });
 
   describe('Combat Timer', () => {
     it('displays combat duration when timer is enabled', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       expect(screen.getByText('2:00')).toBeInTheDocument(); // 2 minutes elapsed
     });
 
     it('updates timer display when combat state changes', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       // Verify timer is displayed
       expect(screen.getByText('2:00')).toBeInTheDocument();
     });
 
     it('displays round timer when enabled', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       // Should show round timer countdown
       expect(screen.getByText(/Round Timer:/)).toBeInTheDocument();
     });
 
     it('hides timer when disabled in settings', () => {
-      mockProps.settings.showTimer = false;
-      render(<CombatToolbar {...mockProps} />);
+      testSetup.mockProps.settings.showTimer = false;
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       expect(screen.queryByText('2:00')).not.toBeInTheDocument();
     });
 
     it('displays timer correctly when combat is paused', () => {
-      mockEncounter.combatState.pausedAt = new Date();
-      render(<CombatToolbar {...mockProps} />);
+      testSetup.mockEncounter.combatState.pausedAt = new Date();
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       // Timer should show paused state
       expect(screen.getByText('Paused')).toBeInTheDocument();
@@ -157,21 +132,21 @@ describe('CombatToolbar', () => {
 
   describe('Quick Actions Integration', () => {
     it('displays QuickActions component when enabled', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       // Test that QuickActions component is rendered by checking for its container
       expect(screen.getByTestId('quick-actions-container')).toBeInTheDocument();
     });
 
     it('hides quick actions when disabled in settings', () => {
-      mockProps.settings.showQuickActions = false;
-      render(<CombatToolbar {...mockProps} />);
+      testSetup.mockProps.settings.showQuickActions = false;
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       expect(screen.queryByTestId('quick-actions-container')).not.toBeInTheDocument();
     });
 
     it('passes correct props to QuickActions component', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       // Verify that QuickActions receives the participant count correctly
       expect(screen.getByText('Mass Heal (2)')).toBeInTheDocument();
@@ -182,20 +157,20 @@ describe('CombatToolbar', () => {
 
   describe('Status Display', () => {
     it('displays current round and turn information', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       expect(screen.getByText('Round 2')).toBeInTheDocument();
       expect(screen.getByText('Turn 2 of 2')).toBeInTheDocument();
     });
 
     it('displays active participant information', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       expect(screen.getByText('Active: Test Character 2')).toBeInTheDocument();
     });
 
     it('displays participant count and statistics', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       expect(screen.getByText('Participants: 2')).toBeInTheDocument();
       expect(screen.getByText('PCs: 1')).toBeInTheDocument();
@@ -203,21 +178,21 @@ describe('CombatToolbar', () => {
     });
 
     it('displays combat phase correctly', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       expect(screen.getByText('Combat Active')).toBeInTheDocument();
     });
 
     it('displays paused state correctly', () => {
-      mockEncounter.combatState.pausedAt = new Date();
-      render(<CombatToolbar {...mockProps} />);
+      testSetup.mockEncounter.combatState.pausedAt = new Date();
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       expect(screen.getByText('Combat Paused')).toBeInTheDocument();
     });
 
     it('displays inactive state when combat is not active', () => {
-      mockEncounter.combatState.isActive = false;
-      render(<CombatToolbar {...mockProps} />);
+      testSetup.mockEncounter.combatState.isActive = false;
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       expect(screen.getByText('Combat Inactive')).toBeInTheDocument();
     });
@@ -225,31 +200,31 @@ describe('CombatToolbar', () => {
 
   describe('Keyboard Shortcuts', () => {
     it('responds to keyboard shortcuts when enabled', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       // Space key should advance turn
       fireEvent.keyDown(document, { key: ' ', code: 'Space' });
-      expect(mockProps.combatActions.onNextTurn).toHaveBeenCalledTimes(1);
+      expect(testSetup.mockProps.combatActions.onNextTurn).toHaveBeenCalledTimes(1);
 
       // Backspace should go to previous turn
       fireEvent.keyDown(document, { key: 'Backspace', code: 'Backspace' });
-      expect(mockProps.combatActions.onPreviousTurn).toHaveBeenCalledTimes(1);
+      expect(testSetup.mockProps.combatActions.onPreviousTurn).toHaveBeenCalledTimes(1);
 
       // P key should pause/resume combat
       fireEvent.keyDown(document, { key: 'p', code: 'KeyP' });
-      expect(mockProps.combatActions.onPauseCombat).toHaveBeenCalledTimes(1);
+      expect(testSetup.mockProps.combatActions.onPauseCombat).toHaveBeenCalledTimes(1);
     });
 
     it('does not respond to keyboard shortcuts when disabled', () => {
-      mockProps.settings.enableKeyboardShortcuts = false;
-      render(<CombatToolbar {...mockProps} />);
+      testSetup.mockProps.settings.enableKeyboardShortcuts = false;
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       fireEvent.keyDown(document, { key: ' ', code: 'Space' });
-      expect(mockProps.combatActions.onNextTurn).not.toHaveBeenCalled();
+      expect(testSetup.mockProps.combatActions.onNextTurn).not.toHaveBeenCalled();
     });
 
     it('displays keyboard shortcut hints', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       // Should show tooltips with keyboard shortcuts
       expect(screen.getByRole('button', { name: /next turn/i })).toHaveAttribute('title', 'Next Turn (Space)');
@@ -260,7 +235,7 @@ describe('CombatToolbar', () => {
 
   describe('Toolbar Customization', () => {
     it('allows custom action buttons', () => {
-      mockProps.settings.customActions = [
+      testSetup.mockProps.settings.customActions = [
         {
           id: 'custom1',
           label: 'Custom Action',
@@ -268,14 +243,14 @@ describe('CombatToolbar', () => {
           handler: jest.fn(),
         },
       ];
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       expect(screen.getByText('Custom Action')).toBeInTheDocument();
     });
 
     it('calls custom action handler when clicked', () => {
       const customHandler = jest.fn();
-      mockProps.settings.customActions = [
+      testSetup.mockProps.settings.customActions = [
         {
           id: 'custom1',
           label: 'Custom Action',
@@ -283,7 +258,7 @@ describe('CombatToolbar', () => {
           handler: customHandler,
         },
       ];
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       const customButton = screen.getByText('Custom Action');
       fireEvent.click(customButton);
@@ -292,9 +267,9 @@ describe('CombatToolbar', () => {
     });
 
     it('allows toggling toolbar sections', () => {
-      mockProps.settings.showTimer = false;
-      mockProps.settings.showQuickActions = false;
-      render(<CombatToolbar {...mockProps} />);
+      testSetup.mockProps.settings.showTimer = false;
+      testSetup.mockProps.settings.showQuickActions = false;
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       // Only essential controls should be visible
       expect(screen.getByText('Next Turn')).toBeInTheDocument();
@@ -305,48 +280,48 @@ describe('CombatToolbar', () => {
 
   describe('Export and Share functionality', () => {
     it('calls onExportInitiative when export button is clicked', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       const exportButton = screen.getByRole('button', { name: /download initiative data/i });
       fireEvent.click(exportButton);
 
-      expect(mockProps.combatActions.onExportInitiative).toHaveBeenCalledTimes(1);
+      expect(testSetup.mockProps.combatActions.onExportInitiative).toHaveBeenCalledTimes(1);
     });
 
     it('calls onShareInitiative when share button is clicked', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       const shareButton = screen.getByRole('button', { name: /share initiative data/i });
       fireEvent.click(shareButton);
 
-      expect(mockProps.combatActions.onShareInitiative).toHaveBeenCalledTimes(1);
+      expect(testSetup.mockProps.combatActions.onShareInitiative).toHaveBeenCalledTimes(1);
     });
 
     it('shows settings button', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       expect(screen.getByRole('button', { name: /combat settings/i })).toBeInTheDocument();
     });
 
     it('calls onEncounterSettings when settings button is clicked', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       const settingsButton = screen.getByRole('button', { name: /combat settings/i });
       fireEvent.click(settingsButton);
 
-      expect(mockProps.quickActions.onEncounterSettings).toHaveBeenCalledTimes(1);
+      expect(testSetup.mockProps.quickActions.onEncounterSettings).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('Accessibility', () => {
     it('has proper heading structure', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       expect(screen.getByRole('heading', { name: 'Initiative Tracker' })).toBeInTheDocument();
     });
 
     it('has accessible button labels', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       expect(screen.getByRole('button', { name: /next turn/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /previous/i })).toBeInTheDocument();
@@ -355,14 +330,14 @@ describe('CombatToolbar', () => {
     });
 
     it('has proper ARIA attributes for timer', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       const timerElement = screen.getByText('2:00');
       expect(timerElement).toHaveAttribute('aria-label', expect.stringContaining('Combat duration'));
     });
 
     it('has proper ARIA attributes for round timer', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       const roundTimerText = screen.getByText(/Round Timer:/);
       const roundTimerElement = roundTimerText.nextElementSibling;
@@ -370,7 +345,7 @@ describe('CombatToolbar', () => {
     });
 
     it('provides keyboard navigation support', () => {
-      render(<CombatToolbar {...mockProps} />);
+      render(<CombatToolbar {...testSetup.mockProps} />);
 
       const nextButton = screen.getByRole('button', { name: /next turn/i });
       nextButton.focus();
@@ -384,9 +359,9 @@ describe('CombatToolbar', () => {
   describe('Error Handling', () => {
     it('handles missing encounter data gracefully', () => {
       const incompleteProps = {
-        ...mockProps,
+        ...testSetup.mockProps,
         encounter: {
-          ...mockEncounter,
+          ...testSetup.mockEncounter,
           combatState: null,
         },
       };
@@ -399,9 +374,9 @@ describe('CombatToolbar', () => {
 
     it('handles missing participant data gracefully', () => {
       const incompleteProps = {
-        ...mockProps,
+        ...testSetup.mockProps,
         encounter: {
-          ...mockEncounter,
+          ...testSetup.mockEncounter,
           participants: [],
         },
       };
@@ -413,7 +388,7 @@ describe('CombatToolbar', () => {
 
     it('handles missing action handlers gracefully', () => {
       const incompleteProps = {
-        ...mockProps,
+        ...testSetup.mockProps,
         combatActions: {},
       };
 
@@ -426,27 +401,27 @@ describe('CombatToolbar', () => {
 
   describe('Performance', () => {
     it('memoizes expensive calculations', () => {
-      const { rerender } = render(<CombatToolbar {...mockProps} />);
+      const { rerender } = render(<CombatToolbar {...testSetup.mockProps} />);
 
       // Re-render with same props
-      rerender(<CombatToolbar {...mockProps} />);
+      rerender(<CombatToolbar {...testSetup.mockProps} />);
 
       // Component should not re-calculate unnecessarily
       expect(screen.getByText('Participants: 2')).toBeInTheDocument();
     });
 
     it('updates efficiently when combat state changes', () => {
-      const { rerender } = render(<CombatToolbar {...mockProps} />);
+      const { rerender } = render(<CombatToolbar {...testSetup.mockProps} />);
 
       const updatedEncounter = {
-        ...mockEncounter,
+        ...testSetup.mockEncounter,
         combatState: {
-          ...mockEncounter.combatState,
+          ...testSetup.mockEncounter.combatState,
           currentTurn: 2,
         },
       };
 
-      rerender(<CombatToolbar {...mockProps} encounter={updatedEncounter} />);
+      rerender(<CombatToolbar {...testSetup.mockProps} encounter={updatedEncounter} />);
 
       expect(screen.getByText('Turn 2 of 2')).toBeInTheDocument();
     });

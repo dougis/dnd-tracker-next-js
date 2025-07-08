@@ -141,3 +141,102 @@ export function setupBasicCombatTest() {
     }
   };
 }
+
+/**
+ * Sets up complete test props for CombatToolbar tests
+ */
+export function setupCombatToolbarTest(overrides?: any) {
+  const mockEncounter = createStandardCombatTestEncounter();
+  const mockCombatActions = createMockCombatActions();
+  const mockInitiativeActions = createMockInitiativeActions();
+  const mockQuickActions = createMockQuickActions();
+
+  return {
+    mockEncounter,
+    mockCombatActions,
+    mockInitiativeActions,
+    mockQuickActions,
+    mockProps: {
+      encounter: mockEncounter,
+      combatActions: mockCombatActions,
+      initiativeActions: mockInitiativeActions,
+      quickActions: mockQuickActions,
+      settings: {
+        showTimer: true,
+        showQuickActions: true,
+        enableKeyboardShortcuts: true,
+        customActions: [],
+        ...overrides?.settings
+      },
+      ...overrides
+    }
+  };
+}
+
+/**
+ * Sets up test props for InitiativeTracker tests
+ */
+export function setupInitiativeTrackerTest(overrides?: any) {
+  const mockEncounter = createStandardCombatTestEncounter();
+  const mockCombatActions = createMockCombatActions();
+  const mockInitiativeActions = createMockInitiativeActions();
+
+  return {
+    mockEncounter,
+    mockCombatActions,
+    mockInitiativeActions,
+    mockProps: {
+      encounter: mockEncounter,
+      combatActions: mockCombatActions,
+      initiativeActions: mockInitiativeActions,
+      ...overrides
+    }
+  };
+}
+
+/**
+ * Common test assertions for combat components
+ */
+export function expectCombatControlsToExist() {
+  expectButtonToExist('Next Turn');
+  expectButtonToExist('Previous');
+  expectButtonToExist('Pause');
+}
+
+export function expectInitiativeTrackerToExist() {
+  expectElementToBeInDocument('Initiative Tracker');
+}
+
+export function expectParticipantsToBeDisplayed(participants: any[]) {
+  participants.forEach(participant => {
+    expectElementToBeInDocument(participant.name);
+    expectElementToBeInDocument(`AC ${participant.armorClass}`);
+    expectElementToBeInDocument(`${participant.currentHitPoints}/${participant.maxHitPoints}`);
+  });
+}
+
+/**
+ * Test helper for keyboard event simulation
+ */
+export function simulateKeyPress(key: string, code: string) {
+  fireEvent.keyDown(document, { key, code });
+}
+
+/**
+ * Test helper for component state validation
+ */
+export function expectComponentState(expectations: {
+  roundNumber?: number;
+  isActive?: boolean;
+  isPaused?: boolean;
+}) {
+  if (expectations.roundNumber) {
+    expectElementToBeInDocument(`Round ${expectations.roundNumber}`);
+  }
+  if (expectations.isActive === false) {
+    expectElementToBeInDocument('Combat has not started');
+  }
+  if (expectations.isPaused) {
+    expectButtonToExist('Resume');
+  }
+}
