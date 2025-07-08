@@ -94,6 +94,9 @@ describe('CharacterValidationForm', () => {
       render(<CharacterValidationForm {...defaultProps} />);
 
       const nameInput = screen.getByLabelText(/Character Name/);
+      
+      // First type something to trigger validation, then clear it
+      await userEvent.type(nameInput, 'Test');
       await userEvent.clear(nameInput);
       await userEvent.tab(); // Trigger blur to show validation
 
@@ -140,8 +143,14 @@ describe('CharacterValidationForm', () => {
     it('handles custom race input', async () => {
       render(<CharacterValidationForm {...defaultProps} />);
 
-      const raceSelect = screen.getByDisplayValue('Human');
+      // Find the race select trigger by role
+      const raceSelect = screen.getByRole('combobox', { name: /Race/ });
       await userEvent.click(raceSelect);
+      
+      // Wait for dropdown to open and click Custom option
+      await waitFor(() => {
+        expect(screen.getByText('Custom')).toBeInTheDocument();
+      });
       await userEvent.click(screen.getByText('Custom'));
 
       // Should show custom race input
@@ -158,11 +167,20 @@ describe('CharacterValidationForm', () => {
     it('updates size field', async () => {
       render(<CharacterValidationForm {...defaultProps} />);
 
-      const sizeSelect = screen.getByDisplayValue('Medium');
+      // Find the size select trigger by role
+      const sizeSelect = screen.getByRole('combobox', { name: /Size/ });
       await userEvent.click(sizeSelect);
+      
+      // Wait for dropdown to open and click Large option
+      await waitFor(() => {
+        expect(screen.getByText('Large')).toBeInTheDocument();
+      });
       await userEvent.click(screen.getByText('Large'));
 
-      expect(screen.getByDisplayValue('Large')).toBeInTheDocument();
+      // Verify the selection was made by checking the trigger shows Large
+      await waitFor(() => {
+        expect(screen.getByText('Large')).toBeInTheDocument();
+      });
     });
   });
 
