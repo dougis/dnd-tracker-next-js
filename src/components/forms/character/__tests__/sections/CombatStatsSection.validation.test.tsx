@@ -1,16 +1,13 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { CombatStatsSection } from '../../sections/CombatStatsSection';
+import { DEFAULT_HIT_POINTS } from '../../constants';
 
 describe('CombatStatsSection - Validation and Edge Cases', () => {
   const mockOnChange = jest.fn();
   const defaultProps = {
     value: {
-      hitPoints: {
-        maximum: 10,
-        current: 10,
-        temporary: 0,
-      },
+      hitPoints: DEFAULT_HIT_POINTS,
       armorClass: 12,
       speed: 30,
       proficiencyBonus: 2,

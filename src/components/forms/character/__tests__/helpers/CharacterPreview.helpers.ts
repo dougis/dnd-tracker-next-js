@@ -1,13 +1,12 @@
 /**
  * Test helpers for CharacterPreview component tests
  */
+import { TEST_CHARACTER_DATA, createTestCharacterWithEnhancedAbilities } from '../../constants';
 
-export const defaultCharacterPreviewProps = {
-  basicInfo: {
-    name: 'Aragorn',
-    type: 'pc' as const,
-    race: 'human',
-  },
+// Use consolidated test data to reduce duplication
+const baseCharacter = createTestCharacterWithEnhancedAbilities({
+  name: 'Aragorn',
+  classes: [{ className: 'ranger', level: 5 }],
   abilityScores: {
     strength: 16,
     dexterity: 14,
@@ -16,18 +15,27 @@ export const defaultCharacterPreviewProps = {
     wisdom: 13,
     charisma: 11,
   },
-  classes: [
-    { className: 'ranger', level: 5 },
-  ],
+  hitPoints: {
+    maximum: 45,
+    current: 45,
+    temporary: 0,
+  },
+  proficiencyBonus: 3,
+});
+
+export const defaultCharacterPreviewProps = {
+  basicInfo: {
+    name: baseCharacter.name,
+    type: baseCharacter.type,
+    race: baseCharacter.race,
+  },
+  abilityScores: baseCharacter.abilityScores,
+  classes: baseCharacter.classes,
   combatStats: {
-    hitPoints: {
-      maximum: 45,
-      current: 45,
-      temporary: 0,
-    },
-    armorClass: 16,
-    speed: 30,
-    proficiencyBonus: 3,
+    hitPoints: baseCharacter.hitPoints,
+    armorClass: baseCharacter.armorClass,
+    speed: baseCharacter.speed,
+    proficiencyBonus: baseCharacter.proficiencyBonus,
   },
   isValid: true,
 };

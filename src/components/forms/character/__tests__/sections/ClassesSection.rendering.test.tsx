@@ -1,16 +1,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ClassesSection } from '../../sections/ClassesSection';
+import { createClassesSectionProps, singleFighter } from '../helpers/ClassesSection.helpers';
 
 describe('ClassesSection - Rendering and Display', () => {
   const mockOnChange = jest.fn();
-  const defaultProps = {
-    value: [
-      { class: 'fighter' as const, level: 1, hitDie: 10 },
-    ],
-    onChange: mockOnChange,
-    errors: {},
-  };
+  const defaultProps = createClassesSectionProps(singleFighter(), {}, mockOnChange);
 
   beforeEach(() => {
     jest.clearAllMocks();

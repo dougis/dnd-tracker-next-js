@@ -1,18 +1,12 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AbilityScoresSection } from '../../sections/AbilityScoresSection';
+import { DEFAULT_ABILITY_SCORES } from '../../constants';
 
 describe('AbilityScoresSection', () => {
   const mockOnChange = jest.fn();
   const defaultProps = {
-    value: {
-      strength: 10,
-      dexterity: 10,
-      constitution: 10,
-      intelligence: 10,
-      wisdom: 10,
-      charisma: 10,
-    },
+    value: DEFAULT_ABILITY_SCORES,
     onChange: mockOnChange,
     errors: {},
   };
