@@ -169,7 +169,6 @@ export function CombatToolbar({
     total: participants.length,
     pcs: participants.filter(p => p.isPlayer).length,
     npcs: participants.filter(p => !p.isPlayer).length,
-    alive: participants.filter(p => p.currentHitPoints > 0).length,
   };
 
   const getActiveParticipantName = () => {

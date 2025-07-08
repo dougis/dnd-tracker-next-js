@@ -90,6 +90,7 @@ export const makeEncounterActive = (encounter: IEncounter) => {
   encounter.combatState.isActive = true;
   encounter.combatState.currentRound = 2;
   encounter.combatState.currentTurn = 0;
+  encounter.combatState.startedAt = new Date();
   encounter.combatState.initiativeOrder = [
     createTestParticipant({
       participantId: PARTICIPANT_IDS.FIRST,
@@ -102,6 +103,30 @@ export const makeEncounterActive = (encounter: IEncounter) => {
       initiative: 15,
       dexterity: 12,
     }),
+  ];
+
+  // Add participants with names for testing
+  encounter.participants = [
+    {
+      characterId: PARTICIPANT_IDS.FIRST,
+      name: 'Test Character 1',
+      level: 5,
+      ac: 15,
+      hp: 45,
+      maxHp: 45,
+      initiative: 20,
+      conditions: [],
+    },
+    {
+      characterId: PARTICIPANT_IDS.SECOND,
+      name: 'Test Character 2',
+      level: 3,
+      ac: 13,
+      hp: 22,
+      maxHp: 22,
+      initiative: 15,
+      conditions: [],
+    },
   ];
 };
 

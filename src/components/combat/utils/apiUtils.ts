@@ -68,7 +68,8 @@ export async function makeRequest(config: RequestConfig) {
   } catch (err) {
     const errorMessage = handleError(err);
     setError(errorMessage);
-    throw err;
+    // Don't rethrow the error since we're already managing the error state
+    // This prevents uncaught exceptions in calling code
   } finally {
     setIsLoading(false);
   }
