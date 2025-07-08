@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { CharacterPreview } from '../CharacterPreview';
-import { defaultCharacterPreviewProps } from './helpers/CharacterPreview.helpers';
+import { defaultCharacterPreviewProps, createInvalidProps } from './helpers/CharacterPreview.helpers';
 
 describe('CharacterPreview - Rendering', () => {
   beforeEach(() => {
@@ -22,10 +22,7 @@ describe('CharacterPreview - Rendering', () => {
     });
 
     it('shows invalid character status with warning', () => {
-      const props = {
-        ...defaultCharacterPreviewProps,
-        isValid: false,
-      };
+      const props = createInvalidProps();
       render(<CharacterPreview {...props} />);
 
       expect(screen.getByText('Complete all sections to enable creation')).toBeInTheDocument();

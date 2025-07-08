@@ -36,3 +36,45 @@ export const createCharacterPreviewProps = (overrides: any = {}) => ({
   ...defaultCharacterPreviewProps,
   ...overrides,
 });
+
+// Helper functions to create invalid scenarios
+export const createInvalidBasicInfoProps = (invalidField: string, value?: any) => ({
+  ...defaultCharacterPreviewProps,
+  basicInfo: { ...defaultCharacterPreviewProps.basicInfo, [invalidField]: value ?? '' },
+  isValid: false,
+});
+
+export const createInvalidAbilityScoresProps = (scoreOverrides: Record<string, number>) => ({
+  ...defaultCharacterPreviewProps,
+  abilityScores: { ...defaultCharacterPreviewProps.abilityScores, ...scoreOverrides },
+  isValid: false,
+});
+
+export const createInvalidClassesProps = (classes: any[]) => ({
+  ...defaultCharacterPreviewProps,
+  classes,
+  isValid: false,
+});
+
+export const createInvalidCombatStatsProps = (combatStatsOverrides: any) => ({
+  ...defaultCharacterPreviewProps,
+  combatStats: { ...defaultCharacterPreviewProps.combatStats, ...combatStatsOverrides },
+  isValid: false,
+});
+
+// Helper functions for specific class test scenarios
+export const createMulticlassProps = (classes: Array<{ className: string; level: number }>) => ({
+  ...defaultCharacterPreviewProps,
+  classes,
+});
+
+export const createSingleClassProps = (className: string, level: number) => ({
+  ...defaultCharacterPreviewProps,
+  classes: [{ className, level }],
+});
+
+// Helper for simple invalid props
+export const createInvalidProps = () => ({
+  ...defaultCharacterPreviewProps,
+  isValid: false,
+});

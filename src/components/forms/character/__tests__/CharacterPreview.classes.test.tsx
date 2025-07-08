@@ -1,7 +1,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { CharacterPreview } from '../CharacterPreview';
-import { defaultCharacterPreviewProps } from './helpers/CharacterPreview.helpers';
+import {
+  defaultCharacterPreviewProps,
+  createMulticlassProps,
+  createSingleClassProps
+} from './helpers/CharacterPreview.helpers';
 
 describe('CharacterPreview - Classes', () => {
   beforeEach(() => {
@@ -17,13 +21,10 @@ describe('CharacterPreview - Classes', () => {
     });
 
     it('displays multiple classes', () => {
-      const props = {
-        ...defaultCharacterPreviewProps,
-        classes: [
-          { className: 'fighter', level: 3 },
-          { className: 'rogue', level: 2 },
-        ],
-      };
+      const props = createMulticlassProps([
+        { className: 'fighter', level: 3 },
+        { className: 'rogue', level: 2 },
+      ]);
       render(<CharacterPreview {...props} />);
 
       expect(screen.getByText('Fighter')).toBeInTheDocument();
@@ -33,13 +34,10 @@ describe('CharacterPreview - Classes', () => {
     });
 
     it('displays total level correctly', () => {
-      const props = {
-        ...defaultCharacterPreviewProps,
-        classes: [
-          { className: 'fighter', level: 3 },
-          { className: 'rogue', level: 2 },
-        ],
-      };
+      const props = createMulticlassProps([
+        { className: 'fighter', level: 3 },
+        { className: 'rogue', level: 2 },
+      ]);
       render(<CharacterPreview {...props} />);
 
       // Find the total level badge (should be 5)
@@ -47,20 +45,14 @@ describe('CharacterPreview - Classes', () => {
     });
 
     it('formats class names with proper capitalization', () => {
-      const props = {
-        ...defaultCharacterPreviewProps,
-        classes: [{ className: 'paladin', level: 1 }],
-      };
+      const props = createSingleClassProps('paladin', 1);
       render(<CharacterPreview {...props} />);
 
       expect(screen.getByText('Paladin')).toBeInTheDocument();
     });
 
     it('handles empty classes array', () => {
-      const props = {
-        ...defaultCharacterPreviewProps,
-        classes: [],
-      };
+      const props = createMulticlassProps([]);
       render(<CharacterPreview {...props} />);
 
       expect(screen.getByText('Classes')).toBeInTheDocument(); // Should show Classes section
@@ -68,14 +60,11 @@ describe('CharacterPreview - Classes', () => {
     });
 
     it('handles complex multiclass scenarios', () => {
-      const props = {
-        ...defaultCharacterPreviewProps,
-        classes: [
-          { className: 'fighter', level: 5 },
-          { className: 'wizard', level: 3 },
-          { className: 'rogue', level: 2 },
-        ],
-      };
+      const props = createMulticlassProps([
+        { className: 'fighter', level: 5 },
+        { className: 'wizard', level: 3 },
+        { className: 'rogue', level: 2 },
+      ]);
       render(<CharacterPreview {...props} />);
 
       expect(screen.getByText('Fighter')).toBeInTheDocument();

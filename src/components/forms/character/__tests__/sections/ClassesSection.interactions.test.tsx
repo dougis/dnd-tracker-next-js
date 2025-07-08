@@ -2,16 +2,11 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ClassesSection } from '../../sections/ClassesSection';
+import { createClassData, singleFighter, threeClassBuild, createClassesSectionProps } from '../helpers/ClassesSection.helpers';
 
 describe('ClassesSection - Interactions', () => {
   const mockOnChange = jest.fn();
-  const defaultProps = {
-    value: [
-      { class: 'fighter' as const, level: 1, hitDie: 10 },
-    ],
-    onChange: mockOnChange,
-    errors: {},
-  };
+  const defaultProps = createClassesSectionProps(singleFighter(), {}, mockOnChange);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -26,20 +21,13 @@ describe('ClassesSection - Interactions', () => {
       await user.click(addButton);
 
       expect(mockOnChange).toHaveBeenCalledWith([
-        { class: 'fighter', level: 1, hitDie: 10 },
-        { class: 'fighter', level: 1, hitDie: 10 },
+        createClassData('fighter', 1),
+        createClassData('fighter', 1),
       ]);
     });
 
     it('disables add button when maximum classes reached', () => {
-      const maxClassProps = {
-        ...defaultProps,
-        value: [
-          { class: 'fighter' as const, level: 1, hitDie: 10 },
-          { class: 'rogue' as const, level: 1, hitDie: 8 },
-          { class: 'wizard' as const, level: 1, hitDie: 6 },
-        ],
-      };
+      const maxClassProps = createClassesSectionProps(threeClassBuild(), {}, mockOnChange);
       render(<ClassesSection {...maxClassProps} />);
 
       const addButton = screen.getByRole('button', { name: /add class/i });

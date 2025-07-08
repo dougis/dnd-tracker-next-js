@@ -1,13 +1,14 @@
 'use client';
 
 import React from 'react';
-import { FormSelect, FormSelectOption } from '@/components/forms/FormSelect';
+import { FormSelect } from '@/components/forms/FormSelect';
 import { FormInput } from '@/components/forms/FormInput';
 import { FormGroup } from '@/components/forms/FormGroup';
 import { Button } from '@/components/ui/button';
 import { Plus, X } from 'lucide-react';
 import { CharacterClass } from '@/lib/validations/character';
 import { getHitDieForClass } from '../utils';
+import { CHARACTER_CLASS_OPTIONS } from '../constants';
 
 interface ClassData {
   class: CharacterClass;
@@ -20,22 +21,6 @@ interface ClassesSectionProps {
   onChange: (_value: ClassData[]) => void;
   errors: Record<string, string>;
 }
-
-const CHARACTER_CLASS_OPTIONS: FormSelectOption[] = [
-  { value: 'artificer', label: 'Artificer' },
-  { value: 'barbarian', label: 'Barbarian' },
-  { value: 'bard', label: 'Bard' },
-  { value: 'cleric', label: 'Cleric' },
-  { value: 'druid', label: 'Druid' },
-  { value: 'fighter', label: 'Fighter' },
-  { value: 'monk', label: 'Monk' },
-  { value: 'paladin', label: 'Paladin' },
-  { value: 'ranger', label: 'Ranger' },
-  { value: 'rogue', label: 'Rogue' },
-  { value: 'sorcerer', label: 'Sorcerer' },
-  { value: 'warlock', label: 'Warlock' },
-  { value: 'wizard', label: 'Wizard' },
-];
 
 export function ClassesSection({ value, onChange, errors }: ClassesSectionProps) {
 

@@ -1,7 +1,13 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { CharacterPreview } from '../CharacterPreview';
-import { defaultCharacterPreviewProps } from './helpers/CharacterPreview.helpers';
+import {
+  defaultCharacterPreviewProps,
+  createInvalidBasicInfoProps,
+  createInvalidAbilityScoresProps,
+  createInvalidClassesProps,
+  createInvalidCombatStatsProps
+} from './helpers/CharacterPreview.helpers';
 
 describe('CharacterPreview - Validation', () => {
   beforeEach(() => {
@@ -19,101 +25,58 @@ describe('CharacterPreview - Validation', () => {
     });
 
     it('marks basic info as incomplete when missing name', () => {
-      const props = {
-        ...defaultCharacterPreviewProps,
-        basicInfo: { ...defaultCharacterPreviewProps.basicInfo, name: '' },
-        isValid: false,
-      };
+      const props = createInvalidBasicInfoProps('name', '');
       render(<CharacterPreview {...props} />);
 
       expect(screen.getByText('⚠ Basic Information')).toBeInTheDocument();
     });
 
     it('marks basic info as incomplete when missing type', () => {
-      const props = {
-        ...defaultCharacterPreviewProps,
-        basicInfo: { ...defaultCharacterPreviewProps.basicInfo, type: undefined as any },
-        isValid: false,
-      };
+      const props = createInvalidBasicInfoProps('type', undefined);
       render(<CharacterPreview {...props} />);
 
       expect(screen.getByText('⚠ Basic Information')).toBeInTheDocument();
     });
 
     it('marks basic info as incomplete when missing race', () => {
-      const props = {
-        ...defaultCharacterPreviewProps,
-        basicInfo: { ...defaultCharacterPreviewProps.basicInfo, race: '' as any },
-        isValid: false,
-      };
+      const props = createInvalidBasicInfoProps('race', '');
       render(<CharacterPreview {...props} />);
 
       expect(screen.getByText('⚠ Basic Information')).toBeInTheDocument();
     });
 
     it('marks ability scores as incomplete when out of range', () => {
-      const props = {
-        ...defaultCharacterPreviewProps,
-        abilityScores: {
-          ...defaultCharacterPreviewProps.abilityScores,
-          strength: 0, // Invalid value
-        },
-        isValid: false,
-      };
+      const props = createInvalidAbilityScoresProps({ strength: 0 });
       render(<CharacterPreview {...props} />);
 
       expect(screen.getByText('⚠ Ability Scores')).toBeInTheDocument();
     });
 
     it('marks classes as incomplete when empty', () => {
-      const props = {
-        ...defaultCharacterPreviewProps,
-        classes: [],
-        isValid: false,
-      };
+      const props = createInvalidClassesProps([]);
       render(<CharacterPreview {...props} />);
 
       expect(screen.getByText('⚠ Classes')).toBeInTheDocument();
     });
 
     it('marks classes as incomplete when level is invalid', () => {
-      const props = {
-        ...defaultCharacterPreviewProps,
-        classes: [{ className: 'fighter', level: 0 }], // Invalid level
-        isValid: false,
-      };
+      const props = createInvalidClassesProps([{ className: 'fighter', level: 0 }]);
       render(<CharacterPreview {...props} />);
 
       expect(screen.getByText('⚠ Classes')).toBeInTheDocument();
     });
 
     it('marks combat stats as incomplete when HP is invalid', () => {
-      const props = {
-        ...defaultCharacterPreviewProps,
-        combatStats: {
-          ...defaultCharacterPreviewProps.combatStats,
-          hitPoints: {
-            maximum: 0, // Invalid HP
-            current: 0,
-            temporary: 0,
-          },
-        },
-        isValid: false,
-      };
+      const props = createInvalidCombatStatsProps({
+        hitPoints: { maximum: 0, current: 0, temporary: 0 }
+      });
       render(<CharacterPreview {...props} />);
 
       expect(screen.getByText('⚠ Combat Stats')).toBeInTheDocument();
     });
 
     it('marks combat stats as incomplete when AC is invalid', () => {
-      const props = {
-        ...defaultCharacterPreviewProps,
-        combatStats: {
-          ...defaultCharacterPreviewProps.combatStats,
-          armorClass: 0, // Invalid AC
-        },
-        isValid: false,
-      };
+      const props = createInvalidCombatStatsProps({ armorClass: 0 });
       render(<CharacterPreview {...props} />);
 
       expect(screen.getByText('⚠ Combat Stats')).toBeInTheDocument();
