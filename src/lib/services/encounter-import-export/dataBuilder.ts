@@ -18,6 +18,56 @@ const EXPORT_VERSION = '1.0.0';
 const APP_VERSION = '1.0.0';
 
 /**
+ * Validate export request and return encounter
+ */
+async function validateExportRequest(encounterId: string, userId: string): Promise<ServiceResult<IEncounter>> {
+  if (!Types.ObjectId.isValid(encounterId)) {
+    throw new InvalidEncounterIdError(encounterId);
+  }
+
+  const encounter = await Encounter.findById(encounterId);
+  if (!encounter) {
+    return {
+      success: false,
+      error: {
+        message: 'Encounter not found',
+        code: 'ENCOUNTER_NOT_FOUND',
+        statusCode: 404,
+      },
+    };
+  }
+
+  if (encounter.ownerId.toString() !== userId && !encounter.sharedWith.includes(new Types.ObjectId(userId))) {
+    return {
+      success: false,
+      error: {
+        message: 'You do not have permission to export this encounter',
+        code: 'INSUFFICIENT_PERMISSIONS',
+        statusCode: 403,
+      },
+    };
+  }
+
+  return { success: true, data: encounter };
+}
+
+/**
+ * Enhance export data with combat state and character sheets
+ */
+async function enhanceExportData(exportData: EncounterExportData, encounter: IEncounter, options: ExportOptions) {
+  if (encounter.combatState?.isActive) {
+    exportData.encounter.combatState = buildCombatStateData(encounter, options);
+  }
+
+  if (options.includeCharacterSheets) {
+    const characterSheets = await buildCharacterSheetsData(encounter, options);
+    if (characterSheets) {
+      exportData.encounter.characterSheets = characterSheets;
+    }
+  }
+}
+
+/**
  * Prepare export data with all encounter information
  */
 export async function prepareExportData(
@@ -27,49 +77,18 @@ export async function prepareExportData(
   options: ExportOptions
 ): Promise<ServiceResult<EncounterExportData>> {
   try {
-    if (!Types.ObjectId.isValid(encounterId)) {
-      throw new InvalidEncounterIdError(encounterId);
-    }
-
-    const encounter = await Encounter.findById(encounterId);
-    if (!encounter) {
+    const validation = await validateExportRequest(encounterId, userId);
+    if (!validation.success) {
       return {
         success: false,
-        error: {
-          message: 'Encounter not found',
-          code: 'ENCOUNTER_NOT_FOUND',
-          statusCode: 404,
-        },
+        error: validation.error,
       };
     }
 
-    // Check permissions
-    if (encounter.ownerId.toString() !== userId && !encounter.sharedWith.includes(new Types.ObjectId(userId))) {
-      return {
-        success: false,
-        error: {
-          message: 'You do not have permission to export this encounter',
-          code: 'INSUFFICIENT_PERMISSIONS',
-          statusCode: 403,
-        },
-      };
-    }
-
-    // Build base export data
+    const encounter = validation.data!;
     const exportData = buildBaseExportData(encounter, userId, format, options);
 
-    // Add combat state if encounter is active
-    if (encounter.combatState?.isActive) {
-      exportData.encounter.combatState = buildCombatStateData(encounter, options);
-    }
-
-    // Include character sheets if requested
-    if (options.includeCharacterSheets) {
-      const characterSheets = await buildCharacterSheetsData(encounter, options);
-      if (characterSheets) {
-        exportData.encounter.characterSheets = characterSheets;
-      }
-    }
+    await enhanceExportData(exportData, encounter, options);
 
     return {
       success: true,
