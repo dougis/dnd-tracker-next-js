@@ -69,14 +69,14 @@ describe('CharacterValidationForm', () => {
     it('renders the form modal when open', () => {
       render(<CharacterValidationForm {...defaultProps} />);
 
-      expect(screen.getByText('Create Character')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Create Character' })).toBeInTheDocument();
       expect(screen.getByText('Build your character with real-time validation')).toBeInTheDocument();
     });
 
     it('does not render when closed', () => {
       render(<CharacterValidationForm {...defaultProps} isOpen={false} />);
 
-      expect(screen.queryByText('Create Character')).not.toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: 'Create Character' })).not.toBeInTheDocument();
     });
 
     it('renders all form sections', () => {
@@ -284,7 +284,7 @@ describe('CharacterValidationForm', () => {
       await userEvent.type(nameInput, 'Test Character');
 
       // Submit the form
-      await userEvent.click(screen.getByText('Create Character'));
+      await userEvent.click(screen.getByRole('button', { name: 'Create Character' }));
 
       await waitFor(() => {
         expect(mockCharacterService.createCharacter).toHaveBeenCalledWith(
@@ -316,7 +316,7 @@ describe('CharacterValidationForm', () => {
       const nameInput = screen.getByLabelText(/Character Name/);
       await userEvent.type(nameInput, 'Test Character');
 
-      await userEvent.click(screen.getByText('Create Character'));
+      await userEvent.click(screen.getByRole('button', { name: 'Create Character' }));
 
       await waitFor(() => {
         expect(screen.getByText(/Failed to create character: Invalid character data/)).toBeInTheDocument();
@@ -332,7 +332,7 @@ describe('CharacterValidationForm', () => {
       await userEvent.clear(nameInput);
 
       // Submit button should be disabled or not functional
-      await userEvent.click(screen.getByText('Create Character'));
+      await userEvent.click(screen.getByRole('button', { name: 'Create Character' }));
 
       // Should not call the service
       expect(mockCharacterService.createCharacter).not.toHaveBeenCalled();
@@ -352,11 +352,11 @@ describe('CharacterValidationForm', () => {
       const nameInput = screen.getByLabelText(/Character Name/);
       await userEvent.type(nameInput, 'Test Character');
 
-      await userEvent.click(screen.getByText('Create Character'));
+      await userEvent.click(screen.getByRole('button', { name: 'Create Character' }));
 
       // Should show loading state
       await waitFor(() => {
-        expect(screen.getByText('Create Character')).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'Create Character' })).toBeDisabled();
       });
     });
   });
