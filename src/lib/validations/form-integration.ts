@@ -250,12 +250,8 @@ export function getFirstValidationError(
 }
 
 // Type utilities for form integration
-export type FormResolver<T extends FieldValues> = ReturnType<
-  typeof createFormResolver<T>
->;
-export type FormOptions<T extends FieldValues> = ReturnType<
-  typeof createFormOptions<T>
->;
+export type FormResolver<T extends FieldValues> = ReturnType<typeof createFormResolver<T>>;
+export type FormOptions<T extends FieldValues> = ReturnType<typeof createFormOptions<T>>;
 export type FormValidationResult<T> =
   | { success: true; data: T }
   | { success: false; errors: Record<string, string> };

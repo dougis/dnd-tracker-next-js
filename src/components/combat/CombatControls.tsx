@@ -1,124 +1,92 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Play,
   Pause,
   SkipForward,
   SkipBack,
-  Settings,
-  Download,
-  Share2
+  Square,
 } from 'lucide-react';
-
-interface CombatState {
-  currentRound: number;
-  currentTurn: number;
-  isPaused?: boolean;
-  canGoPrevious: boolean;
-}
 
 interface CombatActions {
   onNextTurn?: () => void;
   onPreviousTurn?: () => void;
   onPauseCombat?: () => void;
   onResumeCombat?: () => void;
-  onExportInitiative?: () => void;
-  onShareInitiative?: () => void;
+  onEndCombat?: () => void;
+}
+
+interface CombatState {
+  canGoPrevious: boolean;
+  isPaused: boolean;
+  enableKeyboardShortcuts: boolean;
 }
 
 interface CombatControlsProps {
-  state: CombatState;
   actions: CombatActions;
+  state: CombatState;
 }
 
-export function CombatControls({ state, actions }: CombatControlsProps) {
-  const { currentRound, isPaused = false, canGoPrevious } = state;
-  const { onNextTurn, onPreviousTurn, onPauseCombat, onResumeCombat, onExportInitiative, onShareInitiative } = actions;
+export function CombatControlsSection({ actions, state }: CombatControlsProps) {
+  const getTitle = (base: string, shortcut?: string) =>
+    state.enableKeyboardShortcuts && shortcut ? `${base} (${shortcut})` : base;
+
+  const pauseResumeButton = state.isPaused ? (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={actions.onResumeCombat}
+      title={getTitle('Resume Combat', 'P')}
+    >
+      <Play className="h-4 w-4 mr-1" />
+      Resume
+    </Button>
+  ) : (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={actions.onPauseCombat}
+      title={getTitle('Pause Combat', 'P')}
+    >
+      <Pause className="h-4 w-4 mr-1" />
+      Pause
+    </Button>
+  );
+
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <h2>
-              <CardTitle className="text-lg">Initiative Tracker</CardTitle>
-            </h2>
-            <Badge variant="secondary">Round {currentRound}</Badge>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onExportInitiative}
-              className="text-muted-foreground hover:text-foreground"
-              aria-label="Download initiative data"
-            >
-              <Download className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onShareInitiative}
-              className="text-muted-foreground hover:text-foreground"
-              aria-label="Share initiative data"
-            >
-              <Share2 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-foreground"
-              aria-label="Combat Settings"
-            >
-              <Settings className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onPreviousTurn}
-            disabled={!canGoPrevious}
-          >
-            <SkipBack className="h-4 w-4 mr-1" />
-            Previous
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={onNextTurn}
-            className="px-6"
-          >
-            <SkipForward className="h-4 w-4 mr-1" />
-            Next Turn
-          </Button>
-          {isPaused ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onResumeCombat}
-            >
-              <Play className="h-4 w-4 mr-1" />
-              Resume
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onPauseCombat}
-            >
-              <Pause className="h-4 w-4 mr-1" />
-              Pause
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex items-center justify-center space-x-2">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={actions.onPreviousTurn}
+        disabled={!state.canGoPrevious}
+        title={getTitle('Previous Turn', 'Backspace')}
+      >
+        <SkipBack className="h-4 w-4 mr-1" />
+        Previous
+      </Button>
+      <Button
+        variant="default"
+        size="sm"
+        onClick={actions.onNextTurn}
+        className="px-6"
+        title={getTitle('Next Turn', 'Space')}
+      >
+        <SkipForward className="h-4 w-4 mr-1" />
+        Next Turn
+      </Button>
+      {pauseResumeButton}
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={actions.onEndCombat}
+        title={getTitle('End Combat', 'E')}
+      >
+        <Square className="h-4 w-4 mr-1" />
+        End Combat
+      </Button>
+    </div>
   );
 }
