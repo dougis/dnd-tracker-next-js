@@ -3,7 +3,7 @@
 import React from 'react';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
 import { Card, CardContent } from '@/components/ui/card';
-import { CombatControls } from './CombatControls';
+import { CombatControlsSection } from './CombatControls';
 import { InitiativeList } from './InitiativeList';
 import { useInitiativeData } from './useInitiativeData';
 
@@ -58,14 +58,19 @@ export function InitiativeTracker({
 
   return (
     <div className="space-y-4">
-      <CombatControls
-        state={{
-          currentRound: encounter.combatState.currentRound,
-          currentTurn: encounter.combatState.currentTurn,
-          isPaused,
-          canGoPrevious
+      <CombatControlsSection
+        actions={{
+          onNextTurn: combatActions.onNextTurn,
+          onPreviousTurn: combatActions.onPreviousTurn,
+          onPauseCombat: combatActions.onPauseCombat,
+          onResumeCombat: combatActions.onResumeCombat,
+          onEndCombat: undefined,
         }}
-        actions={combatActions}
+        state={{
+          canGoPrevious,
+          isPaused,
+          enableKeyboardShortcuts: false,
+        }}
       />
       <InitiativeList
         initiativeWithParticipants={initiativeWithParticipants}
