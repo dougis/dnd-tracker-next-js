@@ -16,6 +16,7 @@ describe('useCharacterForm - Basic Functionality', () => {
           type: 'pc',
           race: 'human',
           customRace: '',
+          size: 'medium',
         },
         abilityScores: {
           strength: 10,
@@ -26,7 +27,7 @@ describe('useCharacterForm - Basic Functionality', () => {
           charisma: 10,
         },
         classes: [
-          { className: 'fighter', level: 1 },
+          { class: 'fighter', level: 1, hitDie: 10 },
         ],
         combatStats: {
           hitPoints: {

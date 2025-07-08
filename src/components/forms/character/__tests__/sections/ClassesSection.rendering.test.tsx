@@ -6,7 +6,7 @@ describe('ClassesSection - Rendering and Display', () => {
   const mockOnChange = jest.fn();
   const defaultProps = {
     value: [
-      { className: 'fighter' as const, level: 1 },
+      { class: 'fighter' as const, level: 1, hitDie: 10 },
     ],
     onChange: mockOnChange,
     errors: {},
@@ -84,8 +84,8 @@ describe('ClassesSection - Rendering and Display', () => {
     const multiClassProps = {
       ...defaultProps,
       value: [
-        { className: 'fighter' as const, level: 3 },
-        { className: 'rogue' as const, level: 2 },
+        { class: 'fighter' as const, level: 3, hitDie: 10 },
+        { class: 'rogue' as const, level: 2, hitDie: 8 },
       ],
     };
 

@@ -33,7 +33,7 @@ describe('useCharacterForm - Validation and Edge Cases', () => {
 
       act(() => {
         result.current.updateClasses([
-          { className: 'fighter', level: 1 },
+          { class: 'fighter', level: 1, hitDie: 10 },
         ]);
       });
 
@@ -231,8 +231,8 @@ describe('useCharacterForm - Validation and Edge Cases', () => {
 
       act(() => {
         result.current.updateClasses([
-          { className: 'fighter', level: 3 },
-          { className: 'rogue', level: 2 },
+          { class: 'fighter', level: 3, hitDie: 10 },
+          { class: 'rogue', level: 2, hitDie: 8 },
         ]);
       });
 
@@ -256,7 +256,7 @@ describe('useCharacterForm - Validation and Edge Cases', () => {
 
       act(() => {
         result.current.updateClasses([
-          { className: 'fighter', level: 21 }, // Invalid: exceeds max level
+          { class: 'fighter', level: 21, hitDie: 10 }, // Invalid: exceeds max level
         ]);
       });
 

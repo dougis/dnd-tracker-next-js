@@ -7,7 +7,7 @@ describe('ClassesSection - Interactions', () => {
   const mockOnChange = jest.fn();
   const defaultProps = {
     value: [
-      { className: 'fighter' as const, level: 1 },
+      { class: 'fighter' as const, level: 1, hitDie: 10 },
     ],
     onChange: mockOnChange,
     errors: {},
@@ -26,8 +26,8 @@ describe('ClassesSection - Interactions', () => {
       await user.click(addButton);
 
       expect(mockOnChange).toHaveBeenCalledWith([
-        { className: 'fighter', level: 1 },
-        { className: 'fighter', level: 1 },
+        { class: 'fighter', level: 1, hitDie: 10 },
+        { class: 'fighter', level: 1, hitDie: 10 },
       ]);
     });
 
@@ -35,9 +35,9 @@ describe('ClassesSection - Interactions', () => {
       const maxClassProps = {
         ...defaultProps,
         value: [
-          { className: 'fighter' as const, level: 1 },
-          { className: 'rogue' as const, level: 1 },
-          { className: 'wizard' as const, level: 1 },
+          { class: 'fighter' as const, level: 1, hitDie: 10 },
+          { class: 'rogue' as const, level: 1, hitDie: 8 },
+          { class: 'wizard' as const, level: 1, hitDie: 6 },
         ],
       };
       render(<ClassesSection {...maxClassProps} />);
@@ -50,9 +50,9 @@ describe('ClassesSection - Interactions', () => {
       const threeClassProps = {
         ...defaultProps,
         value: [
-          { className: 'fighter' as const, level: 1 },
-          { className: 'rogue' as const, level: 1 },
-          { className: 'wizard' as const, level: 1 },
+          { class: 'fighter' as const, level: 1, hitDie: 10 },
+          { class: 'rogue' as const, level: 1, hitDie: 8 },
+          { class: 'wizard' as const, level: 1, hitDie: 6 },
         ],
       };
       render(<ClassesSection {...threeClassProps} />);
@@ -65,8 +65,8 @@ describe('ClassesSection - Interactions', () => {
     const twoClassProps = {
       ...defaultProps,
       value: [
-        { className: 'fighter' as const, level: 3 },
-        { className: 'rogue' as const, level: 2 },
+        { class: 'fighter' as const, level: 3, hitDie: 10 },
+        { class: 'rogue' as const, level: 2, hitDie: 8 },
       ],
     };
 
@@ -79,7 +79,7 @@ describe('ClassesSection - Interactions', () => {
       await user.click(removeButtons[1]);
 
       expect(mockOnChange).toHaveBeenCalledWith([
-        { className: 'fighter', level: 3 },
+        { class: 'fighter', level: 3, hitDie: 10 },
       ]);
     });
 
@@ -94,9 +94,9 @@ describe('ClassesSection - Interactions', () => {
       const threeClassProps = {
         ...defaultProps,
         value: [
-          { className: 'fighter' as const, level: 1 },
-          { className: 'rogue' as const, level: 2 },
-          { className: 'wizard' as const, level: 3 },
+          { class: 'fighter' as const, level: 1, hitDie: 10 },
+          { class: 'rogue' as const, level: 2, hitDie: 8 },
+          { class: 'wizard' as const, level: 3, hitDie: 6 },
         ],
       };
       render(<ClassesSection {...threeClassProps} />);
@@ -106,8 +106,8 @@ describe('ClassesSection - Interactions', () => {
       await user.click(removeButtons[1]); // This removes index 1 (rogue)
 
       expect(mockOnChange).toHaveBeenCalledWith([
-        { className: 'fighter', level: 1 },
-        { className: 'wizard', level: 3 },
+        { class: 'fighter', level: 1, hitDie: 10 },
+        { class: 'wizard', level: 3, hitDie: 6 },
       ]);
     });
   });
@@ -132,7 +132,7 @@ describe('ClassesSection - Interactions', () => {
       const testProps = {
         ...defaultProps,
         value: [
-          { className: 'barbarian' as const, level: 1 },
+          { class: 'barbarian' as const, level: 1, hitDie: 12 },
         ],
       };
       render(<ClassesSection {...testProps} />);
@@ -145,8 +145,8 @@ describe('ClassesSection - Interactions', () => {
       const multiClassProps = {
         ...defaultProps,
         value: [
-          { className: 'fighter' as const, level: 1 },
-          { className: 'wizard' as const, level: 1 },
+          { class: 'fighter' as const, level: 1, hitDie: 10 },
+          { class: 'wizard' as const, level: 1, hitDie: 6 },
         ],
       };
       render(<ClassesSection {...multiClassProps} />);
@@ -164,7 +164,7 @@ describe('ClassesSection - Interactions', () => {
       fireEvent.change(levelField, { target: { value: '5' } });
 
       expect(mockOnChange).toHaveBeenCalledWith([
-        { className: 'fighter', level: 5 },
+        { class: 'fighter', level: 5, hitDie: 10 },
       ]);
     });
 
@@ -175,7 +175,7 @@ describe('ClassesSection - Interactions', () => {
       fireEvent.change(levelField, { target: { value: 'abc' } });
 
       expect(mockOnChange).toHaveBeenCalledWith([
-        { className: 'fighter', level: 1 }, // defaults to 1 for invalid input
+        { class: 'fighter', level: 1, hitDie: 10 }, // defaults to 1 for invalid input
       ]);
     });
 
@@ -183,8 +183,8 @@ describe('ClassesSection - Interactions', () => {
       const multiClassProps = {
         ...defaultProps,
         value: [
-          { className: 'fighter' as const, level: 1 },
-          { className: 'rogue' as const, level: 1 },
+          { class: 'fighter' as const, level: 1, hitDie: 10 },
+          { class: 'rogue' as const, level: 1, hitDie: 8 },
         ],
       };
       render(<ClassesSection {...multiClassProps} />);
@@ -193,8 +193,8 @@ describe('ClassesSection - Interactions', () => {
       fireEvent.change(levelFields[1], { target: { value: '3' } });
 
       expect(mockOnChange).toHaveBeenCalledWith([
-        { className: 'fighter', level: 1 },
-        { className: 'rogue', level: 3 },
+        { class: 'fighter', level: 1, hitDie: 10 },
+        { class: 'rogue', level: 3, hitDie: 8 },
       ]);
     });
 
@@ -202,8 +202,8 @@ describe('ClassesSection - Interactions', () => {
       const props = {
         ...defaultProps,
         value: [
-          { className: 'fighter' as const, level: 3 },
-          { className: 'rogue' as const, level: 2 },
+          { class: 'fighter' as const, level: 3, hitDie: 10 },
+          { class: 'rogue' as const, level: 2, hitDie: 8 },
         ],
       };
       render(<ClassesSection {...props} />);
