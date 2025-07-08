@@ -25,7 +25,7 @@ function formatHitPoints(hitPoints: CombatStats['hitPoints']): string {
   const current = hitPoints?.current ?? 0;
   const maximum = hitPoints?.maximum ?? 0;
   const temporary = hitPoints?.temporary ?? 0;
-  
+
   let result = `${current}/${maximum}`;
   if (temporary > 0) {
     result += ` (+${temporary})`;
@@ -35,11 +35,11 @@ function formatHitPoints(hitPoints: CombatStats['hitPoints']): string {
 
 function HitPointsSection({ form }: { form: UseFormReturn<CharacterCreation> }) {
   const hitPoints = form.watch('hitPoints');
-  
+
   return (
     <div className="p-4 border rounded-lg bg-card space-y-4">
       <h4 className="text-sm font-medium">Hit Points</h4>
-      
+
       <FormGroup direction="row" spacing="md">
         <FormFieldNumber
           form={form}
@@ -51,7 +51,7 @@ function HitPointsSection({ form }: { form: UseFormReturn<CharacterCreation> }) 
           defaultValue={1}
           className="flex-1"
         />
-        
+
         <FormFieldNumber
           form={form}
           name="hitPoints.current"
@@ -62,7 +62,7 @@ function HitPointsSection({ form }: { form: UseFormReturn<CharacterCreation> }) 
           description={`Max: ${hitPoints?.maximum ?? 0}`}
           className="flex-1"
         />
-        
+
         <FormFieldNumber
           form={form}
           name="hitPoints.temporary"
