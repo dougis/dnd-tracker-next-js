@@ -343,7 +343,7 @@ export function useRoundTracking(
   // Helper to count custom events
   const countCustomEvents = useCallback((history: any[]) => {
     return history.reduce((total, entry) => {
-      const customEvents = entry.events.filter(event => event !== 'Round started');
+      const customEvents = entry.events.filter((event: string) => event !== 'Round started');
       return total + customEvents.length;
     }, 0);
   }, []);
