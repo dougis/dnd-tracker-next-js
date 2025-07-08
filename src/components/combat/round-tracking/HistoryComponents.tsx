@@ -151,31 +151,40 @@ export function HistorySearchInput({ searchQuery, onSearchChange }: HistorySearc
   );
 }
 
-interface HistoryContentProps {
+interface HistoryData {
   stats: HistoryStats;
   displayHistory: HistoryEntry[];
   filteredHistory: HistoryEntry[];
   searchQuery: string;
+}
+
+interface HistoryConfig {
   virtualized: boolean;
   maxVisibleRounds: number;
+  emptyMessage: string;
+}
+
+interface HistoryFormatters {
   roundFormatter: (_round: number) => string;
   eventFormatter?: (_event: string) => string;
-  emptyMessage: string;
+}
+
+interface HistoryContentProps {
+  data: HistoryData;
+  config: HistoryConfig;
+  formatters: HistoryFormatters;
   onClearSearch: () => void;
 }
 
 export function HistoryContent({
-  stats,
-  displayHistory,
-  filteredHistory,
-  searchQuery,
-  virtualized,
-  maxVisibleRounds,
-  roundFormatter,
-  eventFormatter,
-  emptyMessage,
+  data,
+  config,
+  formatters,
   onClearSearch,
 }: HistoryContentProps) {
+  const { stats, displayHistory, filteredHistory, searchQuery } = data;
+  const { virtualized, maxVisibleRounds, emptyMessage } = config;
+  const { roundFormatter, eventFormatter } = formatters;
   // Empty state
   if (stats.totalRounds === 0) {
     return (

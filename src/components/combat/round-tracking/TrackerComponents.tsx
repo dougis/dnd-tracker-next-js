@@ -32,33 +32,38 @@ import {
   getEffectClassName,
 } from './tracker-utils';
 
-interface RoundHeaderProps {
-  currentRound: number;
+interface RoundEditState {
   isEditingRound: boolean;
   editRoundValue: string;
   editError: string | null;
-  combatPhase: string;
-  isInOvertime: boolean;
+}
+
+interface RoundEditHandlers {
   onEditRound: () => void;
   onSaveRound: () => void;
   onCancelEdit: () => void;
   onEditValueChange: (_value: string) => void;
+}
+
+interface RoundHeaderProps {
+  currentRound: number;
+  editState: RoundEditState;
+  editHandlers: RoundEditHandlers;
+  combatPhase: string;
+  isInOvertime: boolean;
   onExport?: () => void;
 }
 
 export function RoundHeader({
   currentRound,
-  isEditingRound,
-  editRoundValue,
-  editError,
+  editState,
+  editHandlers,
   combatPhase,
   isInOvertime,
-  onEditRound,
-  onSaveRound,
-  onCancelEdit,
-  onEditValueChange,
   onExport,
 }: RoundHeaderProps) {
+  const { isEditingRound, editRoundValue, editError } = editState;
+  const { onEditRound, onSaveRound, onCancelEdit, onEditValueChange } = editHandlers;
   return (
     <CardHeader className="pb-3">
       <div className="flex items-center justify-between">

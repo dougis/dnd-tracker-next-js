@@ -22,97 +22,111 @@ import {
 } from './tracker-hooks';
 import { Effect, Trigger, SessionSummary as SessionSummaryType } from './round-utils';
 
-interface TrackerMainProps {
+interface RoundData {
   currentRound: number;
   roundState: any;
   duration: any;
-  effectsByParticipant: any;
-  dueTriggers: any[];
-  upcomingTriggers: any[];
   combatPhase: string;
   isInOvertime: boolean;
+  estimatedRoundDuration?: number;
+}
+
+interface EffectData {
   effects: Effect[];
   effectsError?: string;
-  encounter: IEncounter;
+  effectsByParticipant: any;
+}
+
+interface TriggerData {
   triggers: Trigger[];
-  sessionSummary?: SessionSummaryType;
+  dueTriggers: any[];
+  upcomingTriggers: any[];
+}
+
+interface HistoryData {
   showHistory: boolean;
   history: { round: number; events: string[] }[];
   isHistoryCollapsed: boolean;
   setIsHistoryCollapsed: (_collapsed: boolean) => void;
-  announceRound: number | null;
-  estimatedRoundDuration?: number;
+}
+
+interface TrackerHandlers {
   handleNextRound: () => void;
   handlePreviousRound: () => void;
   onExport?: () => void;
   onTriggerAction?: (_triggerId: string) => void;
 }
 
-function TrackerCard({
-  currentRound,
-  roundState,
-  duration,
-  effectsByParticipant,
-  dueTriggers,
-  upcomingTriggers,
-  combatPhase,
-  isInOvertime,
-  effects,
-  effectsError,
-  encounter,
-  triggers,
-  sessionSummary,
-  estimatedRoundDuration,
-  handleNextRound,
-  handlePreviousRound,
-  onExport,
-  onTriggerAction,
-}: Omit<TrackerMainProps, 'showHistory' | 'history' | 'isHistoryCollapsed' | 'setIsHistoryCollapsed' | 'announceRound'>) {
+interface TrackerMainProps {
+  roundData: RoundData;
+  effectData: EffectData;
+  triggerData: TriggerData;
+  historyData: HistoryData;
+  handlers: TrackerHandlers;
+  encounter: IEncounter;
+  sessionSummary?: SessionSummaryType;
+  announceRound: number | null;
+}
+
+interface TrackerCardProps {
+  roundData: RoundData;
+  effectData: EffectData;
+  triggerData: TriggerData;
+  handlers: TrackerHandlers;
+  encounter: IEncounter;
+  sessionSummary?: SessionSummaryType;
+}
+
+function TrackerCard({ roundData, effectData, triggerData, handlers, encounter, sessionSummary }: TrackerCardProps) {
   return (
     <Card>
       <RoundHeader
-        currentRound={currentRound}
-        isEditingRound={roundState.isEditingRound}
-        editRoundValue={roundState.editRoundValue}
-        editError={roundState.editError}
-        combatPhase={combatPhase}
-        isInOvertime={isInOvertime}
-        onEditRound={roundState.handleEditRound}
-        onSaveRound={roundState.handleSaveRound}
-        onCancelEdit={roundState.handleCancelEdit}
-        onEditValueChange={roundState.setEditRoundValue}
-        onExport={onExport}
+        currentRound={roundData.currentRound}
+        editState={{
+          isEditingRound: roundData.roundState.isEditingRound,
+          editRoundValue: roundData.roundState.editRoundValue,
+          editError: roundData.roundState.editError,
+        }}
+        editHandlers={{
+          onEditRound: roundData.roundState.handleEditRound,
+          onSaveRound: roundData.roundState.handleSaveRound,
+          onCancelEdit: roundData.roundState.handleCancelEdit,
+          onEditValueChange: roundData.roundState.setEditRoundValue,
+        }}
+        combatPhase={roundData.combatPhase}
+        isInOvertime={roundData.isInOvertime}
+        onExport={handlers.onExport}
       />
 
       <CardContent className="space-y-4">
         <RoundControls
-          currentRound={currentRound}
-          onNextRound={handleNextRound}
-          onPreviousRound={handlePreviousRound}
+          currentRound={roundData.currentRound}
+          onNextRound={handlers.handleNextRound}
+          onPreviousRound={handlers.handlePreviousRound}
         />
 
         <DurationDisplay
-          duration={duration}
-          estimatedRoundDuration={estimatedRoundDuration}
+          duration={roundData.duration}
+          estimatedRoundDuration={roundData.estimatedRoundDuration}
         />
 
         <div className="border-t my-4" />
 
         <EffectsSection
-          effects={effects}
-          effectsError={effectsError}
+          effects={effectData.effects}
+          effectsError={effectData.effectsError}
           encounter={encounter}
-          currentRound={currentRound}
-          effectsByParticipant={effectsByParticipant}
+          currentRound={roundData.currentRound}
+          effectsByParticipant={effectData.effectsByParticipant}
         />
 
         <TriggersSection
-          dueTriggers={dueTriggers}
-          upcomingTriggers={upcomingTriggers}
-          triggers={triggers}
-          currentRound={currentRound}
-          duration={duration}
-          onTriggerAction={onTriggerAction}
+          dueTriggers={triggerData.dueTriggers}
+          upcomingTriggers={triggerData.upcomingTriggers}
+          triggers={triggerData.triggers}
+          currentRound={roundData.currentRound}
+          duration={roundData.duration}
+          onTriggerAction={handlers.onTriggerAction}
         />
 
         {sessionSummary && <SessionSummary summary={sessionSummary} />}
@@ -122,20 +136,29 @@ function TrackerCard({
 }
 
 function TrackerMain(props: TrackerMainProps) {
-  const { showHistory, history, isHistoryCollapsed, setIsHistoryCollapsed, announceRound, onExport } = props;
+  const { roundData, effectData, triggerData, historyData, handlers, encounter, sessionSummary, announceRound } = props;
+
+  const trackerCardProps = {
+    roundData,
+    effectData,
+    triggerData,
+    handlers,
+    encounter,
+    sessionSummary,
+  };
 
   return (
     <div className="space-y-4">
-      <TrackerCard {...props} />
+      <TrackerCard {...trackerCardProps} />
 
-      {showHistory && (
+      {historyData.showHistory && (
         <RoundHistory
-          history={history}
-          isCollapsed={isHistoryCollapsed}
-          onToggle={setIsHistoryCollapsed}
+          history={historyData.history}
+          isCollapsed={historyData.isHistoryCollapsed}
+          onToggle={historyData.setIsHistoryCollapsed}
           searchable={true}
-          exportable={!!onExport}
-          onExport={onExport ? () => onExport() : undefined}
+          exportable={!!handlers.onExport}
+          onExport={handlers.onExport ? () => handlers.onExport!() : undefined}
         />
       )}
 
@@ -293,5 +316,41 @@ export function RoundTracker({
     );
   }
 
-  return <TrackerMain {...trackerData} encounter={trackerData.encounter!} />;
+  const trackerMainProps: TrackerMainProps = {
+    roundData: {
+      currentRound: trackerData.currentRound,
+      roundState: trackerData.roundState,
+      duration: trackerData.duration,
+      combatPhase: trackerData.combatPhase,
+      isInOvertime: trackerData.isInOvertime,
+      estimatedRoundDuration: trackerData.estimatedRoundDuration,
+    },
+    effectData: {
+      effects: trackerData.effects,
+      effectsError: trackerData.effectsError,
+      effectsByParticipant: trackerData.effectsByParticipant,
+    },
+    triggerData: {
+      triggers: trackerData.triggers,
+      dueTriggers: trackerData.dueTriggers,
+      upcomingTriggers: trackerData.upcomingTriggers,
+    },
+    historyData: {
+      showHistory: trackerData.showHistory,
+      history: trackerData.history,
+      isHistoryCollapsed: trackerData.isHistoryCollapsed,
+      setIsHistoryCollapsed: trackerData.setIsHistoryCollapsed,
+    },
+    handlers: {
+      handleNextRound: trackerData.handleNextRound,
+      handlePreviousRound: trackerData.handlePreviousRound,
+      onExport: trackerData.onExport,
+      onTriggerAction: trackerData.onTriggerAction,
+    },
+    encounter: trackerData.encounter!,
+    sessionSummary: trackerData.sessionSummary,
+    announceRound: trackerData.announceRound,
+  };
+
+  return <TrackerMain {...trackerMainProps} />;
 }

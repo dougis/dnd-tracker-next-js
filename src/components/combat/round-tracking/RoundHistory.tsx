@@ -93,15 +93,21 @@ export function RoundHistory({
 
       {!isCollapsed && (
         <HistoryContent
-          stats={stats}
-          displayHistory={displayHistory}
-          filteredHistory={filteredHistory}
-          searchQuery={searchQuery}
-          virtualized={virtualized}
-          maxVisibleRounds={maxVisibleRounds}
-          roundFormatter={roundFormatter}
-          eventFormatter={eventFormatter}
-          emptyMessage={emptyMessage}
+          data={{
+            stats,
+            displayHistory,
+            filteredHistory,
+            searchQuery,
+          }}
+          config={{
+            virtualized,
+            maxVisibleRounds,
+            emptyMessage,
+          }}
+          formatters={{
+            roundFormatter,
+            eventFormatter,
+          }}
           onClearSearch={() => setSearchQuery('')}
         />
       )}
