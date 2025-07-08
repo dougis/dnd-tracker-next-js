@@ -1,33 +1,57 @@
 import { Types } from 'mongoose';
 import { EncounterServiceImportExport } from '../EncounterServiceImportExport';
-import { EncounterService } from '../EncounterService';
+import { Encounter } from '../../models/encounter';
 import { Character } from '../../models/Character';
 import type { IEncounter } from '../../models/encounter/interfaces';
 import type { ICharacter } from '../../models/Character';
 
 // Mock the dependencies
-jest.mock('../EncounterService');
-jest.mock('../../models/Character');
+jest.mock('../../models/encounter', () => ({
+  Encounter: {
+    findById: jest.fn(),
+    create: jest.fn(),
+  },
+}));
 
-const mockEncounterService = EncounterService as jest.Mocked<typeof EncounterService>;
+jest.mock('../../models/Character', () => ({
+  Character: {
+    find: jest.fn(),
+  },
+}));
+
+// Mock Types.ObjectId.isValid to work in test environment
+const mockIsValid = jest.fn((id: string) => {
+  // Simple ObjectId format validation for tests
+  return /^[0-9a-fA-F]{24}$/.test(id);
+});
+
+// Replace the isValid method
+(Types.ObjectId as any).isValid = mockIsValid;
+
+const mockEncounter = Encounter as jest.Mocked<typeof Encounter>;
 const mockCharacter = Character as jest.Mocked<typeof Character>;
 
 describe('EncounterServiceImportExport', () => {
-  let mockEncounter: IEncounter;
-  let mockCharacter1: ICharacter;
-  let mockCharacter2: ICharacter;
+  let testEncounter: IEncounter;
+  let testCharacter1: ICharacter;
+  let testCharacter2: ICharacter;
   let mockUserId: string;
   let mockEncounterId: string;
+  let mockUserObjectId: Types.ObjectId;
+  let mockEncounterObjectId: Types.ObjectId;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockUserId = new Types.ObjectId().toString();
-    mockEncounterId = new Types.ObjectId().toString();
+    // Create real ObjectId strings that will pass validation
+    mockUserId = '507f1f77bcf86cd799439011';
+    mockEncounterId = '507f1f77bcf86cd799439012';
+    mockUserObjectId = new Types.ObjectId(mockUserId);
+    mockEncounterObjectId = new Types.ObjectId(mockEncounterId);
 
-    mockCharacter1 = {
+    testCharacter1 = {
       _id: new Types.ObjectId(),
-      ownerId: new Types.ObjectId(mockUserId),
+      ownerId: mockUserObjectId,
       name: 'Test Fighter',
       type: 'pc',
       race: 'Human',
@@ -72,9 +96,9 @@ describe('EncounterServiceImportExport', () => {
       updatedAt: new Date(),
     } as ICharacter;
 
-    mockCharacter2 = {
+    testCharacter2 = {
       _id: new Types.ObjectId(),
-      ownerId: new Types.ObjectId(mockUserId),
+      ownerId: mockUserObjectId,
       name: 'Test Wizard',
       type: 'pc',
       race: 'Elf',
@@ -131,9 +155,9 @@ describe('EncounterServiceImportExport', () => {
       updatedAt: new Date(),
     } as ICharacter;
 
-    mockEncounter = {
-      _id: new Types.ObjectId(mockEncounterId),
-      ownerId: new Types.ObjectId(mockUserId),
+    testEncounter = {
+      _id: mockEncounterObjectId,
+      ownerId: mockUserObjectId,
       name: 'Test Encounter',
       description: 'A challenging encounter',
       tags: ['combat', 'boss'],
@@ -146,8 +170,8 @@ describe('EncounterServiceImportExport', () => {
       version: 1,
       participants: [
         {
-          characterId: mockCharacter1._id,
-          name: mockCharacter1.name,
+          characterId: testCharacter1._id,
+          name: testCharacter1.name,
           type: 'pc',
           maxHitPoints: 45,
           currentHitPoints: 45,
@@ -160,8 +184,8 @@ describe('EncounterServiceImportExport', () => {
           conditions: [],
         },
         {
-          characterId: mockCharacter2._id,
-          name: mockCharacter2.name,
+          characterId: testCharacter2._id,
+          name: testCharacter2.name,
           type: 'pc',
           maxHitPoints: 20,
           currentHitPoints: 20,
@@ -190,14 +214,14 @@ describe('EncounterServiceImportExport', () => {
         startedAt: new Date(),
         initiativeOrder: [
           {
-            participantId: mockCharacter2._id,
+            participantId: testCharacter2._id,
             initiative: 15,
             dexterity: 16,
             isActive: true,
             hasActed: false,
           },
           {
-            participantId: mockCharacter1._id,
+            participantId: testCharacter1._id,
             initiative: 12,
             dexterity: 14,
             isActive: false,
@@ -213,10 +237,7 @@ describe('EncounterServiceImportExport', () => {
   describe('exportToJson', () => {
     it('should export encounter to JSON format successfully', async () => {
       // Arrange
-      mockEncounterService.getEncounterById.mockResolvedValue({
-        success: true,
-        data: mockEncounter,
-      });
+      mockEncounter.findById.mockResolvedValue(testEncounter);
 
       // Act
       const result = await EncounterServiceImportExport.exportToJson(
@@ -238,12 +259,8 @@ describe('EncounterServiceImportExport', () => {
 
     it('should include character sheets when option is enabled', async () => {
       // Arrange
-      mockEncounterService.getEncounterById.mockResolvedValue({
-        success: true,
-        data: mockEncounter,
-      });
-
-      mockCharacter.find.mockResolvedValue([mockCharacter1, mockCharacter2]);
+      mockEncounter.findById.mockResolvedValue(testEncounter);
+      mockCharacter.find.mockResolvedValue([testCharacter1, testCharacter2]);
 
       // Act
       const result = await EncounterServiceImportExport.exportToJson(
@@ -264,12 +281,8 @@ describe('EncounterServiceImportExport', () => {
 
     it('should strip personal data when option is enabled', async () => {
       // Arrange
-      mockEncounterService.getEncounterById.mockResolvedValue({
-        success: true,
-        data: mockEncounter,
-      });
-
-      mockCharacter.find.mockResolvedValue([mockCharacter1, mockCharacter2]);
+      mockEncounter.findById.mockResolvedValue(testEncounter);
+      mockCharacter.find.mockResolvedValue([testCharacter1, testCharacter2]);
 
       // Act
       const result = await EncounterServiceImportExport.exportToJson(
@@ -293,10 +306,7 @@ describe('EncounterServiceImportExport', () => {
 
     it('should return error for invalid encounter ID', async () => {
       // Arrange
-      mockEncounterService.getEncounterById.mockResolvedValue({
-        success: false,
-        error: { message: 'Encounter not found', code: 'ENCOUNTER_NOT_FOUND' },
-      });
+      mockEncounter.findById.mockResolvedValue(null);
 
       // Act
       const result = await EncounterServiceImportExport.exportToJson(
@@ -306,21 +316,18 @@ describe('EncounterServiceImportExport', () => {
 
       // Assert
       expect(result.success).toBe(false);
-      expect(result.error?.message).toBe('Encounter not found');
+      expect(result.error?.message).toBe('Invalid encounter ID format: invalid-id');
     });
 
     it('should return error for unauthorized user', async () => {
       // Arrange
       const unauthorizedEncounter = {
-        ...mockEncounter,
+        ...testEncounter,
         ownerId: new Types.ObjectId(),
         sharedWith: [],
       };
 
-      mockEncounterService.getEncounterById.mockResolvedValue({
-        success: true,
-        data: unauthorizedEncounter,
-      });
+      mockEncounter.findById.mockResolvedValue(unauthorizedEncounter);
 
       // Act
       const result = await EncounterServiceImportExport.exportToJson(
@@ -337,10 +344,7 @@ describe('EncounterServiceImportExport', () => {
   describe('exportToXml', () => {
     it('should export encounter to XML format successfully', async () => {
       // Arrange
-      mockEncounterService.getEncounterById.mockResolvedValue({
-        success: true,
-        data: mockEncounter,
-      });
+      mockEncounter.findById.mockResolvedValue(testEncounter);
 
       // Act
       const result = await EncounterServiceImportExport.exportToXml(
@@ -405,15 +409,12 @@ describe('EncounterServiceImportExport', () => {
       };
 
       const mockCreatedEncounter = {
-        ...mockEncounter,
+        ...testEncounter,
         name: 'Imported Encounter',
         description: 'Test import',
       };
 
-      mockEncounterService.createEncounter.mockResolvedValue({
-        success: true,
-        data: mockCreatedEncounter,
-      });
+      mockEncounter.create.mockResolvedValue(mockCreatedEncounter);
 
       // Act
       const result = await EncounterServiceImportExport.importFromJson(
@@ -424,7 +425,7 @@ describe('EncounterServiceImportExport', () => {
       // Assert
       expect(result.success).toBe(true);
       expect(result.data?.name).toBe('Imported Encounter');
-      expect(mockEncounterService.createEncounter).toHaveBeenCalledWith(
+      expect(mockEncounter.create).toHaveBeenCalledWith(
         expect.objectContaining({
           name: 'Imported Encounter',
           description: 'Test import',
@@ -473,10 +474,7 @@ describe('EncounterServiceImportExport', () => {
   describe('generateShareableLink', () => {
     it('should generate shareable link successfully', async () => {
       // Arrange
-      mockEncounterService.getEncounterById.mockResolvedValue({
-        success: true,
-        data: mockEncounter,
-      });
+      mockEncounter.findById.mockResolvedValue(testEncounter);
 
       // Act
       const result = await EncounterServiceImportExport.generateShareableLink(
@@ -494,15 +492,12 @@ describe('EncounterServiceImportExport', () => {
     it('should return error for unauthorized user', async () => {
       // Arrange
       const unauthorizedEncounter = {
-        ...mockEncounter,
+        ...testEncounter,
         ownerId: new Types.ObjectId(),
         sharedWith: [],
       };
 
-      mockEncounterService.getEncounterById.mockResolvedValue({
-        success: true,
-        data: unauthorizedEncounter,
-      });
+      mockEncounter.findById.mockResolvedValue(unauthorizedEncounter);
 
       // Act
       const result = await EncounterServiceImportExport.generateShareableLink(
@@ -519,10 +514,7 @@ describe('EncounterServiceImportExport', () => {
   describe('createTemplate', () => {
     it('should create template successfully', async () => {
       // Arrange
-      mockEncounterService.getEncounterById.mockResolvedValue({
-        success: true,
-        data: mockEncounter,
-      });
+      mockEncounter.findById.mockResolvedValue(testEncounter);
 
       // Act
       const result = await EncounterServiceImportExport.createTemplate(
@@ -551,7 +543,7 @@ describe('EncounterServiceImportExport', () => {
   describe('error handling', () => {
     it('should handle database errors gracefully', async () => {
       // Arrange
-      mockEncounterService.getEncounterById.mockRejectedValue(
+      mockEncounter.findById.mockRejectedValue(
         new Error('Database connection failed')
       );
 
@@ -563,7 +555,7 @@ describe('EncounterServiceImportExport', () => {
 
       // Assert
       expect(result.success).toBe(false);
-      expect(result.error?.message).toContain('Failed to export encounter to JSON');
+      expect(result.error?.message).toContain('Database connection');
     });
 
     it('should handle invalid ObjectId format', async () => {
@@ -575,17 +567,14 @@ describe('EncounterServiceImportExport', () => {
 
       // Assert
       expect(result.success).toBe(false);
-      expect(result.error?.message).toContain('Invalid encounter ID');
+      expect(result.error?.message).toContain('Invalid encounter ID format: invalid-object-id');
     });
   });
 
   describe('data validation', () => {
     it('should validate export data structure', async () => {
       // Arrange
-      mockEncounterService.getEncounterById.mockResolvedValue({
-        success: true,
-        data: mockEncounter,
-      });
+      mockEncounter.findById.mockResolvedValue(testEncounter);
 
       // Act
       const result = await EncounterServiceImportExport.exportToJson(
@@ -607,7 +596,7 @@ describe('EncounterServiceImportExport', () => {
 
       // Validate encounter data
       expect(exportData.encounter).toBeDefined();
-      expect(exportData.encounter.name).toBe(mockEncounter.name);
+      expect(exportData.encounter.name).toBe(testEncounter.name);
       expect(exportData.encounter.participants).toHaveLength(2);
       expect(exportData.encounter.settings).toBeDefined();
       expect(exportData.encounter.combatState).toBeDefined();
