@@ -2,91 +2,34 @@ import React from 'react';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CharacterValidationForm } from '../CharacterValidationForm';
-import { CharacterService } from '@/lib/services/CharacterService';
-
-// Mock the CharacterService
-jest.mock('@/lib/services/CharacterService');
-const mockCharacterService = CharacterService as jest.Mocked<typeof CharacterService>;
-
-// Mock useRouter
-const mockPush = jest.fn();
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
-}));
-
-// Mock scrollIntoView for Select components
-Object.defineProperty(Element.prototype, 'scrollIntoView', {
-  value: jest.fn(),
-  writable: true,
-});
+import {
+  setupFormComponentTest
+} from './utils';
 
 describe('CharacterValidationForm', () => {
-  const defaultProps = {
+  const { defaultProps } = setupFormComponentTest();
+  const testProps = {
+    ...defaultProps,
     ownerId: 'test-owner-id',
     isOpen: true,
-    onSuccess: jest.fn(),
-    onCancel: jest.fn(),
   };
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockCharacterService.createCharacter.mockResolvedValue({
-      success: true,
-      data: {
-        _id: 'test-character-id',
-        name: 'Test Character',
-        type: 'pc',
-        race: 'human',
-        size: 'medium',
-        classes: [{ class: 'fighter', level: 1, hitDie: 10 }],
-        abilityScores: {
-          strength: 15,
-          dexterity: 14,
-          constitution: 13,
-          intelligence: 12,
-          wisdom: 10,
-          charisma: 8,
-        },
-        hitPoints: { maximum: 10, current: 10, temporary: 0 },
-        armorClass: 16,
-        speed: 30,
-        proficiencyBonus: 2,
-        savingThrows: {
-          strength: false,
-          dexterity: false,
-          constitution: false,
-          intelligence: false,
-          wisdom: false,
-          charisma: false,
-        },
-        skills: {},
-        equipment: [],
-        spells: [],
-        ownerId: 'test-owner-id',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    });
-  });
 
   describe('Form Rendering', () => {
     it('renders the form modal when open', () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       expect(screen.getByRole('heading', { name: 'Create Character' })).toBeInTheDocument();
       expect(screen.getByText('Build your character with real-time validation')).toBeInTheDocument();
     });
 
     it('does not render when closed', () => {
-      render(<CharacterValidationForm {...defaultProps} isOpen={false} />);
+      render(<CharacterValidationForm {...testProps} isOpen={false} />);
 
       expect(screen.queryByRole('heading', { name: 'Create Character' })).not.toBeInTheDocument();
     });
 
     it('renders all form sections', () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       expect(screen.getByTestId('basic-info-validation-section')).toBeInTheDocument();
       expect(screen.getByTestId('ability-scores-validation-section')).toBeInTheDocument();
@@ -97,7 +40,7 @@ describe('CharacterValidationForm', () => {
 
   describe('Real-time Validation', () => {
     it('displays validation errors for empty required fields', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       const nameInput = screen.getByLabelText(/Character Name/);
 
@@ -112,7 +55,7 @@ describe('CharacterValidationForm', () => {
     });
 
     it('shows form status as invalid when there are errors', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       const nameInput = screen.getByLabelText(/Character Name/);
       await userEvent.clear(nameInput);
@@ -124,7 +67,7 @@ describe('CharacterValidationForm', () => {
     });
 
     it('shows form status as valid when all fields are correct', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       const nameInput = screen.getByLabelText(/Character Name/);
       await userEvent.type(nameInput, 'Valid Character Name');

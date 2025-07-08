@@ -2,18 +2,14 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AbilityScoresSection } from '../../sections/AbilityScoresSection';
 import { DEFAULT_ABILITY_SCORES } from '../../constants';
+import { setupSectionTest, expectAbilityScoreFieldsToBeRendered } from '../utils';
 
 describe('AbilityScoresSection', () => {
-  const mockOnChange = jest.fn();
-  const defaultProps = {
+  const { defaultSectionProps } = setupSectionTest();
+  const testProps = {
+    ...defaultSectionProps,
     value: DEFAULT_ABILITY_SCORES,
-    onChange: mockOnChange,
-    errors: {},
   };
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
 
   describe('Ability Score Fields', () => {
     const abilities = [
@@ -26,15 +22,12 @@ describe('AbilityScoresSection', () => {
     ];
 
     it('renders all six ability score fields', () => {
-      render(<AbilityScoresSection {...defaultProps} />);
-
-      abilities.forEach(ability => {
-        expect(screen.getByLabelText(new RegExp(ability.name, 'i'))).toBeInTheDocument();
-      });
+      render(<AbilityScoresSection {...testProps} />);
+      expectAbilityScoreFieldsToBeRendered();
     });
 
     it('shows ability score abbreviations', () => {
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       abilities.forEach(ability => {
         expect(screen.getByText(ability.abbreviation)).toBeInTheDocument();
@@ -43,7 +36,7 @@ describe('AbilityScoresSection', () => {
 
     it('displays current ability score values', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         value: {
           strength: 15,
           dexterity: 14,

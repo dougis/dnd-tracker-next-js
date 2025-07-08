@@ -1,30 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NPCCreationForm } from '../NPCCreationForm';
-import { CharacterService } from '@/lib/services/CharacterService';
-import { NPCTemplateService } from '@/lib/services/NPCTemplateService';
-
-// Mock the services
-jest.mock('@/lib/services/CharacterService');
-jest.mock('@/lib/services/NPCTemplateService');
-const mockCharacterService = CharacterService as jest.Mocked<typeof CharacterService>;
-const mockNPCTemplateService = NPCTemplateService as jest.Mocked<typeof NPCTemplateService>;
-
-// Mock next/navigation
-const mockPush = jest.fn();
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
-}));
+import { setupFormComponentTest } from './utils';
 
 describe('NPCCreationForm', () => {
-  const mockOnSuccess = jest.fn();
-  const mockOnCancel = jest.fn();
-  const defaultProps = {
+  const { defaultProps } = setupFormComponentTest();
+  const testProps = {
+    ...defaultProps,
     ownerId: 'user123',
-    onSuccess: mockOnSuccess,
-    onCancel: mockOnCancel,
     isOpen: true,
   };
 
