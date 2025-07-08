@@ -54,7 +54,7 @@ export const CHARACTER_CLASS_OPTIONS = [
   { value: 'sorcerer', label: 'Sorcerer' },
   { value: 'warlock', label: 'Warlock' },
   { value: 'wizard', label: 'Wizard' },
-] as const;
+];
 
 export const ABILITY_SCORES = [
   { key: 'strength', label: 'Strength', abbr: 'STR' },
