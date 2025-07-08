@@ -53,7 +53,7 @@ describe('apiUtils', () => {
       expect(mockCallbacks.setError).toHaveBeenCalledWith('Test API error');
       expect(mockCallbacks.setIsLoading).toHaveBeenCalledWith(true);
       expect(mockCallbacks.setIsLoading).toHaveBeenCalledWith(false);
-      
+
       // Should return undefined or null since error was handled
       expect(result).toBeUndefined();
     });
@@ -75,7 +75,7 @@ describe('apiUtils', () => {
       expect(mockCallbacks.setError).toHaveBeenCalledWith('Network failure');
       expect(mockCallbacks.setIsLoading).toHaveBeenCalledWith(true);
       expect(mockCallbacks.setIsLoading).toHaveBeenCalledWith(false);
-      
+
       // Should return undefined since error was handled
       expect(result).toBeUndefined();
     });
