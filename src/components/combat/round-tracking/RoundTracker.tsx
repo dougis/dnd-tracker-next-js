@@ -48,7 +48,7 @@ interface TrackerMainProps {
   onTriggerAction?: (_triggerId: string) => void;
 }
 
-function TrackerMain({
+function TrackerCard({
   currentRound,
   roundState,
   duration,
@@ -62,71 +62,72 @@ function TrackerMain({
   encounter,
   triggers,
   sessionSummary,
-  showHistory,
-  history,
-  isHistoryCollapsed,
-  setIsHistoryCollapsed,
-  announceRound,
   estimatedRoundDuration,
   handleNextRound,
   handlePreviousRound,
   onExport,
   onTriggerAction,
-}: TrackerMainProps) {
+}: Omit<TrackerMainProps, 'showHistory' | 'history' | 'isHistoryCollapsed' | 'setIsHistoryCollapsed' | 'announceRound'>) {
   return (
-    <div className="space-y-4">
-      {/* Main Round Tracker Card */}
-      <Card>
-        <RoundHeader
+    <Card>
+      <RoundHeader
+        currentRound={currentRound}
+        isEditingRound={roundState.isEditingRound}
+        editRoundValue={roundState.editRoundValue}
+        editError={roundState.editError}
+        combatPhase={combatPhase}
+        isInOvertime={isInOvertime}
+        onEditRound={roundState.handleEditRound}
+        onSaveRound={roundState.handleSaveRound}
+        onCancelEdit={roundState.handleCancelEdit}
+        onEditValueChange={roundState.setEditRoundValue}
+        onExport={onExport}
+      />
+
+      <CardContent className="space-y-4">
+        <RoundControls
           currentRound={currentRound}
-          isEditingRound={roundState.isEditingRound}
-          editRoundValue={roundState.editRoundValue}
-          editError={roundState.editError}
-          combatPhase={combatPhase}
-          isInOvertime={isInOvertime}
-          onEditRound={roundState.handleEditRound}
-          onSaveRound={roundState.handleSaveRound}
-          onCancelEdit={roundState.handleCancelEdit}
-          onEditValueChange={roundState.setEditRoundValue}
-          onExport={onExport}
+          onNextRound={handleNextRound}
+          onPreviousRound={handlePreviousRound}
         />
 
-        <CardContent className="space-y-4">
-          <RoundControls
-            currentRound={currentRound}
-            onNextRound={handleNextRound}
-            onPreviousRound={handlePreviousRound}
-          />
+        <DurationDisplay
+          duration={duration}
+          estimatedRoundDuration={estimatedRoundDuration}
+        />
 
-          <DurationDisplay
-            duration={duration}
-            estimatedRoundDuration={estimatedRoundDuration}
-          />
+        <div className="border-t my-4" />
 
-          <div className="border-t my-4" />
+        <EffectsSection
+          effects={effects}
+          effectsError={effectsError}
+          encounter={encounter}
+          currentRound={currentRound}
+          effectsByParticipant={effectsByParticipant}
+        />
 
-          <EffectsSection
-            effects={effects}
-            effectsError={effectsError}
-            encounter={encounter}
-            currentRound={currentRound}
-            effectsByParticipant={effectsByParticipant}
-          />
+        <TriggersSection
+          dueTriggers={dueTriggers}
+          upcomingTriggers={upcomingTriggers}
+          triggers={triggers}
+          currentRound={currentRound}
+          duration={duration}
+          onTriggerAction={onTriggerAction}
+        />
 
-          <TriggersSection
-            dueTriggers={dueTriggers}
-            upcomingTriggers={upcomingTriggers}
-            triggers={triggers}
-            currentRound={currentRound}
-            duration={duration}
-            onTriggerAction={onTriggerAction}
-          />
+        {sessionSummary && <SessionSummary summary={sessionSummary} />}
+      </CardContent>
+    </Card>
+  );
+}
 
-          {sessionSummary && <SessionSummary summary={sessionSummary} />}
-        </CardContent>
-      </Card>
+function TrackerMain(props: TrackerMainProps) {
+  const { showHistory, history, isHistoryCollapsed, setIsHistoryCollapsed, announceRound, onExport } = props;
 
-      {/* Round History */}
+  return (
+    <div className="space-y-4">
+      <TrackerCard {...props} />
+
       {showHistory && (
         <RoundHistory
           history={history}
@@ -138,7 +139,6 @@ function TrackerMain({
         />
       )}
 
-      {/* Screen reader announcements */}
       {announceRound && (
         <div className="sr-only" aria-live="polite">
           <span>Round changed to {announceRound}</span>
