@@ -176,7 +176,7 @@ interface RoundTrackerProps {
   handlers: CombatHandlers;
 }
 
-function useRoundTrackerData(data: CombatData, settings: CombatSettings, handlers: CombatHandlers) {
+function useTrackerProps(data: CombatData, settings: CombatSettings, handlers: CombatHandlers) {
   // Destructure data
   const {
     encounter,
@@ -203,6 +203,26 @@ function useRoundTrackerData(data: CombatData, settings: CombatSettings, handler
   } = handlers;
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(true);
 
+  return {
+    encounter,
+    effects,
+    triggers,
+    history,
+    sessionSummary,
+    effectsError,
+    maxRounds,
+    estimatedRoundDuration,
+    showHistory,
+    onRoundChange,
+    onEffectExpiry,
+    onTriggerAction,
+    onExport,
+    isHistoryCollapsed,
+    setIsHistoryCollapsed,
+  };
+}
+
+function useRoundCalculations(encounter: IEncounter | null, effects: Effect[], triggers: Trigger[], onRoundChange: (_round: number) => void, onEffectExpiry?: (_expiredEffectIds: string[]) => void, maxRounds?: number, estimatedRoundDuration?: number) {
   // Calculate current round with safety check
   const currentRound = Math.max(1, encounter?.combatState?.currentRound || 1);
 
@@ -226,21 +246,6 @@ function useRoundTrackerData(data: CombatData, settings: CombatSettings, handler
   );
 
   return {
-    encounter,
-    effects,
-    triggers,
-    history,
-    sessionSummary,
-    effectsError,
-    maxRounds,
-    estimatedRoundDuration,
-    showHistory,
-    onRoundChange,
-    onEffectExpiry,
-    onTriggerAction,
-    onExport,
-    isHistoryCollapsed,
-    setIsHistoryCollapsed,
     currentRound,
     roundState,
     duration,
@@ -253,6 +258,21 @@ function useRoundTrackerData(data: CombatData, settings: CombatSettings, handler
     handleNextRound,
     handlePreviousRound,
   };
+}
+
+function useRoundTrackerData(data: CombatData, settings: CombatSettings, handlers: CombatHandlers) {
+  const props = useTrackerProps(data, settings, handlers);
+  const calculations = useRoundCalculations(
+    props.encounter,
+    props.effects,
+    props.triggers,
+    props.onRoundChange,
+    props.onEffectExpiry,
+    props.maxRounds,
+    props.estimatedRoundDuration
+  );
+
+  return { ...props, ...calculations };
 }
 
 export function RoundTracker({
