@@ -165,7 +165,9 @@ export function CharacterPreview({
           <div className="space-y-2">
             {completionSections.map((section) => (
               <div key={section.name} className="flex items-center justify-between">
-                <span className="text-sm">{section.name}</span>
+                <span className="text-sm">
+                  {section.completed ? '✓' : '⚠'} {section.name}
+                </span>
                 {section.completed ? (
                   <CheckCircle className="h-4 w-4 text-green-500" />
                 ) : (
