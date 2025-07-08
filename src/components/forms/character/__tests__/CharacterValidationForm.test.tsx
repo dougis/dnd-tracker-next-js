@@ -100,7 +100,7 @@ describe('CharacterValidationForm', () => {
       render(<CharacterValidationForm {...defaultProps} />);
 
       const nameInput = screen.getByLabelText(/Character Name/);
-      
+
       // First type something to trigger validation, then clear it
       await userEvent.type(nameInput, 'Test');
       await userEvent.clear(nameInput);
@@ -152,7 +152,7 @@ describe('CharacterValidationForm', () => {
       // Find the race select trigger by role
       const raceSelect = screen.getByRole('combobox', { name: /Race/ });
       await userEvent.click(raceSelect);
-      
+
       // Wait for dropdown to open and click Custom option
       await waitFor(() => {
         expect(screen.getByText('Custom')).toBeInTheDocument();
@@ -176,7 +176,7 @@ describe('CharacterValidationForm', () => {
       // Find the size select trigger by role
       const sizeSelect = screen.getByRole('combobox', { name: /Size/ });
       await userEvent.click(sizeSelect);
-      
+
       // Wait for dropdown to open and click Large option
       await waitFor(() => {
         expect(screen.getByText('Large')).toBeInTheDocument();
@@ -195,7 +195,7 @@ describe('CharacterValidationForm', () => {
       render(<CharacterValidationForm {...defaultProps} />);
 
       const strengthInput = screen.getByLabelText(/Strength \(STR\)/);
-      
+
       // The input field should have the default value
       expect(strengthInput).toHaveValue(10);
 
@@ -208,10 +208,10 @@ describe('CharacterValidationForm', () => {
       render(<CharacterValidationForm {...defaultProps} />);
 
       const strengthInput = screen.getByLabelText(/Strength \(STR\)/);
-      
-      // Verify the input accepts valid values  
+
+      // Verify the input accepts valid values
       expect(strengthInput).toHaveValue(10);
-      
+
       // Check that the form status section exists
       expect(screen.getByText(/Form Status:/)).toBeInTheDocument();
     });
