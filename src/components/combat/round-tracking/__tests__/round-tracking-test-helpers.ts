@@ -330,43 +330,9 @@ export function expectAccessibleTriggerLabels(triggers: MockTrigger[]) {
   });
 }
 
-// Performance testing utilities
-export function measureRenderTime(renderFn: () => any): number {
-  const start = performance.now();
-  renderFn();
-  const end = performance.now();
-  return end - start;
-}
-
-export function expectFastRender(renderFn: () => any, maxTime = 100) {
-  const renderTime = measureRenderTime(renderFn);
-  expect(renderTime).toBeLessThan(maxTime);
-}
-
 // Data validation utilities
 export function validateRoundNumber(round: number): boolean {
   return Number.isInteger(round) && round >= 1;
-}
-
-export function validateEffect(effect: MockEffect): boolean {
-  return (
-    typeof effect.id === 'string' &&
-    typeof effect.name === 'string' &&
-    typeof effect.duration === 'number' &&
-    effect.duration > 0 &&
-    typeof effect.startRound === 'number' &&
-    effect.startRound >= 1
-  );
-}
-
-export function validateTrigger(trigger: MockTrigger): boolean {
-  return (
-    typeof trigger.id === 'string' &&
-    typeof trigger.name === 'string' &&
-    typeof trigger.triggerRound === 'number' &&
-    trigger.triggerRound >= 1 &&
-    typeof trigger.isActive === 'boolean'
-  );
 }
 
 // Test scenario builders
@@ -423,55 +389,4 @@ export function createScenarioEncounter(scenario: RoundTestScenario): IEncounter
 
 export function getScenario(name: keyof typeof TEST_SCENARIOS): RoundTestScenario {
   return TEST_SCENARIOS[name];
-}
-
-// Component rendering utilities with common setups
-export function renderRoundTrackerWithScenario(scenarioName: keyof typeof TEST_SCENARIOS, overrides = {}) {
-  const scenario = getScenario(scenarioName);
-  const encounter = createScenarioEncounter(scenario);
-  const mocks = createRoundTrackerMocks();
-
-  const props = {
-    encounter,
-    effects: scenario.effects,
-    triggers: scenario.triggers,
-    maxRounds: scenario.maxRounds,
-    ...mocks,
-    ...overrides,
-  };
-
-  // Dynamic import to avoid circular dependencies in tests
-  const RoundTracker = require('../RoundTracker').RoundTracker;
-
-  return {
-    ...render(React.createElement(RoundTracker, props)),
-    encounter,
-    mocks,
-    scenario,
-  };
-}
-
-export function renderUseRoundTrackingWithScenario(
-  scenarioName: keyof typeof TEST_SCENARIOS,
-  overrides = {}
-) {
-  const scenario = getScenario(scenarioName);
-  const encounter = createScenarioEncounter(scenario);
-  const mocks = createUseRoundTrackingMocks();
-
-  const options = {
-    initialEffects: scenario.effects,
-    initialTriggers: scenario.triggers,
-    maxRounds: scenario.maxRounds,
-    ...overrides,
-  };
-
-  const useRoundTracking = require('../useRoundTracking').useRoundTracking;
-
-  return {
-    ...renderHook(() => useRoundTracking(encounter, mocks.onUpdate, options)),
-    encounter,
-    mocks,
-    scenario,
-  };
 }

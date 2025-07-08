@@ -228,6 +228,75 @@ interface EffectsSectionProps {
   effectsByParticipant: Record<string, Effect[]>;
 }
 
+// Helper components to reduce complexity
+function EffectItem({ effect, currentRound, participantName }: {
+  effect: Effect;
+  currentRound: number;
+  participantName: string;
+}) {
+  const { remaining, isExpiring } = calculateEffectRemaining(effect, currentRound);
+
+  return (
+    <div
+      key={effect.id}
+      className={getEffectClassName(isExpiring)}
+      data-expiring={isExpiring || undefined}
+      aria-label={`${effect.name} effect on ${participantName}`}
+    >
+      <div className="flex-1">
+        <div className="font-medium text-sm">{effect.name}</div>
+        <div className="text-xs text-muted-foreground">
+          {effect.description}
+        </div>
+      </div>
+
+      <div className="text-right">
+        <div className="text-sm font-medium">
+          {remaining} rounds
+        </div>
+        {isExpiring && (
+          <div className="text-xs text-orange-600 dark:text-orange-400">
+            Expiring soon
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ParticipantEffects({ 
+  participantId, 
+  participantEffects, 
+  encounter, 
+  currentRound 
+}: {
+  participantId: string;
+  participantEffects: Effect[];
+  encounter: IEncounter | null;
+  currentRound: number;
+}) {
+  const participantName = findParticipantName(encounter, participantId);
+
+  return (
+    <div key={participantId} className="space-y-2">
+      <h4 className="text-sm font-medium text-muted-foreground">
+        {participantName}
+      </h4>
+
+      <div className="grid gap-2">
+        {participantEffects.map((effect) => (
+          <EffectItem
+            key={effect.id}
+            effect={effect}
+            currentRound={currentRound}
+            participantName={participantName}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function EffectsSection({
   effects,
   effectsError,
@@ -257,50 +326,15 @@ export function EffectsSection({
         </Alert>
       )}
 
-      {Object.entries(effectsByParticipant).map(([participantId, participantEffects]) => {
-        const participantName = findParticipantName(encounter, participantId);
-
-        return (
-          <div key={participantId} className="space-y-2">
-            <h4 className="text-sm font-medium text-muted-foreground">
-              {participantName}
-            </h4>
-
-            <div className="grid gap-2">
-              {participantEffects.map((effect) => {
-                const { remaining, isExpiring } = calculateEffectRemaining(effect, currentRound);
-
-                return (
-                  <div
-                    key={effect.id}
-                    className={getEffectClassName(isExpiring)}
-                    data-expiring={isExpiring || undefined}
-                    aria-label={`${effect.name} effect on ${participantName}`}
-                  >
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">{effect.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {effect.description}
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <div className="text-sm font-medium">
-                        {remaining} rounds
-                      </div>
-                      {isExpiring && (
-                        <div className="text-xs text-orange-600 dark:text-orange-400">
-                          Expiring soon
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
+      {Object.entries(effectsByParticipant).map(([participantId, participantEffects]) => (
+        <ParticipantEffects
+          key={participantId}
+          participantId={participantId}
+          participantEffects={participantEffects}
+          encounter={encounter}
+          currentRound={currentRound}
+        />
+      ))}
     </div>
   );
 }
@@ -312,6 +346,79 @@ interface TriggersSectionProps {
   currentRound: number;
   duration: { average: number };
   onTriggerAction?: (_triggerId: string) => void;
+}
+
+// Helper components to reduce complexity
+function DueTriggerItem({ trigger, onActivate }: { trigger: Trigger; onActivate: (id: string) => void }) {
+  return (
+    <div
+      key={trigger.id}
+      className="flex items-center justify-between p-3 rounded border border-orange-300 bg-orange-50 dark:bg-orange-950/20"
+      data-due="true"
+    >
+      <div className="flex-1">
+        <div className="font-medium text-sm">{trigger.name}</div>
+        <div className="text-xs text-muted-foreground">
+          {trigger.description}
+        </div>
+      </div>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onActivate(trigger.id)}
+        aria-label={`Activate ${trigger.name}`}
+      >
+        Activate
+      </Button>
+    </div>
+  );
+}
+
+function UpcomingTriggerItem({ trigger, currentRound, averageDuration }: { 
+  trigger: Trigger; 
+  currentRound: number; 
+  averageDuration: number; 
+}) {
+  return (
+    <div
+      key={trigger.id}
+      className="flex items-center justify-between p-2 rounded border"
+    >
+      <div className="flex-1">
+        <div className="font-medium text-sm">{trigger.name}</div>
+        <div className="text-xs text-muted-foreground">
+          {trigger.description}
+        </div>
+      </div>
+
+      <div className="text-right text-sm">
+        <div className="font-medium">Round {trigger.triggerRound}</div>
+        <div className="text-xs text-muted-foreground">
+          {formatTimeUntilTrigger(trigger, currentRound, averageDuration)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CompletedTriggerItem({ trigger }: { trigger: Trigger }) {
+  return (
+    <div
+      key={trigger.id}
+      className="flex items-center justify-between p-2 rounded border bg-muted/20"
+    >
+      <div className="flex-1">
+        <div className="font-medium text-sm text-muted-foreground">
+          {trigger.name}
+        </div>
+      </div>
+
+      <div className="text-xs text-muted-foreground">
+        Triggered in Round {trigger.triggeredRound}
+      </div>
+    </div>
+  );
 }
 
 export function TriggersSection({
@@ -349,27 +456,11 @@ export function TriggersSection({
           </h4>
 
           {dueTriggers.map((trigger) => (
-            <div
+            <DueTriggerItem
               key={trigger.id}
-              className="flex items-center justify-between p-3 rounded border border-orange-300 bg-orange-50 dark:bg-orange-950/20"
-              data-due="true"
-            >
-              <div className="flex-1">
-                <div className="font-medium text-sm">{trigger.name}</div>
-                <div className="text-xs text-muted-foreground">
-                  {trigger.description}
-                </div>
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleTriggerActivation(trigger.id)}
-                aria-label={`Activate ${trigger.name}`}
-              >
-                Activate
-              </Button>
-            </div>
+              trigger={trigger}
+              onActivate={handleTriggerActivation}
+            />
           ))}
         </div>
       )}
@@ -382,24 +473,12 @@ export function TriggersSection({
           </h4>
 
           {upcomingTriggers.slice(0, 3).map((trigger) => (
-            <div
+            <UpcomingTriggerItem
               key={trigger.id}
-              className="flex items-center justify-between p-2 rounded border"
-            >
-              <div className="flex-1">
-                <div className="font-medium text-sm">{trigger.name}</div>
-                <div className="text-xs text-muted-foreground">
-                  {trigger.description}
-                </div>
-              </div>
-
-              <div className="text-right text-sm">
-                <div className="font-medium">Round {trigger.triggerRound}</div>
-                <div className="text-xs text-muted-foreground">
-                  {formatTimeUntilTrigger(trigger, currentRound, duration.average)}
-                </div>
-              </div>
-            </div>
+              trigger={trigger}
+              currentRound={currentRound}
+              averageDuration={duration.average}
+            />
           ))}
 
           {upcomingTriggers.length > 3 && (
@@ -411,7 +490,7 @@ export function TriggersSection({
       )}
 
       {/* Completed triggers */}
-      {triggers.some(t => !t.isActive) && (
+      {hasCompletedTriggers && (
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-muted-foreground">
             Completed
@@ -421,20 +500,7 @@ export function TriggersSection({
             .filter(t => !t.isActive)
             .slice(-2)
             .map((trigger) => (
-              <div
-                key={trigger.id}
-                className="flex items-center justify-between p-2 rounded border bg-muted/20"
-              >
-                <div className="flex-1">
-                  <div className="font-medium text-sm text-muted-foreground">
-                    {trigger.name}
-                  </div>
-                </div>
-
-                <div className="text-xs text-muted-foreground">
-                  Triggered in Round {trigger.triggeredRound}
-                </div>
-              </div>
+              <CompletedTriggerItem key={trigger.id} trigger={trigger} />
             ))}
         </div>
       )}
