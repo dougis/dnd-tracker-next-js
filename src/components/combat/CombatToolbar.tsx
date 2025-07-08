@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -193,21 +193,22 @@ export function CombatToolbar({
     return element.tagName === 'INPUT' || element.tagName === 'TEXTAREA';
   };
 
+  const keyActions = useMemo(() => ({
+    Space: () => onNextTurn?.(),
+    Backspace: () => canGoPrevious && onPreviousTurn?.(),
+    KeyP: () => isPaused ? onResumeCombat?.() : onPauseCombat?.(),
+    KeyE: () => onEndCombat?.(),
+  }), [onNextTurn, onPreviousTurn, onPauseCombat, onResumeCombat, onEndCombat, canGoPrevious, isPaused]);
+
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     if (isInputElement(event.target)) return;
-    event.preventDefault();
 
-    const code = event.code;
-    if (code === 'Space') {
-      onNextTurn?.();
-    } else if (code === 'Backspace' && canGoPrevious) {
-      onPreviousTurn?.();
-    } else if (code === 'KeyP') {
-      isPaused ? onResumeCombat?.() : onPauseCombat?.();
-    } else if (code === 'KeyE') {
-      onEndCombat?.();
+    const action = keyActions[event.code as keyof typeof keyActions];
+    if (action) {
+      event.preventDefault();
+      action();
     }
-  }, [onNextTurn, onPreviousTurn, onPauseCombat, onResumeCombat, onEndCombat, canGoPrevious, isPaused]);
+  }, [keyActions]);
 
   // Keyboard shortcuts
   useEffect(() => {

@@ -1,6 +1,34 @@
 import { renderHook, act } from '@testing-library/react';
 import { useCombatTimer } from '../useCombatTimer';
 
+interface TestTimerProps {
+  startedAtOffset?: number;
+  pausedAtOffset?: number;
+  isActive?: boolean;
+  roundTimeLimit?: number;
+}
+
+const createTestTimer = (props: TestTimerProps = {}) => {
+  const {
+    startedAtOffset = 0,
+    pausedAtOffset,
+    isActive = true,
+    roundTimeLimit
+  } = props;
+
+  const startedAt = startedAtOffset ? new Date(Date.now() - startedAtOffset) : undefined;
+  const pausedAt = pausedAtOffset ? new Date(Date.now() - pausedAtOffset) : undefined;
+
+  return renderHook(() =>
+    useCombatTimer({
+      startedAt,
+      pausedAt,
+      isActive,
+      roundTimeLimit,
+    })
+  );
+};
+
 describe('useCombatTimer', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -12,32 +40,17 @@ describe('useCombatTimer', () => {
 
   describe('Combat Duration Timer', () => {
     it('tracks combat duration correctly', () => {
-      const startTime = new Date(Date.now() - 120000); // 2 minutes ago
-      const { result } = renderHook(() =>
-        useCombatTimer({
-          startedAt: startTime,
-          pausedAt: undefined,
-          isActive: true,
-          roundTimeLimit: undefined,
-        })
-      );
+      const { result } = createTestTimer({ startedAtOffset: 120000 }); // 2 minutes ago
 
       expect(result.current.combatDuration).toBe(120000); // 2 minutes in milliseconds
       expect(result.current.formattedDuration).toBe('2:00');
     });
 
     it('pauses timer when combat is paused', () => {
-      const startTime = new Date(Date.now() - 120000);
-      const pausedTime = new Date(Date.now() - 60000); // Paused 1 minute ago
-
-      const { result } = renderHook(() =>
-        useCombatTimer({
-          startedAt: startTime,
-          pausedAt: pausedTime,
-          isActive: true,
-          roundTimeLimit: undefined,
-        })
-      );
+      const { result } = createTestTimer({
+        startedAtOffset: 120000,
+        pausedAtOffset: 60000 // Paused 1 minute ago
+      });
 
       expect(result.current.combatDuration).toBe(60000); // Only 1 minute elapsed
       expect(result.current.formattedDuration).toBe('1:00');
@@ -45,15 +58,7 @@ describe('useCombatTimer', () => {
     });
 
     it('updates timer in real-time', () => {
-      const startTime = new Date(Date.now() - 60000);
-      const { result } = renderHook(() =>
-        useCombatTimer({
-          startedAt: startTime,
-          pausedAt: undefined,
-          isActive: true,
-          roundTimeLimit: undefined,
-        })
-      );
+      const { result } = createTestTimer({ startedAtOffset: 60000 });
 
       expect(result.current.formattedDuration).toBe('1:00');
 
@@ -66,15 +71,10 @@ describe('useCombatTimer', () => {
     });
 
     it('stops timer when combat is not active', () => {
-      const startTime = new Date(Date.now() - 120000);
-      const { result } = renderHook(() =>
-        useCombatTimer({
-          startedAt: startTime,
-          pausedAt: undefined,
-          isActive: false,
-          roundTimeLimit: undefined,
-        })
-      );
+      const { result } = createTestTimer({
+        startedAtOffset: 120000,
+        isActive: false
+      });
 
       expect(result.current.combatDuration).toBe(0);
       expect(result.current.formattedDuration).toBe('0:00');
@@ -91,16 +91,7 @@ describe('useCombatTimer', () => {
       ];
 
       testCases.forEach(({ milliseconds, expected }) => {
-        const startTime = new Date(Date.now() - milliseconds);
-        const { result } = renderHook(() =>
-          useCombatTimer({
-            startedAt: startTime,
-            pausedAt: undefined,
-            isActive: true,
-            roundTimeLimit: undefined,
-          })
-        );
-
+        const { result } = createTestTimer({ startedAtOffset: milliseconds });
         expect(result.current.formattedDuration).toBe(expected);
       });
     });
@@ -108,30 +99,20 @@ describe('useCombatTimer', () => {
 
   describe('Round Timer', () => {
     it('tracks round timer countdown', () => {
-      const startTime = new Date(Date.now() - 30000); // 30 seconds ago
-      const { result } = renderHook(() =>
-        useCombatTimer({
-          startedAt: startTime,
-          pausedAt: undefined,
-          isActive: true,
-          roundTimeLimit: 60000, // 1 minute limit
-        })
-      );
+      const { result } = createTestTimer({
+        startedAtOffset: 30000, // 30 seconds ago
+        roundTimeLimit: 60000 // 1 minute limit
+      });
 
       expect(result.current.roundTimeRemaining).toBe(30000); // 30 seconds remaining
       expect(result.current.formattedRoundTime).toBe('0:30');
     });
 
     it('shows round timer at warning threshold', () => {
-      const startTime = new Date(Date.now() - 46000); // 46 seconds ago
-      const { result } = renderHook(() =>
-        useCombatTimer({
-          startedAt: startTime,
-          pausedAt: undefined,
-          isActive: true,
-          roundTimeLimit: 60000, // 1 minute limit
-        })
-      );
+      const { result } = createTestTimer({
+        startedAtOffset: 46000, // 46 seconds ago
+        roundTimeLimit: 60000 // 1 minute limit
+      });
 
       expect(result.current.roundTimeRemaining).toBe(14000); // 14 seconds remaining
       expect(result.current.isRoundWarning).toBe(true);
@@ -139,15 +120,10 @@ describe('useCombatTimer', () => {
     });
 
     it('shows round timer at critical threshold', () => {
-      const startTime = new Date(Date.now() - 56000); // 56 seconds ago
-      const { result } = renderHook(() =>
-        useCombatTimer({
-          startedAt: startTime,
-          pausedAt: undefined,
-          isActive: true,
-          roundTimeLimit: 60000, // 1 minute limit
-        })
-      );
+      const { result } = createTestTimer({
+        startedAtOffset: 56000, // 56 seconds ago
+        roundTimeLimit: 60000 // 1 minute limit
+      });
 
       expect(result.current.roundTimeRemaining).toBe(4000); // 4 seconds remaining
       expect(result.current.isRoundWarning).toBe(false);
@@ -155,15 +131,10 @@ describe('useCombatTimer', () => {
     });
 
     it('shows round timer expired when time is up', () => {
-      const startTime = new Date(Date.now() - 70000); // 70 seconds ago
-      const { result } = renderHook(() =>
-        useCombatTimer({
-          startedAt: startTime,
-          pausedAt: undefined,
-          isActive: true,
-          roundTimeLimit: 60000, // 1 minute limit
-        })
-      );
+      const { result } = createTestTimer({
+        startedAtOffset: 70000, // 70 seconds ago
+        roundTimeLimit: 60000 // 1 minute limit
+      });
 
       expect(result.current.roundTimeRemaining).toBe(0);
       expect(result.current.isRoundExpired).toBe(true);
@@ -171,15 +142,7 @@ describe('useCombatTimer', () => {
     });
 
     it('does not show round timer when not configured', () => {
-      const startTime = new Date(Date.now() - 30000);
-      const { result } = renderHook(() =>
-        useCombatTimer({
-          startedAt: startTime,
-          pausedAt: undefined,
-          isActive: true,
-          roundTimeLimit: undefined,
-        })
-      );
+      const { result } = createTestTimer({ startedAtOffset: 30000 });
 
       expect(result.current.hasRoundTimer).toBe(false);
       expect(result.current.roundTimeRemaining).toBe(0);
@@ -187,17 +150,11 @@ describe('useCombatTimer', () => {
     });
 
     it('pauses round timer when combat is paused', () => {
-      const startTime = new Date(Date.now() - 30000);
-      const pausedTime = new Date(Date.now() - 10000); // Paused 10 seconds ago
-
-      const { result } = renderHook(() =>
-        useCombatTimer({
-          startedAt: startTime,
-          pausedAt: pausedTime,
-          isActive: true,
-          roundTimeLimit: 60000,
-        })
-      );
+      const { result } = createTestTimer({
+        startedAtOffset: 30000,
+        pausedAtOffset: 10000, // Paused 10 seconds ago
+        roundTimeLimit: 60000
+      });
 
       expect(result.current.roundTimeRemaining).toBe(40000); // 40 seconds remaining (20 seconds elapsed)
       expect(result.current.formattedRoundTime).toBe('0:40');
