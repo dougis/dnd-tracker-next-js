@@ -53,7 +53,7 @@ export function RoundHistory({
   // Use extracted hooks for state management
   const filteredHistory = useHistorySearch(history, searchQuery);
   const displayHistory = useVirtualizedHistory(filteredHistory, virtualized, maxVisibleRounds);
-  const stats = useHistoryStats(searchQuery ? filteredHistory : history);
+  const stats = useHistoryStats(history); // Always use original history for stats to differentiate empty vs no results
 
   // Use extracted handlers
   const handlers = useHistoryHandlers({

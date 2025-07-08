@@ -66,13 +66,16 @@ export function formatEventTimestamp(timestamp: Date): string {
  */
 export function calculateHistoryStats(history: HistoryEntry[]): HistoryStats {
   if (!Array.isArray(history)) return { totalRounds: 0, totalEvents: 0 };
-  
-  const validHistory = history.filter(entry => 
-    entry && 
-    typeof entry.round === 'number' && 
+
+  const validHistory = history.filter(entry =>
+    entry &&
+    (typeof entry.round === 'number' || typeof entry.round === 'string') &&
     Array.isArray(entry.events)
-  );
-  
+  ).map(entry => ({
+    ...entry,
+    round: typeof entry.round === 'number' ? entry.round : 1, // Default invalid rounds to 1
+  }));
+
   const totalRounds = validHistory.length;
   const totalEvents = validHistory.reduce((total, entry) => total + entry.events.length, 0);
   return { totalRounds, totalEvents };
@@ -87,14 +90,17 @@ export function filterHistoryBySearch(
   searchHistory: (_entries: { round: number; events: string[] }[], _query: string) => { round: number; events: string[] }[]
 ): HistoryEntry[] {
   if (!Array.isArray(history)) return [];
-  
+
   // Filter out invalid entries first
-  const validHistory = history.filter(entry => 
-    entry && 
-    typeof entry.round === 'number' && 
+  const validHistory = history.filter(entry =>
+    entry &&
+    (typeof entry.round === 'number' || typeof entry.round === 'string') &&
     Array.isArray(entry.events)
-  );
-  
+  ).map(entry => ({
+    ...entry,
+    round: typeof entry.round === 'number' ? entry.round : 1, // Default invalid rounds to 1
+  }));
+
   if (!searchQuery.trim()) {
     return validHistory;
   }

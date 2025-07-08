@@ -58,7 +58,7 @@ interface RoundHeaderProps {
 function RoundEditControls({ editState, editHandlers }: { editState: any; editHandlers: any }) {
   const { editRoundValue } = editState;
   const { onSaveRound, onCancelEdit, onEditValueChange } = editHandlers;
-  
+
   return (
     <div className="flex items-center gap-2">
       <Input
@@ -101,7 +101,7 @@ export function RoundHeader({
   onExport,
 }: RoundHeaderProps) {
   const { isEditingRound, editError } = editState;
-  
+
   return (
     <CardHeader className="pb-3">
       <div className="flex items-center justify-between">

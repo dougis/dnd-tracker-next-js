@@ -80,7 +80,7 @@ export function HistoryHeader({
   return (
     <CardHeader className="pb-3">
       <div className="flex items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2" role="heading" aria-level={1}>
           Round History
           <Badge variant="secondary" className="text-xs">
             {stats.totalRounds} rounds recorded
@@ -215,7 +215,7 @@ export function HistoryContent({
   const { stats, displayHistory, filteredHistory, searchQuery } = data;
   const { virtualized, maxVisibleRounds, emptyMessage } = config;
   const { roundFormatter, eventFormatter } = formatters;
-  
+
   if (stats.totalRounds === 0) {
     return <HistoryEmptyState emptyMessage={emptyMessage} />;
   }
@@ -241,7 +241,7 @@ export function HistoryContent({
           eventFormatter={eventFormatter}
         />
       </div>
-      <div className="sr-only" aria-live="polite" aria-label="History expanded">
+      <div className="sr-only" aria-live="polite" aria-label="history expanded">
         <span>
           History expanded, showing {displayHistory.length} rounds
         </span>
@@ -266,9 +266,12 @@ export function HistoryList({
   // Filter out invalid entries
   const validHistory = displayHistory.filter(entry =>
     entry &&
-    typeof entry.round === 'number' &&
+    (typeof entry.round === 'number' || typeof entry.round === 'string') &&
     Array.isArray(entry.events)
-  );
+  ).map(entry => ({
+    ...entry,
+    round: typeof entry.round === 'number' ? entry.round : 1, // Default invalid rounds to 1
+  }));
 
   return (
     <div role="list" className="space-y-4">
@@ -304,14 +307,14 @@ export function HistoryRoundEntry({
       data-testid="round-section"
       className="border rounded-lg p-3 bg-muted/20"
     >
-      <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+      <h4 className="font-medium text-sm mb-2 flex items-center gap-2" role="heading" aria-level={2}>
         {roundFormatter(entry.round)}
         <Badge variant="outline" className="text-xs">
           {entry.events.length} events
         </Badge>
       </h4>
 
-      <ul className="space-y-1 text-sm">
+      <div className="space-y-1 text-sm" role="list">
         {entry.events.filter(event => event !== null && event !== undefined).map((event, eventIndex) => (
           <HistoryEventItem
             key={eventIndex}
@@ -320,7 +323,7 @@ export function HistoryRoundEntry({
             eventFormatter={eventFormatter}
           />
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
@@ -353,7 +356,7 @@ export function HistoryEventItem({ event, searchQuery, eventFormatter }: History
   const formatted = formatHistoryEvent(event, eventFormatter);
 
   return (
-    <li className="flex items-center justify-between">
+    <div className="flex items-center justify-between" role="listitem">
       <span className="text-muted-foreground">
         <HighlightedText text={formatted.text} query={searchQuery} />
       </span>
@@ -362,6 +365,6 @@ export function HistoryEventItem({ event, searchQuery, eventFormatter }: History
           {formatEventTimestamp(formatted.timestamp)}
         </span>
       )}
-    </li>
+    </div>
   );
 }
