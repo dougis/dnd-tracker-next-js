@@ -66,37 +66,32 @@ export function useRoundTracking(
   // Debounce timer ref
   const updateTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Initialize state
-  const [state, setState] = useState<RoundTrackingState>(() => {
-    // Validate encounter data
-    if (!encounter) {
-      return {
-        currentRound: 1,
-        effects: [],
-        triggers: [],
-        history: [],
-        error: 'Invalid encounter data',
-      };
-    }
-
-    if (!encounter.combatState) {
-      return {
-        currentRound: 1,
-        effects: [],
-        triggers: [],
-        history: [],
-        error: 'Invalid combat state',
-      };
-    }
-
-    return {
-      currentRound: Math.max(1, encounter.combatState.currentRound),
+  // Helper to create initial state
+  const createInitialState = useCallback((): RoundTrackingState => {
+    const defaultState = {
+      currentRound: 1,
       effects: [...initialEffects],
       triggers: [...initialTriggers],
       history: [],
+    };
+
+    if (!encounter) {
+      return { ...defaultState, error: 'Invalid encounter data' };
+    }
+
+    if (!encounter.combatState) {
+      return { ...defaultState, error: 'Invalid combat state' };
+    }
+
+    return {
+      ...defaultState,
+      currentRound: Math.max(1, encounter.combatState.currentRound),
       error: null,
     };
-  });
+  }, [encounter, initialEffects, initialTriggers]);
+
+  // Initialize state
+  const [state, setState] = useState<RoundTrackingState>(createInitialState);
 
   // Duration calculations
   const duration = useMemo<RoundDuration>(() => {
@@ -129,37 +124,36 @@ export function useRoundTracking(
   }, [encounter?.combatState?.startedAt, state.currentRound, maxRounds]);
 
   // Debounced update function
+  // Helper to handle update errors
+  const handleUpdateError = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      error: 'Failed to update encounter',
+    }));
+  }, []);
+
+  // Helper to perform update with error handling
+  const performUpdate = useCallback((updates: Partial<IEncounter['combatState']>) => {
+    try {
+      onUpdate(updates);
+    } catch {
+      handleUpdateError();
+    }
+  }, [onUpdate, handleUpdateError]);
+
   const debouncedUpdate = useCallback((updates: Partial<IEncounter['combatState']>) => {
     if (updateTimeoutRef.current) {
       clearTimeout(updateTimeoutRef.current);
     }
 
-    // If debouncing is disabled, update immediately
     if (!enableDebouncing) {
-      try {
-        onUpdate(updates);
-      } catch {
-        setState(prev => ({
-          ...prev,
-          error: 'Failed to update encounter',
-        }));
-      }
+      performUpdate(updates);
       return;
     }
 
-    const delay = 300; // Consistent 300ms debounce when enabled
-
-    updateTimeoutRef.current = setTimeout(() => {
-      try {
-        onUpdate(updates);
-      } catch {
-        setState(prev => ({
-          ...prev,
-          error: 'Failed to update encounter',
-        }));
-      }
-    }, delay);
-  }, [onUpdate, enableDebouncing]);
+    const delay = 300;
+    updateTimeoutRef.current = setTimeout(() => performUpdate(updates), delay);
+  }, [performUpdate, enableDebouncing]);
 
   // Clear error when successful operations occur
   const _clearError = useCallback(() => {
@@ -180,26 +174,28 @@ export function useRoundTracking(
     debouncedUpdate({ currentRound: newRound });
   }, [debouncedUpdate]);
 
+  // Helper to process expired effects
+  const processExpiredEffects = useCallback((effects: Effect[], round: number) => {
+    const expiredEffects = getExpiredEffects(effects, round);
+    if (expiredEffects.length > 0 && onEffectExpiry) {
+      onEffectExpiry(expiredEffects.map(e => e.id));
+    }
+    return effects.filter(effect => calculateEffectRemainingDuration(effect, round) > 0);
+  }, [onEffectExpiry]);
+
+  // Helper to update history
+  const updateHistory = useCallback((history: any[], round: number) => {
+    const newHistoryEntry = createHistoryEntry(round, ['Round started']);
+    return limitHistorySize([...history, newHistoryEntry], maxHistoryRounds);
+  }, [maxHistoryRounds]);
+
   const nextRound = useCallback(() => {
     let newRound: number;
 
     setState(prev => {
       newRound = prev.currentRound + 1;
-
-      // Check for expiring effects
-      const expiredEffects = getExpiredEffects(prev.effects, newRound);
-      if (expiredEffects.length > 0 && onEffectExpiry) {
-        onEffectExpiry(expiredEffects.map(e => e.id));
-      }
-
-      // Remove expired effects
-      const remainingEffects = prev.effects.filter(effect =>
-        calculateEffectRemainingDuration(effect, newRound) > 0
-      );
-
-      // Add round start event to history
-      const newHistoryEntry = createHistoryEntry(newRound, ['Round started']);
-      const updatedHistory = limitHistorySize([...prev.history, newHistoryEntry], maxHistoryRounds);
+      const remainingEffects = processExpiredEffects(prev.effects, newRound);
+      const updatedHistory = updateHistory(prev.history, newRound);
 
       return {
         ...prev,
@@ -210,9 +206,8 @@ export function useRoundTracking(
       };
     });
 
-    // Trigger the debounced update AFTER state is set
     debouncedUpdate({ currentRound: newRound! });
-  }, [maxHistoryRounds, onEffectExpiry, debouncedUpdate]);
+  }, [processExpiredEffects, updateHistory, debouncedUpdate]);
 
   const previousRound = useCallback(() => {
     let newRound: number | null = null;
@@ -277,18 +272,26 @@ export function useRoundTracking(
     }));
   }, []);
 
+  // Helper to find and validate trigger
+  const findActiveTrigger = useCallback((triggers: Trigger[], triggerId: string) => {
+    return triggers.find(t => t.id === triggerId && t.isActive);
+  }, []);
+
+  // Helper to update trigger state
+  const updateTriggerState = useCallback((triggers: Trigger[], triggerId: string, currentRound: number) => {
+    return triggers.map(t =>
+      t.id === triggerId
+        ? { ...t, isActive: false, triggeredRound: currentRound }
+        : t
+    );
+  }, []);
+
   const activateTrigger = useCallback((triggerId: string) => {
     setState(prev => {
-      const trigger = prev.triggers.find(t => t.id === triggerId);
-      if (!trigger || !trigger.isActive) {
+      const trigger = findActiveTrigger(prev.triggers, triggerId);
+      if (!trigger) {
         return prev;
       }
-
-      const updatedTrigger = {
-        ...trigger,
-        isActive: false,
-        triggeredRound: prev.currentRound,
-      };
 
       if (onTriggerActivation) {
         onTriggerActivation(triggerId, trigger);
@@ -296,10 +299,10 @@ export function useRoundTracking(
 
       return {
         ...prev,
-        triggers: prev.triggers.map(t => t.id === triggerId ? updatedTrigger : t),
+        triggers: updateTriggerState(prev.triggers, triggerId, prev.currentRound),
       };
     });
-  }, [onTriggerActivation]);
+  }, [findActiveTrigger, updateTriggerState, onTriggerActivation]);
 
   const getDueTriggersCallback = useCallback((): Trigger[] => {
     return getDueTriggers(state.triggers, state.currentRound);
@@ -310,43 +313,58 @@ export function useRoundTracking(
   }, [state.triggers, state.currentRound]);
 
   // History management functions
-  const addHistoryEvent = useCallback((event: string) => {
-    setState(prev => {
-      const updatedHistory = [...prev.history];
-      const currentRoundEntry = updatedHistory.find(entry => entry.round === prev.currentRound);
+  // Helper to add event to existing entry
+  const addEventToEntry = useCallback((history: any[], currentRound: number, event: string) => {
+    const updatedHistory = [...history];
+    const currentRoundEntry = updatedHistory.find(entry => entry.round === currentRound);
 
-      if (currentRoundEntry) {
-        currentRoundEntry.events.push(event);
-      } else {
-        const newEntry = createHistoryEntry(prev.currentRound, [event]);
-        updatedHistory.push(newEntry);
-      }
+    if (currentRoundEntry) {
+      currentRoundEntry.events.push(event);
+    } else {
+      const newEntry = createHistoryEntry(currentRound, [event]);
+      updatedHistory.push(newEntry);
+    }
 
-      return {
-        ...prev,
-        history: limitHistorySize(updatedHistory, maxHistoryRounds),
-      };
-    });
+    return limitHistorySize(updatedHistory, maxHistoryRounds);
   }, [maxHistoryRounds]);
+
+  const addHistoryEvent = useCallback((event: string) => {
+    setState(prev => ({
+      ...prev,
+      history: addEventToEntry(prev.history, prev.currentRound, event),
+    }));
+  }, [addEventToEntry]);
 
   const clearHistory = useCallback(() => {
     setState(prev => ({ ...prev, history: [] }));
   }, []);
 
   // Session summary functions
-  const getSessionSummary = useCallback((): SessionSummary => {
-    // Count only custom events (exclude automatic "Round started" events)
-    const totalActions = state.history.reduce((total, entry) => {
+  // Helper to count custom events
+  const countCustomEvents = useCallback((history: any[]) => {
+    return history.reduce((total, entry) => {
       const customEvents = entry.events.filter(event => event !== 'Round started');
       return total + customEvents.length;
     }, 0);
+  }, []);
 
+  const getSessionSummary = useCallback((): SessionSummary => {
     return {
       totalRounds: state.currentRound,
       totalDuration: duration.totalSeconds,
-      totalActions,
+      totalActions: countCustomEvents(state.history),
     };
-  }, [state.currentRound, state.history, duration.totalSeconds]);
+  }, [state.currentRound, state.history, duration.totalSeconds, countCustomEvents]);
+
+  // Helper to create encounter export data
+  const createEncounterExportData = useCallback((encounter: IEncounter | null) => {
+    if (!encounter) return null;
+    return {
+      name: encounter.name,
+      description: encounter.description,
+      participants: encounter.participants.length,
+    };
+  }, []);
 
   const exportRoundData = useCallback(() => {
     return {
@@ -356,14 +374,10 @@ export function useRoundTracking(
       history: state.history,
       duration: duration,
       sessionSummary: getSessionSummary(),
-      encounter: encounter ? {
-        name: encounter.name,
-        description: encounter.description,
-        participants: encounter.participants.length,
-      } : null,
+      encounter: createEncounterExportData(encounter),
       exportedAt: new Date().toISOString(),
     };
-  }, [state, duration, getSessionSummary, encounter]);
+  }, [state, duration, getSessionSummary, encounter, createEncounterExportData]);
 
   // Clean up timeouts on unmount
   useEffect(() => {
@@ -382,28 +396,29 @@ export function useRoundTracking(
     }
   }, []);
 
+  // Helper to validate encounter
+  const validateEncounter = useCallback((encounter: IEncounter | null) => {
+    if (!encounter) return 'Invalid encounter data';
+    if (!encounter.combatState) return 'Invalid combat state';
+    return null;
+  }, []);
+
   // Update state when encounter changes
   useEffect(() => {
-    if (!encounter || !encounter.combatState) {
-      setState(prev => ({
-        ...prev,
-        error: encounter ? 'Invalid combat state' : 'Invalid encounter data',
-      }));
+    const error = validateEncounter(encounter);
+    if (error) {
+      setState(prev => ({ ...prev, error }));
       return;
     }
 
-    const newRound = Math.max(1, encounter.combatState.currentRound);
+    const newRound = Math.max(1, encounter!.combatState.currentRound);
     setState(prev => {
       if (newRound !== prev.currentRound) {
-        return {
-          ...prev,
-          currentRound: newRound,
-          error: null,
-        };
+        return { ...prev, currentRound: newRound, error: null };
       }
       return prev;
     });
-  }, [encounter]);
+  }, [encounter, validateEncounter]);
 
   return {
     // Current state

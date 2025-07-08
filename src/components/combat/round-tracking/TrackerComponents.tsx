@@ -264,11 +264,11 @@ function EffectItem({ effect, currentRound, participantName }: {
   );
 }
 
-function ParticipantEffects({ 
-  participantId, 
-  participantEffects, 
-  encounter, 
-  currentRound 
+function ParticipantEffects({
+  participantId,
+  participantEffects,
+  encounter,
+  currentRound
 }: {
   participantId: string;
   participantEffects: Effect[];
@@ -349,7 +349,7 @@ interface TriggersSectionProps {
 }
 
 // Helper components to reduce complexity
-function DueTriggerItem({ trigger, onActivate }: { trigger: Trigger; onActivate: (id: string) => void }) {
+function DueTriggerItem({ trigger, onActivate }: { trigger: Trigger; onActivate: (_id: string) => void }) {
   return (
     <div
       key={trigger.id}
@@ -375,10 +375,10 @@ function DueTriggerItem({ trigger, onActivate }: { trigger: Trigger; onActivate:
   );
 }
 
-function UpcomingTriggerItem({ trigger, currentRound, averageDuration }: { 
-  trigger: Trigger; 
-  currentRound: number; 
-  averageDuration: number; 
+function UpcomingTriggerItem({ trigger, currentRound, averageDuration }: {
+  trigger: Trigger;
+  currentRound: number;
+  averageDuration: number;
 }) {
   return (
     <div

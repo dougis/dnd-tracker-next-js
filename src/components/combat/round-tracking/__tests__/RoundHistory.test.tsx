@@ -303,7 +303,7 @@ describe('RoundHistory', () => {
 
       // Verify the onToggle was called with the correct parameter
       expect(defaultProps.onToggle).toHaveBeenCalledWith(false);
-      
+
       // Check that the button has correct aria attributes
       expect(toggleButton).toHaveAttribute('aria-expanded', 'false'); // Initially collapsed
       expect(toggleButton).toHaveAttribute('aria-label', 'Show history');

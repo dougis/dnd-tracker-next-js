@@ -1,5 +1,4 @@
-import React from 'react';
-import { render, screen, fireEvent, waitFor, renderHook } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
 import { createTestEncounter, PARTICIPANT_IDS } from '@/lib/models/encounter/__tests__/combat-test-helpers';
 
