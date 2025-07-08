@@ -6,7 +6,6 @@ import {
   expectInitiativeTrackerToExist,
   expectCombatControlsToExist,
   expectComponentState,
-  simulateKeyPress,
   clickButtonAndExpectCall
 } from './test-helpers';
 
