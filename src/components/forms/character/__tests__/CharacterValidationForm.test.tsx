@@ -98,7 +98,7 @@ describe('CharacterValidationForm', () => {
       await userEvent.tab(); // Trigger blur to show validation
 
       await waitFor(() => {
-        expect(screen.getByText(/String must contain at least 1 character/)).toBeInTheDocument();
+        expect(screen.getByText(/Name is required/)).toBeInTheDocument();
       });
     });
 
@@ -190,7 +190,7 @@ describe('CharacterValidationForm', () => {
       await userEvent.tab();
 
       await waitFor(() => {
-        expect(screen.getByText(/Number must be greater than or equal to 1/)).toBeInTheDocument();
+        expect(screen.getByText(/Ability score must be at least 1/)).toBeInTheDocument();
       });
     });
   });

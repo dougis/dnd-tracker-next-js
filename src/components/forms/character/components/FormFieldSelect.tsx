@@ -43,7 +43,7 @@ export function FormFieldSelect<T extends Record<string, any>>({
               field.onChange(selectedValue);
               onValueChange?.(selectedValue);
             }}
-            defaultValue={field.value}
+            value={field.value}
           >
             <FormControl>
               <SelectTrigger>

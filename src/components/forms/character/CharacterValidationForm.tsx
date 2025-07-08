@@ -75,16 +75,10 @@ export function CharacterValidationForm({
       open={isOpen}
       onOpenChange={(open) => { if (!open) onCancel?.(); }}
       size="xl"
+      title="Create Character"
+      description="Build your character with real-time validation"
     >
       <div className="space-y-6">
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold leading-none tracking-tight">
-            Create Character
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Build your character with real-time validation
-          </p>
-        </div>
 
         <Form {...form}>
         <div className="space-y-6">
