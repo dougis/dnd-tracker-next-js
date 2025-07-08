@@ -176,11 +176,7 @@ interface RoundTrackerProps {
   handlers: CombatHandlers;
 }
 
-export function RoundTracker({
-  data,
-  settings = {},
-  handlers,
-}: RoundTrackerProps) {
+function useRoundTrackerData(data: CombatData, settings: CombatSettings, handlers: CombatHandlers) {
   // Destructure data
   const {
     encounter,
@@ -229,8 +225,45 @@ export function RoundTracker({
     onEffectExpiry
   );
 
+  return {
+    encounter,
+    effects,
+    triggers,
+    history,
+    sessionSummary,
+    effectsError,
+    maxRounds,
+    estimatedRoundDuration,
+    showHistory,
+    onRoundChange,
+    onEffectExpiry,
+    onTriggerAction,
+    onExport,
+    isHistoryCollapsed,
+    setIsHistoryCollapsed,
+    currentRound,
+    roundState,
+    duration,
+    effectsByParticipant,
+    dueTriggers,
+    upcomingTriggers,
+    combatPhase,
+    isInOvertime,
+    announceRound,
+    handleNextRound,
+    handlePreviousRound,
+  };
+}
+
+export function RoundTracker({
+  data,
+  settings = {},
+  handlers,
+}: RoundTrackerProps) {
+  const trackerData = useRoundTrackerData(data, settings, handlers);
+
   // Handle null encounter after all hooks
-  if (!encounter) {
+  if (!trackerData.encounter) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">
@@ -240,31 +273,5 @@ export function RoundTracker({
     );
   }
 
-  return (
-    <TrackerMain
-      currentRound={currentRound}
-      roundState={roundState}
-      duration={duration}
-      effectsByParticipant={effectsByParticipant}
-      dueTriggers={dueTriggers}
-      upcomingTriggers={upcomingTriggers}
-      combatPhase={combatPhase}
-      isInOvertime={isInOvertime}
-      effects={effects}
-      effectsError={effectsError}
-      encounter={encounter}
-      triggers={triggers}
-      sessionSummary={sessionSummary}
-      showHistory={showHistory}
-      history={history}
-      isHistoryCollapsed={isHistoryCollapsed}
-      setIsHistoryCollapsed={setIsHistoryCollapsed}
-      announceRound={announceRound}
-      estimatedRoundDuration={estimatedRoundDuration}
-      handleNextRound={handleNextRound}
-      handlePreviousRound={handlePreviousRound}
-      onExport={onExport}
-      onTriggerAction={onTriggerAction}
-    />
-  );
+  return <TrackerMain {...trackerData} encounter={trackerData.encounter!} />;
 }
