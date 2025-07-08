@@ -84,7 +84,7 @@ export function RoundHistory({
         onToggle={handlers.handleToggle}
       />
 
-      {searchable && isSearchExpanded && !isCollapsed && (
+      {searchable && !isCollapsed && (
         <HistorySearchInput
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -110,6 +110,15 @@ export function RoundHistory({
           }}
           onClearSearch={() => setSearchQuery('')}
         />
+      )}
+
+      {/* Show empty state message even when collapsed */}
+      {isCollapsed && stats.totalRounds === 0 && (
+        <div className="px-6 pb-3">
+          <div className="text-center py-4 text-muted-foreground text-sm">
+            <p>{emptyMessage}</p>
+          </div>
+        </div>
       )}
     </Card>
   );

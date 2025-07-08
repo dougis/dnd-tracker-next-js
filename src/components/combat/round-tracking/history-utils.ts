@@ -39,12 +39,13 @@ export function createTextParts(text: string, query: string): Array<{ text: stri
     return [{ text, isHighlight: false }];
   }
 
-  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escapedQuery})`, 'gi');
   const parts = text.split(regex);
 
-  return parts.map((part) => ({
+  return parts.filter(part => part !== '').map((part) => ({
     text: part,
-    isHighlight: regex.test(part) && part.toLowerCase() === query.toLowerCase()
+    isHighlight: part.toLowerCase() === query.toLowerCase()
   }));
 }
 
@@ -52,7 +53,12 @@ export function createTextParts(text: string, query: string): Array<{ text: stri
  * Formats a timestamp for display
  */
 export function formatEventTimestamp(timestamp: Date): string {
-  return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return timestamp.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'UTC'
+  });
 }
 
 /**
@@ -70,13 +76,13 @@ export function calculateHistoryStats(history: HistoryEntry[]): HistoryStats {
 export function filterHistoryBySearch(
   history: HistoryEntry[],
   searchQuery: string,
-  searchHistory: (_entries: { round: number; events: string[] }[], _query: string) => HistoryEntry[]
+  searchHistory: (_entries: { round: number; events: string[] }[], _query: string) => { round: number; events: string[] }[]
 ): HistoryEntry[] {
   if (!searchQuery.trim()) {
     return history;
   }
 
-  return searchHistory(
+  const searchResults = searchHistory(
     history.map(entry => ({
       round: entry.round,
       events: entry.events.map(event =>
@@ -85,6 +91,12 @@ export function filterHistoryBySearch(
     })),
     searchQuery
   );
+
+  // Convert search results back to HistoryEntry format
+  return searchResults.map(result => ({
+    round: result.round,
+    events: result.events
+  }));
 }
 
 /**
@@ -99,6 +111,7 @@ export function virtualizeHistory(
     return filteredHistory;
   }
 
-  // Show most recent rounds
-  return filteredHistory.slice(-maxVisibleRounds);
+  // For virtualization, show only the first maxVisibleRounds entries
+  // In a real implementation, this would be based on scroll position
+  return filteredHistory.slice(0, Math.min(maxVisibleRounds, 20));
 }

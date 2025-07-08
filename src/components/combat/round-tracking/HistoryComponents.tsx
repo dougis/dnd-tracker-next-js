@@ -40,12 +40,15 @@ export function HistoryErrorState({ error, onRetry }: HistoryErrorStateProps) {
         <Alert variant="destructive">
           <AlertDescription className="flex items-center justify-between">
             <span>{error}</span>
-            {onRetry && (
-              <Button variant="outline" size="sm" onClick={onRetry}>
-                <RotateCcw className="h-4 w-4 mr-1" />
-                Retry
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRetry}
+              disabled={!onRetry}
+            >
+              <RotateCcw className="h-4 w-4 mr-1" />
+              Retry
+            </Button>
           </AlertDescription>
         </Alert>
       </CardContent>
@@ -77,11 +80,14 @@ export function HistoryHeader({
   return (
     <CardHeader className="pb-3">
       <div className="flex items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2" role="heading" aria-level={1}>
           Round History
-          {stats.totalRounds > 0 && (
-            <Badge variant="secondary" className="text-xs">
-              {stats.totalRounds} rounds recorded
+          <Badge variant="secondary" className="text-xs">
+            {stats.totalRounds} rounds recorded
+          </Badge>
+          {stats.totalEvents > 0 && (
+            <Badge variant="outline" className="text-xs">
+              {stats.totalEvents} total events
             </Badge>
           )}
         </CardTitle>
@@ -232,8 +238,8 @@ export function HistoryContent({
       </div>
 
       {/* Screen reader announcements */}
-      <div className="sr-only" aria-live="polite">
-        <span aria-label="History expanded">
+      <div className="sr-only" aria-live="polite" aria-label="History expanded">
+        <span>
           History expanded, showing {displayHistory.length} rounds
         </span>
       </div>
@@ -254,9 +260,16 @@ export function HistoryList({
   roundFormatter,
   eventFormatter,
 }: HistoryListProps) {
+  // Filter out invalid entries
+  const validHistory = displayHistory.filter(entry =>
+    entry &&
+    typeof entry.round === 'number' &&
+    Array.isArray(entry.events)
+  );
+
   return (
     <div role="list" className="space-y-4">
-      {displayHistory.map((entry) => (
+      {validHistory.map((entry) => (
         <HistoryRoundEntry
           key={entry.round}
           entry={entry}
@@ -288,7 +301,7 @@ export function HistoryRoundEntry({
       data-testid="round-section"
       className="border rounded-lg p-3 bg-muted/20"
     >
-      <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+      <h4 className="font-medium text-sm mb-2 flex items-center gap-2" role="heading" aria-level={2}>
         {roundFormatter(entry.round)}
         <Badge variant="outline" className="text-xs">
           {entry.events.length} events
@@ -296,7 +309,7 @@ export function HistoryRoundEntry({
       </h4>
 
       <ul className="space-y-1 text-sm">
-        {entry.events.map((event, eventIndex) => (
+        {entry.events.filter(event => event !== null && event !== undefined).map((event, eventIndex) => (
           <HistoryEventItem
             key={eventIndex}
             event={event}
@@ -322,7 +335,7 @@ function HighlightedText({ text, query }: { text: string; query: string }) {
     <>
       {parts.map((part, index) =>
         part.isHighlight ? (
-          <span key={index} className="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">
+          <span key={index} className="highlight bg-yellow-200 dark:bg-yellow-800 px-1 rounded">
             {part.text}
           </span>
         ) : (
