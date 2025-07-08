@@ -162,27 +162,42 @@ function handleRestoreError(error: any): NextResponse {
 }
 
 function parseXmlBackup(xmlData: string): any {
-  // Simple XML parser for backup data
-  const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(xmlData, 'text/xml');
+  const { XMLParser } = require('fast-xml-parser');
 
-  const backupElement = xmlDoc.querySelector('encounterBackup');
-  if (!backupElement) {
-    throw new Error('Invalid backup XML structure');
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    parseAttributeValue: false,
+    trimValues: true,
+    parseTrueNumberOnly: false,
+  });
+
+  try {
+    const jsonObj = parser.parse(xmlData);
+
+    if (!jsonObj.encounterBackup) {
+      throw new Error('Invalid backup XML structure');
+    }
+
+    const backup = jsonObj.encounterBackup;
+    const metadata = {
+      backupDate: backup.metadata?.backupDate || '',
+      userId: backup.metadata?.userId || '',
+      encounterCount: parseInt(backup.metadata?.encounterCount || '0', 10),
+      format: backup.metadata?.format || 'xml',
+    };
+
+    const encounters = Array.isArray(backup.encounters?.encounter)
+      ? backup.encounters.encounter
+      : backup.encounters?.encounter
+        ? [backup.encounters.encounter]
+        : [];
+
+    return {
+      metadata,
+      encounters,
+    };
+  } catch (error) {
+    console.error('XML parsing error:', error);
+    throw new Error('Failed to parse XML backup data');
   }
-
-  const metadata = {
-    backupDate: xmlDoc.querySelector('metadata backupDate')?.textContent || '',
-    userId: xmlDoc.querySelector('metadata userId')?.textContent || '',
-    encounterCount: parseInt(xmlDoc.querySelector('metadata encounterCount')?.textContent || '0', 10),
-    format: xmlDoc.querySelector('metadata format')?.textContent || 'xml',
-  };
-
-  const encounterElements = xmlDoc.querySelectorAll('encounters encounter');
-  const encounters = Array.from(encounterElements).map(el => el.textContent || '');
-
-  return {
-    metadata,
-    encounters,
-  };
 }

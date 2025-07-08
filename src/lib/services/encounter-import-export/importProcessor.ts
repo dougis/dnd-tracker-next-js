@@ -52,45 +52,42 @@ async function createMissingCharacters(
   const participantMap = new Map<string, Types.ObjectId>();
 
   if (options.createMissingCharacters && encounterData.characterSheets) {
-    for (const charSheet of encounterData.characterSheets) {
-      const character = await createCharacterFromSheet(charSheet, options.ownerId);
-      participantMap.set(charSheet.id, character._id);
-    }
+    // Batch create all characters at once to avoid N+1 query problem
+    const characterInputs = encounterData.characterSheets.map(charSheet => ({
+      ownerId: new Types.ObjectId(options.ownerId),
+      name: charSheet.name,
+      type: charSheet.type,
+      race: charSheet.race,
+      customRace: charSheet.customRace,
+      size: charSheet.size,
+      classes: charSheet.classes,
+      abilityScores: charSheet.abilityScores,
+      hitPoints: charSheet.hitPoints,
+      armorClass: charSheet.armorClass,
+      speed: charSheet.speed,
+      proficiencyBonus: charSheet.proficiencyBonus,
+      savingThrows: charSheet.savingThrows,
+      skills: new Map(Object.entries(charSheet.skills)),
+      equipment: charSheet.equipment,
+      spells: charSheet.spells,
+      backstory: charSheet.backstory,
+      notes: charSheet.notes,
+      imageUrl: charSheet.imageUrl,
+      isPublic: false,
+    }));
+
+    // Use insertMany for batch creation
+    const createdCharacters = await Character.insertMany(characterInputs);
+
+    // Map sheet IDs to created character IDs
+    encounterData.characterSheets.forEach((charSheet, index) => {
+      participantMap.set(charSheet.id, createdCharacters[index]._id);
+    });
   }
 
   return participantMap;
 }
 
-/**
- * Create a character from character sheet data
- */
-async function createCharacterFromSheet(charSheet: any, ownerId: string) {
-  const character = new Character({
-    ownerId: new Types.ObjectId(ownerId),
-    name: charSheet.name,
-    type: charSheet.type,
-    race: charSheet.race,
-    customRace: charSheet.customRace,
-    size: charSheet.size,
-    classes: charSheet.classes,
-    abilityScores: charSheet.abilityScores,
-    hitPoints: charSheet.hitPoints,
-    armorClass: charSheet.armorClass,
-    speed: charSheet.speed,
-    proficiencyBonus: charSheet.proficiencyBonus,
-    savingThrows: charSheet.savingThrows,
-    skills: new Map(Object.entries(charSheet.skills)),
-    equipment: charSheet.equipment,
-    spells: charSheet.spells,
-    backstory: charSheet.backstory,
-    notes: charSheet.notes,
-    imageUrl: charSheet.imageUrl,
-    isPublic: false,
-  });
-
-  await character.save();
-  return character;
-}
 
 /**
  * Create encounter from import data

@@ -47,63 +47,26 @@ export function convertToXml(data: EncounterExportData): string {
   return `<?xml version="1.0" encoding="UTF-8"?>\n${buildXmlElement('encounterExport', data)}`;
 }
 
-/**
- * Parse primitive values from XML text content
- */
-function parsePrimitiveValue(text: string): any {
-  // Try to parse as number
-  if (/^\d+$/.test(text)) {
-    return parseInt(text, 10);
-  }
-  if (/^\d+\.\d+$/.test(text)) {
-    return parseFloat(text);
-  }
-
-  // Try to parse as boolean
-  if (text === 'true') return true;
-  if (text === 'false') return false;
-
-  return text;
-}
 
 /**
- * Process child nodes recursively
- */
-function processChildNodes(parentNode: Element, parseXmlNode: (_element: Element) => any): any {
-  const result: any = {};
-
-  for (const child of Array.from(parentNode.children)) {
-    const key = child.tagName;
-    const value = parseXmlNode(child);
-
-    if (result[key]) {
-      if (!Array.isArray(result[key])) {
-        result[key] = [result[key]];
-      }
-      result[key].push(value);
-    } else {
-      result[key] = value;
-    }
-  }
-
-  return result;
-}
-
-/**
- * Parse XML data to JavaScript object
+ * Parse XML data to JavaScript object using fast-xml-parser
  */
 export function parseXmlToData(xmlString: string): any {
-  const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+  const { XMLParser } = require('fast-xml-parser');
 
-  const parseXmlNode = (element: Element): any => {
-    if (element.children.length === 0) {
-      const text = element.textContent || '';
-      return parsePrimitiveValue(text);
-    }
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    parseAttributeValue: false,
+    trimValues: true,
+    parseTrueNumberOnly: false,
+    parseTagValue: false,
+  });
 
-    return processChildNodes(element, parseXmlNode);
-  };
-
-  return parseXmlNode(xmlDoc.documentElement);
+  try {
+    const jsonObj = parser.parse(xmlString);
+    return jsonObj;
+  } catch (error) {
+    console.error('XML parsing error:', error);
+    throw new Error('Failed to parse XML data');
+  }
 }

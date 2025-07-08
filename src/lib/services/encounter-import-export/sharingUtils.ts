@@ -123,13 +123,24 @@ export async function createTemplate(
  * Generate sharing token for encounter links
  */
 function generateShareToken(encounterId: string, userId: string, expiresIn: number): string {
+  const crypto = require('crypto');
+
   const payload = {
     encounterId,
     userId,
     expiresAt: Date.now() + expiresIn,
   };
 
-  // Simple token generation - in production, use JWT or similar
-  const token = Buffer.from(JSON.stringify(payload)).toString('base64');
-  return token.replace(/[+/=]/g, '').slice(0, 32);
+  // Use cryptographically secure random bytes for token
+  const randomBytes = crypto.randomBytes(32);
+  const payloadString = JSON.stringify(payload);
+
+  // Create HMAC with random key for security
+  const hmac = crypto.createHmac('sha256', randomBytes);
+  hmac.update(payloadString);
+  const signature = hmac.digest('hex');
+
+  // Combine payload and signature
+  const token = Buffer.from(payloadString).toString('base64') + '.' + signature;
+  return token.replace(/[+/=]/g, '').slice(0, 64);
 }
