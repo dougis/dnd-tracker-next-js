@@ -109,7 +109,7 @@ export function TriggersSection({
   return (
     <div className="space-y-3">
       <TriggersSectionHeader />
-      <TriggersSectionContent 
+      <TriggersSectionContent
         dueTriggers={dueTriggers}
         upcomingTriggers={upcomingTriggers}
         triggers={triggers}
@@ -145,20 +145,20 @@ function TriggersSectionContent({
   triggers: Trigger[];
   currentRound: number;
   duration: { average: number };
-  onTriggerActivation: (triggerId: string) => void;
+  onTriggerActivation: (_triggerId: string) => void;
   hasCompletedTriggers: boolean;
 }) {
   return (
     <>
       <DueTriggersSection dueTriggers={dueTriggers} onTriggerActivation={onTriggerActivation} />
-      <UpcomingTriggersSection 
-        upcomingTriggers={upcomingTriggers} 
-        currentRound={currentRound} 
-        duration={duration} 
+      <UpcomingTriggersSection
+        upcomingTriggers={upcomingTriggers}
+        currentRound={currentRound}
+        duration={duration}
       />
-      <CompletedTriggersSection 
-        triggers={triggers} 
-        hasCompletedTriggers={hasCompletedTriggers} 
+      <CompletedTriggersSection
+        triggers={triggers}
+        hasCompletedTriggers={hasCompletedTriggers}
       />
     </>
   );
@@ -166,7 +166,7 @@ function TriggersSectionContent({
 
 function DueTriggersSection({ dueTriggers, onTriggerActivation }: {
   dueTriggers: Trigger[];
-  onTriggerActivation: (triggerId: string) => void;
+  onTriggerActivation: (_triggerId: string) => void;
 }) {
   if (dueTriggers.length === 0) return null;
 

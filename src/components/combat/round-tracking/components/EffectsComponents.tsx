@@ -114,7 +114,7 @@ export function EffectsSection({
   return (
     <div className="space-y-3">
       <EffectsSectionHeader effectsCount={effects.length} />
-      <EffectsSectionContent 
+      <EffectsSectionContent
         effectsError={effectsError}
         effectsByParticipant={effectsByParticipant}
         encounter={encounter}
@@ -138,11 +138,11 @@ function EffectsSectionHeader({ effectsCount }: { effectsCount: number }) {
   );
 }
 
-function EffectsSectionContent({ 
-  effectsError, 
-  effectsByParticipant, 
-  encounter, 
-  currentRound 
+function EffectsSectionContent({
+  effectsError,
+  effectsByParticipant,
+  encounter,
+  currentRound
 }: {
   effectsError?: string;
   effectsByParticipant: Record<string, Effect[]>;
