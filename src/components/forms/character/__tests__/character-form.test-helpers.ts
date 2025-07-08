@@ -1,5 +1,5 @@
 import { CharacterClass, CharacterRace, CharacterType } from '@/lib/validations/character';
-import { 
+import {
   createTestCharacterWithEnhancedAbilities,
   createMulticlassTestCharacter as createMulticlassTestCharacterBase,
   createHighLevelTestCharacter as createHighLevelTestCharacterBase,
@@ -36,13 +36,13 @@ export interface TestCharacterData {
 }
 
 // Use consolidated test factories to reduce duplication
-export const createValidTestCharacter = (overrides: Partial<TestCharacterData> = {}): TestCharacterData => 
+export const createValidTestCharacter = (overrides: Partial<TestCharacterData> = {}): TestCharacterData =>
   createTestCharacterWithEnhancedAbilities({
     armorClass: 14, // Override default from constants
     ...overrides,
   }) as TestCharacterData;
 
-export const createMulticlassTestCharacter = (): TestCharacterData => 
+export const createMulticlassTestCharacter = (): TestCharacterData =>
   createMulticlassTestCharacterBase() as TestCharacterData;
 
 export const createCustomRaceTestCharacter = (): TestCharacterData => createValidTestCharacter({
@@ -71,10 +71,10 @@ export const createNPCTestCharacter = (): TestCharacterData => createValidTestCh
   armorClass: 13,
 });
 
-export const createHighLevelTestCharacter = (): TestCharacterData => 
+export const createHighLevelTestCharacter = (): TestCharacterData =>
   createHighLevelTestCharacterBase() as TestCharacterData;
 
-export const createInvalidTestCharacter = (): Partial<TestCharacterData> => 
+export const createInvalidTestCharacter = (): Partial<TestCharacterData> =>
   createInvalidTestCharacterBase() as Partial<TestCharacterData>;
 
 export interface FormTestHelpers {

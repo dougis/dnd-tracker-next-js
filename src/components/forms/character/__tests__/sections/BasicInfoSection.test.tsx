@@ -1,31 +1,32 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { BasicInfoSection } from '../../sections/BasicInfoSection';
+import {
+  setupSectionTest,
+  expectFieldToBeRequired,
+  expectBasicInfoFieldsToBeRendered
+} from '../utils';
 
 describe('BasicInfoSection', () => {
-  const mockOnChange = jest.fn();
-  const defaultProps = {
+  const { defaultSectionProps } = setupSectionTest();
+
+  const testProps = {
+    ...defaultSectionProps,
     value: {
       name: '',
       type: 'pc' as const,
       race: 'human' as const,
       customRace: '',
     },
-    onChange: mockOnChange,
-    errors: {},
   };
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
 
   describe('Character Name Field', () => {
     it('renders character name input with proper label', () => {
-      render(<BasicInfoSection {...defaultProps} />);
+      render(<BasicInfoSection {...testProps} />);
 
       const nameField = screen.getByLabelText(/character name/i);
       expect(nameField).toBeInTheDocument();
-      expect(nameField).toHaveAttribute('aria-required', 'true');
+      expectFieldToBeRequired(nameField);
       expect(nameField).toHaveAttribute('maxlength', '100');
     });
 
@@ -45,10 +46,15 @@ describe('BasicInfoSection', () => {
       render(<TestComponent />);
 
       // Test by directly calling the onChange with expected data
-      mockOnValueChange({ ...defaultProps.value, name: 'Test Character' });
+      mockOnValueChange({ ...testProps.value, name: 'Test Character' });
       expect(mockOnValueChange).toHaveBeenCalledWith(expect.objectContaining({
         name: 'Test Character',
       }));
+    });
+
+    it('renders all basic info fields using utility', () => {
+      render(<BasicInfoSection {...testProps} />);
+      expectBasicInfoFieldsToBeRendered();
     });
 
     it('shows validation error for character name', () => {

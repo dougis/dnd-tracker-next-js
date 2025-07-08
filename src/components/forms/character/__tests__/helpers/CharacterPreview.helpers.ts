@@ -1,7 +1,7 @@
 /**
  * Test helpers for CharacterPreview component tests
  */
-import { TEST_CHARACTER_DATA, createTestCharacterWithEnhancedAbilities } from '../../constants';
+import { createTestCharacterWithEnhancedAbilities } from '../../constants';
 
 // Use consolidated test data to reduce duplication
 const baseCharacter = createTestCharacterWithEnhancedAbilities({

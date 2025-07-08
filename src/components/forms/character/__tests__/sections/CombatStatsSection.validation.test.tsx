@@ -1,41 +1,40 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { CombatStatsSection } from '../../sections/CombatStatsSection';
-import { DEFAULT_HIT_POINTS } from '../../constants';
+import {
+  setupSectionTest,
+  expectCombatStatsFieldsToBeRendered,
+  TEST_CHARACTER_DATA,
+  DEFAULT_HIT_POINTS
+} from '../utils';
 
 describe('CombatStatsSection - Validation and Edge Cases', () => {
-  const mockOnChange = jest.fn();
-  const defaultProps = {
+  const { defaultSectionProps } = setupSectionTest();
+
+  const testProps = {
+    ...defaultSectionProps,
     value: {
       hitPoints: DEFAULT_HIT_POINTS,
       armorClass: 12,
       speed: 30,
       proficiencyBonus: 2,
     },
-    onChange: mockOnChange,
-    errors: {},
-    abilityScores: {
-      strength: 15,
-      dexterity: 14,
-      constitution: 13,
-      intelligence: 12,
-      wisdom: 11,
-      charisma: 10,
-    },
-    classes: [
-      { className: 'fighter', level: 1 },
-    ],
+    abilityScores: TEST_CHARACTER_DATA.enhancedAbilities,
+    classes: [{ className: 'fighter', level: 1 }],
   };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
+  describe('Component Rendering', () => {
+    it('renders all combat stats fields using utility', () => {
+      render(<CombatStatsSection {...testProps} />);
+      expectCombatStatsFieldsToBeRendered();
+    });
   });
 
   describe('Calculated Values Display', () => {
     it('calculates and displays initiative modifier from dexterity', () => {
       const props = {
-        ...defaultProps,
-        abilityScores: { ...defaultProps.abilityScores, dexterity: 16 },
+        ...testProps,
+        abilityScores: { ...testProps.abilityScores, dexterity: 16 },
       };
       render(<CombatStatsSection {...props} />);
 

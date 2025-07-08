@@ -1,5 +1,5 @@
 // Shared test utilities and data for character form tests
-import { 
+import {
   createTestCharacterWithEnhancedAbilities,
   TEST_CHARACTER_DATA,
   DEFAULT_HIT_POINTS,
