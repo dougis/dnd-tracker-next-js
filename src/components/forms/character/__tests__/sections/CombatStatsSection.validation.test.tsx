@@ -44,8 +44,8 @@ describe('CombatStatsSection - Validation and Edge Cases', () => {
 
     it('handles negative dexterity modifier correctly', () => {
       const props = {
-        ...defaultProps,
-        abilityScores: { ...defaultProps.abilityScores, dexterity: 8 },
+        ...testProps,
+        abilityScores: { ...testProps.abilityScores, dexterity: 8 },
       };
       render(<CombatStatsSection {...props} />);
 
@@ -55,7 +55,7 @@ describe('CombatStatsSection - Validation and Edge Cases', () => {
 
     it('calculates total level from multiple classes', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         classes: [
           { className: 'fighter', level: 3 },
           { className: 'rogue', level: 2 },
@@ -68,7 +68,7 @@ describe('CombatStatsSection - Validation and Edge Cases', () => {
 
     it('calculates proficiency bonus based on total level', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         classes: [
           { className: 'fighter', level: 4 },
           { className: 'rogue', level: 1 },
@@ -83,7 +83,7 @@ describe('CombatStatsSection - Validation and Edge Cases', () => {
 
     it('displays correct hit die for different classes', () => {
       const fighterProps = {
-        ...defaultProps,
+        ...testProps,
         classes: [{ className: 'fighter', level: 1 }],
       };
       render(<CombatStatsSection {...fighterProps} />);
@@ -91,7 +91,7 @@ describe('CombatStatsSection - Validation and Edge Cases', () => {
 
       // Test barbarian
       const barbarianProps = {
-        ...defaultProps,
+        ...testProps,
         classes: [{ className: 'barbarian', level: 1 }],
       };
       render(<CombatStatsSection {...barbarianProps} />);
@@ -99,7 +99,7 @@ describe('CombatStatsSection - Validation and Edge Cases', () => {
 
       // Test wizard (d6 class)
       const wizardProps = {
-        ...defaultProps,
+        ...testProps,
         classes: [{ className: 'wizard', level: 1 }],
       };
       render(<CombatStatsSection {...wizardProps} />);
@@ -108,7 +108,7 @@ describe('CombatStatsSection - Validation and Edge Cases', () => {
 
     it('shows default hit die when no classes', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         classes: [],
       };
       render(<CombatStatsSection {...props} />);
@@ -120,7 +120,7 @@ describe('CombatStatsSection - Validation and Edge Cases', () => {
   describe('Error Handling', () => {
     it('displays error messages for hit points fields', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         errors: {
           maxHitPoints: 'Maximum hit points is required',
           currentHitPoints: 'Current hit points cannot exceed maximum',
@@ -136,7 +136,7 @@ describe('CombatStatsSection - Validation and Edge Cases', () => {
 
     it('displays error messages for combat stats', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         errors: {
           armorClass: 'Armor class is required',
           speed: 'Speed must be a positive number',
@@ -153,7 +153,7 @@ describe('CombatStatsSection - Validation and Edge Cases', () => {
 
   describe('Field Constraints', () => {
     it('sets proper min/max values for hit points fields', () => {
-      render(<CombatStatsSection {...defaultProps} />);
+      render(<CombatStatsSection {...testProps} />);
 
       const maxHpField = screen.getByLabelText(/maximum hit points/i);
       expect(maxHpField).toHaveAttribute('min', '1');
@@ -169,7 +169,7 @@ describe('CombatStatsSection - Validation and Edge Cases', () => {
     });
 
     it('sets proper min/max values for combat stats', () => {
-      render(<CombatStatsSection {...defaultProps} />);
+      render(<CombatStatsSection {...testProps} />);
 
       const acField = screen.getByLabelText(/armor class/i);
       expect(acField).toHaveAttribute('min', '1');
@@ -185,7 +185,7 @@ describe('CombatStatsSection - Validation and Edge Cases', () => {
     });
 
     it('marks required fields properly', () => {
-      render(<CombatStatsSection {...defaultProps} />);
+      render(<CombatStatsSection {...testProps} />);
 
       expect(screen.getByLabelText(/maximum hit points/i)).toHaveAttribute('required');
       expect(screen.getByLabelText(/current hit points/i)).toHaveAttribute('required');
@@ -199,7 +199,7 @@ describe('CombatStatsSection - Validation and Edge Cases', () => {
   describe('Edge Cases', () => {
     it('handles missing optional values gracefully', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         value: {
           hitPoints: {
             maximum: 10,
@@ -218,14 +218,14 @@ describe('CombatStatsSection - Validation and Edge Cases', () => {
 
   describe('Accessibility', () => {
     it('has proper section heading structure', () => {
-      render(<CombatStatsSection {...defaultProps} />);
+      render(<CombatStatsSection {...testProps} />);
 
       const heading = screen.getByRole('heading', { name: /combat statistics/i });
       expect(heading).toHaveAttribute('aria-level', '3');
     });
 
     it('has proper form field types and attributes', () => {
-      render(<CombatStatsSection {...defaultProps} />);
+      render(<CombatStatsSection {...testProps} />);
 
       const numberFields = [
         /maximum hit points/i,

@@ -7,8 +7,13 @@ import { NPCTemplateService } from '@/lib/services/NPCTemplateService';
 
 // Mock setup functions - centralized configuration
 export const setupCharacterServiceMock = (mockImplementation?: any) => {
-  jest.mock('@/lib/services/CharacterService');
-  const mockCharacterService = CharacterService as jest.Mocked<typeof CharacterService>;
+  const mockCharacterService = {
+    createCharacter: jest.fn(),
+    updateCharacter: jest.fn(),
+    deleteCharacter: jest.fn(),
+    getCharacter: jest.fn(),
+    getCharacters: jest.fn(),
+  };
 
   if (mockImplementation) {
     mockCharacterService.createCharacter.mockResolvedValue(mockImplementation);
@@ -57,8 +62,13 @@ export const setupCharacterServiceMock = (mockImplementation?: any) => {
 };
 
 export const setupNPCTemplateServiceMock = (mockTemplates?: any[]) => {
-  jest.mock('@/lib/services/NPCTemplateService');
-  const mockNPCTemplateService = NPCTemplateService as jest.Mocked<typeof NPCTemplateService>;
+  const mockNPCTemplateService = {
+    getTemplates: jest.fn(),
+    getTemplate: jest.fn(),
+    createTemplate: jest.fn(),
+    updateTemplate: jest.fn(),
+    deleteTemplate: jest.fn(),
+  };
 
   const defaultTemplates = [
     {

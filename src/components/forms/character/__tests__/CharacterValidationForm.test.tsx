@@ -2,12 +2,20 @@ import React from 'react';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CharacterValidationForm } from '../CharacterValidationForm';
-import {
-  setupFormComponentTest
-} from './utils';
+import { setupFormComponentTest } from './setup/test-setup';
 
 describe('CharacterValidationForm', () => {
-  const { defaultProps } = setupFormComponentTest();
+  const { characterService } = setupFormComponentTest();
+  const mockCharacterService = characterService;
+  
+  const defaultProps = {
+    ownerId: 'user123',
+    onSuccess: jest.fn(),
+    onError: jest.fn(),
+    onCancel: jest.fn(),
+    isOpen: false,
+  };
+  
   const testProps = {
     ...defaultProps,
     ownerId: 'test-owner-id',

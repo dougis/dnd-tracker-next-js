@@ -1,10 +1,19 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NPCCreationForm } from '../NPCCreationForm';
-import { setupFormComponentTest } from './utils';
+import { setupNPCFormTest } from './setup/test-setup';
 
 describe('NPCCreationForm', () => {
-  const { defaultProps } = setupFormComponentTest();
+  const { characterService, npcTemplateService } = setupNPCFormTest();
+  const mockCharacterService = characterService;
+  
+  const defaultProps = {
+    ownerId: 'user123',
+    onSuccess: jest.fn(),
+    onError: jest.fn(),
+    onCancel: jest.fn(),
+    isOpen: false,
+  };
   const testProps = {
     ...defaultProps,
     ownerId: 'user123',
@@ -58,7 +67,7 @@ describe('NPCCreationForm', () => {
         challengeRating: 1,
       } as any,
     });
-    mockNPCTemplateService.getTemplates.mockResolvedValue({
+    npcTemplateService.getTemplates.mockResolvedValue({
       success: true,
       data: mockNPCTemplates,
     });
@@ -201,7 +210,7 @@ describe('NPCCreationForm', () => {
     });
 
     it('handles template loading error gracefully', async () => {
-      mockNPCTemplateService.getTemplates.mockResolvedValue({
+      npcTemplateService.getTemplates.mockResolvedValue({
         success: false,
         error: { code: 'ERROR', message: 'Failed to load templates' },
       });
