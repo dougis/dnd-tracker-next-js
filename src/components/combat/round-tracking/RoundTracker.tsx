@@ -298,25 +298,9 @@ function useRoundTrackerData(data: CombatData, settings: CombatSettings, handler
   return { ...props, ...calculations };
 }
 
-export function RoundTracker({
-  data,
-  settings = {},
-  handlers,
-}: RoundTrackerProps) {
-  const trackerData = useRoundTrackerData(data, settings, handlers);
-
-  // Handle null encounter after all hooks
-  if (!trackerData.encounter) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <p className="text-muted-foreground">No combat active</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const trackerMainProps: TrackerMainProps = {
+// Helper function to build props for TrackerMain
+function buildTrackerMainProps(trackerData: any): TrackerMainProps {
+  return {
     roundData: {
       currentRound: trackerData.currentRound,
       roundState: trackerData.roundState,
@@ -351,6 +335,24 @@ export function RoundTracker({
     sessionSummary: trackerData.sessionSummary,
     announceRound: trackerData.announceRound,
   };
+}
 
-  return <TrackerMain {...trackerMainProps} />;
+export function RoundTracker({
+  data,
+  settings = {},
+  handlers,
+}: RoundTrackerProps) {
+  const trackerData = useRoundTrackerData(data, settings, handlers);
+
+  if (!trackerData.encounter) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-8">
+          <p className="text-muted-foreground">No combat active</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return <TrackerMain {...buildTrackerMainProps(trackerData)} />;
 }

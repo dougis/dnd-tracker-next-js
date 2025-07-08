@@ -80,7 +80,7 @@ export function HistoryHeader({
   return (
     <CardHeader className="pb-3">
       <div className="flex items-center justify-between">
-        <CardTitle className="flex items-center gap-2" role="heading" aria-level={1}>
+        <CardTitle className="flex items-center gap-2">
           Round History
           <Badge variant="secondary" className="text-xs">
             {stats.totalRounds} rounds recorded
@@ -182,6 +182,30 @@ interface HistoryContentProps {
   onClearSearch: () => void;
 }
 
+// Helper components to reduce complexity
+function HistoryEmptyState({ emptyMessage }: { emptyMessage: string }) {
+  return (
+    <CardContent>
+      <div className="text-center py-8 text-muted-foreground">
+        <p>{emptyMessage}</p>
+      </div>
+    </CardContent>
+  );
+}
+
+function HistoryNoResults({ onClearSearch }: { onClearSearch: () => void }) {
+  return (
+    <CardContent>
+      <div className="text-center py-8 text-muted-foreground">
+        <p>No matching events found</p>
+        <Button variant="ghost" size="sm" onClick={onClearSearch} className="mt-2">
+          Clear search
+        </Button>
+      </div>
+    </CardContent>
+  );
+}
+
 export function HistoryContent({
   data,
   config,
@@ -191,35 +215,18 @@ export function HistoryContent({
   const { stats, displayHistory, filteredHistory, searchQuery } = data;
   const { virtualized, maxVisibleRounds, emptyMessage } = config;
   const { roundFormatter, eventFormatter } = formatters;
-  // Empty state
+  
   if (stats.totalRounds === 0) {
-    return (
-      <CardContent>
-        <div className="text-center py-8 text-muted-foreground">
-          <p>{emptyMessage}</p>
-        </div>
-      </CardContent>
-    );
+    return <HistoryEmptyState emptyMessage={emptyMessage} />;
   }
 
-  // No search results
   if (searchQuery && filteredHistory.length === 0) {
-    return (
-      <CardContent>
-        <div className="text-center py-8 text-muted-foreground">
-          <p>No matching events found</p>
-          <Button variant="ghost" size="sm" onClick={onClearSearch} className="mt-2">
-            Clear search
-          </Button>
-        </div>
-      </CardContent>
-    );
+    return <HistoryNoResults onClearSearch={onClearSearch} />;
   }
 
   return (
     <CardContent>
       <div className="space-y-4">
-        {/* Virtualization notice */}
         {virtualized && filteredHistory.length > maxVisibleRounds && (
           <Alert>
             <AlertDescription>
@@ -227,8 +234,6 @@ export function HistoryContent({
             </AlertDescription>
           </Alert>
         )}
-
-        {/* History list */}
         <HistoryList
           displayHistory={displayHistory}
           searchQuery={searchQuery}
@@ -236,8 +241,6 @@ export function HistoryContent({
           eventFormatter={eventFormatter}
         />
       </div>
-
-      {/* Screen reader announcements */}
       <div className="sr-only" aria-live="polite" aria-label="History expanded">
         <span>
           History expanded, showing {displayHistory.length} rounds
@@ -301,7 +304,7 @@ export function HistoryRoundEntry({
       data-testid="round-section"
       className="border rounded-lg p-3 bg-muted/20"
     >
-      <h4 className="font-medium text-sm mb-2 flex items-center gap-2" role="heading" aria-level={2}>
+      <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
         {roundFormatter(entry.round)}
         <Badge variant="outline" className="text-xs">
           {entry.events.length} events

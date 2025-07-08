@@ -65,8 +65,16 @@ export function formatEventTimestamp(timestamp: Date): string {
  * Calculates history statistics
  */
 export function calculateHistoryStats(history: HistoryEntry[]): HistoryStats {
-  const totalRounds = history.length;
-  const totalEvents = history.reduce((total, entry) => total + entry.events.length, 0);
+  if (!Array.isArray(history)) return { totalRounds: 0, totalEvents: 0 };
+  
+  const validHistory = history.filter(entry => 
+    entry && 
+    typeof entry.round === 'number' && 
+    Array.isArray(entry.events)
+  );
+  
+  const totalRounds = validHistory.length;
+  const totalEvents = validHistory.reduce((total, entry) => total + entry.events.length, 0);
   return { totalRounds, totalEvents };
 }
 
@@ -78,16 +86,25 @@ export function filterHistoryBySearch(
   searchQuery: string,
   searchHistory: (_entries: { round: number; events: string[] }[], _query: string) => { round: number; events: string[] }[]
 ): HistoryEntry[] {
+  if (!Array.isArray(history)) return [];
+  
+  // Filter out invalid entries first
+  const validHistory = history.filter(entry => 
+    entry && 
+    typeof entry.round === 'number' && 
+    Array.isArray(entry.events)
+  );
+  
   if (!searchQuery.trim()) {
-    return history;
+    return validHistory;
   }
 
   const searchResults = searchHistory(
-    history.map(entry => ({
+    validHistory.map(entry => ({
       round: entry.round,
       events: entry.events.map(event =>
         typeof event === 'string' ? event : event.text
-      ),
+      ).filter(event => event != null),
     })),
     searchQuery
   );
@@ -95,7 +112,7 @@ export function filterHistoryBySearch(
   // Convert search results back to HistoryEntry format
   return searchResults.map(result => ({
     round: result.round,
-    events: result.events
+    events: result.events as (string | HistoryEvent)[]
   }));
 }
 
