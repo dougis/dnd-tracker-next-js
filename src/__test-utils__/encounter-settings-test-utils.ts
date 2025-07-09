@@ -38,7 +38,7 @@ export function createTestRequest(body: any) {
 }
 
 export function createTestParams(id: string = TEST_ENCOUNTER_ID) {
-  return { params: Promise.resolve({ id }) };
+  return { params: { id } };
 }
 
 export function createServiceSuccess(data: any = TEST_SETTINGS) {
