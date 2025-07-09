@@ -17,11 +17,11 @@ import {
  */
 export function calculateDamage(input: DamageCalculationInput): DamageCalculationResult {
   const { diceCount, diceType, modifier, damageType } = input;
-  
+
   const diceRolls = rollMultipleDice(diceCount, diceType);
   const rollsTotal = diceRolls.reduce((sum, roll) => sum + roll, 0);
   const totalDamage = Math.max(0, rollsTotal + modifier);
-  
+
   return {
     totalDamage,
     diceRolls,
@@ -39,7 +39,7 @@ export function calculateDamageWithResistance(
 ): DamageWithResistanceResult {
   const multiplier = RESISTANCE_MULTIPLIERS[resistanceType];
   const finalDamage = Math.floor(baseDamage.totalDamage * multiplier);
-  
+
   return {
     ...baseDamage,
     finalDamage,
@@ -53,16 +53,16 @@ export function calculateDamageWithResistance(
  */
 export function calculateCriticalDamage(input: DamageCalculationInput): DamageCalculationResult {
   const { diceCount, diceType, modifier, damageType } = input;
-  
+
   // Roll normal dice
   const normalRolls = rollMultipleDice(diceCount, diceType);
   // Roll additional dice for critical (double the dice)
   const criticalRolls = rollMultipleDice(diceCount, diceType);
-  
+
   const allRolls = [...normalRolls, ...criticalRolls];
   const rollsTotal = allRolls.reduce((sum, roll) => sum + roll, 0);
   const totalDamage = Math.max(0, rollsTotal + modifier);
-  
+
   return {
     totalDamage,
     diceRolls: allRolls,
@@ -82,7 +82,7 @@ export function distributeDamageToMultipleTargets(
 ): TargetDamageResult[] {
   return targets.map(target => {
     let damageForTarget = { ...baseDamage };
-    
+
     // Apply distribution method
     if (distributionMethod === 'half') {
       damageForTarget = {
@@ -91,13 +91,13 @@ export function distributeDamageToMultipleTargets(
       };
     }
     // 'equal' and 'custom' use the full damage
-    
+
     // Apply target's resistance
     const resistanceResult = calculateDamageWithResistance(
       damageForTarget,
       target.resistanceType
     );
-    
+
     return {
       ...resistanceResult,
       targetId: target.id,
@@ -107,7 +107,7 @@ export function distributeDamageToMultipleTargets(
 }
 
 // Re-export types for convenience
-export {
+export type {
   DamageType,
   ResistanceType,
   DiceType,

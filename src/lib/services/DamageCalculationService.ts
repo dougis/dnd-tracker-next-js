@@ -14,7 +14,6 @@ import {
   DamageDistributionMethod,
   DamagePreset,
   DamageStatistics,
-  DamageType,
   ResistanceType,
   COMMON_DAMAGE_PRESETS,
   DICE_VALUES
@@ -44,7 +43,7 @@ export class DamageCalculationService {
    */
   public calculateDamage(input: DamageCalculationInput): DamageCalculationResult {
     this.validateDamageInput(input);
-    
+
     try {
       return calculateDamage(input);
     } catch (error) {
@@ -62,7 +61,7 @@ export class DamageCalculationService {
     resistanceType: ResistanceType
   ): DamageWithResistanceResult {
     this.validateBaseDamage(baseDamage);
-    
+
     try {
       return calculateDamageWithResistance(baseDamage, resistanceType);
     } catch (error) {
@@ -77,7 +76,7 @@ export class DamageCalculationService {
    */
   public calculateCriticalDamage(input: DamageCalculationInput): DamageCalculationResult {
     this.validateDamageInput(input);
-    
+
     try {
       return calculateCriticalDamage(input);
     } catch (error) {
@@ -97,7 +96,7 @@ export class DamageCalculationService {
   ): TargetDamageResult[] {
     this.validateBaseDamage(baseDamage);
     this.validateTargets(targets);
-    
+
     try {
       return distributeDamageToMultipleTargets(baseDamage, targets, distributionMethod);
     } catch (error) {

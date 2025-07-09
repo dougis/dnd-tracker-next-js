@@ -3,6 +3,7 @@
  */
 export class DamageCalculationServiceError extends Error {
   public readonly code: string;
+
   public readonly statusCode: number;
 
   constructor(message: string, code: string = 'DAMAGE_CALCULATION_ERROR', statusCode: number = 400) {
@@ -10,7 +11,7 @@ export class DamageCalculationServiceError extends Error {
     this.name = 'DamageCalculationServiceError';
     this.code = code;
     this.statusCode = statusCode;
-    
+
     // Ensure proper prototype chain for instanceof checks
     Object.setPrototypeOf(this, DamageCalculationServiceError.prototype);
   }

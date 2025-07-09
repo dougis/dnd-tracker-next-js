@@ -1,4 +1,4 @@
-import { DamageCalculationInput, DamageCalculationResult, DamageType, ResistanceType } from '../damage-calculation';
+import { DamageCalculationResult, DamageType, ResistanceType } from '../damage-calculation';
 
 /**
  * Test data for damage calculation scenarios
@@ -132,7 +132,7 @@ export const MOCK_DICE_ROLLS = {
  */
 export function mockDiceRolls(rollValues: number[]): jest.SpyInstance {
   const mockRandom = jest.spyOn(Math, 'random');
-  rollValues.forEach((value, index) => {
+  rollValues.forEach((value, _index) => {
     mockRandom.mockReturnValueOnce(value);
   });
   return mockRandom;

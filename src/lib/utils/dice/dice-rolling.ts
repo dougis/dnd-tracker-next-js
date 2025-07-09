@@ -15,12 +15,12 @@ export function rollMultipleDice(count: number, diceType: DiceType): number[] {
   if (count <= 0) {
     return [];
   }
-  
+
   const rolls: number[] = [];
   for (let i = 0; i < count; i++) {
     rolls.push(rollDice(diceType));
   }
-  
+
   return rolls;
 }
 
@@ -35,7 +35,7 @@ export function rollDamage(
   const rolls = rollMultipleDice(diceCount, diceType);
   const rollsTotal = rolls.reduce((sum, roll) => sum + roll, 0);
   const total = Math.max(0, rollsTotal + modifier);
-  
+
   return {
     rolls,
     total,
@@ -53,11 +53,11 @@ export function rollCriticalDamage(
 ): DiceRollResult {
   const criticalDiceCount = diceCount * 2;
   const result = rollDamage(criticalDiceCount, diceType, modifier);
-  
+
   return {
     ...result,
     isCritical: true
   };
 }
 
-export { DiceType, DiceRollResult };
+export type { DiceType, DiceRollResult };

@@ -17,7 +17,7 @@ function TestModalComponent() {
       >
         Open Basic Modal
       </button>
-      
+
       <button
         data-testid="open-persistent-modal"
         onClick={() => openModal({
@@ -27,7 +27,7 @@ function TestModalComponent() {
       >
         Open Persistent Modal
       </button>
-      
+
       <button
         data-testid="open-modal-with-id"
         onClick={() => openModal({
@@ -37,7 +37,7 @@ function TestModalComponent() {
       >
         Open Modal with ID
       </button>
-      
+
       <button
         data-testid="open-modal-with-callback"
         onClick={() => openModal({
@@ -47,28 +47,28 @@ function TestModalComponent() {
       >
         Open Modal with Callback
       </button>
-      
+
       <button
         data-testid="close-specific-modal"
         onClick={() => closeModal('test-modal-123')}
       >
         Close Specific Modal
       </button>
-      
+
       <button
         data-testid="close-all-modals"
         onClick={closeAllModals}
       >
         Close All Modals
       </button>
-      
+
       <button
         data-testid="close-top-modal"
         onClick={closeTopModal}
       >
         Close Top Modal
       </button>
-      
+
       <div data-testid="modal-count">Modal Count: {getModalCount()}</div>
       <div data-testid="is-modal-open">Is Test Modal Open: {isModalOpen('test-modal-123') ? 'Yes' : 'No'}</div>
       <div data-testid="top-modal-id">Top Modal ID: {getTopModal()?.id || 'None'}</div>
@@ -90,14 +90,14 @@ function TestUseModalComponent() {
       >
         Use Modal Open
       </button>
-      
+
       <button
         data-testid="use-modal-close"
         onClick={close}
       >
         Use Modal Close
       </button>
-      
+
       <div data-testid="use-modal-status">
         Status: {isOpen ? 'Open' : 'Closed'}, ID: {modalId || 'None'}
       </div>
@@ -119,14 +119,14 @@ function TestUseModalInstanceComponent() {
       >
         Instance Modal Open
       </button>
-      
+
       <button
         data-testid="instance-modal-close"
         onClick={close}
       >
         Instance Modal Close
       </button>
-      
+
       <div data-testid="instance-modal-status">
         Instance Status: {isOpen ? 'Open' : 'Closed'}
       </div>
@@ -171,7 +171,7 @@ describe('ModalManager Comprehensive Tests', () => {
 
     it('opens and renders a basic modal', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ModalManager>
           <TestModalComponent />
@@ -186,7 +186,7 @@ describe('ModalManager Comprehensive Tests', () => {
 
     it('opens modal with specific ID', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ModalManager>
           <TestModalComponent />
@@ -202,7 +202,7 @@ describe('ModalManager Comprehensive Tests', () => {
 
     it('closes specific modal by ID', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ModalManager>
           <TestModalComponent />
@@ -221,7 +221,7 @@ describe('ModalManager Comprehensive Tests', () => {
 
     it('handles multiple modals with correct z-index stacking', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ModalManager baseZIndex={1000}>
           <TestModalComponent />
@@ -249,7 +249,7 @@ describe('ModalManager Comprehensive Tests', () => {
     it('respects maxModals limit', async () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
       const user = userEvent.setup();
-      
+
       render(
         <ModalManager maxModals={2}>
           <TestModalComponent />
@@ -272,7 +272,7 @@ describe('ModalManager Comprehensive Tests', () => {
     it('warns when trying to open modal with duplicate ID', async () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
       const user = userEvent.setup();
-      
+
       render(
         <ModalManager>
           <TestModalComponent />
@@ -296,7 +296,7 @@ describe('ModalManager Comprehensive Tests', () => {
     it('prevents closing persistent modal with closeTopModal', async () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
       const user = userEvent.setup();
-      
+
       render(
         <ModalManager>
           <TestModalComponent />
@@ -317,7 +317,7 @@ describe('ModalManager Comprehensive Tests', () => {
 
     it('prevents closing persistent modal with Escape key', async () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-      
+
       render(
         <ModalManager>
           <TestModalComponent />
@@ -343,7 +343,7 @@ describe('ModalManager Comprehensive Tests', () => {
   describe('Keyboard Interactions', () => {
     it('closes non-persistent modal with Escape key', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ModalManager>
           <TestModalComponent />
@@ -363,7 +363,7 @@ describe('ModalManager Comprehensive Tests', () => {
 
     it('only closes top modal with Escape when multiple modals open', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ModalManager>
           <TestModalComponent />
@@ -373,7 +373,7 @@ describe('ModalManager Comprehensive Tests', () => {
       // Open two modals
       await user.click(screen.getByTestId('open-basic-modal'));
       await user.click(screen.getByTestId('open-modal-with-id'));
-      
+
       expect(screen.getByTestId('basic-modal-content')).toBeInTheDocument();
       expect(screen.getByTestId('id-modal-content')).toBeInTheDocument();
 
@@ -381,7 +381,7 @@ describe('ModalManager Comprehensive Tests', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'Escape' });
       });
-      
+
       expect(screen.getByTestId('basic-modal-content')).toBeInTheDocument();
       expect(screen.queryByTestId('id-modal-content')).not.toBeInTheDocument();
     });
@@ -390,7 +390,7 @@ describe('ModalManager Comprehensive Tests', () => {
   describe('Body Scroll Management', () => {
     it('prevents body scroll when modals are open', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ModalManager>
           <TestModalComponent />
@@ -413,7 +413,7 @@ describe('ModalManager Comprehensive Tests', () => {
 
     it('restores body scroll when all modals closed', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ModalManager>
           <TestModalComponent />
@@ -435,10 +435,10 @@ describe('ModalManager Comprehensive Tests', () => {
     it('closes all modals and calls onClose callbacks', async () => {
       const onCloseSpy = jest.fn();
       const user = userEvent.setup();
-      
+
       const TestComponent = () => {
         const { openModal, closeAllModals, getModalCount } = useModalManager();
-        
+
         return (
           <div>
             <button
@@ -457,7 +457,7 @@ describe('ModalManager Comprehensive Tests', () => {
           </div>
         );
       };
-      
+
       render(
         <ModalManager>
           <TestComponent />
@@ -481,10 +481,10 @@ describe('ModalManager Comprehensive Tests', () => {
     it('calls onClose when closing specific modal by ID', async () => {
       const onCloseSpy = jest.fn();
       const user = userEvent.setup();
-      
+
       const TestComponent = () => {
         const { openModal, closeModal } = useModalManager();
-        
+
         return (
           <div>
             <button
@@ -506,7 +506,7 @@ describe('ModalManager Comprehensive Tests', () => {
           </div>
         );
       };
-      
+
       render(
         <ModalManager>
           <TestComponent />
@@ -526,10 +526,10 @@ describe('ModalManager Comprehensive Tests', () => {
     it('calls onClose when closing top modal with callback', async () => {
       const onCloseSpy = jest.fn();
       const user = userEvent.setup();
-      
+
       const TestComponent = () => {
         const { openModal, closeTopModal } = useModalManager();
-        
+
         return (
           <div>
             <button
@@ -550,7 +550,7 @@ describe('ModalManager Comprehensive Tests', () => {
           </div>
         );
       };
-      
+
       render(
         <ModalManager>
           <TestComponent />
@@ -571,7 +571,7 @@ describe('ModalManager Comprehensive Tests', () => {
   describe('useModal Hook', () => {
     it('manages modal state independently', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ModalManager>
           <TestUseModalComponent />
@@ -596,7 +596,7 @@ describe('ModalManager Comprehensive Tests', () => {
   describe('useModalInstance Hook', () => {
     it('manages specific modal instance', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ModalManager>
           <TestUseModalInstanceComponent />
@@ -628,7 +628,7 @@ describe('ModalManager Comprehensive Tests', () => {
 
     it('handles closeTopModal when no modals are open', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <ModalManager>
           <TestModalComponent />
@@ -644,7 +644,7 @@ describe('ModalManager Comprehensive Tests', () => {
   describe('Component Cleanup', () => {
     it('removes event listeners on unmount', () => {
       const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener');
-      
+
       const { unmount } = render(
         <ModalManager>
           <TestModalComponent />
@@ -653,7 +653,7 @@ describe('ModalManager Comprehensive Tests', () => {
 
       unmount();
       expect(removeEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));
-      
+
       removeEventListenerSpy.mockRestore();
     });
 
@@ -666,7 +666,7 @@ describe('ModalManager Comprehensive Tests', () => {
 
       // Set body overflow
       document.body.style.overflow = 'hidden';
-      
+
       unmount();
       expect(document.body.style.overflow).toBe('');
     });

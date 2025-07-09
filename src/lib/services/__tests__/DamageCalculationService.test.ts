@@ -2,7 +2,6 @@ import { DamageCalculationService } from '../DamageCalculationService';
 import { DamageCalculationServiceError } from '../DamageCalculationServiceErrors';
 import {
   DamageCalculationInput,
-  DamagePreset,
   DamageType,
   ResistanceType
 } from '../../utils/dice/damage-types';
@@ -107,7 +106,7 @@ describe('DamageCalculationService', () => {
       };
 
       const result = service.calculateCriticalDamage(input);
-      
+
       expect(result.isCritical).toBe(true);
       expect(result.diceRolls).toHaveLength(4); // 2 * 2
       expect(result.modifier).toBe(5);
@@ -119,7 +118,7 @@ describe('DamageCalculationService', () => {
   describe('getPresetByName', () => {
     it('should return correct preset', () => {
       const preset = service.getPresetByName('shortsword');
-      
+
       expect(preset).toBeDefined();
       expect(preset?.name).toBe('Shortsword');
       expect(preset?.diceType).toBe('d6');
@@ -135,7 +134,7 @@ describe('DamageCalculationService', () => {
   describe('getAllPresets', () => {
     it('should return all available presets', () => {
       const presets = service.getAllPresets();
-      
+
       expect(presets.length).toBeGreaterThan(0);
       expect(presets.some(p => p.name === 'Shortsword')).toBe(true);
       expect(presets.some(p => p.name === 'Fireball')).toBe(true);
@@ -145,7 +144,7 @@ describe('DamageCalculationService', () => {
   describe('getPresetsByTag', () => {
     it('should filter presets by tag', () => {
       const weaponPresets = service.getPresetsByTag('weapon');
-      
+
       expect(weaponPresets.length).toBeGreaterThan(0);
       weaponPresets.forEach(preset => {
         expect(preset.tags).toContain('weapon');
@@ -161,7 +160,7 @@ describe('DamageCalculationService', () => {
   describe('calculateDamageFromPreset', () => {
     it('should calculate damage using preset', () => {
       const result = service.calculateDamageFromPreset('shortsword', 3);
-      
+
       expect(result.damageType).toBe('piercing');
       expect(result.modifier).toBe(3); // Override preset modifier
       expect(result.diceRolls).toHaveLength(1);
@@ -193,7 +192,7 @@ describe('DamageCalculationService', () => {
       ];
 
       const results = service.distributeDamageToTargets(baseDamage, targets, 'equal');
-      
+
       expect(results).toHaveLength(2);
       expect(results[0].finalDamage).toBe(20);
       expect(results[1].finalDamage).toBe(0); // Immune to fire
@@ -210,7 +209,7 @@ describe('DamageCalculationService', () => {
       };
 
       const stats = service.getDamageStatistics(input);
-      
+
       expect(stats.minimum).toBe(5); // 2 + 3
       expect(stats.maximum).toBe(15); // 12 + 3
       expect(stats.average).toBe(10); // 7 + 3
@@ -226,7 +225,7 @@ describe('DamageCalculationService', () => {
       };
 
       const stats = service.getDamageStatistics(input);
-      
+
       expect(stats.minimum).toBe(5);
       expect(stats.maximum).toBe(5);
       expect(stats.average).toBe(5);

@@ -4,8 +4,6 @@ import {
   calculateCriticalDamage,
   distributeDamageToMultipleTargets,
   DamageCalculationResult,
-  DamageType,
-  ResistanceType,
   DamageDistributionTarget
 } from '../damage-calculation';
 
@@ -17,7 +15,7 @@ describe('damage-calculation', () => {
       Math.random = jest.fn()
         .mockReturnValueOnce(0.5) // d6 = 4
         .mockReturnValueOnce(0.8); // d6 = 5
-      
+
       const result = calculateDamage({
         diceCount: 2,
         diceType: 'd6',
@@ -36,7 +34,7 @@ describe('damage-calculation', () => {
     it('should handle no modifier', () => {
       const originalRandom = Math.random;
       Math.random = jest.fn().mockReturnValue(0.9); // d8 = 8
-      
+
       const result = calculateDamage({
         diceCount: 1,
         diceType: 'd8',
@@ -53,7 +51,7 @@ describe('damage-calculation', () => {
     it('should handle negative modifier', () => {
       const originalRandom = Math.random;
       Math.random = jest.fn().mockReturnValue(0.9); // d4 = 4
-      
+
       const result = calculateDamage({
         diceCount: 1,
         diceType: 'd4',
@@ -130,7 +128,7 @@ describe('damage-calculation', () => {
         .mockReturnValueOnce(0.7) // Second d8 = 6
         .mockReturnValueOnce(0.3) // Additional d8 = 3
         .mockReturnValueOnce(0.9); // Additional d8 = 8
-      
+
       const result = calculateCriticalDamage({
         diceCount: 2,
         diceType: 'd8',
@@ -163,7 +161,7 @@ describe('damage-calculation', () => {
       };
 
       const result = distributeDamageToMultipleTargets(baseDamage, targets, 'equal');
-      
+
       expect(result.length).toBe(3);
       result.forEach(targetResult => {
         expect(targetResult.finalDamage).toBe(18);
@@ -186,7 +184,7 @@ describe('damage-calculation', () => {
       };
 
       const result = distributeDamageToMultipleTargets(baseDamage, targets, 'equal');
-      
+
       expect(result[0].finalDamage).toBe(0); // immune
       expect(result[1].finalDamage).toBe(40); // vulnerable
       expect(result[2].finalDamage).toBe(10); // resistant
@@ -206,7 +204,7 @@ describe('damage-calculation', () => {
       };
 
       const result = distributeDamageToMultipleTargets(baseDamage, targets, 'half');
-      
+
       result.forEach(targetResult => {
         expect(targetResult.finalDamage).toBe(12);
       });
@@ -217,7 +215,7 @@ describe('damage-calculation', () => {
     it('should handle minimum damage of 0', () => {
       const originalRandom = Math.random;
       Math.random = jest.fn().mockReturnValue(0); // d4 = 1
-      
+
       const result = calculateDamage({
         diceCount: 1,
         diceType: 'd4',
@@ -233,7 +231,7 @@ describe('damage-calculation', () => {
     it('should handle maximum dice values', () => {
       const originalRandom = Math.random;
       Math.random = jest.fn().mockReturnValue(0.99); // d20 = 20
-      
+
       const result = calculateDamage({
         diceCount: 1,
         diceType: 'd20',

@@ -2,9 +2,7 @@ import {
   rollDice,
   rollMultipleDice,
   rollDamage,
-  rollCriticalDamage,
-  DiceType,
-  DiceRollResult
+  rollCriticalDamage
 } from '../dice-rolling';
 import { mockDiceRolls, restoreMathRandom, MOCK_DICE_ROLLS } from './test-helpers';
 
@@ -75,19 +73,19 @@ describe('dice-rolling', () => {
       for (let i = 0; i < 100; i++) {
         expect(rollDice('d4')).toBeGreaterThanOrEqual(1);
         expect(rollDice('d4')).toBeLessThanOrEqual(4);
-        
+
         expect(rollDice('d6')).toBeGreaterThanOrEqual(1);
         expect(rollDice('d6')).toBeLessThanOrEqual(6);
-        
+
         expect(rollDice('d8')).toBeGreaterThanOrEqual(1);
         expect(rollDice('d8')).toBeLessThanOrEqual(8);
-        
+
         expect(rollDice('d10')).toBeGreaterThanOrEqual(1);
         expect(rollDice('d10')).toBeLessThanOrEqual(10);
-        
+
         expect(rollDice('d12')).toBeGreaterThanOrEqual(1);
         expect(rollDice('d12')).toBeLessThanOrEqual(12);
-        
+
         expect(rollDice('d20')).toBeGreaterThanOrEqual(1);
         expect(rollDice('d20')).toBeLessThanOrEqual(20);
       }
@@ -121,7 +119,7 @@ describe('dice-rolling', () => {
     it('should return correct number of dice', () => {
       const result = rollMultipleDice(5, 'd6');
       expect(result).toHaveLength(5);
-      
+
       result.forEach(roll => {
         expect(roll).toBeGreaterThanOrEqual(1);
         expect(roll).toBeLessThanOrEqual(6);
@@ -216,7 +214,7 @@ describe('dice-rolling', () => {
     it('should handle very large dice counts', () => {
       const result = rollMultipleDice(10, 'd6');
       expect(result).toHaveLength(10);
-      
+
       result.forEach(roll => {
         expect(roll).toBeGreaterThanOrEqual(1);
         expect(roll).toBeLessThanOrEqual(6);
@@ -225,16 +223,16 @@ describe('dice-rolling', () => {
 
     it('should maintain statistical distribution over many rolls', () => {
       const results: number[] = [];
-      
+
       // Roll 1000 d6s
       for (let i = 0; i < 1000; i++) {
         results.push(rollDice('d6'));
       }
-      
+
       // Check that we get roughly equal distribution
       const counts = Array(6).fill(0);
       results.forEach(roll => counts[roll - 1]++);
-      
+
       // Each face should appear roughly 1/6 of the time (allow some variance)
       counts.forEach(count => {
         expect(count).toBeGreaterThan(100); // At least 10% of rolls
