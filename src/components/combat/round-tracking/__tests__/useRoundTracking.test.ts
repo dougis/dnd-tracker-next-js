@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useRoundTracking } from '../useRoundTracking';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
 import { createTestEncounter, makeEncounterActive, PARTICIPANT_IDS } from '@/lib/models/encounter/__tests__/combat-test-helpers';
@@ -444,7 +444,9 @@ describe('useRoundTracking', () => {
 
       performRoundAction(result, 'nextRound');
 
-      jest.advanceTimersByTime(300);
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
 
       expect(result.current.error).toBe('Failed to update encounter');
 

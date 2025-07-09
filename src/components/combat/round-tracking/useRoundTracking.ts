@@ -152,7 +152,9 @@ export function useRoundTracking(
     }
 
     const delay = 300;
-    updateTimeoutRef.current = setTimeout(() => performUpdate(updates), delay);
+    updateTimeoutRef.current = setTimeout(() => {
+      performUpdate(updates);
+    }, delay);
   }, [performUpdate, enableDebouncing]);
 
   // Clear error when successful operations occur

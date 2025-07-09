@@ -444,6 +444,7 @@ export function assertNoError(result: any) {
 
 export function createMockEncounterWithStartTime(minutesAgo: number): IEncounter {
   const encounter = createTestEncounter();
+  makeEncounterActive(encounter);
   encounter.combatState.startedAt = new Date(Date.now() - minutesAgo * 60000);
   return encounter;
 }
