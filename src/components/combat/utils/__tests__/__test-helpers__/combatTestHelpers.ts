@@ -286,7 +286,16 @@ export async function executeApiTest(
 
     return result;
   } else {
-    await expect(makeRequestFn(requestConfig)).rejects.toThrow();
+    // After fix: makeRequest should handle errors gracefully and not throw
+    const result = await makeRequestFn(requestConfig);
+
+    expect(callbacks.setIsLoading).toHaveBeenCalledWith(true);
+    expect(callbacks.setError).toHaveBeenCalledWith('Test error');
+    expect(callbacks.setIsLoading).toHaveBeenCalledWith(false);
+
+    // Should return undefined when error is handled gracefully
+    expect(result).toBeUndefined();
+
     return null;
   }
 }
