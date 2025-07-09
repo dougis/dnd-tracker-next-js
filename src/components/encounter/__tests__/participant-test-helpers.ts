@@ -141,6 +141,17 @@ export const workflows = {
     for (const index of indices) {
       await user.click(checkboxes[index]);
     }
+  },
+
+  async dragAndDropParticipant(user: ReturnType<typeof userEvent.setup>, fromIndex: number, toIndex: number) {
+    const dragHandles = screen.getAllByTestId('drag-handle');
+    const fromHandle = dragHandles[fromIndex];
+    const toHandle = dragHandles[toIndex];
+    
+    // Simulate drag and drop interaction
+    // This will be replaced with actual drag and drop events once implemented
+    await user.click(fromHandle);
+    await user.click(toHandle);
   }
 };
 

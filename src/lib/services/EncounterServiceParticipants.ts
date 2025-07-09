@@ -129,4 +129,67 @@ export class EncounterServiceParticipants {
       );
     }
   }
+
+  /**
+   * Reorder participants in encounter
+   */
+  static async reorderParticipants(
+    encounterId: string,
+    participantIds: string[]
+  ): Promise<ServiceResult<IEncounter>> {
+    try {
+      // Validate ID format
+      if (!EncounterServiceValidation.isValidObjectId(encounterId)) {
+        throw new EncounterValidationError('encounterId', 'Invalid encounter ID format');
+      }
+
+      // Validate participant IDs
+      if (!Array.isArray(participantIds) || participantIds.length === 0) {
+        throw new EncounterValidationError('participantIds', 'Participant IDs must be a non-empty array');
+      }
+
+      for (const id of participantIds) {
+        if (!EncounterServiceValidation.isValidObjectId(id)) {
+          throw new EncounterValidationError('participantIds', `Invalid participant ID format: ${id}`);
+        }
+      }
+
+      const encounter = await Encounter.findById(encounterId);
+      if (!encounter) {
+        throw new EncounterNotFoundError(encounterId);
+      }
+
+      // Verify all participant IDs exist in the encounter
+      const existingParticipantIds = encounter.participants.map(p => p.characterId.toString());
+      const missingIds = participantIds.filter(id => !existingParticipantIds.includes(id));
+      
+      if (missingIds.length > 0) {
+        throw new ParticipantNotFoundError(`Participant IDs not found: ${missingIds.join(', ')}`);
+      }
+
+      // Verify all participants are included in the reorder
+      if (participantIds.length !== encounter.participants.length) {
+        throw new EncounterValidationError('participantIds', 'All participants must be included in reorder');
+      }
+
+      // Reorder participants
+      const reorderedParticipants = participantIds.map(id => 
+        encounter.participants.find(p => p.characterId.toString() === id)
+      ).filter(Boolean) as IParticipantReference[];
+
+      encounter.participants = reorderedParticipants;
+      await encounter.save();
+
+      return {
+        success: true,
+        data: encounter,
+      };
+    } catch (error) {
+      return handleEncounterServiceError(
+        error,
+        'Failed to reorder participants',
+        'PARTICIPANT_REORDER_FAILED'
+      );
+    }
+  }
 }

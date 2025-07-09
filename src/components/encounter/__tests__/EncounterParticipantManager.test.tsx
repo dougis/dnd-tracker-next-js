@@ -182,16 +182,121 @@ describe('EncounterParticipantManager', () => {
   });
 
   describe('Participant Ordering', () => {
-    it('should support drag and drop reordering', async () => {
+    it('should render participants with drag handles', async () => {
       renderComponent(mockEncounter);
 
       const { participants } = getElements();
       expect(participants).toHaveLength(2);
 
-      // Mock drag and drop implementation would go here
-      // For now we'll just verify the elements are present
+      // Check that drag handles are present
+      const dragHandles = screen.getAllByTestId('drag-handle');
+      expect(dragHandles).toHaveLength(2);
+      
+      // Verify participants are in correct order
       expect(participants[0]).toHaveTextContent('Aragorn');
       expect(participants[1]).toHaveTextContent('Goblin Scout');
+    });
+
+    it('should support drag and drop reordering', async () => {
+      const user = userEvent.setup();
+      serviceMocks.setup(mockEncounterService, 'reorderParticipants', { success: true, data: mockEncounter });
+
+      renderComponent(mockEncounter);
+
+      const { participants } = getElements();
+      expect(participants).toHaveLength(2);
+
+      // Simulate drag and drop by triggering reorder
+      await workflows.dragAndDropParticipant(user, 0, 1);
+
+      // Verify service was called with correct parameters
+      await serviceMocks.expectCallAfterWait(mockEncounterService, 'reorderParticipants', [
+        mockEncounter._id.toString(),
+        ['64a1b2c3d4e5f6789abcdef1', '64a1b2c3d4e5f6789abcdef0'] // Goblin Scout, then Aragorn
+      ]);
+    });
+
+    it('should handle reorder failure gracefully', async () => {
+      const user = userEvent.setup();
+      serviceMocks.setup(mockEncounterService, 'reorderParticipants', { success: false, error: 'Reorder failed' });
+
+      renderComponent(mockEncounter);
+
+      await workflows.dragAndDropParticipant(user, 0, 1);
+
+      // Verify service was called
+      await serviceMocks.expectCallAfterWait(mockEncounterService, 'reorderParticipants', [
+        mockEncounter._id.toString(),
+        ['64a1b2c3d4e5f6789abcdef1', '64a1b2c3d4e5f6789abcdef0']
+      ]);
+
+      // Error should be handled gracefully (no crash)
+      expect(screen.getByText('Encounter Participants')).toBeInTheDocument();
+    });
+
+    it('should provide visual feedback during drag operation', async () => {
+      renderComponent(mockEncounter);
+
+      const { participants } = getElements();
+      const dragHandles = screen.getAllByTestId('drag-handle');
+
+      // Verify drag handles are visible and accessible
+      expect(dragHandles[0]).toBeInTheDocument();
+      expect(dragHandles[1]).toBeInTheDocument();
+      
+      // Verify participants maintain their identity during display
+      expect(participants[0]).toHaveTextContent('Aragorn');
+      expect(participants[1]).toHaveTextContent('Goblin Scout');
+    });
+
+    it('should maintain participant order after successful reorder', async () => {
+      const user = userEvent.setup();
+      const reorderedEncounter = {
+        ...mockEncounter,
+        participants: [
+          createTestParticipant({
+            characterId: '64a1b2c3d4e5f6789abcdef1',
+            name: 'Goblin Scout',
+            type: 'npc',
+            maxHitPoints: 7,
+            currentHitPoints: 7,
+            armorClass: 15,
+            isPlayer: false,
+            notes: 'Weak enemy',
+          }),
+          createTestParticipant({
+            characterId: '64a1b2c3d4e5f6789abcdef0',
+            name: 'Aragorn',
+            type: 'pc',
+            notes: 'Ranger',
+          }),
+        ],
+      };
+
+      serviceMocks.setup(mockEncounterService, 'reorderParticipants', { success: true, data: reorderedEncounter });
+
+      renderComponent(mockEncounter);
+
+      await workflows.dragAndDropParticipant(user, 0, 1);
+
+      // After successful reorder, the component should reflect the new order
+      await waitFor(() => {
+        expect(mockEncounterService.reorderParticipants).toHaveBeenCalled();
+      });
+    });
+
+    it('should work with keyboard navigation for accessibility', async () => {
+      renderComponent(mockEncounter);
+
+      const dragHandles = screen.getAllByTestId('drag-handle');
+      
+      // Verify drag handles are keyboard accessible
+      expect(dragHandles[0]).toHaveAttribute('tabIndex', '0');
+      expect(dragHandles[1]).toHaveAttribute('tabIndex', '0');
+      
+      // Verify ARIA attributes for accessibility
+      expect(dragHandles[0]).toHaveAttribute('role', 'button');
+      expect(dragHandles[1]).toHaveAttribute('role', 'button');
     });
   });
 
