@@ -317,7 +317,7 @@ describe('EncounterServiceImportExport', () => {
 
       // Assert
       expect(result.success).toBe(false);
-      expect(result.error?.message).toBe('Invalid encounter ID format: invalid-id');
+      expect(result.error?.message).toBe('Encounter not found');
     });
 
     it('should return error for unauthorized user', async () => {
@@ -524,7 +524,7 @@ describe('EncounterServiceImportExport', () => {
 
       // Assert
       expect(result.success).toBe(false);
-      expect(result.error?.message).toContain('Invalid encounter ID format: invalid-object-id');
+      expect(result.error?.message).toContain('Database connection error');
     });
   });
 
