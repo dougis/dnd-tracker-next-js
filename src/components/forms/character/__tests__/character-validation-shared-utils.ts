@@ -1,4 +1,3 @@
-import React from 'react';
 import { setupFormComponentTest } from './setup/test-setup';
 
 // Mock the CharacterService
@@ -37,7 +36,6 @@ export function setupCharacterValidationTest() {
 
 export function setupMockCharacterService() {
   const mockCharacterService = CharacterService as jest.Mocked<typeof CharacterService>;
-  
   beforeEach(() => {
     jest.clearAllMocks();
     // Set up default successful response

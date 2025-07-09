@@ -2,16 +2,14 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RoundTracker } from '../RoundTracker';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
-import { createMockEncounter, createMockProps, convertToNewProps } from './shared-test-utils';
+import { createMockEncounter, convertToNewProps } from './shared-test-utils';
 
 describe('RoundTracker - Export and Summary', () => {
   let mockEncounter: IEncounter;
-  let mockProps: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockEncounter = createMockEncounter();
-    mockProps = createMockProps(mockEncounter);
   });
 
   it('provides export functionality', () => {

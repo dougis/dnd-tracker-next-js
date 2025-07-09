@@ -2,12 +2,11 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RoundTracker } from '../RoundTracker';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
-import { createMockEncounter, createMockProps, convertToNewProps } from './shared-test-utils';
+import { createMockEncounter, convertToNewProps } from './shared-test-utils';
 import { PARTICIPANT_IDS } from '@/lib/models/encounter/__tests__/combat-test-helpers';
 
 describe('RoundTracker - Round-based Effects', () => {
   let mockEncounter: IEncounter;
-  let mockProps: any;
 
   const mockEffects = [
     {
@@ -31,7 +30,6 @@ describe('RoundTracker - Round-based Effects', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockEncounter = createMockEncounter();
-    mockProps = createMockProps(mockEncounter);
   });
 
   it('displays active effects', () => {

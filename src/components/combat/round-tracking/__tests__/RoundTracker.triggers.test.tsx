@@ -2,11 +2,10 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RoundTracker } from '../RoundTracker';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
-import { createMockEncounter, createMockProps, convertToNewProps } from './shared-test-utils';
+import { createMockEncounter, convertToNewProps } from './shared-test-utils';
 
 describe('RoundTracker - Round Triggers and Reminders', () => {
   let mockEncounter: IEncounter;
-  let mockProps: any;
 
   const mockTriggers = [
     {
@@ -28,7 +27,6 @@ describe('RoundTracker - Round Triggers and Reminders', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockEncounter = createMockEncounter();
-    mockProps = createMockProps(mockEncounter);
   });
 
   it('displays upcoming triggers', () => {
