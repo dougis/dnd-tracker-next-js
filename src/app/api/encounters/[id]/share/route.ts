@@ -8,14 +8,13 @@ const shareBodySchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     const body = await request.json();
     const validatedBody = shareBodySchema.parse(body);
 
-    const resolvedParams = await params;
-    const encounterId = resolvedParams.id;
+    const encounterId = params.id;
 
     // TODO: Get user ID from authentication
     const userId = 'temp-user-id'; // Replace with actual user ID from auth
