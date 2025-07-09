@@ -138,45 +138,16 @@ export class EncounterServiceParticipants {
     participantIds: string[]
   ): Promise<ServiceResult<IEncounter>> {
     try {
-      // Validate ID format
-      if (!EncounterServiceValidation.isValidObjectId(encounterId)) {
-        throw new EncounterValidationError('encounterId', 'Invalid encounter ID format');
-      }
-
-      // Validate participant IDs
-      if (!Array.isArray(participantIds) || participantIds.length === 0) {
-        throw new EncounterValidationError('participantIds', 'Participant IDs must be a non-empty array');
-      }
-
-      for (const id of participantIds) {
-        if (!EncounterServiceValidation.isValidObjectId(id)) {
-          throw new EncounterValidationError('participantIds', `Invalid participant ID format: ${id}`);
-        }
-      }
+      this.validateReorderInputs(encounterId, participantIds);
 
       const encounter = await Encounter.findById(encounterId);
       if (!encounter) {
         throw new EncounterNotFoundError(encounterId);
       }
 
-      // Verify all participant IDs exist in the encounter
-      const existingParticipantIds = encounter.participants.map(p => p.characterId.toString());
-      const missingIds = participantIds.filter(id => !existingParticipantIds.includes(id));
+      this.validateParticipantReorder(encounter, participantIds);
 
-      if (missingIds.length > 0) {
-        throw new ParticipantNotFoundError(`Participant IDs not found: ${missingIds.join(', ')}`);
-      }
-
-      // Verify all participants are included in the reorder
-      if (participantIds.length !== encounter.participants.length) {
-        throw new EncounterValidationError('participantIds', 'All participants must be included in reorder');
-      }
-
-      // Reorder participants
-      const reorderedParticipants = participantIds.map(id =>
-        encounter.participants.find(p => p.characterId.toString() === id)
-      ).filter(Boolean) as IParticipantReference[];
-
+      const reorderedParticipants = this.buildReorderedParticipants(encounter, participantIds);
       encounter.participants = reorderedParticipants;
       await encounter.save();
 
@@ -191,5 +162,52 @@ export class EncounterServiceParticipants {
         'PARTICIPANT_REORDER_FAILED'
       );
     }
+  }
+
+  /**
+   * Validates inputs for reorder operation
+   */
+  private static validateReorderInputs(encounterId: string, participantIds: string[]): void {
+    if (!EncounterServiceValidation.isValidObjectId(encounterId)) {
+      throw new EncounterValidationError('encounterId', 'Invalid encounter ID format');
+    }
+
+    if (!Array.isArray(participantIds) || participantIds.length === 0) {
+      throw new EncounterValidationError('participantIds', 'Participant IDs must be a non-empty array');
+    }
+
+    for (const id of participantIds) {
+      if (!EncounterServiceValidation.isValidObjectId(id)) {
+        throw new EncounterValidationError('participantIds', `Invalid participant ID format: ${id}`);
+      }
+    }
+  }
+
+  /**
+   * Validates that all participants exist and are included in reorder
+   */
+  private static validateParticipantReorder(encounter: IEncounter, participantIds: string[]): void {
+    const existingParticipantIds = encounter.participants.map(p => p.characterId.toString());
+    const missingIds = participantIds.filter(id => !existingParticipantIds.includes(id));
+
+    if (missingIds.length > 0) {
+      throw new ParticipantNotFoundError(`Participant IDs not found: ${missingIds.join(', ')}`);
+    }
+
+    if (participantIds.length !== encounter.participants.length) {
+      throw new EncounterValidationError('participantIds', 'All participants must be included in reorder');
+    }
+  }
+
+  /**
+   * Builds the reordered participants array
+   */
+  private static buildReorderedParticipants(
+    encounter: IEncounter,
+    participantIds: string[]
+  ): IParticipantReference[] {
+    return participantIds.map(id =>
+      encounter.participants.find(p => p.characterId.toString() === id)
+    ).filter(Boolean) as IParticipantReference[];
   }
 }

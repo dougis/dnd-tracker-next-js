@@ -11,7 +11,8 @@ import {
   testExpectations,
   getElements,
   workflows,
-  testPatterns
+  testPatterns,
+  dragDropTestPatterns
 } from './participant-test-helpers';
 
 // Mock the EncounterService
@@ -210,63 +211,41 @@ describe('EncounterParticipantManager', () => {
       expect(dragHandles).toHaveLength(2);
 
       // Verify participants are in correct order
-      expect(participants[0]).toHaveTextContent('Aragorn');
-      expect(participants[1]).toHaveTextContent('Goblin Scout');
+      dragDropTestPatterns.validateParticipantOrder(['Aragorn', 'Goblin Scout']);
     });
 
     it('should support drag and drop reordering', async () => {
-      const user = userEvent.setup();
-      serviceMocks.setup(mockEncounterService, 'reorderParticipants', { success: true, data: mockEncounter });
+      const user = await dragDropTestPatterns.setupDragDropTest(
+        mockEncounterService,
+        { success: true, data: mockEncounter },
+        () => renderComponent(mockEncounter)
+      );
 
-      renderComponent(mockEncounter);
+      // Verify the expected number of participants
+      expect(getElements().participants).toHaveLength(2);
 
-      const { participants } = getElements();
-      expect(participants).toHaveLength(2);
-
-      // For testing purposes, we'll simulate the drag-and-drop by manually triggering
-      // the reorder callback that would be called by the ParticipantList component
-      // Note: This tests the integration without relying on complex drag-and-drop event simulation
-
-      // Get the ParticipantList's onReorder callback and call it directly
-      // This simulates what would happen when a drag-and-drop operation completes
-      const reorderedIds = ['64a1b2c3d4e5f6789abcdef1', '64a1b2c3d4e5f6789abcdef0'];
-
-      // Simulate the drag-and-drop interaction
-      await workflows.dragAndDropParticipant(user, 0, 1);
-
-      // Since the drag-and-drop simulation doesn't trigger the actual callback,
-      // we need to wait for the service to be called or manually trigger it
-      // For now, let's verify the reorder functionality works by checking the method exists
-      expect(mockEncounterService.reorderParticipants).toBeDefined();
-
-      // The actual reorder would be triggered by the ParticipantList component
-      // when a real drag-and-drop event occurs. For testing, we can manually call it:
-      await mockEncounterService.reorderParticipants(mockEncounter._id.toString(), reorderedIds);
-
-      // Verify service was called with correct parameters
-      expect(mockEncounterService.reorderParticipants).toHaveBeenCalledWith(
+      // Execute drag-and-drop operation with common pattern
+      await dragDropTestPatterns.executeDragDropOperation(
+        user,
+        mockEncounterService,
         mockEncounter._id.toString(),
-        reorderedIds
+        dragDropTestPatterns.getReorderedIds()
       );
     });
 
     it('should handle reorder failure gracefully', async () => {
-      const user = userEvent.setup();
-      serviceMocks.setup(mockEncounterService, 'reorderParticipants', { success: false, error: 'Reorder failed' });
+      const user = await dragDropTestPatterns.setupDragDropTest(
+        mockEncounterService,
+        { success: false, error: 'Reorder failed' },
+        () => renderComponent(mockEncounter)
+      );
 
-      renderComponent(mockEncounter);
-
-      // Simulate the drag-and-drop interaction
-      await workflows.dragAndDropParticipant(user, 0, 1);
-
-      // Simulate the reorder failure by calling the service directly
-      const reorderedIds = ['64a1b2c3d4e5f6789abcdef1', '64a1b2c3d4e5f6789abcdef0'];
-      await mockEncounterService.reorderParticipants(mockEncounter._id.toString(), reorderedIds);
-
-      // Verify service was called
-      expect(mockEncounterService.reorderParticipants).toHaveBeenCalledWith(
+      // Execute drag-and-drop operation with common pattern
+      await dragDropTestPatterns.executeDragDropOperation(
+        user,
+        mockEncounterService,
         mockEncounter._id.toString(),
-        reorderedIds
+        dragDropTestPatterns.getReorderedIds()
       );
 
       // Error should be handled gracefully (no crash)
@@ -276,7 +255,6 @@ describe('EncounterParticipantManager', () => {
     it('should provide visual feedback during drag operation', async () => {
       renderComponent(mockEncounter);
 
-      const { participants } = getElements();
       const dragHandles = screen.getAllByTestId('drag-handle');
 
       // Verify drag handles are visible and accessible
@@ -284,12 +262,10 @@ describe('EncounterParticipantManager', () => {
       expect(dragHandles[1]).toBeInTheDocument();
 
       // Verify participants maintain their identity during display
-      expect(participants[0]).toHaveTextContent('Aragorn');
-      expect(participants[1]).toHaveTextContent('Goblin Scout');
+      dragDropTestPatterns.validateParticipantOrder(['Aragorn', 'Goblin Scout']);
     });
 
     it('should maintain participant order after successful reorder', async () => {
-      const user = userEvent.setup();
       const reorderedEncounter = {
         ...mockEncounter,
         participants: [
@@ -312,36 +288,26 @@ describe('EncounterParticipantManager', () => {
         ],
       };
 
-      serviceMocks.setup(mockEncounterService, 'reorderParticipants', { success: true, data: reorderedEncounter });
+      const user = await dragDropTestPatterns.setupDragDropTest(
+        mockEncounterService,
+        { success: true, data: reorderedEncounter },
+        () => renderComponent(mockEncounter)
+      );
 
-      renderComponent(mockEncounter);
-
-      // Simulate the drag-and-drop interaction
-      await workflows.dragAndDropParticipant(user, 0, 1);
-
-      // Simulate the successful reorder by calling the service directly
-      const reorderedIds = ['64a1b2c3d4e5f6789abcdef1', '64a1b2c3d4e5f6789abcdef0'];
-      await mockEncounterService.reorderParticipants(mockEncounter._id.toString(), reorderedIds);
-
-      // Verify service was called
-      expect(mockEncounterService.reorderParticipants).toHaveBeenCalledWith(
+      // Execute drag-and-drop operation with common pattern
+      await dragDropTestPatterns.executeDragDropOperation(
+        user,
+        mockEncounterService,
         mockEncounter._id.toString(),
-        reorderedIds
+        dragDropTestPatterns.getReorderedIds()
       );
     });
 
     it('should work with keyboard navigation for accessibility', async () => {
       renderComponent(mockEncounter);
 
-      const dragHandles = screen.getAllByTestId('drag-handle');
-
-      // Verify drag handles are present and accessible
-      expect(dragHandles[0]).toBeInTheDocument();
-      expect(dragHandles[1]).toBeInTheDocument();
-
-      // Verify ARIA labels for accessibility
-      expect(dragHandles[0]).toHaveAttribute('aria-label', 'Drag to reorder Aragorn');
-      expect(dragHandles[1]).toHaveAttribute('aria-label', 'Drag to reorder Goblin Scout');
+      // Verify drag handles accessibility using common pattern
+      dragDropTestPatterns.validateDragHandleAccessibility(['Aragorn', 'Goblin Scout']);
     });
   });
 

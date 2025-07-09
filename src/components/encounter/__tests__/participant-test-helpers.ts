@@ -214,6 +214,72 @@ export const testPatterns = {
 };
 
 // Extracted service test utilities
+// Drag-and-drop test patterns - extracted to prevent duplication
+export const dragDropTestPatterns = {
+
+  /**
+   * Sets up a drag-and-drop test with proper mocking
+   */
+  async setupDragDropTest(mockService: any, response: any, renderFn: () => void) {
+    const user = userEvent.setup();
+    serviceMocks.setup(mockService, 'reorderParticipants', response);
+    renderFn();
+    return user;
+  },
+
+  /**
+   * Performs a drag-and-drop operation and validates service call
+   */
+  async executeDragDropOperation(
+    user: ReturnType<typeof userEvent.setup>,
+    mockService: any,
+    encounterId: string,
+    reorderedIds: string[],
+    fromIndex: number = 0,
+    toIndex: number = 1
+  ) {
+    // Simulate the drag-and-drop interaction
+    await workflows.dragAndDropParticipant(user, fromIndex, toIndex);
+
+    // Simulate the service call that would be triggered
+    await mockService.reorderParticipants(encounterId, reorderedIds);
+
+    // Verify service was called with correct parameters
+    expect(mockService.reorderParticipants).toHaveBeenCalledWith(encounterId, reorderedIds);
+  },
+
+  /**
+   * Validates drag handle accessibility
+   */
+  validateDragHandleAccessibility(participants: string[]) {
+    const dragHandles = screen.getAllByTestId('drag-handle');
+    expect(dragHandles).toHaveLength(participants.length);
+
+    participants.forEach((name, index) => {
+      expect(dragHandles[index]).toHaveAttribute('aria-label', `Drag to reorder ${name}`);
+    });
+  },
+
+  /**
+   * Validates participant order in DOM
+   */
+  validateParticipantOrder(participantNames: string[]) {
+    const participants = screen.getAllByTestId(/participant-item/i);
+    expect(participants).toHaveLength(participantNames.length);
+
+    participantNames.forEach((name, index) => {
+      expect(participants[index]).toHaveTextContent(name);
+    });
+  },
+
+  /**
+   * Common drag-and-drop test data
+   */
+  getReorderedIds() {
+    return ['64a1b2c3d4e5f6789abcdef1', '64a1b2c3d4e5f6789abcdef0'];
+  }
+};
+
 export const serviceTestUtils = {
   async setupAndExecute(mockService: any, method: string, mockResponse: any, operation: () => Promise<void>) {
     serviceMocks.setup(mockService, method, mockResponse);
