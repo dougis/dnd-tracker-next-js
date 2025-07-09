@@ -14,6 +14,7 @@ import { EncounterServiceParticipants } from './EncounterServiceParticipants';
 import { EncounterServiceSearch } from './EncounterServiceSearch';
 import { EncounterServiceTemplates } from './EncounterServiceTemplates';
 import { EncounterServiceAuth } from './EncounterServiceAuth';
+import { EncounterServiceImportExport } from './EncounterServiceImportExport';
 
 /**
  * Encounter Service Layer for D&D Encounter Tracker
@@ -184,4 +185,17 @@ export class EncounterService {
 
   // Validation and Data Sanitization
   static validateEncounterData = EncounterServiceValidation.validateEncounterData;
+
+  // Import/Export Operations
+  static exportToJson = EncounterServiceImportExport.exportToJson;
+
+  static exportToXml = EncounterServiceImportExport.exportToXml;
+
+  static importFromJson = EncounterServiceImportExport.importFromJson;
+
+  static importFromXml = EncounterServiceImportExport.importFromXml;
+
+  static generateShareableLink = EncounterServiceImportExport.generateShareableLink;
+
+  static createEncounterTemplate = EncounterServiceImportExport.createTemplate;
 }
