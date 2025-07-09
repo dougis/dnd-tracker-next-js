@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -15,7 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, GripVertical } from 'lucide-react';
 import type { IParticipantReference } from '@/lib/models/encounter/interfaces';
 
 interface ParticipantItemProps {
@@ -58,13 +60,43 @@ export function ParticipantItem({
   onEdit,
   onRemove,
 }: ParticipantItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: participant.characterId.toString() });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   return (
     <div
+      ref={setNodeRef}
+      style={style}
       key={participant.characterId.toString()}
       data-testid="participant-item"
-      className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+      className={`flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 ${
+        isDragging ? 'opacity-50' : ''
+      }`}
     >
       <div className="flex items-center space-x-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-200"
+          data-testid="drag-handle"
+          aria-label={`Drag to reorder ${participant.name}`}
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-4 w-4 text-gray-500" />
+        </Button>
+
         <Checkbox
           checked={isSelected}
           onCheckedChange={(checked) =>
