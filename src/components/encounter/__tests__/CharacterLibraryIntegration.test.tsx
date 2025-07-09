@@ -94,10 +94,7 @@ describe('CharacterLibraryIntegration', () => {
     isImportDialogOpen: true,
     onImportDialogOpenChange: jest.fn(),
     onImportCharacters: jest.fn(),
-    selectedCharacters: [],
-    onCharacterSelect: jest.fn(),
-    onCharacterDeselect: jest.fn(),
-    isLoading: false,
+    userId: 'user123',
   };
 
   beforeEach(() => {
@@ -211,26 +208,27 @@ describe('CharacterLibraryIntegration', () => {
       const aragornCheckbox = screen.getByRole('checkbox', { name: /select aragorn/i });
       await user.click(aragornCheckbox);
 
-      expect(mockProps.onCharacterSelect).toHaveBeenCalledWith(mockCharacters[0]);
+      expect(aragornCheckbox).toBeChecked();
     });
 
     it('should allow deselecting characters', async () => {
       const user = userEvent.setup();
-      const propsWithSelection = {
-        ...mockProps,
-        selectedCharacters: [mockCharacters[0]],
-      };
       
-      render(<ImportParticipantDialog {...propsWithSelection} />);
+      render(<ImportParticipantDialog {...mockProps} />);
 
       await waitFor(() => {
         expect(screen.getByText('Aragorn')).toBeInTheDocument();
       });
 
       const aragornCheckbox = screen.getByRole('checkbox', { name: /select aragorn/i });
+      
+      // Select first
       await user.click(aragornCheckbox);
-
-      expect(mockProps.onCharacterDeselect).toHaveBeenCalledWith(mockCharacters[0]);
+      expect(aragornCheckbox).toBeChecked();
+      
+      // Then deselect
+      await user.click(aragornCheckbox);
+      expect(aragornCheckbox).not.toBeChecked();
     });
 
     it('should support bulk selection with Select All', async () => {
@@ -244,30 +242,27 @@ describe('CharacterLibraryIntegration', () => {
       const selectAllCheckbox = screen.getByRole('checkbox', { name: /select all/i });
       await user.click(selectAllCheckbox);
 
-      mockCharacters.forEach(character => {
-        expect(mockProps.onCharacterSelect).toHaveBeenCalledWith(character);
-      });
+      expect(selectAllCheckbox).toBeChecked();
     });
 
     it('should support bulk deselection with Deselect All', async () => {
       const user = userEvent.setup();
-      const propsWithAllSelected = {
-        ...mockProps,
-        selectedCharacters: mockCharacters,
-      };
       
-      render(<ImportParticipantDialog {...propsWithAllSelected} />);
+      render(<ImportParticipantDialog {...mockProps} />);
 
       await waitFor(() => {
         expect(screen.getByText('Aragorn')).toBeInTheDocument();
       });
 
       const selectAllCheckbox = screen.getByRole('checkbox', { name: /select all/i });
+      
+      // Select all first
       await user.click(selectAllCheckbox);
-
-      mockCharacters.forEach(character => {
-        expect(mockProps.onCharacterDeselect).toHaveBeenCalledWith(character);
-      });
+      expect(selectAllCheckbox).toBeChecked();
+      
+      // Then deselect all
+      await user.click(selectAllCheckbox);
+      expect(selectAllCheckbox).not.toBeChecked();
     });
   });
 
@@ -329,12 +324,16 @@ describe('CharacterLibraryIntegration', () => {
   describe('Character Import', () => {
     it('should enable import button when characters are selected', async () => {
       const user = userEvent.setup();
-      const propsWithSelection = {
-        ...mockProps,
-        selectedCharacters: [mockCharacters[0]],
-      };
       
-      render(<ImportParticipantDialog {...propsWithSelection} />);
+      render(<ImportParticipantDialog {...mockProps} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Aragorn')).toBeInTheDocument();
+      });
+
+      // Select a character
+      const aragornCheckbox = screen.getByRole('checkbox', { name: /select aragorn/i });
+      await user.click(aragornCheckbox);
 
       await waitFor(() => {
         expect(screen.getByText('Import Selected (1)')).toBeInTheDocument();
@@ -357,12 +356,18 @@ describe('CharacterLibraryIntegration', () => {
 
     it('should call onImportCharacters when import button is clicked', async () => {
       const user = userEvent.setup();
-      const propsWithSelection = {
-        ...mockProps,
-        selectedCharacters: [mockCharacters[0], mockCharacters[1]],
-      };
       
-      render(<ImportParticipantDialog {...propsWithSelection} />);
+      render(<ImportParticipantDialog {...mockProps} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Aragorn')).toBeInTheDocument();
+      });
+
+      // Select two characters
+      const aragornCheckbox = screen.getByRole('checkbox', { name: /select aragorn/i });
+      const legolasCheckbox = screen.getByRole('checkbox', { name: /select legolas/i });
+      await user.click(aragornCheckbox);
+      await user.click(legolasCheckbox);
 
       await waitFor(() => {
         expect(screen.getByText('Import Selected (2)')).toBeInTheDocument();
@@ -375,20 +380,26 @@ describe('CharacterLibraryIntegration', () => {
     });
 
     it('should show loading state during import', async () => {
-      const propsWithLoading = {
-        ...mockProps,
-        selectedCharacters: [mockCharacters[0]],
-        isLoading: true,
-      };
+      const user = userEvent.setup();
       
-      render(<ImportParticipantDialog {...propsWithLoading} />);
+      render(<ImportParticipantDialog {...mockProps} />);
 
       await waitFor(() => {
-        expect(screen.getByText('Importing...')).toBeInTheDocument();
+        expect(screen.getByText('Aragorn')).toBeInTheDocument();
       });
 
-      const importButton = screen.getByRole('button', { name: /importing/i });
-      expect(importButton).toBeDisabled();
+      // Select a character
+      const aragornCheckbox = screen.getByRole('checkbox', { name: /select aragorn/i });
+      await user.click(aragornCheckbox);
+
+      // Click import button to trigger loading state
+      const importButton = screen.getByRole('button', { name: /import selected/i });
+      await user.click(importButton);
+
+      // The component should show loading state briefly
+      await waitFor(() => {
+        expect(screen.queryByText('Importing...')).toBeInTheDocument();
+      });
     });
   });
 

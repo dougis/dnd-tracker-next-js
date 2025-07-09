@@ -8,7 +8,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Search, User, Shield, Heart, Sword, Users, CheckSquare, Square, AlertCircle } from 'lucide-react';
 import { CharacterService } from '@/lib/services/CharacterService';
@@ -317,7 +316,7 @@ export function CharacterLibraryInterface({
       </div>
 
       {/* Character List */}
-      <ScrollArea className="h-96">
+      <div className="max-h-96 overflow-y-auto">
         <div className="space-y-2">
           {characters.map((character) => (
             <Card key={character._id.toString()} className="cursor-pointer hover:bg-gray-50 transition-colors">
@@ -368,7 +367,7 @@ export function CharacterLibraryInterface({
             </Card>
           ))}
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Import Actions */}
       <div className="pt-4 border-t">
