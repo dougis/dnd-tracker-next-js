@@ -1,6 +1,6 @@
 import { EncounterServiceParticipants } from '../EncounterServiceParticipants';
 import { Encounter } from '@/lib/models/encounter';
-import { EncounterValidationError, EncounterNotFoundError, ParticipantNotFoundError } from '../EncounterServiceErrors';
+import { EncounterValidationError, ParticipantNotFoundError } from '../EncounterServiceErrors';
 import { testDataFactories } from './testDataFactories';
 
 // Mock the Encounter model
@@ -15,7 +15,7 @@ describe('EncounterServiceParticipants', () => {
   describe('reorderParticipants', () => {
     const mockEncounterId = '507f1f77bcf86cd799439011';
     const mockParticipantIds = ['507f1f77bcf86cd799439012', '507f1f77bcf86cd799439013'];
-    
+
     let mockEncounterDoc: any;
 
     beforeEach(() => {
@@ -32,7 +32,7 @@ describe('EncounterServiceParticipants', () => {
           }),
         ],
       });
-      
+
       mockEncounterDoc.save = jest.fn().mockResolvedValue(mockEncounterDoc);
     });
 
@@ -124,7 +124,7 @@ describe('EncounterServiceParticipants', () => {
 
       it('should throw ParticipantNotFoundError when participant ID does not exist in encounter', async () => {
         const nonExistentId = '507f1f77bcf86cd799439999';
-        
+
         const result = await EncounterServiceParticipants.reorderParticipants(
           mockEncounterId,
           [mockParticipantIds[0], nonExistentId]
@@ -168,7 +168,7 @@ describe('EncounterServiceParticipants', () => {
 
       it('should successfully reorder participants', async () => {
         const reorderedIds = [mockParticipantIds[1], mockParticipantIds[0]]; // Reverse order
-        
+
         const result = await EncounterServiceParticipants.reorderParticipants(
           mockEncounterId,
           reorderedIds
@@ -180,7 +180,7 @@ describe('EncounterServiceParticipants', () => {
 
       it('should update encounter participants in correct order', async () => {
         const reorderedIds = [mockParticipantIds[1], mockParticipantIds[0]]; // Reverse order
-        
+
         await EncounterServiceParticipants.reorderParticipants(
           mockEncounterId,
           reorderedIds
@@ -202,7 +202,7 @@ describe('EncounterServiceParticipants', () => {
 
       it('should maintain same order when no change is needed', async () => {
         const originalOrder = mockEncounterDoc.participants.map((p: any) => p.characterId.toString());
-        
+
         const result = await EncounterServiceParticipants.reorderParticipants(
           mockEncounterId,
           originalOrder
@@ -343,7 +343,7 @@ describe('EncounterServiceParticipants', () => {
 
       it('should build reordered participants array', () => {
         const reorderedIds = ['507f1f77bcf86cd799439013', '507f1f77bcf86cd799439012'];
-        
+
         const result = (EncounterServiceParticipants as any).buildReorderedParticipants(
           mockEncounterDoc,
           reorderedIds
@@ -356,7 +356,7 @@ describe('EncounterServiceParticipants', () => {
 
       it('should filter out null results', () => {
         const reorderedIds = ['507f1f77bcf86cd799439012', '507f1f77bcf86cd799439013'];
-        
+
         const result = (EncounterServiceParticipants as any).buildReorderedParticipants(
           mockEncounterDoc,
           reorderedIds
@@ -368,7 +368,7 @@ describe('EncounterServiceParticipants', () => {
 
       it('should maintain participant data integrity', () => {
         const reorderedIds = ['507f1f77bcf86cd799439012', '507f1f77bcf86cd799439013'];
-        
+
         const result = (EncounterServiceParticipants as any).buildReorderedParticipants(
           mockEncounterDoc,
           reorderedIds
