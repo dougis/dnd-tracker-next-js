@@ -1,7 +1,19 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { useRoundTracking } from '../useRoundTracking';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
 import { createTestEncounter, makeEncounterActive, PARTICIPANT_IDS } from '@/lib/models/encounter/__tests__/combat-test-helpers';
+import { 
+  setupRoundTrackingTest, 
+  performRoundAction, 
+  assertRoundState, 
+  assertNoUpdate, 
+  assertError, 
+  assertNoError,
+  createMockEncounterWithRound,
+  createMockEncounterWithStartTime,
+  createMockEffectsForTesting,
+  createMockTriggersForTesting
+} from './round-tracking-test-helpers';
 
 describe('useRoundTracking', () => {
   let mockEncounter: IEncounter;
@@ -14,305 +26,241 @@ describe('useRoundTracking', () => {
     mockOnUpdate = jest.fn();
   });
 
-  // Helper function for most tests - disable debouncing for predictable behavior
-  const useRoundTrackingWithDefaults = (
-    encounter = mockEncounter,
-    onUpdate = mockOnUpdate,
-    options = {}
-  ) => useRoundTracking(encounter, onUpdate, { enableDebouncing: false, ...options });
-
   describe('Round Management', () => {
     it('initializes with current round from encounter', () => {
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
-
+      const { result } = setupRoundTrackingTest();
       expect(result.current.currentRound).toBe(2);
     });
 
     it('advances to next round', () => {
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
-
-      act(() => {
-        result.current.nextRound();
-      });
-
-      expect(result.current.currentRound).toBe(3);
-      expect(mockOnUpdate).toHaveBeenCalledWith(expect.objectContaining({
-        currentRound: 3,
-      }));
+      const { result, mockOnUpdate } = setupRoundTrackingTest();
+      performRoundAction(result, 'nextRound');
+      assertRoundState(result, 3, mockOnUpdate);
     });
 
     it('goes to previous round', () => {
-      mockEncounter.combatState.currentRound = 3;
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
-
-      act(() => {
-        result.current.previousRound();
-      });
-
-      expect(result.current.currentRound).toBe(2);
-      expect(mockOnUpdate).toHaveBeenCalledWith(expect.objectContaining({
-        currentRound: 2,
-      }));
+      const encounter = createMockEncounterWithRound(3);
+      const { result, mockOnUpdate } = setupRoundTrackingTest(encounter);
+      performRoundAction(result, 'previousRound');
+      assertRoundState(result, 2, mockOnUpdate);
     });
 
     it('does not go below round 1', () => {
-      mockEncounter.combatState.currentRound = 1;
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
-
-      act(() => {
-        result.current.previousRound();
-      });
-
-      expect(result.current.currentRound).toBe(1);
-      expect(mockOnUpdate).not.toHaveBeenCalled();
+      const encounter = createMockEncounterWithRound(1);
+      const { result, mockOnUpdate } = setupRoundTrackingTest(encounter);
+      performRoundAction(result, 'previousRound');
+      assertRoundState(result, 1);
+      assertNoUpdate(mockOnUpdate);
     });
 
     it('sets specific round number', () => {
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
-
-      act(() => {
-        result.current.setRound(5);
-      });
-
-      expect(result.current.currentRound).toBe(5);
-      expect(mockOnUpdate).toHaveBeenCalledWith(expect.objectContaining({
-        currentRound: 5,
-      }));
+      const { result, mockOnUpdate } = setupRoundTrackingTest();
+      performRoundAction(result, 'setRound', 5);
+      assertRoundState(result, 5, mockOnUpdate);
     });
 
     it('validates round number when setting', () => {
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
-
-      act(() => {
-        result.current.setRound(-1);
-      });
-
-      expect(result.current.currentRound).toBe(2); // Unchanged
-      expect(result.current.error).toBe('Round must be at least 1');
-      expect(mockOnUpdate).not.toHaveBeenCalled();
+      const { result, mockOnUpdate } = setupRoundTrackingTest();
+      performRoundAction(result, 'setRound', -1);
+      assertRoundState(result, 2); // Unchanged
+      assertError(result, 'Round must be at least 1');
+      assertNoUpdate(mockOnUpdate);
     });
 
     it('clears error after successful round change', () => {
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
-
-      act(() => {
-        result.current.setRound(-1);
-      });
-
-      expect(result.current.error).toBe('Round must be at least 1');
-
-      act(() => {
-        result.current.nextRound();
-      });
-
-      expect(result.current.error).toBeNull();
+      const { result } = setupRoundTrackingTest();
+      performRoundAction(result, 'setRound', -1);
+      assertError(result, 'Round must be at least 1');
+      performRoundAction(result, 'nextRound');
+      assertNoError(result);
     });
   });
 
   describe('Duration Tracking', () => {
     it('calculates round duration', () => {
-      mockEncounter.combatState.startedAt = new Date(Date.now() - 300000); // 5 minutes ago
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
+      const encounter = createMockEncounterWithStartTime(5);
+      const { result } = setupRoundTrackingTest(encounter);
 
       expect(result.current.duration.totalSeconds).toBe(300);
       expect(result.current.duration.averageRoundDuration).toBe(150); // 300s / 2 rounds
     });
 
     it('estimates remaining time with max rounds', () => {
-      mockEncounter.combatState.startedAt = new Date(Date.now() - 300000);
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate, { maxRounds: 5 }));
+      const encounter = createMockEncounterWithStartTime(5);
+      const { result } = setupRoundTrackingTest(encounter, undefined, { maxRounds: 5 });
 
       expect(result.current.duration.estimatedRemainingTime).toBe(450); // 3 rounds * 150s/round
     });
 
     it('handles undefined start time', () => {
-      mockEncounter.combatState.startedAt = undefined;
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
+      const encounter = createTestEncounter();
+      makeEncounterActive(encounter);
+      encounter.combatState.startedAt = undefined;
+      const { result } = setupRoundTrackingTest(encounter);
 
       expect(result.current.duration.totalSeconds).toBe(0);
       expect(result.current.duration.averageRoundDuration).toBe(0);
     });
 
     it('formats duration as human readable', () => {
-      mockEncounter.combatState.startedAt = new Date(Date.now() - 3900000); // 65 minutes ago
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
+      const encounter = createMockEncounterWithStartTime(65);
+      const { result } = setupRoundTrackingTest(encounter);
 
       expect(result.current.duration.formatted).toBe('1h 5m');
     });
   });
 
   describe('Effect Management', () => {
-    const mockEffects = [
-      {
-        id: 'effect1',
-        name: 'Poison',
-        participantId: PARTICIPANT_IDS.FIRST,
-        duration: 3,
-        startRound: 1,
-        description: 'Takes 1d6 poison damage',
-      },
-      {
-        id: 'effect2',
-        name: 'Bless',
-        participantId: PARTICIPANT_IDS.SECOND,
-        duration: 10,
-        startRound: 2,
-        description: '+1d4 to attacks and saves',
-      },
-    ];
+    const createPoisonEffect = () => createMockEffectsForTesting([{
+      id: 'effect1',
+      name: 'Poison',
+      participantId: PARTICIPANT_IDS.FIRST,
+      duration: 3,
+      startRound: 1,
+      description: 'Takes 1d6 poison damage',
+    }]);
+
+    const createBlessEffect = () => createMockEffectsForTesting([{
+      id: 'effect2',
+      name: 'Bless',
+      participantId: PARTICIPANT_IDS.SECOND,
+      duration: 10,
+      startRound: 2,
+      description: '+1d4 to attacks and saves',
+    }]);
+
+    const createMultipleEffects = () => [...createPoisonEffect(), ...createBlessEffect()];
 
     it('adds new effect', () => {
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
+      const { result } = setupRoundTrackingTest();
+      const effectData = {
+        name: 'Haste',
+        participantId: PARTICIPANT_IDS.FIRST,
+        duration: 10,
+        description: 'Double speed',
+      };
 
-      act(() => {
-        result.current.addEffect({
-          name: 'Haste',
-          participantId: PARTICIPANT_IDS.FIRST,
-          duration: 10,
-          description: 'Double speed',
-        });
-      });
+      performRoundAction(result, 'addEffect', effectData);
 
       expect(result.current.effects).toHaveLength(1);
       expect(result.current.effects[0].name).toBe('Haste');
-      expect(result.current.effects[0].startRound).toBe(2); // Current round
+      expect(result.current.effects[0].startRound).toBe(2);
     });
 
     it('removes effect by id', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate, {
-        initialEffects: mockEffects
-      }));
+      const effects = createMultipleEffects();
+      const { result } = setupRoundTrackingTest(undefined, undefined, { initialEffects: effects });
 
-      act(() => {
-        result.current.removeEffect('effect1');
-      });
+      performRoundAction(result, 'removeEffect', 'effect1');
 
       expect(result.current.effects).toHaveLength(1);
       expect(result.current.effects[0].id).toBe('effect2');
     });
 
     it('calculates remaining duration for effects', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate, {
-        initialEffects: mockEffects
-      }));
+      const effects = createMultipleEffects();
+      const { result } = setupRoundTrackingTest(undefined, undefined, { initialEffects: effects });
 
       const poisonEffect = result.current.effects.find(e => e.id === 'effect1');
-      expect(result.current.getEffectRemainingDuration(poisonEffect!)).toBe(2); // 3 - (2-1)
+      expect(result.current.getEffectRemainingDuration(poisonEffect!)).toBe(2);
 
       const blessEffect = result.current.effects.find(e => e.id === 'effect2');
-      expect(result.current.getEffectRemainingDuration(blessEffect!)).toBe(10); // 10 - (2-2)
+      expect(result.current.getEffectRemainingDuration(blessEffect!)).toBe(10);
     });
 
     it('identifies expiring effects', () => {
-      const expiringEffects = [
-        {
-          id: 'effect1',
-          name: 'Poison',
-          participantId: PARTICIPANT_IDS.FIRST,
-          duration: 2,
-          startRound: 1,
-          description: 'Takes 1d6 poison damage',
-        },
-      ];
+      const expiringEffects = createMockEffectsForTesting([{
+        id: 'effect1',
+        name: 'Poison',
+        participantId: PARTICIPANT_IDS.FIRST,
+        duration: 2,
+        startRound: 1,
+        description: 'Takes 1d6 poison damage',
+      }]);
 
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate, {
-        initialEffects: expiringEffects
-      }));
+      const { result } = setupRoundTrackingTest(undefined, undefined, { initialEffects: expiringEffects });
 
       expect(result.current.getExpiringEffects()).toHaveLength(1);
       expect(result.current.getExpiringEffects()[0].id).toBe('effect1');
     });
 
     it('automatically removes expired effects on round change', () => {
-      const expiredEffects = [
-        {
-          id: 'effect1',
-          name: 'Poison',
-          participantId: PARTICIPANT_IDS.FIRST,
-          duration: 1,
-          startRound: 1,
-          description: 'Takes 1d6 poison damage',
-        },
-      ];
+      const expiredEffects = createMockEffectsForTesting([{
+        id: 'effect1',
+        name: 'Poison',
+        participantId: PARTICIPANT_IDS.FIRST,
+        duration: 1,
+        startRound: 1,
+        description: 'Takes 1d6 poison damage',
+      }]);
 
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate, {
-        initialEffects: expiredEffects
-      }));
+      const { result } = setupRoundTrackingTest(undefined, undefined, { initialEffects: expiredEffects });
 
-      act(() => {
-        result.current.nextRound();
-      });
+      performRoundAction(result, 'nextRound');
 
       expect(result.current.effects).toHaveLength(0);
     });
 
     it('calls onEffectExpiry callback when effects expire', () => {
       const onEffectExpiry = jest.fn();
-      const expiredEffects = [
-        {
-          id: 'effect1',
-          name: 'Poison',
-          participantId: PARTICIPANT_IDS.FIRST,
-          duration: 1,
-          startRound: 1,
-          description: 'Takes 1d6 poison damage',
-        },
-      ];
+      const expiredEffects = createMockEffectsForTesting([{
+        id: 'effect1',
+        name: 'Poison',
+        participantId: PARTICIPANT_IDS.FIRST,
+        duration: 1,
+        startRound: 1,
+        description: 'Takes 1d6 poison damage',
+      }]);
 
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate, {
+      const { result } = setupRoundTrackingTest(undefined, undefined, {
         initialEffects: expiredEffects,
         onEffectExpiry
-      }));
-
-      act(() => {
-        result.current.nextRound();
       });
+
+      performRoundAction(result, 'nextRound');
 
       expect(onEffectExpiry).toHaveBeenCalledWith(['effect1']);
     });
   });
 
   describe('Trigger Management', () => {
-    const mockTriggers = [
-      {
-        id: 'trigger1',
-        name: 'Lair Action',
-        triggerRound: 3,
-        description: 'The dragon uses its lair action',
-        isActive: true,
-      },
-      {
-        id: 'trigger2',
-        name: 'Reinforcements',
-        triggerRound: 5,
-        description: 'Orc reinforcements arrive',
-        isActive: true,
-      },
-    ];
+    const createLairTrigger = () => createMockTriggersForTesting([{
+      id: 'trigger1',
+      name: 'Lair Action',
+      triggerRound: 3,
+      description: 'The dragon uses its lair action',
+      isActive: true,
+    }]);
+
+    const createReinforcementTrigger = () => createMockTriggersForTesting([{
+      id: 'trigger2',
+      name: 'Reinforcements',
+      triggerRound: 5,
+      description: 'Orc reinforcements arrive',
+      isActive: true,
+    }]);
+
+    const createMultipleTriggers = () => [...createLairTrigger(), ...createReinforcementTrigger()];
 
     it('adds new trigger', () => {
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
+      const { result } = setupRoundTrackingTest();
+      const triggerData = {
+        name: 'Trap Activation',
+        triggerRound: 4,
+        description: 'The floor collapses',
+      };
 
-      act(() => {
-        result.current.addTrigger({
-          name: 'Trap Activation',
-          triggerRound: 4,
-          description: 'The floor collapses',
-        });
-      });
+      performRoundAction(result, 'addTrigger', triggerData);
 
       expect(result.current.triggers).toHaveLength(1);
       expect(result.current.triggers[0].name).toBe('Trap Activation');
     });
 
     it('activates trigger', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate, {
-        initialTriggers: mockTriggers
-      }));
+      const triggers = createMultipleTriggers();
+      const { result } = setupRoundTrackingTest(undefined, undefined, { initialTriggers: triggers });
 
-      act(() => {
-        result.current.activateTrigger('trigger1');
-      });
+      performRoundAction(result, 'activateTrigger', 'trigger1');
 
       const trigger = result.current.triggers.find(t => t.id === 'trigger1');
       expect(trigger?.isActive).toBe(false);
@@ -320,10 +268,9 @@ describe('useRoundTracking', () => {
     });
 
     it('identifies due triggers', () => {
-      mockEncounter.combatState.currentRound = 3;
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate, {
-        initialTriggers: mockTriggers
-      }));
+      const encounter = createMockEncounterWithRound(3);
+      const triggers = createMultipleTriggers();
+      const { result } = setupRoundTrackingTest(encounter, undefined, { initialTriggers: triggers });
 
       const dueTriggers = result.current.getDueTriggers();
       expect(dueTriggers).toHaveLength(1);
@@ -331,9 +278,8 @@ describe('useRoundTracking', () => {
     });
 
     it('gets upcoming triggers', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate, {
-        initialTriggers: mockTriggers
-      }));
+      const triggers = createMultipleTriggers();
+      const { result } = setupRoundTrackingTest(undefined, undefined, { initialTriggers: triggers });
 
       const upcomingTriggers = result.current.getUpcomingTriggers();
       expect(upcomingTriggers).toHaveLength(2);
@@ -342,26 +288,23 @@ describe('useRoundTracking', () => {
 
     it('calls onTriggerActivation callback', () => {
       const onTriggerActivation = jest.fn();
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate, {
-        initialTriggers: mockTriggers,
+      const triggers = createMultipleTriggers();
+      const { result } = setupRoundTrackingTest(undefined, undefined, {
+        initialTriggers: triggers,
         onTriggerActivation
-      }));
-
-      act(() => {
-        result.current.activateTrigger('trigger1');
       });
 
-      expect(onTriggerActivation).toHaveBeenCalledWith('trigger1', mockTriggers[0]);
+      performRoundAction(result, 'activateTrigger', 'trigger1');
+
+      expect(onTriggerActivation).toHaveBeenCalledWith('trigger1', triggers[0]);
     });
   });
 
   describe('History Management', () => {
     it('records round changes in history', () => {
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
+      const { result } = setupRoundTrackingTest();
 
-      act(() => {
-        result.current.nextRound();
-      });
+      performRoundAction(result, 'nextRound');
 
       expect(result.current.history).toHaveLength(1);
       expect(result.current.history[0].round).toBe(3);
@@ -369,11 +312,9 @@ describe('useRoundTracking', () => {
     });
 
     it('adds custom events to history', () => {
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
+      const { result } = setupRoundTrackingTest();
 
-      act(() => {
-        result.current.addHistoryEvent('Wizard casts Fireball');
-      });
+      performRoundAction(result, 'addHistoryEvent', 'Wizard casts Fireball');
 
       expect(result.current.history).toHaveLength(1);
       expect(result.current.history[0].round).toBe(2);
@@ -381,29 +322,25 @@ describe('useRoundTracking', () => {
     });
 
     it('groups events by round', () => {
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
+      const { result } = setupRoundTrackingTest();
 
-      act(() => {
-        result.current.addHistoryEvent('First event');
-        result.current.addHistoryEvent('Second event');
-        result.current.nextRound();
-        result.current.addHistoryEvent('Third event');
-      });
+      performRoundAction(result, 'addHistoryEvent', 'First event');
+      performRoundAction(result, 'addHistoryEvent', 'Second event');
+      performRoundAction(result, 'nextRound');
+      performRoundAction(result, 'addHistoryEvent', 'Third event');
 
       expect(result.current.history).toHaveLength(2);
       expect(result.current.history[0].round).toBe(2);
       expect(result.current.history[0].events).toHaveLength(2);
       expect(result.current.history[1].round).toBe(3);
-      expect(result.current.history[1].events).toHaveLength(2); // 'Third event' + 'Round started'
+      expect(result.current.history[1].events).toHaveLength(2);
     });
 
     it('clears history when requested', () => {
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
+      const { result } = setupRoundTrackingTest();
 
-      act(() => {
-        result.current.addHistoryEvent('Test event');
-        result.current.clearHistory();
-      });
+      performRoundAction(result, 'addHistoryEvent', 'Test event');
+      performRoundAction(result, 'clearHistory');
 
       expect(result.current.history).toHaveLength(0);
     });
@@ -411,34 +348,31 @@ describe('useRoundTracking', () => {
 
   describe('Session Summary', () => {
     it('calculates session statistics', () => {
-      mockEncounter.combatState.startedAt = new Date(Date.now() - 600000); // 10 minutes ago
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
+      const encounter = createMockEncounterWithStartTime(10);
+      const { result } = setupRoundTrackingTest(encounter);
 
-      act(() => {
-        result.current.addHistoryEvent('Attack action');
-        result.current.addHistoryEvent('Spell cast');
-        result.current.nextRound();
-        result.current.addHistoryEvent('Healing potion');
-      });
+      performRoundAction(result, 'addHistoryEvent', 'Attack action');
+      performRoundAction(result, 'addHistoryEvent', 'Spell cast');
+      performRoundAction(result, 'nextRound');
+      performRoundAction(result, 'addHistoryEvent', 'Healing potion');
 
       const summary = result.current.getSessionSummary();
       expect(summary.totalRounds).toBe(3);
       expect(summary.totalDuration).toBe(600);
-      expect(summary.totalActions).toBe(3); // Custom events count as actions
+      expect(summary.totalActions).toBe(3);
     });
 
     it('exports round data', () => {
-      const { result } = renderHook(() => useRoundTrackingWithDefaults());
+      const { result } = setupRoundTrackingTest();
+      const effectData = {
+        name: 'Test Effect',
+        participantId: PARTICIPANT_IDS.FIRST,
+        duration: 5,
+        description: 'Test description',
+      };
 
-      act(() => {
-        result.current.addHistoryEvent('Test event');
-        result.current.addEffect({
-          name: 'Test Effect',
-          participantId: PARTICIPANT_IDS.FIRST,
-          duration: 5,
-          description: 'Test description',
-        });
-      });
+      performRoundAction(result, 'addHistoryEvent', 'Test event');
+      performRoundAction(result, 'addEffect', effectData);
 
       const exportData = result.current.exportRoundData();
 
@@ -452,18 +386,13 @@ describe('useRoundTracking', () => {
   describe('Performance and Memory', () => {
     it('debounces rapid round changes', () => {
       jest.useFakeTimers();
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate, { enableDebouncing: true }));
+      const { result, mockOnUpdate } = setupRoundTrackingTest(undefined, undefined, { enableDebouncing: true });
 
-      act(() => {
-        result.current.nextRound();
-        result.current.nextRound();
-        result.current.nextRound();
-      });
+      performRoundAction(result, 'nextRound');
+      performRoundAction(result, 'nextRound');
+      performRoundAction(result, 'nextRound');
 
-      // Should only call update once after debounce
-      act(() => {
-        jest.advanceTimersByTime(300);
-      });
+      jest.advanceTimersByTime(300);
 
       expect(mockOnUpdate).toHaveBeenCalledTimes(1);
 
@@ -471,22 +400,18 @@ describe('useRoundTracking', () => {
     });
 
     it('limits history size to prevent memory issues', () => {
-      const { result } = renderHook(() => useRoundTracking(mockEncounter, mockOnUpdate, {
-        maxHistoryRounds: 2
-      }));
+      const { result } = setupRoundTrackingTest(undefined, undefined, { maxHistoryRounds: 2 });
 
-      act(() => {
-        for (let i = 0; i < 5; i++) {
-          result.current.nextRound();
-        }
-      });
+      for (let i = 0; i < 5; i++) {
+        performRoundAction(result, 'nextRound');
+      }
 
       expect(result.current.history).toHaveLength(2);
     });
 
     it('cleans up timers on unmount', () => {
       const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
-      const { unmount } = renderHook(() => useRoundTrackingWithDefaults());
+      const { unmount } = setupRoundTrackingTest();
 
       unmount();
 
@@ -497,7 +422,7 @@ describe('useRoundTracking', () => {
 
   describe('Error Handling', () => {
     it('handles invalid encounter', () => {
-      const { result } = renderHook(() => useRoundTracking(null as any, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTracking(null as any, jest.fn()));
 
       expect(result.current.currentRound).toBe(1);
       expect(result.current.error).toBe('Invalid encounter data');
@@ -505,7 +430,7 @@ describe('useRoundTracking', () => {
 
     it('handles missing combat state', () => {
       const invalidEncounter = { ...mockEncounter, combatState: null };
-      const { result } = renderHook(() => useRoundTracking(invalidEncounter as any, mockOnUpdate));
+      const { result } = renderHook(() => useRoundTracking(invalidEncounter as any, jest.fn()));
 
       expect(result.current.currentRound).toBe(1);
       expect(result.current.error).toBe('Invalid combat state');
@@ -517,17 +442,11 @@ describe('useRoundTracking', () => {
         throw new Error('Update failed');
       });
 
-      // Enable debouncing for this test so the error handling works as expected
       const { result } = renderHook(() => useRoundTracking(mockEncounter, errorCallback, { enableDebouncing: true }));
 
-      act(() => {
-        result.current.nextRound();
-      });
+      performRoundAction(result, 'nextRound');
 
-      // Advance timers to trigger the debounced update
-      act(() => {
-        jest.advanceTimersByTime(300);
-      });
+      jest.advanceTimersByTime(300);
 
       expect(result.current.error).toBe('Failed to update encounter');
 

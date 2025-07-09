@@ -1,6 +1,8 @@
 import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
-import { createTestEncounter, PARTICIPANT_IDS } from '@/lib/models/encounter/__tests__/combat-test-helpers';
+import { createTestEncounter, makeEncounterActive, PARTICIPANT_IDS } from '@/lib/models/encounter/__tests__/combat-test-helpers';
+import { useRoundTracking } from '../useRoundTracking';
 
 /**
  * Test helper utilities for round tracking components
@@ -388,4 +390,83 @@ export function createScenarioEncounter(scenario: RoundTestScenario): IEncounter
 
 export function getScenario(name: keyof typeof TEST_SCENARIOS): RoundTestScenario {
   return TEST_SCENARIOS[name];
+}
+
+// useRoundTracking specific test helpers to reduce duplication
+export function setupRoundTrackingTest(
+  encounter?: IEncounter,
+  onUpdate?: jest.Mock,
+  options: any = {}
+) {
+  const mockEncounter = encounter || (() => {
+    const enc = createTestEncounter();
+    makeEncounterActive(enc);
+    return enc;
+  })();
+  const mockOnUpdate = onUpdate || jest.fn();
+  
+  const useRoundTrackingWithDefaults = () => 
+    useRoundTracking(mockEncounter, mockOnUpdate, { enableDebouncing: false, ...options });
+  
+  return {
+    ...renderHook(() => useRoundTrackingWithDefaults()),
+    mockEncounter,
+    mockOnUpdate
+  };
+}
+
+export function performRoundAction(result: any, action: string, ...args: any[]) {
+  act(() => {
+    result.current[action](...args);
+  });
+}
+
+export function assertRoundState(result: any, expectedRound: number, mockOnUpdate?: jest.Mock) {
+  expect(result.current.currentRound).toBe(expectedRound);
+  if (mockOnUpdate) {
+    expect(mockOnUpdate).toHaveBeenCalledWith(expect.objectContaining({
+      currentRound: expectedRound,
+    }));
+  }
+}
+
+export function assertNoUpdate(mockOnUpdate: jest.Mock) {
+  expect(mockOnUpdate).not.toHaveBeenCalled();
+}
+
+export function assertError(result: any, expectedError: string) {
+  expect(result.current.error).toBe(expectedError);
+}
+
+export function assertNoError(result: any) {
+  expect(result.current.error).toBeNull();
+}
+
+export function createMockEncounterWithStartTime(minutesAgo: number): IEncounter {
+  const encounter = createTestEncounter();
+  encounter.combatState.startedAt = new Date(Date.now() - minutesAgo * 60000);
+  return encounter;
+}
+
+export function createMockEffectsForTesting(overrides: Partial<MockEffect>[] = []): MockEffect[] {
+  return overrides.map((override, index) => ({
+    id: `effect${index + 1}`,
+    name: 'Test Effect',
+    participantId: PARTICIPANT_IDS.FIRST,
+    duration: 3,
+    startRound: 1,
+    description: 'Test description',
+    ...override
+  }));
+}
+
+export function createMockTriggersForTesting(overrides: Partial<MockTrigger>[] = []): MockTrigger[] {
+  return overrides.map((override, index) => ({
+    id: `trigger${index + 1}`,
+    name: 'Test Trigger',
+    triggerRound: 3,
+    description: 'Test description',
+    isActive: true,
+    ...override
+  }));
 }
