@@ -117,6 +117,8 @@ export function calculateAverageRoundDuration(
   }
 
   const elapsedTime = Date.now() - startTime.getTime();
+  // Average duration is total elapsed time divided by current round
+  // This gives us the average time per round including the current round
   return Math.floor(elapsedTime / 1000 / currentRound);
 }
 

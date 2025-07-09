@@ -1,38 +1,39 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { BasicInfoSection } from '../../sections/BasicInfoSection';
+import {
+  setupSectionTest,
+  expectFieldToBeRequired,
+  expectBasicInfoFieldsToBeRendered
+} from '../utils';
 
 describe('BasicInfoSection', () => {
-  const mockOnChange = jest.fn();
-  const defaultProps = {
+  const { defaultSectionProps } = setupSectionTest();
+
+  const testProps = {
+    ...defaultSectionProps,
     value: {
       name: '',
       type: 'pc' as const,
       race: 'human' as const,
       customRace: '',
     },
-    onChange: mockOnChange,
-    errors: {},
   };
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
 
   describe('Character Name Field', () => {
     it('renders character name input with proper label', () => {
-      render(<BasicInfoSection {...defaultProps} />);
+      render(<BasicInfoSection {...testProps} />);
 
       const nameField = screen.getByLabelText(/character name/i);
       expect(nameField).toBeInTheDocument();
-      expect(nameField).toHaveAttribute('aria-required', 'true');
+      expectFieldToBeRequired(nameField);
       expect(nameField).toHaveAttribute('maxlength', '100');
     });
 
     it('updates character name value', () => {
       const mockOnValueChange = jest.fn();
       const TestComponent = () => {
-        const [value, setValue] = React.useState(defaultProps.value);
+        const [value, setValue] = React.useState(testProps.value);
 
         const handleChange = (newValue: any) => {
           setValue(newValue);
@@ -45,15 +46,20 @@ describe('BasicInfoSection', () => {
       render(<TestComponent />);
 
       // Test by directly calling the onChange with expected data
-      mockOnValueChange({ ...defaultProps.value, name: 'Test Character' });
+      mockOnValueChange({ ...testProps.value, name: 'Test Character' });
       expect(mockOnValueChange).toHaveBeenCalledWith(expect.objectContaining({
         name: 'Test Character',
       }));
     });
 
+    it('renders all basic info fields using utility', () => {
+      render(<BasicInfoSection {...testProps} />);
+      expectBasicInfoFieldsToBeRendered();
+    });
+
     it('shows validation error for character name', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         errors: { name: 'Character name is required' },
       };
       render(<BasicInfoSection {...props} />);
@@ -64,8 +70,8 @@ describe('BasicInfoSection', () => {
 
     it('shows character count indicator', () => {
       const props = {
-        ...defaultProps,
-        value: { ...defaultProps.value, name: 'Test' },
+        ...testProps,
+        value: { ...testProps.value, name: 'Test' },
       };
       render(<BasicInfoSection {...props} />);
 
@@ -84,7 +90,7 @@ describe('BasicInfoSection', () => {
 
   describe('Character Type Selection', () => {
     it('renders character type select field', () => {
-      render(<BasicInfoSection {...defaultProps} />);
+      render(<BasicInfoSection {...testProps} />);
 
       const typeField = screen.getByLabelText(/character type/i);
       expect(typeField).toBeInTheDocument();
@@ -92,14 +98,14 @@ describe('BasicInfoSection', () => {
     });
 
     it('shows PC selected by default', () => {
-      render(<BasicInfoSection {...defaultProps} />);
+      render(<BasicInfoSection {...testProps} />);
       expect(screen.getByText('Player Character')).toBeInTheDocument();
     });
 
     it('calls onChange when character type value changes', () => {
       const mockOnValueChange = jest.fn();
       const TestComponent = () => {
-        const [value, setValue] = React.useState(defaultProps.value);
+        const [value, setValue] = React.useState(testProps.value);
 
         const handleChange = (newValue: any) => {
           setValue(newValue);
@@ -112,7 +118,7 @@ describe('BasicInfoSection', () => {
       render(<TestComponent />);
 
       // Test by directly calling the onChange with expected data
-      mockOnValueChange({ ...defaultProps.value, type: 'npc' });
+      mockOnValueChange({ ...testProps.value, type: 'npc' });
       expect(mockOnValueChange).toHaveBeenCalledWith(expect.objectContaining({
         type: 'npc',
       }));
@@ -120,7 +126,7 @@ describe('BasicInfoSection', () => {
 
     it('shows validation error for character type', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         errors: { type: 'Character type is required' },
       };
       render(<BasicInfoSection {...props} />);
@@ -131,7 +137,7 @@ describe('BasicInfoSection', () => {
 
   describe('Race Selection', () => {
     it('renders race select field', () => {
-      render(<BasicInfoSection {...defaultProps} />);
+      render(<BasicInfoSection {...testProps} />);
 
       const raceField = screen.getByLabelText(/race/i);
       expect(raceField).toBeInTheDocument();
@@ -140,8 +146,8 @@ describe('BasicInfoSection', () => {
 
     it('displays current race value', () => {
       const props = {
-        ...defaultProps,
-        value: { ...defaultProps.value, race: 'elf' },
+        ...testProps,
+        value: { ...testProps.value, race: 'elf' },
       };
       render(<BasicInfoSection {...props} />);
 
@@ -151,7 +157,7 @@ describe('BasicInfoSection', () => {
     it('calls onChange when race value changes', () => {
       const mockOnValueChange = jest.fn();
       const TestComponent = () => {
-        const [value, setValue] = React.useState(defaultProps.value);
+        const [value, setValue] = React.useState(testProps.value);
 
         const handleChange = (newValue: any) => {
           setValue(newValue);
@@ -164,7 +170,7 @@ describe('BasicInfoSection', () => {
       render(<TestComponent />);
 
       // Test by directly calling the onChange with expected data
-      mockOnValueChange({ ...defaultProps.value, race: 'elf' });
+      mockOnValueChange({ ...testProps.value, race: 'elf' });
       expect(mockOnValueChange).toHaveBeenCalledWith(expect.objectContaining({
         race: 'elf',
       }));
@@ -172,8 +178,8 @@ describe('BasicInfoSection', () => {
 
     it('shows custom race input when custom is selected', () => {
       const props = {
-        ...defaultProps,
-        value: { ...defaultProps.value, race: 'custom' as const },
+        ...testProps,
+        value: { ...testProps.value, race: 'custom' as const },
       };
       render(<BasicInfoSection {...props} />);
 
@@ -187,7 +193,7 @@ describe('BasicInfoSection', () => {
       const mockOnValueChange = jest.fn();
       const TestComponent = () => {
         const [value, setValue] = React.useState({
-          ...defaultProps.value,
+          ...testProps.value,
           race: 'custom' as const,
         });
 
@@ -202,7 +208,7 @@ describe('BasicInfoSection', () => {
       render(<TestComponent />);
 
       // Test by directly calling the onChange with expected data
-      mockOnValueChange({ ...defaultProps.value, race: 'custom', customRace: 'Test Race' });
+      mockOnValueChange({ ...testProps.value, race: 'custom', customRace: 'Test Race' });
       expect(mockOnValueChange).toHaveBeenCalledWith(expect.objectContaining({
         customRace: 'Test Race',
       }));
@@ -210,7 +216,7 @@ describe('BasicInfoSection', () => {
 
     it('shows validation error for race', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         errors: { race: 'Race is required' },
       };
       render(<BasicInfoSection {...props} />);
@@ -220,8 +226,8 @@ describe('BasicInfoSection', () => {
 
     it('shows validation error for custom race', () => {
       const props = {
-        ...defaultProps,
-        value: { ...defaultProps.value, race: 'custom' as const },
+        ...testProps,
+        value: { ...testProps.value, race: 'custom' as const },
         errors: { customRace: 'Custom race name is required' },
       };
       render(<BasicInfoSection {...props} />);
@@ -231,8 +237,8 @@ describe('BasicInfoSection', () => {
 
     it('shows custom race character count', () => {
       const props = {
-        ...defaultProps,
-        value: { ...defaultProps.value, race: 'custom' as const, customRace: 'Test' },
+        ...testProps,
+        value: { ...testProps.value, race: 'custom' as const, customRace: 'Test' },
       };
       render(<BasicInfoSection {...props} />);
 
@@ -251,21 +257,21 @@ describe('BasicInfoSection', () => {
 
   describe('Section Layout', () => {
     it('renders section header with proper title', () => {
-      render(<BasicInfoSection {...defaultProps} />);
+      render(<BasicInfoSection {...testProps} />);
 
       expect(screen.getByText('Basic Information')).toBeInTheDocument();
       expect(screen.getByText(/character's fundamental details/i)).toBeInTheDocument();
     });
 
     it('applies proper responsive layout classes', () => {
-      render(<BasicInfoSection {...defaultProps} />);
+      render(<BasicInfoSection {...testProps} />);
 
       const section = screen.getByTestId('basic-info-section');
       expect(section).toHaveClass('space-y-4');
     });
 
     it('groups name and type fields together', () => {
-      render(<BasicInfoSection {...defaultProps} />);
+      render(<BasicInfoSection {...testProps} />);
 
       const nameField = screen.getByLabelText(/character name/i);
       const typeField = screen.getByLabelText(/character type/i);
@@ -279,21 +285,21 @@ describe('BasicInfoSection', () => {
 
   describe('Accessibility', () => {
     it('has proper section heading structure', () => {
-      render(<BasicInfoSection {...defaultProps} />);
+      render(<BasicInfoSection {...testProps} />);
 
       const heading = screen.getByRole('heading', { name: /basic information/i });
       expect(heading).toHaveAttribute('aria-level', '3');
     });
 
     it('associates helper text with form fields', () => {
-      render(<BasicInfoSection {...defaultProps} />);
+      render(<BasicInfoSection {...testProps} />);
 
       const nameField = screen.getByLabelText(/character name/i);
       expect(nameField).toHaveAttribute('aria-describedby');
     });
 
     it('links helper text to field with proper ID relationship', () => {
-      render(<BasicInfoSection {...defaultProps} />);
+      render(<BasicInfoSection {...testProps} />);
 
       const nameField = screen.getByLabelText(/character name/i);
       const describedBy = nameField.getAttribute('aria-describedby');
@@ -305,7 +311,7 @@ describe('BasicInfoSection', () => {
 
     it('announces validation errors to screen readers', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         errors: { name: 'Character name is required' },
       };
       render(<BasicInfoSection {...props} />);

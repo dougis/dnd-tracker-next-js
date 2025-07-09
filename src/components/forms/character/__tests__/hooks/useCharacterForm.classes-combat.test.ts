@@ -11,8 +11,8 @@ describe('useCharacterForm - Classes and Combat Stats', () => {
       const { result } = renderHook(() => useCharacterForm());
 
       const newClasses = [
-        { className: 'wizard' as const, level: 3 },
-        { className: 'rogue' as const, level: 2 },
+        { class: 'wizard' as const, level: 3, hitDie: 6 },
+        { class: 'rogue' as const, level: 2, hitDie: 8 },
       ];
 
       act(() => {
@@ -27,7 +27,7 @@ describe('useCharacterForm - Classes and Combat Stats', () => {
       const { result } = renderHook(() => useCharacterForm());
 
       const singleClass = [
-        { className: 'paladin' as const, level: 5 },
+        { class: 'paladin' as const, level: 5, hitDie: 10 },
       ];
 
       act(() => {
@@ -41,7 +41,7 @@ describe('useCharacterForm - Classes and Combat Stats', () => {
       const { result } = renderHook(() => useCharacterForm());
 
       const invalidClasses = [
-        { className: 'fighter' as const, level: 0 }, // Invalid: too low
+        { class: 'fighter' as const, level: 0, hitDie: 10 }, // Invalid: too low
       ];
 
       act(() => {

@@ -1,30 +1,39 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NPCCreationForm } from '../NPCCreationForm';
+import { setupNPCFormTest } from './setup/test-setup';
+
+// Mock the services
+jest.mock('@/lib/services/CharacterService', () => ({
+  CharacterService: {
+    createCharacter: jest.fn(),
+  },
+}));
+
+jest.mock('@/lib/services/NPCTemplateService', () => ({
+  NPCTemplateService: {
+    getTemplates: jest.fn(),
+  },
+}));
+
 import { CharacterService } from '@/lib/services/CharacterService';
 import { NPCTemplateService } from '@/lib/services/NPCTemplateService';
 
-// Mock the services
-jest.mock('@/lib/services/CharacterService');
-jest.mock('@/lib/services/NPCTemplateService');
-const mockCharacterService = CharacterService as jest.Mocked<typeof CharacterService>;
-const mockNPCTemplateService = NPCTemplateService as jest.Mocked<typeof NPCTemplateService>;
-
-// Mock next/navigation
-const mockPush = jest.fn();
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
-}));
-
 describe('NPCCreationForm', () => {
-  const mockOnSuccess = jest.fn();
-  const mockOnCancel = jest.fn();
+  setupNPCFormTest();
+  const mockCharacterService = CharacterService as jest.Mocked<typeof CharacterService>;
+  const mockNPCTemplateService = NPCTemplateService as jest.Mocked<typeof NPCTemplateService>;
+
   const defaultProps = {
     ownerId: 'user123',
-    onSuccess: mockOnSuccess,
-    onCancel: mockOnCancel,
+    onSuccess: jest.fn(),
+    onError: jest.fn(),
+    onCancel: jest.fn(),
+    isOpen: false,
+  };
+  const testProps = {
+    ...defaultProps,
+    ownerId: 'user123',
     isOpen: true,
   };
 
@@ -83,7 +92,7 @@ describe('NPCCreationForm', () => {
 
   describe('Basic Rendering', () => {
     it('renders the NPC creation dialog when open', () => {
-      render(<NPCCreationForm {...defaultProps} />);
+      render(<NPCCreationForm {...testProps} />);
 
       expect(screen.getByRole('dialog')).toBeInTheDocument();
       expect(screen.getByText('Create NPC')).toBeInTheDocument();
@@ -97,7 +106,7 @@ describe('NPCCreationForm', () => {
     });
 
     it('renders tab navigation', () => {
-      render(<NPCCreationForm {...defaultProps} />);
+      render(<NPCCreationForm {...testProps} />);
 
       expect(screen.getByRole('tab', { name: 'Templates' })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: 'Basic Info' })).toBeInTheDocument();
@@ -108,14 +117,14 @@ describe('NPCCreationForm', () => {
 
   describe('Template Tab', () => {
     it('shows template selection by default', () => {
-      render(<NPCCreationForm {...defaultProps} />);
+      render(<NPCCreationForm {...testProps} />);
 
       expect(screen.getByText('Search Templates')).toBeInTheDocument();
       expect(screen.getByText('Filter by Category')).toBeInTheDocument();
     });
 
     it('displays available templates', async () => {
-      render(<NPCCreationForm {...defaultProps} />);
+      render(<NPCCreationForm {...testProps} />);
 
       await waitFor(() => {
         expect(screen.getByText('Guard')).toBeInTheDocument();
@@ -123,7 +132,7 @@ describe('NPCCreationForm', () => {
     });
 
     it('allows template search', async () => {
-      render(<NPCCreationForm {...defaultProps} />);
+      render(<NPCCreationForm {...testProps} />);
 
       const searchInput = screen.getByPlaceholderText('Search by name or type...');
       await userEvent.type(searchInput, 'Guard');
@@ -134,7 +143,7 @@ describe('NPCCreationForm', () => {
 
   describe('Basic Info Tab', () => {
     it('shows basic info form when tab is clicked', async () => {
-      render(<NPCCreationForm {...defaultProps} />);
+      render(<NPCCreationForm {...testProps} />);
 
       const basicTab = screen.getByRole('tab', { name: 'Basic Info' });
       await userEvent.click(basicTab);
@@ -147,7 +156,7 @@ describe('NPCCreationForm', () => {
 
   describe('Stats Tab', () => {
     it('shows stats form when tab is clicked', async () => {
-      render(<NPCCreationForm {...defaultProps} />);
+      render(<NPCCreationForm {...testProps} />);
 
       const statsTab = screen.getByRole('tab', { name: 'Stats & Combat' });
       await userEvent.click(statsTab);
@@ -160,7 +169,7 @@ describe('NPCCreationForm', () => {
 
   describe('Details Tab', () => {
     it('shows details form when tab is clicked', async () => {
-      render(<NPCCreationForm {...defaultProps} />);
+      render(<NPCCreationForm {...testProps} />);
 
       const detailsTab = screen.getByRole('tab', { name: 'Details & Behavior' });
       await userEvent.click(detailsTab);
@@ -173,7 +182,7 @@ describe('NPCCreationForm', () => {
 
   describe('Form Actions', () => {
     it('calls onCancel when cancel button is clicked', async () => {
-      render(<NPCCreationForm {...defaultProps} />);
+      render(<NPCCreationForm {...testProps} />);
 
       // Navigate to details tab where cancel button is located
       const detailsTab = screen.getByRole('tab', { name: 'Details & Behavior' });
@@ -182,11 +191,11 @@ describe('NPCCreationForm', () => {
       const cancelButton = screen.getByRole('button', { name: /cancel/i });
       await userEvent.click(cancelButton);
 
-      expect(mockOnCancel).toHaveBeenCalled();
+      expect(defaultProps.onCancel).toHaveBeenCalled();
     });
 
     it('handles form submission', async () => {
-      render(<NPCCreationForm {...defaultProps} />);
+      render(<NPCCreationForm {...testProps} />);
 
       // Fill out basic info
       const basicTab = screen.getByRole('tab', { name: 'Basic Info' });
@@ -210,7 +219,7 @@ describe('NPCCreationForm', () => {
 
   describe('Service Integration', () => {
     it('loads templates on mount', async () => {
-      render(<NPCCreationForm {...defaultProps} />);
+      render(<NPCCreationForm {...testProps} />);
 
       await waitFor(() => {
         expect(mockNPCTemplateService.getTemplates).toHaveBeenCalled();
@@ -223,7 +232,7 @@ describe('NPCCreationForm', () => {
         error: { code: 'ERROR', message: 'Failed to load templates' },
       });
 
-      render(<NPCCreationForm {...defaultProps} />);
+      render(<NPCCreationForm {...testProps} />);
 
       // Should not crash and should still render the form
       expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -235,7 +244,7 @@ describe('NPCCreationForm', () => {
         error: { code: 'ERROR', message: 'Failed to create character' },
       });
 
-      render(<NPCCreationForm {...defaultProps} />);
+      render(<NPCCreationForm {...testProps} />);
 
       // Fill out basic info
       const basicTab = screen.getByRole('tab', { name: 'Basic Info' });

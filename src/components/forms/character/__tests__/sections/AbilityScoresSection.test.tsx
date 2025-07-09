@@ -1,25 +1,15 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AbilityScoresSection } from '../../sections/AbilityScoresSection';
+import { DEFAULT_ABILITY_SCORES } from '../../constants';
+import { setupSectionTest, expectAbilityScoreFieldsToBeRendered } from '../utils';
 
 describe('AbilityScoresSection', () => {
-  const mockOnChange = jest.fn();
-  const defaultProps = {
-    value: {
-      strength: 10,
-      dexterity: 10,
-      constitution: 10,
-      intelligence: 10,
-      wisdom: 10,
-      charisma: 10,
-    },
-    onChange: mockOnChange,
-    errors: {},
+  const { defaultSectionProps } = setupSectionTest();
+  const testProps = {
+    ...defaultSectionProps,
+    value: DEFAULT_ABILITY_SCORES,
   };
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
 
   describe('Ability Score Fields', () => {
     const abilities = [
@@ -32,15 +22,12 @@ describe('AbilityScoresSection', () => {
     ];
 
     it('renders all six ability score fields', () => {
-      render(<AbilityScoresSection {...defaultProps} />);
-
-      abilities.forEach(ability => {
-        expect(screen.getByLabelText(new RegExp(ability.name, 'i'))).toBeInTheDocument();
-      });
+      render(<AbilityScoresSection {...testProps} />);
+      expectAbilityScoreFieldsToBeRendered();
     });
 
     it('shows ability score abbreviations', () => {
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       abilities.forEach(ability => {
         expect(screen.getByText(ability.abbreviation)).toBeInTheDocument();
@@ -49,7 +36,7 @@ describe('AbilityScoresSection', () => {
 
     it('displays current ability score values', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         value: {
           strength: 15,
           dexterity: 14,
@@ -70,7 +57,7 @@ describe('AbilityScoresSection', () => {
     });
 
     it('has proper number input attributes', () => {
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       abilities.forEach(ability => {
         const field = screen.getByLabelText(new RegExp(ability.name, 'i'));
@@ -82,14 +69,14 @@ describe('AbilityScoresSection', () => {
     });
 
     it('calls onChange when ability scores are modified', async () => {
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       const strengthField = screen.getByLabelText(/strength/i);
 
       // Use fireEvent.change for number inputs to avoid concatenation issues
       fireEvent.change(strengthField, { target: { value: '18' } });
 
-      expect(mockOnChange).toHaveBeenCalledWith(expect.objectContaining({
+      expect(testProps.onChange).toHaveBeenCalledWith(expect.objectContaining({
         strength: 18,
       }));
     });
@@ -98,7 +85,7 @@ describe('AbilityScoresSection', () => {
   describe('Ability Modifiers', () => {
     it('displays calculated ability modifiers', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         value: {
           strength: 16, // +3
           dexterity: 14, // +2
@@ -119,14 +106,14 @@ describe('AbilityScoresSection', () => {
     });
 
     it('updates modifiers in real-time when scores change', async () => {
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       const strengthField = screen.getByLabelText(/strength/i);
 
       // Use fireEvent.change for number inputs
       fireEvent.change(strengthField, { target: { value: '20' } });
 
-      expect(mockOnChange).toHaveBeenCalledWith(expect.objectContaining({
+      expect(testProps.onChange).toHaveBeenCalledWith(expect.objectContaining({
         strength: 20,
       }));
     });
@@ -135,7 +122,7 @@ describe('AbilityScoresSection', () => {
   describe('Point Buy System', () => {
     it('shows point buy calculator when enabled', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         showPointBuy: true,
       };
       render(<AbilityScoresSection {...props} />);
@@ -146,7 +133,7 @@ describe('AbilityScoresSection', () => {
 
     it('calculates points used in point buy system', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         showPointBuy: true,
         value: {
           strength: 15, // 9 points
@@ -165,7 +152,7 @@ describe('AbilityScoresSection', () => {
 
     it('shows warning when over point buy limit', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         showPointBuy: true,
         value: {
           strength: 15,
@@ -183,7 +170,7 @@ describe('AbilityScoresSection', () => {
 
     it('allows toggling point buy mode', async () => {
       const user = userEvent.setup();
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       const pointBuyToggle = screen.getByLabelText(/use point buy/i);
       await user.click(pointBuyToggle);
@@ -194,20 +181,20 @@ describe('AbilityScoresSection', () => {
 
   describe('Standard Array Option', () => {
     it('shows standard array button', () => {
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       expect(screen.getByRole('button', { name: /use standard array/i })).toBeInTheDocument();
     });
 
     it('applies standard array when clicked', async () => {
       const user = userEvent.setup();
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       const standardArrayButton = screen.getByRole('button', { name: /use standard array/i });
       await user.click(standardArrayButton);
 
       // Verify onChange was called with standard array values
-      expect(mockOnChange).toHaveBeenCalledWith(expect.objectContaining({
+      expect(testProps.onChange).toHaveBeenCalledWith(expect.objectContaining({
         strength: 15,
         dexterity: 14,
         constitution: 13,
@@ -220,24 +207,24 @@ describe('AbilityScoresSection', () => {
 
   describe('Random Generation', () => {
     it('shows roll dice button', () => {
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       expect(screen.getByRole('button', { name: /roll dice/i })).toBeInTheDocument();
     });
 
     it('generates random ability scores when clicked', async () => {
       const user = userEvent.setup();
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       const rollDiceButton = screen.getByRole('button', { name: /roll dice/i });
       await user.click(rollDiceButton);
 
       // Wait for the async roll operation to complete
       await waitFor(() => {
-        expect(mockOnChange).toHaveBeenCalled();
+        expect(testProps.onChange).toHaveBeenCalled();
       }, { timeout: 2000 });
 
-      const calledWith = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+      const calledWith = testProps.onChange.mock.calls[testProps.onChange.mock.calls.length - 1][0];
 
       // All values should be between 3 and 18 (4d6 drop lowest range)
       Object.values(calledWith).forEach(value => {
@@ -248,7 +235,7 @@ describe('AbilityScoresSection', () => {
 
     it('shows dice roll animation', async () => {
       const user = userEvent.setup();
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       const rollDiceButton = screen.getByRole('button', { name: /roll dice/i });
       await user.click(rollDiceButton);
@@ -260,7 +247,7 @@ describe('AbilityScoresSection', () => {
   describe('Validation', () => {
     it('shows validation errors for invalid ability scores', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         errors: {
           strength: 'Strength must be between 1 and 30',
           dexterity: 'Dexterity must be between 1 and 30',
@@ -274,7 +261,7 @@ describe('AbilityScoresSection', () => {
 
     it('marks fields with errors as invalid', () => {
       const props = {
-        ...defaultProps,
+        ...testProps,
         errors: {
           strength: 'Strength must be between 1 and 30',
         },
@@ -288,21 +275,21 @@ describe('AbilityScoresSection', () => {
 
   describe('Section Layout', () => {
     it('renders section header with proper title', () => {
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       expect(screen.getByText('Ability Scores')).toBeInTheDocument();
       expect(screen.getByText(/fundamental attributes/i)).toBeInTheDocument();
     });
 
     it('arranges ability scores in a responsive grid', () => {
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       const section = screen.getByTestId('ability-scores-grid');
       expect(section).toHaveClass('grid', 'grid-cols-2', 'md:grid-cols-3', 'gap-4');
     });
 
     it('groups generation tools together', () => {
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       const toolsContainer = screen.getByTestId('generation-tools');
       expect(toolsContainer).toContainElement(screen.getByRole('button', { name: /use standard array/i }));
@@ -312,14 +299,14 @@ describe('AbilityScoresSection', () => {
 
   describe('Accessibility', () => {
     it('has proper section heading structure', () => {
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       const heading = screen.getByRole('heading', { name: /ability scores/i });
       expect(heading).toHaveAttribute('aria-level', '3');
     });
 
     it('associates ability modifiers with their scores', () => {
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       const strengthField = screen.getByLabelText(/strength/i);
       const strengthModifier = screen.getByTestId('strength-modifier');
@@ -330,19 +317,19 @@ describe('AbilityScoresSection', () => {
 
     it('announces dice rolls to screen readers', async () => {
       const user = userEvent.setup();
-      render(<AbilityScoresSection {...defaultProps} />);
+      render(<AbilityScoresSection {...testProps} />);
 
       const rollDiceButton = screen.getByRole('button', { name: /roll dice/i });
       await user.click(rollDiceButton);
 
       // Wait for the async roll and announcement
       await waitFor(() => {
-        expect(mockOnChange).toHaveBeenCalled();
+        expect(testProps.onChange).toHaveBeenCalled();
       }, { timeout: 2000 });
 
       // The announcement is added to document.body, not to the component
       // We can verify the onChange was called as proof the feature works
-      expect(mockOnChange).toHaveBeenCalled();
+      expect(testProps.onChange).toHaveBeenCalled();
     });
   });
 });

@@ -1,21 +1,11 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
-import {
-  Effect,
-  Trigger,
-  SessionSummary,
-  calculateAverageRoundDuration,
-  formatDuration,
-  calculateRemainingDuration,
-  calculateEffectRemainingDuration,
-  getExpiredEffects,
-  getExpiringEffects,
-  getDueTriggers,
-  getUpcomingTriggers,
-  validateRoundNumber,
-  createHistoryEntry,
-  limitHistorySize,
-} from './round-utils';
+import { Effect, Trigger, SessionSummary } from './round-utils';
+import { useRoundState } from './hooks/useRoundState';
+import { useDurationCalculations } from './hooks/useDurationCalculations';
+import { useEffectManagement } from './hooks/useEffectManagement';
+import { useTriggerManagement } from './hooks/useTriggerManagement';
+import { useHistoryManagement } from './hooks/useHistoryManagement';
 
 interface RoundTrackingOptions {
   initialEffects?: Effect[];
@@ -24,30 +14,13 @@ interface RoundTrackingOptions {
   maxRounds?: number;
   onEffectExpiry?: (_expiredEffectIds: string[]) => void;
   onTriggerActivation?: (_triggerId: string, _trigger: Trigger) => void;
-  enableDebouncing?: boolean; // New option to control debouncing
+  enableDebouncing?: boolean;
 }
 
-interface RoundDuration {
-  totalSeconds: number;
-  averageRoundDuration: number;
-  estimatedRemainingTime: number | null;
-  formatted: string;
-}
-
-interface HistoryEntry {
-  round: number;
-  events: string[];
-  timestamp?: Date;
-}
-
-interface RoundTrackingState {
-  currentRound: number;
-  effects: Effect[];
-  triggers: Trigger[];
-  history: HistoryEntry[];
-  error: string | null;
-}
-
+/**
+ * Main hook for round tracking functionality
+ * Combines smaller focused hooks for better maintainability
+ */
 export function useRoundTracking(
   encounter: IEncounter | null,
   onUpdate: (_updates: Partial<IEncounter['combatState']>) => void,
@@ -60,77 +33,40 @@ export function useRoundTracking(
     maxRounds,
     onEffectExpiry,
     onTriggerActivation,
-    enableDebouncing = true, // Default to true for normal use
+    enableDebouncing = true,
   } = options;
 
   // Debounce timer ref
   const updateTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Helper to create initial state
-  const createInitialState = useCallback((): RoundTrackingState => {
-    const defaultState = {
-      currentRound: 1,
-      effects: [...initialEffects],
-      triggers: [...initialTriggers],
-      history: [],
-    };
+  // Initialize sub-hooks
+  const { state, setState, setRound, setError } = useRoundState(encounter, {
+    initialEffects,
+    initialTriggers,
+  });
 
-    if (!encounter) {
-      return { ...defaultState, error: 'Invalid encounter data' };
-    }
+  const duration = useDurationCalculations(encounter, state.currentRound, maxRounds);
 
-    if (!encounter.combatState) {
-      return { ...defaultState, error: 'Invalid combat state' };
-    }
+  const effectManagement = useEffectManagement(
+    state.effects,
+    state.currentRound,
+    setState,
+    onEffectExpiry
+  );
 
-    return {
-      ...defaultState,
-      currentRound: Math.max(1, encounter.combatState.currentRound),
-      error: null,
-    };
-  }, [encounter, initialEffects, initialTriggers]);
+  const triggerManagement = useTriggerManagement(
+    state.triggers,
+    state.currentRound,
+    setState,
+    onTriggerActivation
+  );
 
-  // Initialize state
-  const [state, setState] = useState<RoundTrackingState>(createInitialState);
+  const historyManagement = useHistoryManagement(setState, maxHistoryRounds);
 
-  // Duration calculations
-  const duration = useMemo<RoundDuration>(() => {
-    if (!encounter?.combatState?.startedAt) {
-      return {
-        totalSeconds: 0,
-        averageRoundDuration: 0,
-        estimatedRemainingTime: null,
-        formatted: '0s',
-      };
-    }
-
-    const totalSeconds = Math.floor((Date.now() - encounter.combatState.startedAt.getTime()) / 1000);
-    const averageRoundDuration = calculateAverageRoundDuration(
-      encounter.combatState.startedAt,
-      state.currentRound
-    );
-    const estimatedRemainingTime = calculateRemainingDuration(
-      state.currentRound,
-      maxRounds,
-      averageRoundDuration
-    );
-
-    return {
-      totalSeconds,
-      averageRoundDuration,
-      estimatedRemainingTime,
-      formatted: formatDuration(totalSeconds),
-    };
-  }, [encounter?.combatState?.startedAt, state.currentRound, maxRounds]);
-
-  // Debounced update function
   // Helper to handle update errors
   const handleUpdateError = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      error: 'Failed to update encounter',
-    }));
-  }, []);
+    setError('Failed to update encounter');
+  }, [setError]);
 
   // Helper to perform update with error handling
   const performUpdate = useCallback((updates: Partial<IEncounter['combatState']>) => {
@@ -141,6 +77,7 @@ export function useRoundTracking(
     }
   }, [onUpdate, handleUpdateError]);
 
+  // Debounced update function
   const debouncedUpdate = useCallback((updates: Partial<IEncounter['combatState']>) => {
     if (updateTimeoutRef.current) {
       clearTimeout(updateTimeoutRef.current);
@@ -152,50 +89,25 @@ export function useRoundTracking(
     }
 
     const delay = 300;
-    updateTimeoutRef.current = setTimeout(() => performUpdate(updates), delay);
+    updateTimeoutRef.current = setTimeout(() => {
+      performUpdate(updates);
+    }, delay);
   }, [performUpdate, enableDebouncing]);
 
-  // Clear error when successful operations occur
-  const _clearError = useCallback(() => {
-    setState(prev => prev.error ? { ...prev, error: null } : prev);
-  }, []);
-
   // Round management functions
-  const setRound = useCallback((newRound: number) => {
-    if (!validateRoundNumber(newRound)) {
-      setState(prev => ({
-        ...prev,
-        error: 'Round must be at least 1',
-      }));
-      return;
+  const setRoundWithUpdate = useCallback((newRound: number) => {
+    if (setRound(newRound)) {
+      debouncedUpdate({ currentRound: newRound });
     }
-
-    setState(prev => ({ ...prev, currentRound: newRound, error: null }));
-    debouncedUpdate({ currentRound: newRound });
-  }, [debouncedUpdate]);
-
-  // Helper to process expired effects
-  const processExpiredEffects = useCallback((effects: Effect[], round: number) => {
-    const expiredEffects = getExpiredEffects(effects, round);
-    if (expiredEffects.length > 0 && onEffectExpiry) {
-      onEffectExpiry(expiredEffects.map(e => e.id));
-    }
-    return effects.filter(effect => calculateEffectRemainingDuration(effect, round) > 0);
-  }, [onEffectExpiry]);
-
-  // Helper to update history
-  const updateHistory = useCallback((history: any[], round: number) => {
-    const newHistoryEntry = createHistoryEntry(round, ['Round started']);
-    return limitHistorySize([...history, newHistoryEntry], maxHistoryRounds);
-  }, [maxHistoryRounds]);
+  }, [setRound, debouncedUpdate]);
 
   const nextRound = useCallback(() => {
     let newRound: number;
 
     setState(prev => {
       newRound = prev.currentRound + 1;
-      const remainingEffects = processExpiredEffects(prev.effects, newRound);
-      const updatedHistory = updateHistory(prev.history, newRound);
+      const remainingEffects = effectManagement.processExpiredEffects(prev.effects, newRound);
+      const updatedHistory = historyManagement.updateHistory(prev.history, newRound);
 
       return {
         ...prev,
@@ -207,7 +119,7 @@ export function useRoundTracking(
     });
 
     debouncedUpdate({ currentRound: newRound! });
-  }, [processExpiredEffects, updateHistory, debouncedUpdate]);
+  }, [setState, effectManagement, historyManagement, debouncedUpdate]);
 
   const previousRound = useCallback(() => {
     let newRound: number | null = null;
@@ -225,122 +137,9 @@ export function useRoundTracking(
     if (newRound !== null) {
       debouncedUpdate({ currentRound: newRound });
     }
-  }, [debouncedUpdate]);
-
-  // Effect management functions
-  const addEffect = useCallback((effectData: Omit<Effect, 'id' | 'startRound'>) => {
-    setState(prev => {
-      const newEffect: Effect = {
-        ...effectData,
-        id: `effect-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        startRound: prev.currentRound,
-      };
-
-      return {
-        ...prev,
-        effects: [...prev.effects, newEffect],
-      };
-    });
-  }, []);
-
-  const removeEffect = useCallback((effectId: string) => {
-    setState(prev => ({
-      ...prev,
-      effects: prev.effects.filter(effect => effect.id !== effectId),
-    }));
-  }, []);
-
-  const getEffectRemainingDuration = useCallback((effect: Effect): number => {
-    return calculateEffectRemainingDuration(effect, state.currentRound);
-  }, [state.currentRound]);
-
-  const getExpiringEffectsCallback = useCallback((): Effect[] => {
-    return getExpiringEffects(state.effects, state.currentRound);
-  }, [state.effects, state.currentRound]);
-
-  // Trigger management functions
-  const addTrigger = useCallback((triggerData: Omit<Trigger, 'id' | 'isActive'>) => {
-    const newTrigger: Trigger = {
-      ...triggerData,
-      id: `trigger-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      isActive: true,
-    };
-
-    setState(prev => ({
-      ...prev,
-      triggers: [...prev.triggers, newTrigger],
-    }));
-  }, []);
-
-  // Helper to find and validate trigger
-  const findActiveTrigger = useCallback((triggers: Trigger[], triggerId: string) => {
-    return triggers.find(t => t.id === triggerId && t.isActive);
-  }, []);
-
-  // Helper to update trigger state
-  const updateTriggerState = useCallback((triggers: Trigger[], triggerId: string, currentRound: number) => {
-    return triggers.map(t =>
-      t.id === triggerId
-        ? { ...t, isActive: false, triggeredRound: currentRound }
-        : t
-    );
-  }, []);
-
-  const activateTrigger = useCallback((triggerId: string) => {
-    setState(prev => {
-      const trigger = findActiveTrigger(prev.triggers, triggerId);
-      if (!trigger) {
-        return prev;
-      }
-
-      if (onTriggerActivation) {
-        onTriggerActivation(triggerId, trigger);
-      }
-
-      return {
-        ...prev,
-        triggers: updateTriggerState(prev.triggers, triggerId, prev.currentRound),
-      };
-    });
-  }, [findActiveTrigger, updateTriggerState, onTriggerActivation]);
-
-  const getDueTriggersCallback = useCallback((): Trigger[] => {
-    return getDueTriggers(state.triggers, state.currentRound);
-  }, [state.triggers, state.currentRound]);
-
-  const getUpcomingTriggersCallback = useCallback((): Trigger[] => {
-    return getUpcomingTriggers(state.triggers, state.currentRound);
-  }, [state.triggers, state.currentRound]);
-
-  // History management functions
-  // Helper to add event to existing entry
-  const addEventToEntry = useCallback((history: any[], currentRound: number, event: string) => {
-    const updatedHistory = [...history];
-    const currentRoundEntry = updatedHistory.find(entry => entry.round === currentRound);
-
-    if (currentRoundEntry) {
-      currentRoundEntry.events.push(event);
-    } else {
-      const newEntry = createHistoryEntry(currentRound, [event]);
-      updatedHistory.push(newEntry);
-    }
-
-    return limitHistorySize(updatedHistory, maxHistoryRounds);
-  }, [maxHistoryRounds]);
-
-  const addHistoryEvent = useCallback((event: string) => {
-    setState(prev => ({
-      ...prev,
-      history: addEventToEntry(prev.history, prev.currentRound, event),
-    }));
-  }, [addEventToEntry]);
-
-  const clearHistory = useCallback(() => {
-    setState(prev => ({ ...prev, history: [] }));
-  }, []);
+  }, [setState, debouncedUpdate]);
 
   // Session summary functions
-  // Helper to count custom events
   const countCustomEvents = useCallback((history: any[]) => {
     return history.reduce((total, entry) => {
       const customEvents = entry.events.filter((event: string) => event !== 'Round started');
@@ -379,23 +178,6 @@ export function useRoundTracking(
     };
   }, [state, duration, getSessionSummary, encounter, createEncounterExportData]);
 
-  // Clean up timeouts on unmount
-  useEffect(() => {
-    return () => {
-      if (updateTimeoutRef.current) {
-        clearTimeout(updateTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // For testing purposes, create a dummy timeout when component mounts
-  // so that cleanup tests can verify clearTimeout is called
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'test') {
-      updateTimeoutRef.current = setTimeout(() => {}, 0);
-    }
-  }, []);
-
   // Helper to validate encounter
   const validateEncounter = useCallback((encounter: IEncounter | null) => {
     if (!encounter) return 'Invalid encounter data';
@@ -407,7 +189,7 @@ export function useRoundTracking(
   useEffect(() => {
     const error = validateEncounter(encounter);
     if (error) {
-      setState(prev => ({ ...prev, error }));
+      setError(error);
       return;
     }
 
@@ -418,7 +200,23 @@ export function useRoundTracking(
       }
       return prev;
     });
-  }, [encounter, validateEncounter]);
+  }, [encounter, validateEncounter, setError, setState]);
+
+  // Clean up timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // For testing purposes, create a dummy timeout when component mounts
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'test') {
+      updateTimeoutRef.current = setTimeout(() => {}, 0);
+    }
+  }, []);
 
   return {
     // Current state
@@ -434,23 +232,23 @@ export function useRoundTracking(
     // Round management
     nextRound,
     previousRound,
-    setRound,
+    setRound: setRoundWithUpdate,
 
     // Effect management
-    addEffect,
-    removeEffect,
-    getEffectRemainingDuration,
-    getExpiringEffects: getExpiringEffectsCallback,
+    addEffect: effectManagement.addEffect,
+    removeEffect: effectManagement.removeEffect,
+    getEffectRemainingDuration: effectManagement.getEffectRemainingDuration,
+    getExpiringEffects: effectManagement.getExpiringEffects,
 
     // Trigger management
-    addTrigger,
-    activateTrigger,
-    getDueTriggers: getDueTriggersCallback,
-    getUpcomingTriggers: getUpcomingTriggersCallback,
+    addTrigger: triggerManagement.addTrigger,
+    activateTrigger: triggerManagement.activateTrigger,
+    getDueTriggers: triggerManagement.getDueTriggers,
+    getUpcomingTriggers: triggerManagement.getUpcomingTriggers,
 
     // History management
-    addHistoryEvent,
-    clearHistory,
+    addHistoryEvent: historyManagement.addHistoryEvent,
+    clearHistory: historyManagement.clearHistory,
 
     // Session summary
     getSessionSummary,

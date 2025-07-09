@@ -1,6 +1,6 @@
 // Utility functions for character form validation and data transformation
 
-import { characterCreationSchema, CharacterType, CharacterClass, CharacterRace } from '@/lib/validations/character';
+import { characterCreationSchema, CharacterType, CharacterClass, CharacterRace, Size } from '@/lib/validations/character';
 import { ZodError } from 'zod';
 
 export interface BasicInfoData {
@@ -8,6 +8,7 @@ export interface BasicInfoData {
   type: CharacterType;
   race: CharacterRace | 'custom';
   customRace: string;
+  size: Size;
 }
 
 export interface AbilityScores {
@@ -20,8 +21,9 @@ export interface AbilityScores {
 }
 
 export interface ClassData {
-  className: CharacterClass;
+  class: CharacterClass;
   level: number;
+  hitDie: number;
 }
 
 export interface CombatStatsData {
@@ -55,6 +57,7 @@ export const initialFormData: FormData = {
     type: 'pc',
     race: 'human',
     customRace: '',
+    size: 'medium',
   },
   abilityScores: {
     strength: 10,
@@ -65,7 +68,7 @@ export const initialFormData: FormData = {
     charisma: 10,
   },
   classes: [
-    { className: 'fighter', level: 1 },
+    { class: 'fighter', level: 1, hitDie: 10 },
   ],
   combatStats: {
     hitPoints: {
@@ -90,7 +93,7 @@ export const initialErrors: FormErrors = {
  * Categorize validation error by path
  */
 export const categorizeError = (path: string, message: string, newErrors: FormErrors) => {
-  if (path.startsWith('name') || path.startsWith('type') || path.startsWith('race') || path.startsWith('customRace')) {
+  if (path.startsWith('name') || path.startsWith('type') || path.startsWith('race') || path.startsWith('customRace') || path.startsWith('size')) {
     newErrors.basicInfo[path] = message;
   } else if (path.startsWith('abilityScores')) {
     const field = path.replace('abilityScores.', '');
@@ -111,9 +114,11 @@ export const transformFormDataForValidation = (formData: FormData) => {
     type: formData.basicInfo.type,
     race: formData.basicInfo.race === 'custom' ? 'custom' : formData.basicInfo.race,
     customRace: formData.basicInfo.race === 'custom' ? formData.basicInfo.customRace : undefined,
+    size: formData.basicInfo.size,
     classes: formData.classes.map(cls => ({
-      className: cls.className,
+      class: cls.class,
       level: cls.level,
+      hitDie: cls.hitDie,
     })),
     abilityScores: formData.abilityScores,
     hitPoints: {
@@ -180,7 +185,9 @@ export const hasValidAbilityScores = (abilityScores: AbilityScores): boolean => 
  * Check if classes are valid
  */
 export const hasValidClasses = (classes: ClassData[]): boolean => {
-  return classes.length > 0 && classes.every(cls => cls.level >= 1 && cls.level <= 20);
+  return classes.length > 0 && classes.every(cls =>
+    cls.level >= 1 && cls.level <= 20 && cls.hitDie >= 4 && cls.hitDie <= 12
+  );
 };
 
 /**

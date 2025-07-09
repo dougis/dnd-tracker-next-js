@@ -54,7 +54,10 @@ export const formatRace = (race: string, customRace?: string): string => {
   if (race === 'custom' && customRace) {
     return customRace;
   }
-  return race.charAt(0).toUpperCase() + race.slice(1).replace('-', ' ');
+  return race
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('-');
 };
 
 /**
@@ -125,7 +128,7 @@ export const getCompletionSections = (
   combatStats: CombatStatsData
 ) => {
   return [
-    { name: 'Basic Info', completed: hasCompleteBasicInfo(basicInfo) && hasValidCustomRace(basicInfo) },
+    { name: 'Basic Information', completed: hasCompleteBasicInfo(basicInfo) && hasValidCustomRace(basicInfo) },
     { name: 'Ability Scores', completed: hasValidAbilityScores(abilityScores) },
     { name: 'Classes', completed: hasValidClasses(classes) },
     { name: 'Combat Stats', completed: hasValidCombatStats(combatStats) },

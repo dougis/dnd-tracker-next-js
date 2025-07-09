@@ -1,67 +1,33 @@
 // Shared test utilities and data for character form tests
+import {
+  createTestCharacterWithEnhancedAbilities,
+  TEST_CHARACTER_DATA,
+  DEFAULT_HIT_POINTS,
+  createTestCharacter,
+  createMulticlassTestCharacter,
+  createHighLevelTestCharacter,
+  createInvalidTestCharacter
+} from '../constants';
 
-export const mockCharacterData = {
-  name: 'Test Character',
-  type: 'pc' as const,
-  race: 'human' as const,
-  size: 'medium' as const,
-  abilityScores: {
-    strength: 15,
-    dexterity: 14,
-    constitution: 13,
-    intelligence: 12,
-    wisdom: 11,
-    charisma: 10,
-  },
-  classes: [{ className: 'fighter' as const, level: 1 }],
-  hitPoints: { maximum: 10, current: 10, temporary: 0 },
-  armorClass: 16,
-  speed: 30,
-  proficiencyBonus: 2,
-  savingThrows: {
-    strength: false,
-    dexterity: false,
-    constitution: false,
-    intelligence: false,
-    wisdom: false,
-    charisma: false,
-  },
-  skills: [],
-  equipment: [],
-  spells: [],
-  backstory: '',
-  notes: '',
-};
+// Use consolidated test data from constants
+export const mockCharacterData = createTestCharacterWithEnhancedAbilities();
 
 export const mockBasicInfoData = {
-  name: 'Test Character',
-  type: 'pc' as const,
-  race: 'human',
-  customRace: '',
+  name: mockCharacterData.name,
+  type: mockCharacterData.type,
+  race: mockCharacterData.race,
+  customRace: mockCharacterData.customRace || '',
 };
 
-export const mockAbilityScores = {
-  strength: 15,
-  dexterity: 14,
-  constitution: 13,
-  intelligence: 12,
-  wisdom: 11,
-  charisma: 10,
-};
+export const mockAbilityScores = TEST_CHARACTER_DATA.enhancedAbilities;
 
-export const mockClassData = [
-  { className: 'fighter', level: 1 },
-];
+export const mockClassData = mockCharacterData.classes;
 
 export const mockCombatStats = {
-  hitPoints: {
-    maximum: 10,
-    current: 10,
-    temporary: 0,
-  },
-  armorClass: 16,
-  speed: 30,
-  proficiencyBonus: 2,
+  hitPoints: DEFAULT_HIT_POINTS,
+  armorClass: mockCharacterData.armorClass,
+  speed: mockCharacterData.speed,
+  proficiencyBonus: mockCharacterData.proficiencyBonus,
 };
 
 export const mockFormData = {
@@ -130,6 +96,8 @@ export const mockErrorResult = {
   },
 };
 
+// Character data variants now use consolidated factories
+
 // Common test utilities
 export const createMockProps = (overrides: any = {}) => ({
   ownerId: 'user123',
@@ -138,10 +106,7 @@ export const createMockProps = (overrides: any = {}) => ({
   ...overrides,
 });
 
-export const createMockCharacterData = (overrides: any = {}) => ({
-  ...mockCharacterData,
-  ...overrides,
-});
+export const createMockCharacterData = (overrides: any = {}) => createTestCharacter(overrides);
 
 export const createMockFormData = (overrides: any = {}) => ({
   ...mockFormData,
@@ -175,40 +140,26 @@ export const expectFieldToHaveError = (field: any, errorMessage: string, getByTe
   expect(getByText(errorMessage)).toBeInTheDocument();
 };
 
-// Character data variants for testing
+// Character data variants for testing - use consolidated factories
 export const createInvalidCharacterData = {
-  withEmptyName: () => createMockCharacterData({ name: '' }),
-  withInvalidAbilityScore: () => createMockCharacterData({
+  withEmptyName: () => createInvalidTestCharacter({ name: '' }),
+  withInvalidAbilityScore: () => createInvalidTestCharacter({
     abilityScores: { ...mockAbilityScores, strength: 0 }
   }),
-  withInvalidClass: () => createMockCharacterData({
+  withInvalidClass: () => createInvalidTestCharacter({
     classes: [{ className: 'fighter', level: 0 }]
   }),
-  withInvalidCombatStats: () => createMockCharacterData({
+  withInvalidCombatStats: () => createInvalidTestCharacter({
     hitPoints: { maximum: 0, current: 0 },
     armorClass: 0,
   }),
 };
 
 export const createValidCharacterData = {
-  withCustomRace: () => createMockCharacterData({
+  withCustomRace: () => createTestCharacter({
     race: 'custom',
     customRace: 'Half-Dragon',
   }),
-  withMulticlass: () => createMockCharacterData({
-    classes: [
-      { className: 'fighter', level: 3 },
-      { className: 'rogue', level: 2 },
-    ],
-  }),
-  withHighStats: () => createMockCharacterData({
-    abilityScores: {
-      strength: 20,
-      dexterity: 18,
-      constitution: 16,
-      intelligence: 14,
-      wisdom: 12,
-      charisma: 10,
-    },
-  }),
+  withMulticlass: () => createMulticlassTestCharacter(),
+  withHighStats: () => createHighLevelTestCharacter(),
 };

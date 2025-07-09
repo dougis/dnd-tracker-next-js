@@ -6,7 +6,7 @@ describe('ClassesSection - Validation and Edge Cases', () => {
   const mockOnChange = jest.fn();
   const defaultProps = {
     value: [
-      { className: 'fighter' as const, level: 1 },
+      { class: 'fighter' as const, level: 1, hitDie: 10 },
     ],
     onChange: mockOnChange,
     errors: {},
@@ -49,8 +49,8 @@ describe('ClassesSection - Validation and Edge Cases', () => {
       const props = {
         ...defaultProps,
         value: [
-          { className: 'fighter' as const, level: 1 },
-          { className: 'rogue' as const, level: 1 },
+          { class: 'fighter' as const, level: 1, hitDie: 10 },
+          { class: 'rogue' as const, level: 1, hitDie: 8 },
         ],
         errors: {
           'class-1': 'Duplicate class not allowed',
@@ -86,9 +86,9 @@ describe('ClassesSection - Validation and Edge Cases', () => {
       const props = {
         ...defaultProps,
         value: [
-          { className: 'fighter' as const, level: 1 },
-          { className: 'rogue' as const, level: 1 },
-          { className: 'wizard' as const, level: 1 },
+          { class: 'fighter' as const, level: 1, hitDie: 10 },
+          { class: 'rogue' as const, level: 1, hitDie: 8 },
+          { class: 'wizard' as const, level: 1, hitDie: 6 },
         ],
       };
       render(<ClassesSection {...props} />);
@@ -114,7 +114,7 @@ describe('ClassesSection - Validation and Edge Cases', () => {
       const props = {
         ...defaultProps,
         value: [
-          { className: 'fighter' as const, level: 0 },
+          { class: 'fighter' as const, level: 0, hitDie: 10 },
         ],
       };
       render(<ClassesSection {...props} />);
@@ -126,7 +126,7 @@ describe('ClassesSection - Validation and Edge Cases', () => {
       const props = {
         ...defaultProps,
         value: [
-          { className: 'fighter' as const, level: 20 },
+          { class: 'fighter' as const, level: 20, hitDie: 10 },
         ],
       };
       render(<ClassesSection {...props} />);
@@ -149,8 +149,8 @@ describe('ClassesSection - Validation and Edge Cases', () => {
       const props = {
         ...defaultProps,
         value: [
-          { className: 'fighter' as const, level: 1 },
-          { className: 'rogue' as const, level: 1 },
+          { class: 'fighter' as const, level: 1, hitDie: 10 },
+          { class: 'rogue' as const, level: 1, hitDie: 8 },
         ],
       };
       render(<ClassesSection {...props} />);

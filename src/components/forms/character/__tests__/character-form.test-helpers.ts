@@ -1,4 +1,10 @@
 import { CharacterClass, CharacterRace, CharacterType } from '@/lib/validations/character';
+import {
+  createTestCharacterWithEnhancedAbilities,
+  createMulticlassTestCharacter as createMulticlassTestCharacterBase,
+  createHighLevelTestCharacter as createHighLevelTestCharacterBase,
+  createInvalidTestCharacter as createInvalidTestCharacterBase
+} from '../constants';
 
 export interface TestCharacterData {
   name: string;
@@ -29,40 +35,15 @@ export interface TestCharacterData {
   notes?: string;
 }
 
-export const createValidTestCharacter = (overrides: Partial<TestCharacterData> = {}): TestCharacterData => ({
-  name: 'Test Character',
-  type: 'pc',
-  race: 'human',
-  classes: [{ className: 'fighter', level: 1 }],
-  abilityScores: {
-    strength: 15,
-    dexterity: 14,
-    constitution: 13,
-    intelligence: 12,
-    wisdom: 11,
-    charisma: 10,
-  },
-  hitPoints: {
-    maximum: 10,
-    current: 10,
-  },
-  armorClass: 14,
-  speed: 30,
-  proficiencyBonus: 2,
-  ...overrides,
-});
+// Use consolidated test factories to reduce duplication
+export const createValidTestCharacter = (overrides: Partial<TestCharacterData> = {}): TestCharacterData =>
+  createTestCharacterWithEnhancedAbilities({
+    armorClass: 14, // Override default from constants
+    ...overrides,
+  }) as TestCharacterData;
 
-export const createMulticlassTestCharacter = (): TestCharacterData => createValidTestCharacter({
-  name: 'Multiclass Hero',
-  classes: [
-    { className: 'fighter', level: 3 },
-    { className: 'rogue', level: 2 },
-  ],
-  hitPoints: {
-    maximum: 35,
-    current: 35,
-  },
-});
+export const createMulticlassTestCharacter = (): TestCharacterData =>
+  createMulticlassTestCharacterBase() as TestCharacterData;
 
 export const createCustomRaceTestCharacter = (): TestCharacterData => createValidTestCharacter({
   name: 'Custom Race Character',
@@ -90,47 +71,11 @@ export const createNPCTestCharacter = (): TestCharacterData => createValidTestCh
   armorClass: 13,
 });
 
-export const createHighLevelTestCharacter = (): TestCharacterData => createValidTestCharacter({
-  name: 'Epic Hero',
-  classes: [
-    { className: 'paladin', level: 10 },
-    { className: 'sorcerer', level: 10 },
-  ],
-  abilityScores: {
-    strength: 20,
-    dexterity: 14,
-    constitution: 16,
-    intelligence: 12,
-    wisdom: 13,
-    charisma: 18,
-  },
-  hitPoints: {
-    maximum: 150,
-    current: 150,
-  },
-  armorClass: 18,
-  proficiencyBonus: 4,
-});
+export const createHighLevelTestCharacter = (): TestCharacterData =>
+  createHighLevelTestCharacterBase() as TestCharacterData;
 
-export const createInvalidTestCharacter = (): Partial<TestCharacterData> => ({
-  name: '', // Invalid: empty name
-  type: 'pc',
-  race: 'human',
-  classes: [{ className: 'fighter', level: 0 }], // Invalid: level 0
-  abilityScores: {
-    strength: 31, // Invalid: over max
-    dexterity: 0, // Invalid: under min
-    constitution: 13,
-    intelligence: 12,
-    wisdom: 11,
-    charisma: 10,
-  },
-  hitPoints: {
-    maximum: -5, // Invalid: negative HP
-    current: 10,
-  },
-  armorClass: 0, // Invalid: AC 0
-});
+export const createInvalidTestCharacter = (): Partial<TestCharacterData> =>
+  createInvalidTestCharacterBase() as Partial<TestCharacterData>;
 
 export interface FormTestHelpers {
   fillBasicInfo: (_character: TestCharacterData) => Promise<void>;

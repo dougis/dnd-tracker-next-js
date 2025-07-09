@@ -1,16 +1,19 @@
 'use client';
 
 import React from 'react';
-import { FormSelect, FormSelectOption } from '@/components/forms/FormSelect';
+import { FormSelect } from '@/components/forms/FormSelect';
 import { FormInput } from '@/components/forms/FormInput';
 import { FormGroup } from '@/components/forms/FormGroup';
 import { Button } from '@/components/ui/button';
 import { Plus, X } from 'lucide-react';
 import { CharacterClass } from '@/lib/validations/character';
+import { getHitDieForClass } from '../utils';
+import { CHARACTER_CLASS_OPTIONS } from '../constants';
 
 interface ClassData {
-  className: CharacterClass;
+  class: CharacterClass;
   level: number;
+  hitDie: number;
 }
 
 interface ClassesSectionProps {
@@ -19,28 +22,13 @@ interface ClassesSectionProps {
   errors: Record<string, string>;
 }
 
-const CHARACTER_CLASS_OPTIONS: FormSelectOption[] = [
-  { value: 'artificer', label: 'Artificer' },
-  { value: 'barbarian', label: 'Barbarian' },
-  { value: 'bard', label: 'Bard' },
-  { value: 'cleric', label: 'Cleric' },
-  { value: 'druid', label: 'Druid' },
-  { value: 'fighter', label: 'Fighter' },
-  { value: 'monk', label: 'Monk' },
-  { value: 'paladin', label: 'Paladin' },
-  { value: 'ranger', label: 'Ranger' },
-  { value: 'rogue', label: 'Rogue' },
-  { value: 'sorcerer', label: 'Sorcerer' },
-  { value: 'warlock', label: 'Warlock' },
-  { value: 'wizard', label: 'Wizard' },
-];
-
 export function ClassesSection({ value, onChange, errors }: ClassesSectionProps) {
+
   const addClass = () => {
     if (value.length < 3) {
       onChange([
         ...value,
-        { className: 'fighter', level: 1 },
+        { class: 'fighter', level: 1, hitDie: 10 },
       ]);
     }
   };
@@ -54,10 +42,17 @@ export function ClassesSection({ value, onChange, errors }: ClassesSectionProps)
 
   const updateClass = (index: number, field: keyof ClassData, newValue: string | number) => {
     const newClasses = [...value];
-    newClasses[index] = {
+    const updatedClass = {
       ...newClasses[index],
       [field]: newValue,
     };
+
+    // Auto-update hitDie when class changes
+    if (field === 'class') {
+      updatedClass.hitDie = getHitDieForClass(newValue as CharacterClass);
+    }
+
+    newClasses[index] = updatedClass;
     onChange(newClasses);
   };
 
@@ -103,9 +98,9 @@ export function ClassesSection({ value, onChange, errors }: ClassesSectionProps)
               <div className="flex-2">
                 <FormSelect
                   label="Character Class"
-                  value={classData.className}
+                  value={classData.class}
                   onValueChange={(newValue) =>
-                    updateClass(index, 'className', newValue as CharacterClass)
+                    updateClass(index, 'class', newValue as CharacterClass)
                   }
                   options={CHARACTER_CLASS_OPTIONS}
                   error={errors[`class-${index}`]}
@@ -125,6 +120,22 @@ export function ClassesSection({ value, onChange, errors }: ClassesSectionProps)
                   min={1}
                   max={20}
                   required
+                />
+              </div>
+              <div className="flex-1">
+                <FormInput
+                  label="Hit Die"
+                  value={classData.hitDie.toString()}
+                  onChange={(e) =>
+                    updateClass(index, 'hitDie', parseInt(e.target.value) || 8)
+                  }
+                  error={errors[`hitDie-${index}`]}
+                  type="number"
+                  min={4}
+                  max={12}
+                  step={2}
+                  required
+                  helperText="Usually auto-set by class"
                 />
               </div>
             </FormGroup>
