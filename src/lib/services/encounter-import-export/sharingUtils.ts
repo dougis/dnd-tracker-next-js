@@ -2,6 +2,7 @@
  * Sharing utilities for encounter import/export
  */
 
+import crypto from 'crypto';
 import type { ServiceResult } from '../UserServiceErrors';
 import { handleEncounterServiceError } from '../EncounterServiceErrors';
 import { Encounter } from '@/lib/models/encounter';
@@ -123,8 +124,6 @@ export async function createTemplate(
  * Generate sharing token for encounter links
  */
 function generateShareToken(encounterId: string, userId: string, expiresIn: number): string {
-  const crypto = require('crypto');
-
   const payload = {
     encounterId,
     userId,

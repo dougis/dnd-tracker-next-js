@@ -2,6 +2,7 @@
  * Format conversion utilities for encounter import/export
  */
 
+import { XMLParser } from 'fast-xml-parser';
 import type { EncounterExportData } from './types';
 
 /**
@@ -72,8 +73,6 @@ export function convertToXml(data: EncounterExportData): string {
  * Parse XML data to JavaScript object using fast-xml-parser
  */
 export function parseXmlToData(xmlString: string): any {
-  const { XMLParser } = require('fast-xml-parser');
-
   const parser = new XMLParser({
     ignoreAttributes: false,
     parseAttributeValue: false,
