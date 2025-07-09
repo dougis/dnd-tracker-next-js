@@ -200,17 +200,17 @@ describe('CharacterLibraryIntegration', () => {
 
       const typeFilter = screen.getByRole('combobox', { name: /type/i });
       await user.click(typeFilter);
-      
+
       // Wait for dropdown to open and then click PC option
       await waitFor(() => {
-        const pcOption = screen.getAllByText('PC').find(element => 
+        const pcOption = screen.getAllByText('PC').find(element =>
           element.closest('[role="option"]') !== null
         );
         expect(pcOption).toBeInTheDocument();
         return pcOption;
       });
-      
-      const pcOption = screen.getAllByText('PC').find(element => 
+
+      const pcOption = screen.getAllByText('PC').find(element =>
         element.closest('[role="option"]') !== null
       );
       await user.click(pcOption!);
