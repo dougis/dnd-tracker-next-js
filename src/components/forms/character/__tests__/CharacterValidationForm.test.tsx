@@ -4,9 +4,18 @@ import userEvent from '@testing-library/user-event';
 import { CharacterValidationForm } from '../CharacterValidationForm';
 import { setupFormComponentTest } from './setup/test-setup';
 
+// Mock the CharacterService
+jest.mock('@/lib/services/CharacterService', () => ({
+  CharacterService: {
+    createCharacter: jest.fn(),
+  },
+}));
+
+import { CharacterService } from '@/lib/services/CharacterService';
+
 describe('CharacterValidationForm', () => {
-  const { characterService } = setupFormComponentTest();
-  const mockCharacterService = characterService;
+  setupFormComponentTest();
+  const mockCharacterService = CharacterService as jest.Mocked<typeof CharacterService>;
 
   const defaultProps = {
     ownerId: 'user123',
@@ -21,6 +30,21 @@ describe('CharacterValidationForm', () => {
     ownerId: 'test-owner-id',
     isOpen: true,
   };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Set up default successful response
+    mockCharacterService.createCharacter.mockResolvedValue({
+      success: true,
+      data: {
+        _id: 'test-char-id',
+        name: 'Test Character',
+        type: 'pc',
+        race: 'human',
+        size: 'medium',
+      },
+    });
+  });
 
   describe('Form Rendering', () => {
     it('renders the form modal when open', () => {
@@ -88,7 +112,7 @@ describe('CharacterValidationForm', () => {
 
   describe('Basic Info Section', () => {
     it('updates character name field', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       const nameInput = screen.getByLabelText(/Character Name/);
       await userEvent.type(nameInput, 'Aragorn');
@@ -98,7 +122,7 @@ describe('CharacterValidationForm', () => {
     });
 
     it('handles custom race input', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       // Find the race select trigger by role
       const raceSelect = screen.getByRole('combobox', { name: /Race/ });
@@ -122,7 +146,7 @@ describe('CharacterValidationForm', () => {
     });
 
     it('updates size field', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       // Find the size select trigger by role
       const sizeSelect = screen.getByRole('combobox', { name: /Size/ });
@@ -143,7 +167,7 @@ describe('CharacterValidationForm', () => {
 
   describe('Ability Scores Section', () => {
     it('updates ability scores and shows modifiers', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       const strengthInput = screen.getByLabelText(/Strength \(STR\)/);
 
@@ -156,7 +180,7 @@ describe('CharacterValidationForm', () => {
     });
 
     it('validates ability score ranges', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       const strengthInput = screen.getByLabelText(/Strength \(STR\)/);
 
@@ -170,7 +194,7 @@ describe('CharacterValidationForm', () => {
 
   describe('Classes Section', () => {
     it('adds and removes character classes', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       // Should start with one class
       expect(screen.getByText('Class 1 (Primary)')).toBeInTheDocument();
@@ -197,7 +221,7 @@ describe('CharacterValidationForm', () => {
     });
 
     it('auto-updates hit die when class changes', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       // Find the character class select by label
       const classSelect = screen.getByRole('combobox', { name: /Character Class/ });
@@ -217,7 +241,7 @@ describe('CharacterValidationForm', () => {
     });
 
     it('prevents adding more than 3 classes', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       // Add maximum classes (starts with 1, add 2 more to reach 3)
       const addButton = screen.getByRole('button', { name: /Add Class/ });
@@ -239,7 +263,7 @@ describe('CharacterValidationForm', () => {
 
   describe('Combat Stats Section', () => {
     it('updates hit points values', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       // Wait for the form to render
       await waitFor(() => {
@@ -262,7 +286,7 @@ describe('CharacterValidationForm', () => {
     });
 
     it('shows combat summary', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       // Wait for the form to render and check for combat summary
       await waitFor(() => {
@@ -283,7 +307,7 @@ describe('CharacterValidationForm', () => {
 
   describe('Form Submission', () => {
     it('submits valid form data', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       // Fill in required fields
       const nameInput = screen.getByLabelText(/Character Name/);
@@ -304,7 +328,7 @@ describe('CharacterValidationForm', () => {
         );
       });
 
-      expect(defaultProps.onSuccess).toHaveBeenCalled();
+      expect(testProps.onSuccess).toHaveBeenCalled();
     });
 
     it('displays error message on submission failure', async () => {
@@ -317,7 +341,7 @@ describe('CharacterValidationForm', () => {
         },
       });
 
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       const nameInput = screen.getByLabelText(/Character Name/);
       await userEvent.type(nameInput, 'Test Character');
@@ -331,7 +355,7 @@ describe('CharacterValidationForm', () => {
     });
 
     it('prevents submission when form is invalid', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       // Clear required field to make form invalid
       const nameInput = screen.getByLabelText(/Character Name/);
@@ -386,7 +410,7 @@ describe('CharacterValidationForm', () => {
         }), 100))
       );
 
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       const nameInput = screen.getByLabelText(/Character Name/);
       await userEvent.type(nameInput, 'Test Character');
@@ -403,7 +427,7 @@ describe('CharacterValidationForm', () => {
 
   describe('Character Preview', () => {
     it('updates preview when form values change', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       const nameInput = screen.getByLabelText(/Character Name/);
       await userEvent.type(nameInput, 'Preview Character');
@@ -417,7 +441,7 @@ describe('CharacterValidationForm', () => {
 
   describe('Modal Behavior', () => {
     it('calls onCancel when cancel button is clicked', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       await userEvent.click(screen.getByText('Cancel'));
 
@@ -425,7 +449,7 @@ describe('CharacterValidationForm', () => {
     });
 
     it('calls onCancel when modal is closed', async () => {
-      render(<CharacterValidationForm {...defaultProps} />);
+      render(<CharacterValidationForm {...testProps} />);
 
       // Find the modal's close button (usually an X button) or press Escape
       // The Modal should call onOpenChange with false when closed
@@ -449,7 +473,7 @@ describe('CharacterValidationForm', () => {
 
       render(
         <CharacterValidationForm
-          {...defaultProps}
+          {...testProps}
           initialValues={initialValues}
         />
       );
