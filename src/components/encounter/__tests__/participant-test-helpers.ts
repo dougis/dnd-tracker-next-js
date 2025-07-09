@@ -249,6 +249,23 @@ export const dragDropTestPatterns = {
   },
 
   /**
+   * Complete drag-and-drop test workflow - combines setup and execution
+   */
+  async performDragDropTest(
+    mockService: any,
+    response: any,
+    renderFn: () => void,
+    encounterId: string,
+    reorderedIds: string[],
+    fromIndex: number = 0,
+    toIndex: number = 1
+  ) {
+    const user = await this.setupDragDropTest(mockService, response, renderFn);
+    await this.executeDragDropOperation(user, mockService, encounterId, reorderedIds, fromIndex, toIndex);
+    return user;
+  },
+
+  /**
    * Validates drag handle accessibility
    */
   validateDragHandleAccessibility(participants: string[]) {
@@ -277,6 +294,16 @@ export const dragDropTestPatterns = {
    */
   getReorderedIds() {
     return ['64a1b2c3d4e5f6789abcdef1', '64a1b2c3d4e5f6789abcdef0'];
+  },
+
+  /**
+   * Creates reordered encounter data structure
+   */
+  createReorderedEncounter(originalEncounter: any, reorderedParticipants: any[]) {
+    return {
+      ...originalEncounter,
+      participants: reorderedParticipants,
+    };
   }
 };
 
@@ -288,5 +315,101 @@ export const serviceTestUtils = {
 
   async verifyServiceCall(mockService: any, method: string, expectedArgs: any[]) {
     await serviceMocks.expectCallAfterWait(mockService, method, expectedArgs);
+  }
+};
+
+// Common test setup patterns to reduce duplication
+export const testSetupPatterns = {
+
+  /**
+   * Standard user setup with consistent configuration
+   */
+  createUserEvent() {
+    return userEvent.setup();
+  },
+
+  /**
+   * Setup test with user event and render function
+   */
+  async setupUserAndRender(renderFn: () => void) {
+    const user = this.createUserEvent();
+    renderFn();
+    return user;
+  },
+
+  /**
+   * Setup service mock with standard error handling
+   */
+  setupServiceMock(mockService: any, method: string, response: any) {
+    serviceMocks.setup(mockService, method, response);
+  },
+
+  /**
+   * Common pattern for service operation tests
+   */
+  async runServiceOperationTest(
+    mockService: any,
+    method: string,
+    mockResponse: any,
+    renderFn: () => void,
+    operation: (_user: ReturnType<typeof userEvent.setup>) => Promise<void>,
+    expectedArgs: any[]
+  ) {
+    const user = await this.setupUserAndRender(renderFn);
+    await testPatterns.testServiceOperation(mockService, method, mockResponse, () => operation(user), expectedArgs);
+  }
+};
+
+// Participant data creation patterns
+export const participantDataPatterns = {
+
+  /**
+   * Creates standard test participants with consistent data
+   */
+  createStandardParticipants() {
+    return [
+      createTestParticipant({
+        characterId: '64a1b2c3d4e5f6789abcdef0',
+        name: 'Aragorn',
+        type: 'pc',
+        notes: 'Ranger',
+      }),
+      createTestParticipant({
+        characterId: '64a1b2c3d4e5f6789abcdef1',
+        name: 'Goblin Scout',
+        type: 'npc',
+        maxHitPoints: 7,
+        currentHitPoints: 7,
+        armorClass: 15,
+        isPlayer: false,
+        notes: 'Weak enemy',
+      }),
+    ];
+  },
+
+  /**
+   * Creates reordered participant data
+   */
+  createReorderedParticipants() {
+    const standardParticipants = this.createStandardParticipants();
+    return [standardParticipants[1], standardParticipants[0]]; // Swap order
+  },
+
+  /**
+   * Creates encounter with standard participants
+   */
+  createStandardEncounter() {
+    return testDataFactories.createEncounter({
+      participants: this.createStandardParticipants(),
+    });
+  },
+
+  /**
+   * Creates encounter with reordered participants
+   */
+  createReorderedEncounter() {
+    return testDataFactories.createEncounter({
+      participants: this.createReorderedParticipants(),
+    });
   }
 };

@@ -5,14 +5,15 @@ import { EncounterParticipantManager } from '../EncounterParticipantManager';
 import { EncounterService } from '@/lib/services/EncounterService';
 import { testDataFactories } from '@/lib/services/__tests__/testDataFactories';
 import {
-  createTestParticipant,
   formActions,
   serviceMocks,
   testExpectations,
   getElements,
   workflows,
   testPatterns,
-  dragDropTestPatterns
+  dragDropTestPatterns,
+  testSetupPatterns,
+  participantDataPatterns
 } from './participant-test-helpers';
 
 // Mock the EncounterService
@@ -35,26 +36,7 @@ const renderComponent = (encounter: any) => {
 };
 
 describe('EncounterParticipantManager', () => {
-  const mockEncounter = testDataFactories.createEncounter({
-    participants: [
-      createTestParticipant({
-        characterId: '64a1b2c3d4e5f6789abcdef0',
-        name: 'Aragorn',
-        type: 'pc',
-        notes: 'Ranger',
-      }),
-      createTestParticipant({
-        characterId: '64a1b2c3d4e5f6789abcdef1',
-        name: 'Goblin Scout',
-        type: 'npc',
-        maxHitPoints: 7,
-        currentHitPoints: 7,
-        armorClass: 15,
-        isPlayer: false,
-        notes: 'Weak enemy',
-      }),
-    ],
-  });
+  const mockEncounter = participantDataPatterns.createStandardEncounter();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -106,12 +88,12 @@ describe('EncounterParticipantManager', () => {
     });
 
     it('should add participant successfully', async () => {
-      const user = await testPatterns.setupTest(() => renderComponent(mockEncounter));
-      await testPatterns.testServiceOperation(
+      await testSetupPatterns.runServiceOperationTest(
         mockEncounterService,
         'addParticipant',
         { success: true, data: mockEncounter },
-        () => workflows.addParticipant(user, { name: 'Legolas', hitPoints: '42', armorClass: '14' }),
+        () => renderComponent(mockEncounter),
+        (user) => workflows.addParticipant(user, { name: 'Legolas', hitPoints: '42', armorClass: '14' }),
         [
           mockEncounter._id.toString(),
           expect.objectContaining({
@@ -148,13 +130,12 @@ describe('EncounterParticipantManager', () => {
     });
 
     it('should remove participant successfully', async () => {
-      const user = await testPatterns.setupTest(() => renderComponent(mockEncounter));
-
-      await testPatterns.testServiceOperation(
+      await testSetupPatterns.runServiceOperationTest(
         mockEncounterService,
         'removeParticipant',
         { success: true, data: mockEncounter },
-        () => workflows.removeParticipant(user, 0),
+        () => renderComponent(mockEncounter),
+        (user) => workflows.removeParticipant(user, 0),
         [mockEncounter._id.toString(), '64a1b2c3d4e5f6789abcdef0']
       );
     });
@@ -171,13 +152,12 @@ describe('EncounterParticipantManager', () => {
     });
 
     it('should update participant successfully', async () => {
-      const user = await testPatterns.setupTest(() => renderComponent(mockEncounter));
-
-      await testPatterns.testServiceOperation(
+      await testSetupPatterns.runServiceOperationTest(
         mockEncounterService,
         'updateParticipant',
         { success: true, data: mockEncounter },
-        () => workflows.editParticipant(user, 0, { hitPoints: '50' }),
+        () => renderComponent(mockEncounter),
+        (user) => workflows.editParticipant(user, 0, { hitPoints: '50' }),
         [
           mockEncounter._id.toString(),
           '64a1b2c3d4e5f6789abcdef0',
@@ -215,35 +195,23 @@ describe('EncounterParticipantManager', () => {
     });
 
     it('should support drag and drop reordering', async () => {
-      const user = await dragDropTestPatterns.setupDragDropTest(
+      await dragDropTestPatterns.performDragDropTest(
         mockEncounterService,
         { success: true, data: mockEncounter },
-        () => renderComponent(mockEncounter)
+        () => renderComponent(mockEncounter),
+        mockEncounter._id.toString(),
+        dragDropTestPatterns.getReorderedIds()
       );
 
       // Verify the expected number of participants
       expect(getElements().participants).toHaveLength(2);
-
-      // Execute drag-and-drop operation with common pattern
-      await dragDropTestPatterns.executeDragDropOperation(
-        user,
-        mockEncounterService,
-        mockEncounter._id.toString(),
-        dragDropTestPatterns.getReorderedIds()
-      );
     });
 
     it('should handle reorder failure gracefully', async () => {
-      const user = await dragDropTestPatterns.setupDragDropTest(
+      await dragDropTestPatterns.performDragDropTest(
         mockEncounterService,
         { success: false, error: 'Reorder failed' },
-        () => renderComponent(mockEncounter)
-      );
-
-      // Execute drag-and-drop operation with common pattern
-      await dragDropTestPatterns.executeDragDropOperation(
-        user,
-        mockEncounterService,
+        () => renderComponent(mockEncounter),
         mockEncounter._id.toString(),
         dragDropTestPatterns.getReorderedIds()
       );
@@ -266,38 +234,12 @@ describe('EncounterParticipantManager', () => {
     });
 
     it('should maintain participant order after successful reorder', async () => {
-      const reorderedEncounter = {
-        ...mockEncounter,
-        participants: [
-          createTestParticipant({
-            characterId: '64a1b2c3d4e5f6789abcdef1',
-            name: 'Goblin Scout',
-            type: 'npc',
-            maxHitPoints: 7,
-            currentHitPoints: 7,
-            armorClass: 15,
-            isPlayer: false,
-            notes: 'Weak enemy',
-          }),
-          createTestParticipant({
-            characterId: '64a1b2c3d4e5f6789abcdef0',
-            name: 'Aragorn',
-            type: 'pc',
-            notes: 'Ranger',
-          }),
-        ],
-      };
+      const reorderedEncounter = participantDataPatterns.createReorderedEncounter();
 
-      const user = await dragDropTestPatterns.setupDragDropTest(
+      await dragDropTestPatterns.performDragDropTest(
         mockEncounterService,
         { success: true, data: reorderedEncounter },
-        () => renderComponent(mockEncounter)
-      );
-
-      // Execute drag-and-drop operation with common pattern
-      await dragDropTestPatterns.executeDragDropOperation(
-        user,
-        mockEncounterService,
+        () => renderComponent(mockEncounter),
         mockEncounter._id.toString(),
         dragDropTestPatterns.getReorderedIds()
       );
@@ -313,10 +255,8 @@ describe('EncounterParticipantManager', () => {
 
   describe('Participant Role Assignment', () => {
     it('should allow changing participant roles', async () => {
-      const user = userEvent.setup();
-      serviceMocks.setup(mockEncounterService, 'updateParticipant', { success: true, data: mockEncounter });
-
-      renderComponent(mockEncounter);
+      const user = await testSetupPatterns.setupUserAndRender(() => renderComponent(mockEncounter));
+      testSetupPatterns.setupServiceMock(mockEncounterService, 'updateParticipant', { success: true, data: mockEncounter });
 
       const { editButtons } = getElements();
       await user.click(editButtons[1]); // Edit Goblin Scout
@@ -347,13 +287,12 @@ describe('EncounterParticipantManager', () => {
     });
 
     it('should perform batch removal', async () => {
-      const user = await testPatterns.setupTest(() => renderComponent(mockEncounter));
-
-      await testPatterns.testServiceOperation(
+      await testSetupPatterns.runServiceOperationTest(
         mockEncounterService,
         'removeParticipant',
         { success: true, data: mockEncounter },
-        async () => {
+        () => renderComponent(mockEncounter),
+        async (user) => {
           await workflows.selectMultiple(user, [0]);
           await user.click(screen.getByText('Remove Selected'));
           await user.click(screen.getByText('Remove'));
@@ -365,8 +304,7 @@ describe('EncounterParticipantManager', () => {
 
   describe('Character Import', () => {
     it('should show character import dialog', async () => {
-      const user = userEvent.setup();
-      renderComponent(mockEncounter);
+      const user = await testSetupPatterns.setupUserAndRender(() => renderComponent(mockEncounter));
 
       const { importButton } = getElements();
       await user.click(importButton);
@@ -378,10 +316,8 @@ describe('EncounterParticipantManager', () => {
 
   describe('Error Handling', () => {
     it('should display error message when participant addition fails', async () => {
-      const user = userEvent.setup();
-      serviceMocks.setup(mockEncounterService, 'addParticipant', { success: false, error: 'Failed to add participant' });
-
-      renderComponent(mockEncounter);
+      const user = await testSetupPatterns.setupUserAndRender(() => renderComponent(mockEncounter));
+      testSetupPatterns.setupServiceMock(mockEncounterService, 'addParticipant', { success: false, error: 'Failed to add participant' });
 
       await workflows.addParticipant(user, { name: 'Test', hitPoints: '10', armorClass: '10' });
 
@@ -391,14 +327,13 @@ describe('EncounterParticipantManager', () => {
     });
 
     it('should handle service failures gracefully', async () => {
-      const user = userEvent.setup();
+      const user = await testSetupPatterns.setupUserAndRender(() => renderComponent(mockEncounter));
+
       // Mock a service failure response instead of throwing an error
-      mockEncounterService.addParticipant.mockResolvedValue({
+      testSetupPatterns.setupServiceMock(mockEncounterService, 'addParticipant', {
         success: false,
         error: 'Network error'
       });
-
-      renderComponent(mockEncounter);
 
       await workflows.addParticipant(user, { name: 'Test', hitPoints: '10', armorClass: '10' });
 

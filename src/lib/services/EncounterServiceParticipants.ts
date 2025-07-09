@@ -176,10 +176,9 @@ export class EncounterServiceParticipants {
       throw new EncounterValidationError('participantIds', 'Participant IDs must be a non-empty array');
     }
 
-    for (const id of participantIds) {
-      if (!EncounterServiceValidation.isValidObjectId(id)) {
-        throw new EncounterValidationError('participantIds', `Invalid participant ID format: ${id}`);
-      }
+    const invalidId = participantIds.find(id => !EncounterServiceValidation.isValidObjectId(id));
+    if (invalidId) {
+      throw new EncounterValidationError('participantIds', `Invalid participant ID format: ${invalidId}`);
     }
   }
 

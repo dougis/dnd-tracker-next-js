@@ -68,38 +68,23 @@ export function ParticipantList({
       return;
     }
 
-    const { oldIndex, newIndex } = findDragIndices(active.id, over.id);
+    const oldIndex = localParticipants.findIndex(
+      (p) => p.characterId.toString() === active.id
+    );
+    const newIndex = localParticipants.findIndex(
+      (p) => p.characterId.toString() === over.id
+    );
+
     if (oldIndex !== -1 && newIndex !== -1) {
-      performReorder(oldIndex, newIndex);
+      const reorderedParticipants = arrayMove(localParticipants, oldIndex, newIndex);
+      setLocalParticipants(reorderedParticipants);
+      onReorder(reorderedParticipants.map(p => p.characterId.toString()));
     }
   };
 
-  const findDragIndices = (activeId: string | number, overId: string | number) => {
-    const oldIndex = localParticipants.findIndex(
-      (p) => p.characterId.toString() === activeId
-    );
-    const newIndex = localParticipants.findIndex(
-      (p) => p.characterId.toString() === overId
-    );
-    return { oldIndex, newIndex };
-  };
-
-  const performReorder = (oldIndex: number, newIndex: number) => {
-    const reorderedParticipants = arrayMove(localParticipants, oldIndex, newIndex);
-    setLocalParticipants(reorderedParticipants);
-
-    // Call the reorder callback with the new order
-    const participantIds = reorderedParticipants.map(p => p.characterId.toString());
-    onReorder(participantIds);
-  };
-
-  const findActiveParticipant = (activeId: string | null) => {
-    return activeId ? localParticipants.find(
-      (p) => p.characterId.toString() === activeId
-    ) : null;
-  };
-
-  const activeParticipant = findActiveParticipant(activeId);
+  const activeParticipant = activeId ? localParticipants.find(
+    (p) => p.characterId.toString() === activeId
+  ) : null;
 
   return (
     <DndContext
