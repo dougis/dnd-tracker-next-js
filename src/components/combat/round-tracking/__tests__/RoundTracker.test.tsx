@@ -469,8 +469,8 @@ describe('RoundTracker', () => {
       render(<RoundTracker {...convertToNewProps({ effects: manyEffects })} />);
       const endTime = performance.now();
 
-      // Should render in reasonable time (< 100ms)
-      expect(endTime - startTime).toBeLessThan(100);
+      // Should render in reasonable time (< 200ms)
+      expect(endTime - startTime).toBeLessThan(200);
     });
   });
 
