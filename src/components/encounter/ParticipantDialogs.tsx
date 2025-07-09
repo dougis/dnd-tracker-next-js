@@ -14,7 +14,7 @@ import {
 import { Plus, Download } from 'lucide-react';
 import { ParticipantForm } from './ParticipantForm';
 import { CharacterLibraryInterface } from './CharacterLibraryInterface';
-import { convertCharactersToParticipants, validateCharactersForConversion } from './utils/characterConversion';
+import { validateCharactersForConversion } from './utils/characterConversion';
 import type { ParticipantFormData } from './hooks/useParticipantForm';
 import type { ICharacter } from '@/lib/models/Character';
 
@@ -182,7 +182,7 @@ export function ImportParticipantDialog({
     try {
       // Validate characters before conversion
       const { validCharacters, invalidCharacters } = validateCharactersForConversion(characters);
-      
+
       if (invalidCharacters.length > 0) {
         console.warn('Some characters could not be imported:', invalidCharacters);
       }

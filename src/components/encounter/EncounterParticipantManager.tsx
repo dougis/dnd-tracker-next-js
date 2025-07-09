@@ -121,6 +121,8 @@ export function EncounterParticipantManager({
         onImportDialogOpenChange={(open) =>
           setDialogState(prev => ({ ...prev, isImportOpen: open }))
         }
+        onImportCharacters={() => {}}
+        userId="placeholder-user-id"
       />
     </>
   ), [
@@ -158,6 +160,8 @@ export function EncounterParticipantManager({
             onImportDialogOpenChange={(open) =>
               setDialogState(prev => ({ ...prev, isImportOpen: open }))
             }
+            onImportCharacters={() => {}}
+            userId="placeholder-user-id"
           />
         )}
       />

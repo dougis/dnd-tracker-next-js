@@ -3,7 +3,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ImportParticipantDialog } from '../ParticipantDialogs';
 import { CharacterService } from '@/lib/services/CharacterService';
-import { testDataFactories } from '@/lib/services/__tests__/testDataFactories';
 import type { ICharacter } from '@/lib/models/Character';
 import type { ParticipantFormData } from '../hooks/useParticipantForm';
 
@@ -29,7 +28,7 @@ const createMockCharacter = (overrides: Partial<ICharacter> = {}): ICharacter =>
     charisma: 10,
   },
   hitPoints: {
-    max: 45,
+    maximum: 45,
     current: 45,
     temporary: 0,
   },
@@ -66,7 +65,7 @@ const mockCharacters = [
     type: 'pc',
     race: 'human',
     classes: [{ class: 'ranger', level: 5, hitDie: 10 }],
-    hitPoints: { max: 45, current: 45, temporary: 0 },
+    hitPoints: { maximum: 45, current: 45, temporary: 0 },
     armorClass: 16,
   }),
   createMockCharacter({
@@ -75,7 +74,7 @@ const mockCharacters = [
     type: 'pc',
     race: 'elf',
     classes: [{ class: 'ranger', level: 5, hitDie: 10 }],
-    hitPoints: { max: 40, current: 40, temporary: 0 },
+    hitPoints: { maximum: 40, current: 40, temporary: 0 },
     armorClass: 15,
   }),
   createMockCharacter({
@@ -84,7 +83,7 @@ const mockCharacters = [
     type: 'pc',
     race: 'dwarf',
     classes: [{ class: 'fighter', level: 5, hitDie: 10 }],
-    hitPoints: { max: 50, current: 50, temporary: 0 },
+    hitPoints: { maximum: 50, current: 50, temporary: 0 },
     armorClass: 18,
   }),
 ];
@@ -99,21 +98,21 @@ describe('CharacterLibraryIntegration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Setup default mock implementations
     mockCharacterService.getCharactersByOwner = jest.fn().mockResolvedValue({
       success: true,
       data: {
-        characters: mockCharacters,
+        items: mockCharacters,
         pagination: {
           page: 1,
           limit: 20,
           total: 3,
-          pages: 1,
+          totalPages: 1,
         },
       },
     });
-    
+
     mockCharacterService.searchCharacters = jest.fn().mockResolvedValue({
       success: true,
       data: mockCharacters,
@@ -213,7 +212,7 @@ describe('CharacterLibraryIntegration', () => {
 
     it('should allow deselecting characters', async () => {
       const user = userEvent.setup();
-      
+
       render(<ImportParticipantDialog {...mockProps} />);
 
       await waitFor(() => {
@@ -221,11 +220,11 @@ describe('CharacterLibraryIntegration', () => {
       });
 
       const aragornCheckbox = screen.getByRole('checkbox', { name: /select aragorn/i });
-      
+
       // Select first
       await user.click(aragornCheckbox);
       expect(aragornCheckbox).toBeChecked();
-      
+
       // Then deselect
       await user.click(aragornCheckbox);
       expect(aragornCheckbox).not.toBeChecked();
@@ -247,7 +246,7 @@ describe('CharacterLibraryIntegration', () => {
 
     it('should support bulk deselection with Deselect All', async () => {
       const user = userEvent.setup();
-      
+
       render(<ImportParticipantDialog {...mockProps} />);
 
       await waitFor(() => {
@@ -255,11 +254,11 @@ describe('CharacterLibraryIntegration', () => {
       });
 
       const selectAllCheckbox = screen.getByRole('checkbox', { name: /select all/i });
-      
+
       // Select all first
       await user.click(selectAllCheckbox);
       expect(selectAllCheckbox).toBeChecked();
-      
+
       // Then deselect all
       await user.click(selectAllCheckbox);
       expect(selectAllCheckbox).not.toBeChecked();
@@ -306,8 +305,8 @@ describe('CharacterLibraryIntegration', () => {
       mockCharacterService.getCharactersByOwner = jest.fn().mockResolvedValue({
         success: true,
         data: {
-          characters: [multiclassCharacter],
-          pagination: { page: 1, limit: 20, total: 1, pages: 1 },
+          items: [multiclassCharacter],
+          pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
         },
       });
 
@@ -324,7 +323,7 @@ describe('CharacterLibraryIntegration', () => {
   describe('Character Import', () => {
     it('should enable import button when characters are selected', async () => {
       const user = userEvent.setup();
-      
+
       render(<ImportParticipantDialog {...mockProps} />);
 
       await waitFor(() => {
@@ -356,7 +355,7 @@ describe('CharacterLibraryIntegration', () => {
 
     it('should call onImportCharacters when import button is clicked', async () => {
       const user = userEvent.setup();
-      
+
       render(<ImportParticipantDialog {...mockProps} />);
 
       await waitFor(() => {
@@ -381,7 +380,7 @@ describe('CharacterLibraryIntegration', () => {
 
     it('should show loading state during import', async () => {
       const user = userEvent.setup();
-      
+
       render(<ImportParticipantDialog {...mockProps} />);
 
       await waitFor(() => {
@@ -409,10 +408,9 @@ describe('CharacterLibraryIntegration', () => {
       const participant = convertCharacterToParticipant(character);
 
       expect(participant).toEqual({
-        characterId: character._id,
         name: character.name,
         type: character.type,
-        maxHitPoints: character.hitPoints.max,
+        maxHitPoints: character.hitPoints.maximum,
         currentHitPoints: character.hitPoints.current,
         temporaryHitPoints: character.hitPoints.temporary,
         armorClass: character.armorClass,
@@ -481,8 +479,8 @@ describe('CharacterLibraryIntegration', () => {
       mockCharacterService.getCharactersByOwner = jest.fn().mockResolvedValue({
         success: true,
         data: {
-          characters: [],
-          pagination: { page: 1, limit: 20, total: 0, pages: 0 },
+          items: [],
+          pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
         },
       });
 
@@ -499,10 +497,9 @@ describe('CharacterLibraryIntegration', () => {
 // Helper function that needs to be implemented
 function convertCharacterToParticipant(character: ICharacter): ParticipantFormData {
   return {
-    characterId: character._id.toString(),
     name: character.name,
     type: character.type,
-    maxHitPoints: character.hitPoints.max,
+    maxHitPoints: character.hitPoints.maximum,
     currentHitPoints: character.hitPoints.current,
     temporaryHitPoints: character.hitPoints.temporary,
     armorClass: character.armorClass,

@@ -7,10 +7,9 @@ import type { ParticipantFormData } from '../hooks/useParticipantForm';
  */
 export function convertCharacterToParticipant(character: ICharacter): ParticipantFormData {
   return {
-    characterId: character._id.toString(),
     name: character.name,
     type: character.type,
-    maxHitPoints: character.hitPoints.max,
+    maxHitPoints: character.hitPoints.maximum,
     currentHitPoints: character.hitPoints.current,
     temporaryHitPoints: character.hitPoints.temporary || 0,
     armorClass: character.armorClass,
@@ -19,7 +18,6 @@ export function convertCharacterToParticipant(character: ICharacter): Participan
     isVisible: true,
     notes: character.notes || '',
     conditions: [],
-    position: undefined, // Will be set during encounter if grid is enabled
   };
 }
 
@@ -45,7 +43,7 @@ export function validateCharacterForConversion(character: ICharacter): { isValid
     errors.push('Character type is required');
   }
 
-  if (!character.hitPoints?.max || character.hitPoints.max <= 0) {
+  if (!character.hitPoints?.maximum || character.hitPoints.maximum <= 0) {
     errors.push('Character must have valid hit points');
   }
 
@@ -59,7 +57,7 @@ export function validateCharacterForConversion(character: ICharacter): { isValid
   } else {
     const requiredAbilities = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
     for (const ability of requiredAbilities) {
-      if (!character.abilityScores[ability as keyof typeof character.abilityScores] || 
+      if (!character.abilityScores[ability as keyof typeof character.abilityScores] ||
           character.abilityScores[ability as keyof typeof character.abilityScores] <= 0) {
         errors.push(`Character must have valid ${ability} score`);
       }

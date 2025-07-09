@@ -7,15 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Search, User, Shield, Heart, Sword, Users, CheckSquare, Square, AlertCircle } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Search, User, Shield, Heart, AlertCircle } from 'lucide-react';
 import { CharacterService } from '@/lib/services/CharacterService';
 import type { ICharacter } from '@/lib/models/Character';
-import type { ParticipantFormData } from './hooks/useParticipantForm';
 
 interface CharacterLibraryInterfaceProps {
-  onImportCharacters: (characters: ICharacter[]) => void;
+  onImportCharacters: (_characters: ICharacter[]) => void;
   isLoading: boolean;
   userId: string;
 }
@@ -43,10 +41,80 @@ export function CharacterLibraryInterface({
   const [loadingState, setLoadingState] = useState<'idle' | 'loading' | 'searching' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
 
+  const loadCharacters = useCallback(async () => {
+    setLoadingState('loading');
+    setError(null);
+
+    try {
+      const result = await CharacterService.getCharactersByOwner(userId, 1, 20);
+
+      if (result.success) {
+        setCharacters(result.data.items);
+      } else {
+        setError(String(result.error) || 'Failed to load characters');
+      }
+    } catch {
+      setError('Error loading characters');
+    } finally {
+      setLoadingState('idle');
+    }
+  }, [userId]);
+
+  const handleSearch = useCallback(async () => {
+    if (!filters.search.trim()) return;
+
+    setLoadingState('searching');
+    setError(null);
+
+    try {
+      const result = await CharacterService.searchCharacters(filters.search, userId);
+
+      if (result.success) {
+        setCharacters(result.data);
+      } else {
+        setError(String(result.error) || 'Search failed');
+      }
+    } catch {
+      setError('Error searching characters');
+    } finally {
+      setLoadingState('idle');
+    }
+  }, [filters.search, userId]);
+
+  const handleFilter = useCallback(async () => {
+    setLoadingState('loading');
+    setError(null);
+
+    try {
+      let result;
+
+      if (filters.type !== 'all') {
+        result = await CharacterService.getCharactersByType(filters.type as any, userId);
+      } else if (filters.class !== 'all') {
+        result = await CharacterService.getCharactersByClass(filters.class as any, userId);
+      } else if (filters.race !== 'all') {
+        result = await CharacterService.getCharactersByRace(filters.race as any, userId);
+      } else {
+        result = await CharacterService.getCharactersByOwner(userId, 1, 20);
+      }
+
+      if (result.success) {
+        const data = 'items' in result.data ? result.data.items : result.data;
+        setCharacters(data as ICharacter[]);
+      } else {
+        setError(String(result.error) || 'Filter failed');
+      }
+    } catch {
+      setError('Error filtering characters');
+    } finally {
+      setLoadingState('idle');
+    }
+  }, [filters.type, filters.class, filters.race, userId]);
+
   // Load characters on mount
   useEffect(() => {
     loadCharacters();
-  }, [userId]);
+  }, [loadCharacters]);
 
   // Handle search with debouncing
   useEffect(() => {
@@ -59,7 +127,7 @@ export function CharacterLibraryInterface({
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [filters.search]);
+  }, [filters.search, handleSearch, loadCharacters]);
 
   // Handle filter changes
   useEffect(() => {
@@ -68,81 +136,11 @@ export function CharacterLibraryInterface({
     } else if (!filters.search.trim()) {
       loadCharacters();
     }
-  }, [filters.type, filters.class, filters.race]);
-
-  const loadCharacters = useCallback(async () => {
-    setLoadingState('loading');
-    setError(null);
-    
-    try {
-      const result = await CharacterService.getCharactersByOwner(userId, 1, 20);
-      
-      if (result.success) {
-        setCharacters(result.data.characters);
-      } else {
-        setError(result.error || 'Failed to load characters');
-      }
-    } catch (err) {
-      setError('Error loading characters');
-    } finally {
-      setLoadingState('idle');
-    }
-  }, [userId]);
-
-  const handleSearch = useCallback(async () => {
-    if (!filters.search.trim()) return;
-    
-    setLoadingState('searching');
-    setError(null);
-    
-    try {
-      const result = await CharacterService.searchCharacters(filters.search, userId);
-      
-      if (result.success) {
-        setCharacters(result.data);
-      } else {
-        setError(result.error || 'Search failed');
-      }
-    } catch (err) {
-      setError('Error searching characters');
-    } finally {
-      setLoadingState('idle');
-    }
-  }, [filters.search, userId]);
-
-  const handleFilter = useCallback(async () => {
-    setLoadingState('loading');
-    setError(null);
-    
-    try {
-      let result;
-      
-      if (filters.type !== 'all') {
-        result = await CharacterService.getCharactersByType(filters.type as any, userId);
-      } else if (filters.class !== 'all') {
-        result = await CharacterService.getCharactersByClass(filters.class as any, userId);
-      } else if (filters.race !== 'all') {
-        result = await CharacterService.getCharactersByRace(filters.race as any, userId);
-      } else {
-        result = await CharacterService.getCharactersByOwner(userId, 1, 20);
-      }
-      
-      if (result.success) {
-        const data = 'characters' in result.data ? result.data.characters : result.data;
-        setCharacters(data);
-      } else {
-        setError(result.error || 'Filter failed');
-      }
-    } catch (err) {
-      setError('Error filtering characters');
-    } finally {
-      setLoadingState('idle');
-    }
-  }, [filters.type, filters.class, filters.race, userId]);
+  }, [filters.type, filters.class, filters.race, filters.search, handleFilter, loadCharacters]);
 
   const handleCharacterSelect = (character: ICharacter) => {
-    setSelectedCharacters(prev => 
-      prev.find(c => c._id === character._id) 
+    setSelectedCharacters(prev =>
+      prev.find(c => c._id === character._id)
         ? prev.filter(c => c._id !== character._id)
         : [...prev, character]
     );
@@ -160,7 +158,7 @@ export function CharacterLibraryInterface({
     onImportCharacters(selectedCharacters);
   };
 
-  const isCharacterSelected = (character: ICharacter) => 
+  const isCharacterSelected = (character: ICharacter) =>
     selectedCharacters.some(c => c._id === character._id);
 
   const getCharacterClassDisplay = (character: ICharacter): string => {
@@ -193,9 +191,9 @@ export function CharacterLibraryInterface({
           <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
           <p className="text-sm text-red-600">Error loading characters</p>
           <p className="text-xs text-gray-500 mt-1">{error}</p>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={loadCharacters}
             className="mt-2"
           >
@@ -233,7 +231,7 @@ export function CharacterLibraryInterface({
             className="pl-10"
           />
         </div>
-        
+
         <div className="grid grid-cols-3 gap-2">
           <div>
             <Label htmlFor="type-filter" className="text-xs text-gray-500">Type</Label>
@@ -248,7 +246,7 @@ export function CharacterLibraryInterface({
               </SelectContent>
             </Select>
           </div>
-          
+
           <div>
             <Label htmlFor="class-filter" className="text-xs text-gray-500">Class</Label>
             <Select value={filters.class} onValueChange={(value) => setFilters(prev => ({ ...prev, class: value }))}>
@@ -273,7 +271,7 @@ export function CharacterLibraryInterface({
               </SelectContent>
             </Select>
           </div>
-          
+
           <div>
             <Label htmlFor="race-filter" className="text-xs text-gray-500">Race</Label>
             <Select value={filters.race} onValueChange={(value) => setFilters(prev => ({ ...prev, race: value }))}>
@@ -309,7 +307,7 @@ export function CharacterLibraryInterface({
             Select all ({characters.length})
           </Label>
         </div>
-        
+
         <div className="text-sm text-gray-500">
           {selectedCharacters.length} selected
         </div>
@@ -327,7 +325,7 @@ export function CharacterLibraryInterface({
                     checked={isCharacterSelected(character)}
                     onCheckedChange={() => handleCharacterSelect(character)}
                   />
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
@@ -336,11 +334,11 @@ export function CharacterLibraryInterface({
                           {character.type.toUpperCase()}
                         </Badge>
                       </div>
-                      
+
                       <div className="flex items-center space-x-4 text-xs text-gray-500">
                         <div className="flex items-center space-x-1">
                           <Heart className="h-3 w-3" />
-                          <span>HP: {character.hitPoints.max}</span>
+                          <span>HP: {character.hitPoints.maximum}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Shield className="h-3 w-3" />
@@ -348,11 +346,11 @@ export function CharacterLibraryInterface({
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="mt-1 text-xs text-gray-600">
                       {getCharacterLevelDisplay(character)} {character.race.charAt(0).toUpperCase() + character.race.slice(1)} {getCharacterClassDisplay(character)}
                     </div>
-                    
+
                     <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
                       <span>STR: {character.abilityScores.strength}</span>
                       <span>DEX: {character.abilityScores.dexterity}</span>
@@ -375,8 +373,8 @@ export function CharacterLibraryInterface({
           <div className="text-sm text-gray-500">
             {selectedCharacters.length} character{selectedCharacters.length !== 1 ? 's' : ''} selected
           </div>
-          
-          <Button 
+
+          <Button
             onClick={handleImport}
             disabled={selectedCharacters.length === 0 || isLoading}
             className="min-w-32"
