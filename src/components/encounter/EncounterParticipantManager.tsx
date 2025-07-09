@@ -29,7 +29,7 @@ export function EncounterParticipantManager({
   });
 
   // Hooks
-  const { isLoading, addParticipant, updateParticipant, removeParticipant } = useParticipantOperations(encounter, onUpdate);
+  const { isLoading, addParticipant, updateParticipant, removeParticipant, reorderParticipants } = useParticipantOperations(encounter, onUpdate);
   const { formData, setFormData, formErrors, resetForm, loadParticipantData, isFormValid } = useParticipantForm();
 
   // Selection handlers
@@ -98,6 +98,10 @@ export function EncounterParticipantManager({
   const handleRemoveParticipant = useCallback(async (participantId: string) => {
     await removeParticipant(participantId);
   }, [removeParticipant]);
+
+  const handleReorderParticipants = useCallback(async (participantIds: string[]) => {
+    await reorderParticipants(participantIds);
+  }, [reorderParticipants]);
 
   // Render helpers
   const renderActionButtons = useCallback(() => (
@@ -176,6 +180,7 @@ export function EncounterParticipantManager({
           onSelectionChange={handleParticipantSelection}
           onEdit={openEditDialog}
           onRemove={handleRemoveParticipant}
+          onReorder={handleReorderParticipants}
         />
       </CardContent>
 
