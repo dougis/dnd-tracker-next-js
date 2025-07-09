@@ -13,7 +13,7 @@ const exportQuerySchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { searchParams } = new URL(request.url);
@@ -21,7 +21,8 @@ export async function GET(
 
     const validatedQuery = exportQuerySchema.parse(query);
 
-    const encounterId = params.id;
+    const resolvedParams = await params;
+    const encounterId = resolvedParams.id;
 
     // TODO: Get user ID from authentication
     const userId = 'temp-user-id'; // Replace with actual user ID from auth

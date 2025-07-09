@@ -41,10 +41,10 @@ export function withCombatValidation(
 ) {
   return async function(
     request: NextRequest,
-    context: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
   ): Promise<NextResponse> {
     try {
-      const { id: encounterId } = context.params;
+      const { id: encounterId } = await context.params;
 
       // Parse body if required or if there's content
       let body;

@@ -6,7 +6,7 @@ import { withAuthAndAccess, createSuccessResponse, handleServiceError, handleZod
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAuthAndAccess(params, async (userId) => {
     try {
@@ -34,7 +34,7 @@ export async function PATCH(
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return withAuthAndAccess(params, async (userId) => {
     const result = await UserService.getUserById(userId);

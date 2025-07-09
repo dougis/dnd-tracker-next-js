@@ -8,7 +8,7 @@ import {
 } from '../helpers/route-helpers';
 
 interface RouteContext {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(request: NextRequest, context: RouteContext) {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const { error, userId } = await initializeRoute(request);
     if (error) return error;
 
-    const { id } = context.params;
+    const { id } = await context.params;
     const result = await CharacterService.getCharacterById(id, userId!);
     return handleSimpleResult(result);
   } catch (error) {
@@ -29,7 +29,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     const { error, userId } = await initializeRoute(request);
     if (error) return error;
 
-    const { id } = context.params;
+    const { id } = await context.params;
     const body = await request.json();
     const validation = validateCharacterUpdate(body);
     if (!validation.isValid) return validation.error!;
@@ -46,7 +46,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     const { error, userId } = await initializeRoute(request);
     if (error) return error;
 
-    const { id } = context.params;
+    const { id } = await context.params;
     const result = await CharacterService.deleteCharacter(id, userId!);
     return handleSimpleResult(result, 'Character deleted successfully');
   } catch (error) {

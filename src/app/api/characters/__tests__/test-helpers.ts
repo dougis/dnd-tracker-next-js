@@ -4,7 +4,8 @@ import { CharacterType } from '@/lib/validations/character';
 export const TEST_USER_ID = '507f1f77bcf86cd799439011';
 export const TEST_CHARACTER_ID = '507f1f77bcf86cd799439012';
 
-export const createMockParams = (id: string = TEST_CHARACTER_ID) => ({ id });
+export const createMockParams = (id: string = TEST_CHARACTER_ID) =>
+  Promise.resolve({ id });
 
 export const createMockRequest = (
   url: string,

@@ -26,8 +26,9 @@ function createSuccessResponse(settings: any) {
   );
 }
 
-async function validateEncounterId(params: { id: string }) {
-  const validation = objectIdSchema.safeParse(params.id);
+async function validateEncounterId(params: Promise<{ id: string }>) {
+  const resolvedParams = await params;
+  const validation = objectIdSchema.safeParse(resolvedParams.id);
 
   if (!validation.success) {
     return {
@@ -97,7 +98,7 @@ function handleUnexpectedError(error: unknown) {
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ): Promise<Response> {
   try {
     const idValidation = await validateEncounterId(context.params);

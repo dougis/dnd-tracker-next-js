@@ -30,14 +30,14 @@ export async function validateUserAccess(requestedUserId: string, sessionUserId:
 }
 
 export async function withAuthAndAccess(
-  params: { id: string },
+  params: Promise<{ id: string }>,
   callback: (_userId: string) => Promise<Response>
 ): Promise<Response> {
   try {
     const { error: authError, session } = await validateAuth();
     if (authError) return authError;
 
-    const { id: userId } = params;
+    const { id: userId } = await params;
     const accessError = await validateUserAccess(userId, session!.user.id);
     if (accessError) return accessError;
 

@@ -8,13 +8,14 @@ const templateBodySchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
     const validatedBody = templateBodySchema.parse(body);
 
-    const encounterId = params.id;
+    const resolvedParams = await params;
+    const encounterId = resolvedParams.id;
 
     // TODO: Get user ID from authentication
     const userId = 'temp-user-id'; // Replace with actual user ID from auth
