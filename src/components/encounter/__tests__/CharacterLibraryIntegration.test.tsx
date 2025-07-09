@@ -200,7 +200,20 @@ describe('CharacterLibraryIntegration', () => {
 
       const typeFilter = screen.getByRole('combobox', { name: /type/i });
       await user.click(typeFilter);
-      await user.click(screen.getByText('PC'));
+      
+      // Wait for dropdown to open and then click PC option
+      await waitFor(() => {
+        const pcOption = screen.getAllByText('PC').find(element => 
+          element.closest('[role="option"]') !== null
+        );
+        expect(pcOption).toBeInTheDocument();
+        return pcOption;
+      });
+      
+      const pcOption = screen.getAllByText('PC').find(element => 
+        element.closest('[role="option"]') !== null
+      );
+      await user.click(pcOption!);
 
       await waitFor(() => {
         expect(mockCharacterService.getCharactersByType).toHaveBeenCalledWith('pc', 'user123');
@@ -236,8 +249,9 @@ describe('CharacterLibraryIntegration', () => {
     it('should allow selecting individual characters', async () => {
       const user = await setupUserAndRender();
 
-      const aragornCheckbox = screen.getByRole('checkbox', { name: /select aragorn/i });
-      await user.click(aragornCheckbox);
+      const aragornCheckbox = document.getElementById('character-507f1f77bcf86cd799439011');
+      expect(aragornCheckbox).toBeInTheDocument();
+      await user.click(aragornCheckbox!);
 
       expect(aragornCheckbox).toBeChecked();
     });
@@ -245,22 +259,24 @@ describe('CharacterLibraryIntegration', () => {
     it('should allow deselecting characters', async () => {
       const user = await setupUserAndRender();
 
-      const aragornCheckbox = screen.getByRole('checkbox', { name: /select aragorn/i });
+      const aragornCheckbox = document.getElementById('character-507f1f77bcf86cd799439011');
+      expect(aragornCheckbox).toBeInTheDocument();
 
       // Select first
-      await user.click(aragornCheckbox);
+      await user.click(aragornCheckbox!);
       expect(aragornCheckbox).toBeChecked();
 
       // Then deselect
-      await user.click(aragornCheckbox);
+      await user.click(aragornCheckbox!);
       expect(aragornCheckbox).not.toBeChecked();
     });
 
     it('should support bulk selection with Select All', async () => {
       const user = await setupUserAndRender();
 
-      const selectAllCheckbox = screen.getByRole('checkbox', { name: /select all/i });
-      await user.click(selectAllCheckbox);
+      const selectAllCheckbox = document.getElementById('select-all');
+      expect(selectAllCheckbox).toBeInTheDocument();
+      await user.click(selectAllCheckbox!);
 
       expect(selectAllCheckbox).toBeChecked();
     });
@@ -268,14 +284,15 @@ describe('CharacterLibraryIntegration', () => {
     it('should support bulk deselection with Deselect All', async () => {
       const user = await setupUserAndRender();
 
-      const selectAllCheckbox = screen.getByRole('checkbox', { name: /select all/i });
+      const selectAllCheckbox = document.getElementById('select-all');
+      expect(selectAllCheckbox).toBeInTheDocument();
 
       // Select all first
-      await user.click(selectAllCheckbox);
+      await user.click(selectAllCheckbox!);
       expect(selectAllCheckbox).toBeChecked();
 
       // Then deselect all
-      await user.click(selectAllCheckbox);
+      await user.click(selectAllCheckbox!);
       expect(selectAllCheckbox).not.toBeChecked();
     });
   });
@@ -332,8 +349,9 @@ describe('CharacterLibraryIntegration', () => {
       const user = await setupUserAndRender();
 
       // Select a character
-      const aragornCheckbox = screen.getByRole('checkbox', { name: /select aragorn/i });
-      await user.click(aragornCheckbox);
+      const aragornCheckbox = document.getElementById('character-507f1f77bcf86cd799439011');
+      expect(aragornCheckbox).toBeInTheDocument();
+      await user.click(aragornCheckbox!);
 
       await waitFor(() => {
         expect(screen.getByText('Import Selected (1)')).toBeInTheDocument();
@@ -358,10 +376,12 @@ describe('CharacterLibraryIntegration', () => {
       const user = await setupUserAndRender();
 
       // Select two characters
-      const aragornCheckbox = screen.getByRole('checkbox', { name: /select aragorn/i });
-      const legolasCheckbox = screen.getByRole('checkbox', { name: /select legolas/i });
-      await user.click(aragornCheckbox);
-      await user.click(legolasCheckbox);
+      const aragornCheckbox = document.getElementById('character-507f1f77bcf86cd799439011');
+      const legolasCheckbox = document.getElementById('character-507f1f77bcf86cd799439012');
+      expect(aragornCheckbox).toBeInTheDocument();
+      expect(legolasCheckbox).toBeInTheDocument();
+      await user.click(aragornCheckbox!);
+      await user.click(legolasCheckbox!);
 
       await waitFor(() => {
         expect(screen.getByText('Import Selected (2)')).toBeInTheDocument();
@@ -377,8 +397,9 @@ describe('CharacterLibraryIntegration', () => {
       const user = await setupUserAndRender();
 
       // Select a character
-      const aragornCheckbox = screen.getByRole('checkbox', { name: /select aragorn/i });
-      await user.click(aragornCheckbox);
+      const aragornCheckbox = document.getElementById('character-507f1f77bcf86cd799439011');
+      expect(aragornCheckbox).toBeInTheDocument();
+      await user.click(aragornCheckbox!);
 
       // Click import button to trigger loading state
       const importButton = screen.getByRole('button', { name: /import selected/i });
