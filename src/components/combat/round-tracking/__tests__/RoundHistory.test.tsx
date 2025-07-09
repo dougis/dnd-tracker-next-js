@@ -186,6 +186,25 @@ describe('RoundHistory', () => {
       expect(screen.getByText('No matching events found')).toBeInTheDocument();
     });
 
+    it('clears search when Clear search button is clicked', () => {
+      render(<RoundHistory {...defaultProps} history={longHistory} searchable={true} isCollapsed={false} />);
+
+      const searchInput = screen.getByPlaceholderText(/search history/i);
+      fireEvent.change(searchInput, { target: { value: 'Dragon' } });
+      
+      // Should show no results message
+      expect(screen.getByText('No matching events found')).toBeInTheDocument();
+      
+      // Click the Clear search button
+      const clearButton = screen.getByRole('button', { name: /clear search/i });
+      fireEvent.click(clearButton);
+
+      // All events should be visible again
+      expect(screen.getByText('Combat started')).toBeInTheDocument();
+      expect(screen.getByText('Rogue attacks Goblin')).toBeInTheDocument();
+      expect(screen.queryByText('No matching events found')).not.toBeInTheDocument();
+    });
+
     it('highlights search terms in results', () => {
       render(<RoundHistory {...defaultProps} history={longHistory} searchable={true} isCollapsed={false} />);
 
