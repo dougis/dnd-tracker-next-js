@@ -404,10 +404,10 @@ export function setupRoundTrackingTest(
     return enc;
   })();
   const mockOnUpdate = onUpdate || jest.fn();
-  
-  const useRoundTrackingWithDefaults = () => 
+
+  const useRoundTrackingWithDefaults = () =>
     useRoundTracking(mockEncounter, mockOnUpdate, { enableDebouncing: false, ...options });
-  
+
   return {
     ...renderHook(() => useRoundTrackingWithDefaults()),
     mockEncounter,

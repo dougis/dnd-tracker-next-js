@@ -2,12 +2,12 @@ import { renderHook } from '@testing-library/react';
 import { useRoundTracking } from '../useRoundTracking';
 import { IEncounter } from '@/lib/models/encounter/interfaces';
 import { createTestEncounter, makeEncounterActive, PARTICIPANT_IDS } from '@/lib/models/encounter/__tests__/combat-test-helpers';
-import { 
-  setupRoundTrackingTest, 
-  performRoundAction, 
-  assertRoundState, 
-  assertNoUpdate, 
-  assertError, 
+import {
+  setupRoundTrackingTest,
+  performRoundAction,
+  assertRoundState,
+  assertNoUpdate,
+  assertError,
   assertNoError,
   createMockEncounterWithRound,
   createMockEncounterWithStartTime,
@@ -17,13 +17,11 @@ import {
 
 describe('useRoundTracking', () => {
   let mockEncounter: IEncounter;
-  let mockOnUpdate: jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockEncounter = createTestEncounter();
     makeEncounterActive(mockEncounter);
-    mockOnUpdate = jest.fn();
   });
 
   describe('Round Management', () => {
