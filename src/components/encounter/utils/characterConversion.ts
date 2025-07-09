@@ -29,12 +29,11 @@ export function convertCharactersToParticipants(characters: ICharacter[]): Parti
 }
 
 /**
- * Validates that a character can be converted to a participant
+ * Validates basic character fields
  */
-export function validateCharacterForConversion(character: ICharacter): { isValid: boolean; errors: string[] } {
+function validateBasicCharacterFields(character: ICharacter): string[] {
   const errors: string[] = [];
 
-  // Check required fields
   if (!character.name?.trim()) {
     errors.push('Character name is required');
   }
@@ -51,18 +50,39 @@ export function validateCharacterForConversion(character: ICharacter): { isValid
     errors.push('Character must have valid armor class');
   }
 
-  // Check ability scores
+  return errors;
+}
+
+/**
+ * Validates character ability scores
+ */
+function validateCharacterAbilityScores(character: ICharacter): string[] {
+  const errors: string[] = [];
+
   if (!character.abilityScores) {
     errors.push('Character must have ability scores');
-  } else {
-    const requiredAbilities = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
-    for (const ability of requiredAbilities) {
-      if (!character.abilityScores[ability as keyof typeof character.abilityScores] ||
-          character.abilityScores[ability as keyof typeof character.abilityScores] <= 0) {
-        errors.push(`Character must have valid ${ability} score`);
-      }
+    return errors;
+  }
+
+  const requiredAbilities = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
+  for (const ability of requiredAbilities) {
+    if (!character.abilityScores[ability as keyof typeof character.abilityScores] ||
+        character.abilityScores[ability as keyof typeof character.abilityScores] <= 0) {
+      errors.push(`Character must have valid ${ability} score`);
     }
   }
+
+  return errors;
+}
+
+/**
+ * Validates that a character can be converted to a participant
+ */
+export function validateCharacterForConversion(character: ICharacter): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [
+    ...validateBasicCharacterFields(character),
+    ...validateCharacterAbilityScores(character),
+  ];
 
   return {
     isValid: errors.length === 0,
