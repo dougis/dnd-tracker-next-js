@@ -77,7 +77,6 @@ export function parseXmlToData(xmlString: string): any {
     ignoreAttributes: false,
     parseAttributeValue: false,
     trimValues: true,
-    parseTrueNumberOnly: false,
     parseTagValue: false,
   });
 
