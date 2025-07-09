@@ -191,10 +191,10 @@ describe('RoundHistory', () => {
 
       const searchInput = screen.getByPlaceholderText(/search history/i);
       fireEvent.change(searchInput, { target: { value: 'Dragon' } });
-      
+
       // Should show no results message
       expect(screen.getByText('No matching events found')).toBeInTheDocument();
-      
+
       // Click the Clear search button
       const clearButton = screen.getByRole('button', { name: /clear search/i });
       fireEvent.click(clearButton);
