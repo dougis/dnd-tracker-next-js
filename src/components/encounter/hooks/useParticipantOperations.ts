@@ -90,10 +90,18 @@ export const useParticipantOperations = (
     );
   }, [encounter._id, executeServiceOperation]);
 
+  const reorderParticipants = useCallback(async (participantIds: string[]) => {
+    await executeServiceOperation(
+      () => EncounterService.reorderParticipants(encounter._id.toString(), participantIds),
+      'Participants reordered successfully'
+    );
+  }, [encounter._id, executeServiceOperation]);
+
   return {
     isLoading,
     addParticipant,
     updateParticipant,
     removeParticipant,
+    reorderParticipants,
   };
 };

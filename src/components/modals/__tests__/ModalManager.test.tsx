@@ -1,388 +1,674 @@
 import React from 'react';
-// import userEvent from '@testing-library/user-event';
-import { render, screen } from './test-utils';
-import { ModalManager } from '../ModalManager';
-import type { ModalProps } from '../Modal';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { ModalManager, useModalManager, useModal, useModalInstance } from '../ModalManager';
 
-// Mock the Modal component to avoid issues with Dialog rendering
-jest.mock('../Modal', () => ({
-  Modal: ({ children, title, open, onOpenChange, footer }: ModalProps) =>
-    open ? (
-      <div data-testid="mock-modal" data-title={title}>
-        <div>{children}</div>
-        {footer && <div data-testid="modal-footer">{footer}</div>}
-        <button data-testid="close-modal" onClick={() => onOpenChange(false)}>
-          Close Modal
-        </button>
+// Test component that uses the ModalManager context
+function TestModalComponent() {
+  const { openModal, closeModal, closeAllModals, closeTopModal, isModalOpen, getTopModal, getModalCount } = useModalManager();
+
+  return (
+    <div>
+      <button
+        data-testid="open-basic-modal"
+        onClick={() => openModal({
+          component: <div data-testid="basic-modal-content">Basic Modal Content</div>
+        })}
+      >
+        Open Basic Modal
+      </button>
+
+      <button
+        data-testid="open-persistent-modal"
+        onClick={() => openModal({
+          component: <div data-testid="persistent-modal-content">Persistent Modal</div>,
+          persistent: true
+        })}
+      >
+        Open Persistent Modal
+      </button>
+
+      <button
+        data-testid="open-modal-with-id"
+        onClick={() => openModal({
+          id: 'test-modal-123',
+          component: <div data-testid="id-modal-content">Modal with ID</div>
+        })}
+      >
+        Open Modal with ID
+      </button>
+
+      <button
+        data-testid="open-modal-with-callback"
+        onClick={() => openModal({
+          component: <div data-testid="callback-modal-content">Modal with Callback</div>,
+          onClose: () => console.log('Modal closed')
+        })}
+      >
+        Open Modal with Callback
+      </button>
+
+      <button
+        data-testid="close-specific-modal"
+        onClick={() => closeModal('test-modal-123')}
+      >
+        Close Specific Modal
+      </button>
+
+      <button
+        data-testid="close-all-modals"
+        onClick={closeAllModals}
+      >
+        Close All Modals
+      </button>
+
+      <button
+        data-testid="close-top-modal"
+        onClick={closeTopModal}
+      >
+        Close Top Modal
+      </button>
+
+      <div data-testid="modal-count">Modal Count: {getModalCount()}</div>
+      <div data-testid="is-modal-open">Is Test Modal Open: {isModalOpen('test-modal-123') ? 'Yes' : 'No'}</div>
+      <div data-testid="top-modal-id">Top Modal ID: {getTopModal()?.id || 'None'}</div>
+    </div>
+  );
+}
+
+// Test component using useModal hook
+function TestUseModalComponent() {
+  const { open, close, isOpen, modalId } = useModal();
+
+  return (
+    <div>
+      <button
+        data-testid="use-modal-open"
+        onClick={() => open({
+          component: <div data-testid="use-modal-content">Use Modal Content</div>
+        })}
+      >
+        Use Modal Open
+      </button>
+
+      <button
+        data-testid="use-modal-close"
+        onClick={close}
+      >
+        Use Modal Close
+      </button>
+
+      <div data-testid="use-modal-status">
+        Status: {isOpen ? 'Open' : 'Closed'}, ID: {modalId || 'None'}
       </div>
-    ) : null,
-}));
+    </div>
+  );
+}
 
-// Mock implementation of useModal for tests
-jest.mock('../ModalManager', () => {
-  const originalModule = jest.requireActual('../ModalManager');
+// Test component using useModalInstance hook
+function TestUseModalInstanceComponent() {
+  const { open, close, isOpen } = useModalInstance('instance-modal');
 
-  const modals: Record<string, any> = {};
+  return (
+    <div>
+      <button
+        data-testid="instance-modal-open"
+        onClick={() => open({
+          component: <div data-testid="instance-modal-content">Instance Modal Content</div>
+        })}
+      >
+        Instance Modal Open
+      </button>
 
-  return {
-    ...originalModule,
-    useModal: () => {
-      return {
-        openModal: (id: string, props: any) => {
-          modals[id] = { ...props, open: true };
-          // Render the modal for testing
-          render(
-            <div data-testid="mock-modal" data-title={props.title}>
-              <div>{props.children}</div>
-              {props.footer && (
-                <div data-testid="modal-footer">{props.footer}</div>
-              )}
-              <button data-testid="close-modal">Close Modal</button>
-            </div>
-          );
-        },
-        closeModal: (id: string) => {
-          modals[id] = { ...modals[id], open: false };
-          // Remove modal from DOM for testing
-          const modal = screen.queryByTestId('mock-modal');
-          if (modal) {
-            modal.remove();
-          }
-        },
-        updateModal: (id: string, props: any) => {
-          modals[id] = { ...modals[id], ...props };
-        },
-      };
-    },
-  };
-});
+      <button
+        data-testid="instance-modal-close"
+        onClick={close}
+      >
+        Instance Modal Close
+      </button>
 
-// Sample modal types for testing
-type _TestModals = {
-  basicModal: ModalProps;
-  confirmModal: ModalProps & { onConfirm: () => void };
-};
+      <div data-testid="instance-modal-status">
+        Instance Status: {isOpen ? 'Open' : 'Closed'}
+      </div>
+    </div>
+  );
+}
 
-describe('ModalManager', () => {
+// Component to test error handling
+function TestErrorComponent() {
+  try {
+    useModalManager();
+    return <div data-testid="error-component-success">No Error</div>;
+  } catch (error) {
+    return <div data-testid="error-component-error">Error: {(error as Error).message}</div>;
+  }
+}
+
+describe('ModalManager Comprehensive Tests', () => {
   beforeEach(() => {
+    // Reset body styles
+    document.body.style.overflow = '';
     jest.clearAllMocks();
   });
 
-  // Basic tests that don't require mocking context
-  it('renders without crashing', () => {
-    render(
-      <ModalManager>
-        <div>Test Content</div>
-      </ModalManager>
-    );
+  afterEach(() => {
+    // Clean up body styles
+    document.body.style.overflow = '';
   });
 
-  it('does not show any modals initially', () => {
-    render(
-      <ModalManager>
-        <div>Test Content</div>
-      </ModalManager>
-    );
-    expect(screen.queryByTestId('mock-modal')).not.toBeInTheDocument();
-  });
-
-  describe('Provider Context', () => {
-    it('provides modal context to children', () => {
-      const ChildComponent = () => {
-        return <div data-testid="child">Context available</div>;
-      };
-
-      render(
-        <ModalManager>
-          <ChildComponent />
-        </ModalManager>
-      );
-
-      expect(screen.getByTestId('child')).toBeInTheDocument();
-    });
-
-    it('renders children inside provider wrapper', () => {
-      render(
-        <ModalManager>
-          <div data-testid="test-child">Test Child Component</div>
-          <span data-testid="another-child">Another Child</span>
-        </ModalManager>
-      );
-
-      expect(screen.getByTestId('test-child')).toBeInTheDocument();
-      expect(screen.getByTestId('another-child')).toBeInTheDocument();
-    });
-  });
-
-  describe('Modal State Management', () => {
-    function TestModalComponent() {
-      const { openModal, closeModal, updateModal } = React.useMemo(() => {
-        return {
-          openModal: jest.fn(),
-          closeModal: jest.fn(),
-          updateModal: jest.fn(),
-        };
-      }, []);
-
-      return (
-        <div>
-          <button
-            data-testid="open-test-modal"
-            onClick={() =>
-              openModal('testModal', {
-                title: 'Test Modal',
-                children: <div>Test Content</div>,
-              })
-            }
-          >
-            Open Modal
-          </button>
-          <button
-            data-testid="close-test-modal"
-            onClick={() => closeModal('testModal')}
-          >
-            Close Modal
-          </button>
-          <button
-            data-testid="update-test-modal"
-            onClick={() =>
-              updateModal('testModal', {
-                title: 'Updated Modal',
-              })
-            }
-          >
-            Update Modal
-          </button>
-        </div>
-      );
-    }
-
-    it('handles modal operations with mock functions', () => {
+  describe('Basic Modal Management', () => {
+    it('renders without crashing and provides context', () => {
       render(
         <ModalManager>
           <TestModalComponent />
         </ModalManager>
       );
 
-      expect(screen.getByTestId('open-test-modal')).toBeInTheDocument();
-      expect(screen.getByTestId('close-test-modal')).toBeInTheDocument();
-      expect(screen.getByTestId('update-test-modal')).toBeInTheDocument();
+      expect(screen.getByTestId('modal-count')).toHaveTextContent('Modal Count: 0');
+      expect(screen.getByTestId('is-modal-open')).toHaveTextContent('Is Test Modal Open: No');
+      expect(screen.getByTestId('top-modal-id')).toHaveTextContent('Top Modal ID: None');
+    });
+
+    it('opens and renders a basic modal', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <ModalManager>
+          <TestModalComponent />
+        </ModalManager>
+      );
+
+      await user.click(screen.getByTestId('open-basic-modal'));
+
+      expect(screen.getByTestId('basic-modal-content')).toBeInTheDocument();
+      expect(screen.getByTestId('modal-count')).toHaveTextContent('Modal Count: 1');
+    });
+
+    it('opens modal with specific ID', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <ModalManager>
+          <TestModalComponent />
+        </ModalManager>
+      );
+
+      await user.click(screen.getByTestId('open-modal-with-id'));
+
+      expect(screen.getByTestId('id-modal-content')).toBeInTheDocument();
+      expect(screen.getByTestId('is-modal-open')).toHaveTextContent('Is Test Modal Open: Yes');
+      expect(screen.getByTestId('top-modal-id')).toHaveTextContent('Top Modal ID: test-modal-123');
+    });
+
+    it('closes specific modal by ID', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <ModalManager>
+          <TestModalComponent />
+        </ModalManager>
+      );
+
+      // Open modal
+      await user.click(screen.getByTestId('open-modal-with-id'));
+      expect(screen.getByTestId('id-modal-content')).toBeInTheDocument();
+
+      // Close modal
+      await user.click(screen.getByTestId('close-specific-modal'));
+      expect(screen.queryByTestId('id-modal-content')).not.toBeInTheDocument();
+      expect(screen.getByTestId('is-modal-open')).toHaveTextContent('Is Test Modal Open: No');
+    });
+
+    it('handles multiple modals with correct z-index stacking', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <ModalManager baseZIndex={1000}>
+          <TestModalComponent />
+        </ModalManager>
+      );
+
+      // Open first modal
+      await user.click(screen.getByTestId('open-basic-modal'));
+      expect(screen.getByTestId('modal-count')).toHaveTextContent('Modal Count: 1');
+
+      // Open second modal
+      await user.click(screen.getByTestId('open-modal-with-id'));
+      expect(screen.getByTestId('modal-count')).toHaveTextContent('Modal Count: 2');
+
+      // Both modals should be present
+      expect(screen.getByTestId('basic-modal-content')).toBeInTheDocument();
+      expect(screen.getByTestId('id-modal-content')).toBeInTheDocument();
+
+      // Second modal should be on top
+      expect(screen.getByTestId('top-modal-id')).toHaveTextContent('Top Modal ID: test-modal-123');
     });
   });
 
-  describe('Error Boundaries and Edge Cases', () => {
-    it('handles children that throw errors gracefully', () => {
-      const ErrorComponent = () => {
-        return <div>Error component that works</div>;
+  describe('Modal Limits and Warnings', () => {
+    it('respects maxModals limit', async () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const user = userEvent.setup();
+
+      render(
+        <ModalManager maxModals={2}>
+          <TestModalComponent />
+        </ModalManager>
+      );
+
+      // Open two modals (at limit)
+      await user.click(screen.getByTestId('open-basic-modal'));
+      await user.click(screen.getByTestId('open-modal-with-id'));
+      expect(screen.getByTestId('modal-count')).toHaveTextContent('Modal Count: 2');
+
+      // Try to open third modal (should be blocked)
+      await user.click(screen.getByTestId('open-persistent-modal'));
+      expect(screen.getByTestId('modal-count')).toHaveTextContent('Modal Count: 2');
+      expect(consoleSpy).toHaveBeenCalledWith('Maximum number of modals (2) reached. Cannot open new modal.');
+
+      consoleSpy.mockRestore();
+    });
+
+    it('warns when trying to open modal with duplicate ID', async () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const user = userEvent.setup();
+
+      render(
+        <ModalManager>
+          <TestModalComponent />
+        </ModalManager>
+      );
+
+      // Open modal with specific ID
+      await user.click(screen.getByTestId('open-modal-with-id'));
+      expect(screen.getByTestId('modal-count')).toHaveTextContent('Modal Count: 1');
+
+      // Try to open another modal with same ID
+      await user.click(screen.getByTestId('open-modal-with-id'));
+      expect(screen.getByTestId('modal-count')).toHaveTextContent('Modal Count: 1');
+      expect(consoleSpy).toHaveBeenCalledWith('Modal with ID "test-modal-123" already exists.');
+
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe('Persistent Modals', () => {
+    it('prevents closing persistent modal with closeTopModal', async () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const user = userEvent.setup();
+
+      render(
+        <ModalManager>
+          <TestModalComponent />
+        </ModalManager>
+      );
+
+      // Open persistent modal
+      await user.click(screen.getByTestId('open-persistent-modal'));
+      expect(screen.getByTestId('persistent-modal-content')).toBeInTheDocument();
+
+      // Try to close with closeTopModal
+      await user.click(screen.getByTestId('close-top-modal'));
+      expect(screen.getByTestId('persistent-modal-content')).toBeInTheDocument();
+      expect(consoleSpy).toHaveBeenCalledWith('Cannot close persistent modal');
+
+      consoleSpy.mockRestore();
+    });
+
+    it('prevents closing persistent modal with Escape key', async () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      render(
+        <ModalManager>
+          <TestModalComponent />
+        </ModalManager>
+      );
+
+      // Open persistent modal
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('open-persistent-modal'));
+      });
+      expect(screen.getByTestId('persistent-modal-content')).toBeInTheDocument();
+
+      // Try to close with Escape key
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'Escape' });
+      });
+      expect(screen.getByTestId('persistent-modal-content')).toBeInTheDocument();
+
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe('Keyboard Interactions', () => {
+    it('closes non-persistent modal with Escape key', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <ModalManager>
+          <TestModalComponent />
+        </ModalManager>
+      );
+
+      // Open basic modal
+      await user.click(screen.getByTestId('open-basic-modal'));
+      expect(screen.getByTestId('basic-modal-content')).toBeInTheDocument();
+
+      // Close with Escape key
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'Escape' });
+      });
+      expect(screen.queryByTestId('basic-modal-content')).not.toBeInTheDocument();
+    });
+
+    it('only closes top modal with Escape when multiple modals open', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <ModalManager>
+          <TestModalComponent />
+        </ModalManager>
+      );
+
+      // Open two modals
+      await user.click(screen.getByTestId('open-basic-modal'));
+      await user.click(screen.getByTestId('open-modal-with-id'));
+
+      expect(screen.getByTestId('basic-modal-content')).toBeInTheDocument();
+      expect(screen.getByTestId('id-modal-content')).toBeInTheDocument();
+
+      // Close top modal with Escape
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'Escape' });
+      });
+
+      expect(screen.getByTestId('basic-modal-content')).toBeInTheDocument();
+      expect(screen.queryByTestId('id-modal-content')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Body Scroll Management', () => {
+    it('prevents body scroll when modals are open', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <ModalManager>
+          <TestModalComponent />
+        </ModalManager>
+      );
+
+      // Initially body scroll should be normal
+      expect(document.body.style.overflow).toBe('');
+
+      // Open modal
+      await user.click(screen.getByTestId('open-basic-modal'));
+      expect(document.body.style.overflow).toBe('hidden');
+
+      // Close modal
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'Escape' });
+      });
+      expect(document.body.style.overflow).toBe('');
+    });
+
+    it('restores body scroll when all modals closed', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <ModalManager>
+          <TestModalComponent />
+        </ModalManager>
+      );
+
+      // Open multiple modals
+      await user.click(screen.getByTestId('open-basic-modal'));
+      await user.click(screen.getByTestId('open-modal-with-id'));
+      expect(document.body.style.overflow).toBe('hidden');
+
+      // Close all modals
+      await user.click(screen.getByTestId('close-all-modals'));
+      expect(document.body.style.overflow).toBe('');
+    });
+  });
+
+  describe('Close All Modals', () => {
+    it('closes all modals and calls onClose callbacks', async () => {
+      const onCloseSpy = jest.fn();
+      const user = userEvent.setup();
+
+      const TestComponent = () => {
+        const { openModal, closeAllModals, getModalCount } = useModalManager();
+
+        return (
+          <div>
+            <button
+              data-testid="open-callback-modal"
+              onClick={() => openModal({
+                component: <div data-testid="callback-modal">Callback Modal</div>,
+                onClose: onCloseSpy
+              })}
+            >
+              Open Callback Modal
+            </button>
+            <button data-testid="close-all" onClick={closeAllModals}>
+              Close All
+            </button>
+            <div data-testid="count">Count: {getModalCount()}</div>
+          </div>
+        );
       };
 
       render(
         <ModalManager>
-          <ErrorComponent />
+          <TestComponent />
         </ModalManager>
       );
 
-      expect(
-        screen.getByText('Error component that works')
-      ).toBeInTheDocument();
-    });
+      // Open modal with callback
+      await user.click(screen.getByTestId('open-callback-modal'));
+      expect(screen.getByTestId('callback-modal')).toBeInTheDocument();
+      expect(screen.getByTestId('count')).toHaveTextContent('Count: 1');
 
-    it('handles null children', () => {
-      render(<ModalManager>{null}</ModalManager>);
-
-      // Should render without errors
-      expect(document.body).toBeInTheDocument();
-    });
-
-    it('handles undefined children', () => {
-      render(<ModalManager>{undefined}</ModalManager>);
-
-      // Should render without errors
-      expect(document.body).toBeInTheDocument();
-    });
-
-    it('handles empty children array', () => {
-      render(<ModalManager>{[]}</ModalManager>);
-
-      // Should render without errors
-      expect(document.body).toBeInTheDocument();
-    });
-
-    it('handles mixed children types', () => {
-      render(
-        <ModalManager>
-          <div>First child</div>
-          {null}
-          <span>Second child</span>
-          {undefined}
-          {'String child'}
-          {42}
-        </ModalManager>
-      );
-
-      expect(screen.getByText('First child')).toBeInTheDocument();
-      expect(screen.getByText('Second child')).toBeInTheDocument();
-      expect(screen.getByText(/String child/)).toBeInTheDocument();
-      expect(screen.getByText(/42/)).toBeInTheDocument();
+      // Close all modals
+      await user.click(screen.getByTestId('close-all'));
+      expect(screen.queryByTestId('callback-modal')).not.toBeInTheDocument();
+      expect(screen.getByTestId('count')).toHaveTextContent('Count: 0');
+      expect(onCloseSpy).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('Memory Management', () => {
-    it('properly cleans up when unmounted', () => {
+  describe('onClose Callback Coverage', () => {
+    it('calls onClose when closing specific modal by ID', async () => {
+      const onCloseSpy = jest.fn();
+      const user = userEvent.setup();
+
+      const TestComponent = () => {
+        const { openModal, closeModal } = useModalManager();
+
+        return (
+          <div>
+            <button
+              data-testid="open-with-callback"
+              onClick={() => openModal({
+                id: 'callback-modal',
+                component: <div data-testid="callback-content">Callback Content</div>,
+                onClose: onCloseSpy
+              })}
+            >
+              Open Modal
+            </button>
+            <button
+              data-testid="close-by-id"
+              onClick={() => closeModal('callback-modal')}
+            >
+              Close Modal
+            </button>
+          </div>
+        );
+      };
+
+      render(
+        <ModalManager>
+          <TestComponent />
+        </ModalManager>
+      );
+
+      // Open modal
+      await user.click(screen.getByTestId('open-with-callback'));
+      expect(screen.getByTestId('callback-content')).toBeInTheDocument();
+
+      // Close by ID
+      await user.click(screen.getByTestId('close-by-id'));
+      expect(screen.queryByTestId('callback-content')).not.toBeInTheDocument();
+      expect(onCloseSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls onClose when closing top modal with callback', async () => {
+      const onCloseSpy = jest.fn();
+      const user = userEvent.setup();
+
+      const TestComponent = () => {
+        const { openModal, closeTopModal } = useModalManager();
+
+        return (
+          <div>
+            <button
+              data-testid="open-top-with-callback"
+              onClick={() => openModal({
+                component: <div data-testid="top-callback-content">Top Callback Content</div>,
+                onClose: onCloseSpy
+              })}
+            >
+              Open Modal
+            </button>
+            <button
+              data-testid="close-top"
+              onClick={closeTopModal}
+            >
+              Close Top Modal
+            </button>
+          </div>
+        );
+      };
+
+      render(
+        <ModalManager>
+          <TestComponent />
+        </ModalManager>
+      );
+
+      // Open modal
+      await user.click(screen.getByTestId('open-top-with-callback'));
+      expect(screen.getByTestId('top-callback-content')).toBeInTheDocument();
+
+      // Close top modal
+      await user.click(screen.getByTestId('close-top'));
+      expect(screen.queryByTestId('top-callback-content')).not.toBeInTheDocument();
+      expect(onCloseSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('useModal Hook', () => {
+    it('manages modal state independently', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <ModalManager>
+          <TestUseModalComponent />
+        </ModalManager>
+      );
+
+      // Initially closed
+      expect(screen.getByTestId('use-modal-status')).toHaveTextContent('Status: Closed, ID: None');
+
+      // Open modal
+      await user.click(screen.getByTestId('use-modal-open'));
+      expect(screen.getByTestId('use-modal-content')).toBeInTheDocument();
+      expect(screen.getByTestId('use-modal-status')).toHaveTextContent(/Status: Open, ID: modal-/);
+
+      // Close modal
+      await user.click(screen.getByTestId('use-modal-close'));
+      expect(screen.queryByTestId('use-modal-content')).not.toBeInTheDocument();
+      expect(screen.getByTestId('use-modal-status')).toHaveTextContent('Status: Closed, ID: None');
+    });
+  });
+
+  describe('useModalInstance Hook', () => {
+    it('manages specific modal instance', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <ModalManager>
+          <TestUseModalInstanceComponent />
+        </ModalManager>
+      );
+
+      // Initially closed
+      expect(screen.getByTestId('instance-modal-status')).toHaveTextContent('Instance Status: Closed');
+
+      // Open modal
+      await user.click(screen.getByTestId('instance-modal-open'));
+      expect(screen.getByTestId('instance-modal-content')).toBeInTheDocument();
+      expect(screen.getByTestId('instance-modal-status')).toHaveTextContent('Instance Status: Open');
+
+      // Close modal
+      await user.click(screen.getByTestId('instance-modal-close'));
+      expect(screen.queryByTestId('instance-modal-content')).not.toBeInTheDocument();
+      expect(screen.getByTestId('instance-modal-status')).toHaveTextContent('Instance Status: Closed');
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('throws error when useModalManager used outside provider', () => {
+      render(<TestErrorComponent />);
+      expect(screen.getByTestId('error-component-error')).toHaveTextContent(
+        'Error: useModalManager must be used within a ModalManager'
+      );
+    });
+
+    it('handles closeTopModal when no modals are open', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <ModalManager>
+          <TestModalComponent />
+        </ModalManager>
+      );
+
+      // Try to close top modal when none are open
+      await user.click(screen.getByTestId('close-top-modal'));
+      expect(screen.getByTestId('modal-count')).toHaveTextContent('Modal Count: 0');
+    });
+  });
+
+  describe('Component Cleanup', () => {
+    it('removes event listeners on unmount', () => {
+      const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener');
+
       const { unmount } = render(
         <ModalManager>
-          <div>Test Content</div>
+          <TestModalComponent />
         </ModalManager>
       );
 
-      expect(screen.getByText('Test Content')).toBeInTheDocument();
-
-      // Unmount should not throw errors
       unmount();
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));
 
-      expect(screen.queryByText('Test Content')).not.toBeInTheDocument();
+      removeEventListenerSpy.mockRestore();
     });
 
-    it('handles rapid mount/unmount cycles', () => {
-      for (let i = 0; i < 5; i++) {
-        const { unmount } = render(
-          <ModalManager>
-            <div>Cycle {i}</div>
-          </ModalManager>
-        );
-
-        expect(screen.getByText(`Cycle ${i}`)).toBeInTheDocument();
-        unmount();
-      }
-
-      // Should complete without memory leaks or errors
-      expect(true).toBe(true);
-    });
-  });
-
-  describe('Performance Considerations', () => {
-    it('handles large numbers of child components', () => {
-      const children = Array.from({ length: 100 }, (_, i) => (
-        <div key={i} data-testid={`child-${i}`}>
-          Child {i}
-        </div>
-      ));
-
-      render(<ModalManager>{children}</ModalManager>);
-
-      // Verify first and last children are rendered
-      expect(screen.getByTestId('child-0')).toBeInTheDocument();
-      expect(screen.getByTestId('child-99')).toBeInTheDocument();
-      expect(screen.getByText('Child 0')).toBeInTheDocument();
-      expect(screen.getByText('Child 99')).toBeInTheDocument();
-    });
-
-    it('handles frequent re-renders efficiently', () => {
-      const TestComponent = ({ count }: { count: number }) => (
-        <div data-testid="render-count">Render count: {count}</div>
-      );
-
-      let renderCount = 0;
-      const { rerender } = render(
+    it('restores body overflow on unmount', () => {
+      const { unmount } = render(
         <ModalManager>
-          <TestComponent count={renderCount} />
+          <TestModalComponent />
         </ModalManager>
       );
 
-      // Simulate frequent updates
-      for (let i = 1; i <= 10; i++) {
-        renderCount = i;
-        rerender(
-          <ModalManager>
-            <TestComponent count={renderCount} />
-          </ModalManager>
-        );
+      // Set body overflow
+      document.body.style.overflow = 'hidden';
 
-        expect(screen.getByText(`Render count: ${i}`)).toBeInTheDocument();
-      }
-    });
-  });
-
-  describe('Integration with React Features', () => {
-    it('works with React.StrictMode', () => {
-      render(
-        <React.StrictMode>
-          <ModalManager>
-            <div>Strict Mode Test</div>
-          </ModalManager>
-        </React.StrictMode>
-      );
-
-      expect(screen.getByText('Strict Mode Test')).toBeInTheDocument();
-    });
-
-    it('works with nested providers', () => {
-      render(
-        <ModalManager>
-          <div>Outer content</div>
-          <ModalManager>
-            <div>Nested content</div>
-          </ModalManager>
-        </ModalManager>
-      );
-
-      expect(screen.getByText('Outer content')).toBeInTheDocument();
-      expect(screen.getByText('Nested content')).toBeInTheDocument();
-    });
-
-    it('preserves component props and refs', () => {
-      const ref = React.createRef<HTMLDivElement>();
-
-      render(
-        <ModalManager>
-          <div ref={ref} data-custom-prop="test-value">
-            Ref test
-          </div>
-        </ModalManager>
-      );
-
-      expect(screen.getByText('Ref test')).toBeInTheDocument();
-      expect(ref.current).toBeInstanceOf(HTMLDivElement);
-      expect(ref.current?.getAttribute('data-custom-prop')).toBe('test-value');
-    });
-  });
-
-  describe('Accessibility Features', () => {
-    it('maintains proper DOM structure for screen readers', () => {
-      render(
-        <ModalManager>
-          <h1>Main Heading</h1>
-          <nav aria-label="Main navigation">
-            <a href="#home">Home</a>
-          </nav>
-          <main>
-            <p>Main content</p>
-          </main>
-        </ModalManager>
-      );
-
-      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
-      expect(screen.getByRole('navigation')).toBeInTheDocument();
-      expect(screen.getByRole('main')).toBeInTheDocument();
-    });
-
-    it('preserves ARIA attributes on children', () => {
-      render(
-        <ModalManager>
-          <button
-            aria-label="Close modal"
-            aria-describedby="modal-description"
-            data-testid="aria-button"
-          >
-            Close
-          </button>
-          <div id="modal-description">This closes the modal</div>
-        </ModalManager>
-      );
-
-      const button = screen.getByTestId('aria-button');
-      expect(button).toHaveAttribute('aria-label', 'Close modal');
-      expect(button).toHaveAttribute('aria-describedby', 'modal-description');
+      unmount();
+      expect(document.body.style.overflow).toBe('');
     });
   });
 });
