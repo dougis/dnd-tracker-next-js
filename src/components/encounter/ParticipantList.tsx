@@ -78,7 +78,7 @@ export function ParticipantList({
     if (oldIndex !== -1 && newIndex !== -1) {
       const reorderedParticipants = arrayMove(localParticipants, oldIndex, newIndex);
       setLocalParticipants(reorderedParticipants);
-      
+
       // Call the reorder callback with the new order
       const participantIds = reorderedParticipants.map(p => p.characterId.toString());
       onReorder(participantIds);

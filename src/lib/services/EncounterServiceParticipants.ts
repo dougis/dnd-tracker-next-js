@@ -162,7 +162,7 @@ export class EncounterServiceParticipants {
       // Verify all participant IDs exist in the encounter
       const existingParticipantIds = encounter.participants.map(p => p.characterId.toString());
       const missingIds = participantIds.filter(id => !existingParticipantIds.includes(id));
-      
+
       if (missingIds.length > 0) {
         throw new ParticipantNotFoundError(`Participant IDs not found: ${missingIds.join(', ')}`);
       }
@@ -173,7 +173,7 @@ export class EncounterServiceParticipants {
       }
 
       // Reorder participants
-      const reorderedParticipants = participantIds.map(id => 
+      const reorderedParticipants = participantIds.map(id =>
         encounter.participants.find(p => p.characterId.toString() === id)
       ).filter(Boolean) as IParticipantReference[];
 

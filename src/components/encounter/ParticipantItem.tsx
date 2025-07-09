@@ -90,8 +90,6 @@ export function ParticipantItem({
           size="sm"
           className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-200"
           data-testid="drag-handle"
-          tabIndex={0}
-          role="button"
           aria-label={`Drag to reorder ${participant.name}`}
           {...attributes}
           {...listeners}
