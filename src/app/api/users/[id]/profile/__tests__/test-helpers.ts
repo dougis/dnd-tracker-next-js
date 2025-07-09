@@ -9,8 +9,7 @@ export const createMockSession = (userId: string = TEST_USER_ID) => ({
   },
 });
 
-export const createMockParams = (id: string = TEST_USER_ID) =>
-  Promise.resolve({ id });
+export const createMockParams = (id: string = TEST_USER_ID) => ({ id });
 
 export const createMockRequest = (data: any, method: 'PATCH' | 'GET' = 'PATCH') => ({
   json: jest.fn().mockResolvedValue(data),
