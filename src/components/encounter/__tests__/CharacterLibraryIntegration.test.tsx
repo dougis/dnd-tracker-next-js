@@ -4,11 +4,17 @@ import userEvent from '@testing-library/user-event';
 import { ImportParticipantDialog } from '../ParticipantDialogs';
 import { CharacterService } from '@/lib/services/CharacterService';
 import type { ICharacter } from '@/lib/models/Character';
-import type { ParticipantFormData } from '../hooks/useParticipantForm';
+import { convertCharacterToParticipant } from '../utils/characterConversion';
 
 // Mock the CharacterService
 jest.mock('@/lib/services/CharacterService');
 const mockCharacterService = CharacterService as jest.Mocked<typeof CharacterService>;
+
+// Mock scrollIntoView for tests
+Object.defineProperty(Element.prototype, 'scrollIntoView', {
+  value: jest.fn(),
+  writable: true,
+});
 
 // Mock data factory for characters
 const createMockCharacter = (overrides: Partial<ICharacter> = {}): ICharacter => ({
@@ -96,10 +102,8 @@ describe('CharacterLibraryIntegration', () => {
     userId: 'user123',
   };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-
-    // Setup default mock implementations
+  // Helper function to setup common mocks
+  const setupDefaultMocks = () => {
     mockCharacterService.getCharactersByOwner = jest.fn().mockResolvedValue({
       success: true,
       data: {
@@ -117,6 +121,42 @@ describe('CharacterLibraryIntegration', () => {
       success: true,
       data: mockCharacters,
     });
+
+    mockCharacterService.getCharactersByType = jest.fn().mockResolvedValue({
+      success: true,
+      data: mockCharacters,
+    });
+
+    mockCharacterService.getCharactersByClass = jest.fn().mockResolvedValue({
+      success: true,
+      data: mockCharacters,
+    });
+
+    mockCharacterService.getCharactersByRace = jest.fn().mockResolvedValue({
+      success: true,
+      data: mockCharacters,
+    });
+  };
+
+  // Helper function to render component and wait for characters to load
+  const renderAndWaitForCharacters = async () => {
+    render(<ImportParticipantDialog {...mockProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Aragorn')).toBeInTheDocument();
+    });
+  };
+
+  // Helper function to setup user and render component
+  const setupUserAndRender = async () => {
+    const user = userEvent.setup();
+    await renderAndWaitForCharacters();
+    return user;
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    setupDefaultMocks();
   });
 
   describe('Character Library Integration', () => {
@@ -128,24 +168,24 @@ describe('CharacterLibraryIntegration', () => {
 
       // Should show character library interface
       expect(screen.getByText('Select characters from your library to add to this encounter')).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('Search characters...')).toBeInTheDocument();
+
+      // Wait for the component to load
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText('Search characters...')).toBeInTheDocument();
+      });
     });
 
     it('should load and display user characters on dialog open', async () => {
-      render(<ImportParticipantDialog {...mockProps} />);
+      await renderAndWaitForCharacters();
 
-      await waitFor(() => {
-        expect(mockCharacterService.getCharactersByOwner).toHaveBeenCalledWith('user123', 1, 20);
-      });
-
+      expect(mockCharacterService.getCharactersByOwner).toHaveBeenCalledWith('user123', 1, 20);
       expect(screen.getByText('Aragorn')).toBeInTheDocument();
       expect(screen.getByText('Legolas')).toBeInTheDocument();
       expect(screen.getByText('Gimli')).toBeInTheDocument();
     });
 
     it('should handle character search functionality', async () => {
-      const user = userEvent.setup();
-      render(<ImportParticipantDialog {...mockProps} />);
+      const user = await setupUserAndRender();
 
       const searchInput = screen.getByPlaceholderText('Search characters...');
       await user.type(searchInput, 'Aragorn');
@@ -156,10 +196,9 @@ describe('CharacterLibraryIntegration', () => {
     });
 
     it('should filter characters by type', async () => {
-      const user = userEvent.setup();
-      render(<ImportParticipantDialog {...mockProps} />);
+      const user = await setupUserAndRender();
 
-      const typeFilter = screen.getByRole('combobox', { name: /filter by type/i });
+      const typeFilter = screen.getByRole('combobox', { name: /type/i });
       await user.click(typeFilter);
       await user.click(screen.getByText('PC'));
 
@@ -169,10 +208,9 @@ describe('CharacterLibraryIntegration', () => {
     });
 
     it('should filter characters by class', async () => {
-      const user = userEvent.setup();
-      render(<ImportParticipantDialog {...mockProps} />);
+      const user = await setupUserAndRender();
 
-      const classFilter = screen.getByRole('combobox', { name: /filter by class/i });
+      const classFilter = screen.getByRole('combobox', { name: /class/i });
       await user.click(classFilter);
       await user.click(screen.getByText('Fighter'));
 
@@ -182,10 +220,9 @@ describe('CharacterLibraryIntegration', () => {
     });
 
     it('should filter characters by race', async () => {
-      const user = userEvent.setup();
-      render(<ImportParticipantDialog {...mockProps} />);
+      const user = await setupUserAndRender();
 
-      const raceFilter = screen.getByRole('combobox', { name: /filter by race/i });
+      const raceFilter = screen.getByRole('combobox', { name: /race/i });
       await user.click(raceFilter);
       await user.click(screen.getByText('Human'));
 
@@ -197,12 +234,7 @@ describe('CharacterLibraryIntegration', () => {
 
   describe('Character Selection', () => {
     it('should allow selecting individual characters', async () => {
-      const user = userEvent.setup();
-      render(<ImportParticipantDialog {...mockProps} />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Aragorn')).toBeInTheDocument();
-      });
+      const user = await setupUserAndRender();
 
       const aragornCheckbox = screen.getByRole('checkbox', { name: /select aragorn/i });
       await user.click(aragornCheckbox);
@@ -211,13 +243,7 @@ describe('CharacterLibraryIntegration', () => {
     });
 
     it('should allow deselecting characters', async () => {
-      const user = userEvent.setup();
-
-      render(<ImportParticipantDialog {...mockProps} />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Aragorn')).toBeInTheDocument();
-      });
+      const user = await setupUserAndRender();
 
       const aragornCheckbox = screen.getByRole('checkbox', { name: /select aragorn/i });
 
@@ -231,12 +257,7 @@ describe('CharacterLibraryIntegration', () => {
     });
 
     it('should support bulk selection with Select All', async () => {
-      const user = userEvent.setup();
-      render(<ImportParticipantDialog {...mockProps} />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Aragorn')).toBeInTheDocument();
-      });
+      const user = await setupUserAndRender();
 
       const selectAllCheckbox = screen.getByRole('checkbox', { name: /select all/i });
       await user.click(selectAllCheckbox);
@@ -245,13 +266,7 @@ describe('CharacterLibraryIntegration', () => {
     });
 
     it('should support bulk deselection with Deselect All', async () => {
-      const user = userEvent.setup();
-
-      render(<ImportParticipantDialog {...mockProps} />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Aragorn')).toBeInTheDocument();
-      });
+      const user = await setupUserAndRender();
 
       const selectAllCheckbox = screen.getByRole('checkbox', { name: /select all/i });
 
@@ -267,11 +282,7 @@ describe('CharacterLibraryIntegration', () => {
 
   describe('Character Preview', () => {
     it('should display character preview information', async () => {
-      render(<ImportParticipantDialog {...mockProps} />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Aragorn')).toBeInTheDocument();
-      });
+      await renderAndWaitForCharacters();
 
       // Should show character stats
       expect(screen.getByText('HP: 45')).toBeInTheDocument();
@@ -280,11 +291,7 @@ describe('CharacterLibraryIntegration', () => {
     });
 
     it('should show character ability scores in preview', async () => {
-      render(<ImportParticipantDialog {...mockProps} />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Aragorn')).toBeInTheDocument();
-      });
+      await renderAndWaitForCharacters();
 
       // Should show key ability scores
       expect(screen.getByText('STR: 16')).toBeInTheDocument();
@@ -322,13 +329,7 @@ describe('CharacterLibraryIntegration', () => {
 
   describe('Character Import', () => {
     it('should enable import button when characters are selected', async () => {
-      const user = userEvent.setup();
-
-      render(<ImportParticipantDialog {...mockProps} />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Aragorn')).toBeInTheDocument();
-      });
+      const user = await setupUserAndRender();
 
       // Select a character
       const aragornCheckbox = screen.getByRole('checkbox', { name: /select aragorn/i });
@@ -343,7 +344,7 @@ describe('CharacterLibraryIntegration', () => {
     });
 
     it('should disable import button when no characters are selected', async () => {
-      render(<ImportParticipantDialog {...mockProps} />);
+      await renderAndWaitForCharacters();
 
       await waitFor(() => {
         expect(screen.getByText('Import Selected (0)')).toBeInTheDocument();
@@ -354,13 +355,7 @@ describe('CharacterLibraryIntegration', () => {
     });
 
     it('should call onImportCharacters when import button is clicked', async () => {
-      const user = userEvent.setup();
-
-      render(<ImportParticipantDialog {...mockProps} />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Aragorn')).toBeInTheDocument();
-      });
+      const user = await setupUserAndRender();
 
       // Select two characters
       const aragornCheckbox = screen.getByRole('checkbox', { name: /select aragorn/i });
@@ -379,13 +374,7 @@ describe('CharacterLibraryIntegration', () => {
     });
 
     it('should show loading state during import', async () => {
-      const user = userEvent.setup();
-
-      render(<ImportParticipantDialog {...mockProps} />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Aragorn')).toBeInTheDocument();
-      });
+      const user = await setupUserAndRender();
 
       // Select a character
       const aragornCheckbox = screen.getByRole('checkbox', { name: /select aragorn/i });
@@ -459,12 +448,12 @@ describe('CharacterLibraryIntegration', () => {
     });
 
     it('should handle search errors', async () => {
-      const user = userEvent.setup();
       mockCharacterService.searchCharacters = jest.fn().mockResolvedValue({
         success: false,
         error: 'Search failed',
       });
 
+      const user = userEvent.setup();
       render(<ImportParticipantDialog {...mockProps} />);
 
       const searchInput = screen.getByPlaceholderText('Search characters...');
@@ -494,18 +483,3 @@ describe('CharacterLibraryIntegration', () => {
   });
 });
 
-// Helper function that needs to be implemented
-function convertCharacterToParticipant(character: ICharacter): ParticipantFormData {
-  return {
-    name: character.name,
-    type: character.type,
-    maxHitPoints: character.hitPoints.maximum,
-    currentHitPoints: character.hitPoints.current,
-    temporaryHitPoints: character.hitPoints.temporary,
-    armorClass: character.armorClass,
-    isPlayer: character.type === 'pc',
-    isVisible: true,
-    notes: character.notes || '',
-    conditions: [],
-  };
-}
