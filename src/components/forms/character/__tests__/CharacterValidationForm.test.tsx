@@ -7,7 +7,7 @@ import { setupFormComponentTest } from './setup/test-setup';
 describe('CharacterValidationForm', () => {
   const { characterService } = setupFormComponentTest();
   const mockCharacterService = characterService;
-  
+
   const defaultProps = {
     ownerId: 'user123',
     onSuccess: jest.fn(),
@@ -15,7 +15,7 @@ describe('CharacterValidationForm', () => {
     onCancel: jest.fn(),
     isOpen: false,
   };
-  
+
   const testProps = {
     ...defaultProps,
     ownerId: 'test-owner-id',

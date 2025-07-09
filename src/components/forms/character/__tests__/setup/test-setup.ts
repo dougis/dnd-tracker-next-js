@@ -2,9 +2,6 @@
  * Centralized test setup utilities to reduce code duplication
  */
 
-import { CharacterService } from '@/lib/services/CharacterService';
-import { NPCTemplateService } from '@/lib/services/NPCTemplateService';
-
 // Mock setup functions - centralized configuration
 export const setupCharacterServiceMock = (mockImplementation?: any) => {
   const mockCharacterService = {

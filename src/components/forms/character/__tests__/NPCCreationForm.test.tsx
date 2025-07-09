@@ -6,7 +6,7 @@ import { setupNPCFormTest } from './setup/test-setup';
 describe('NPCCreationForm', () => {
   const { characterService, npcTemplateService } = setupNPCFormTest();
   const mockCharacterService = characterService;
-  
+
   const defaultProps = {
     ownerId: 'user123',
     onSuccess: jest.fn(),
@@ -14,7 +14,7 @@ describe('NPCCreationForm', () => {
     onCancel: jest.fn(),
     isOpen: false,
   };
-  const testProps = {
+  const _testProps = {
     ...defaultProps,
     ownerId: 'user123',
     isOpen: true,
@@ -174,7 +174,7 @@ describe('NPCCreationForm', () => {
       const cancelButton = screen.getByRole('button', { name: /cancel/i });
       await userEvent.click(cancelButton);
 
-      expect(mockOnCancel).toHaveBeenCalled();
+      expect(defaultProps.onCancel).toHaveBeenCalled();
     });
 
     it('handles form submission', async () => {
