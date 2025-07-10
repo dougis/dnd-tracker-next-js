@@ -26,18 +26,23 @@ function LoadingState() {
   );
 }
 
-export default function CharactersPage() {
+function useAuthenticatedSession() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const actions = useCharacterPageActions();
-
-  if (status === 'loading') {
-    return <LoadingState />;
-  }
 
   if (status === 'unauthenticated') {
     router.push('/signin');
-    return null;
+  }
+
+  return { session, status, isLoading: status === 'loading', isAuthenticated: status === 'authenticated' };
+}
+
+export default function CharactersPage() {
+  const { session, isLoading } = useAuthenticatedSession();
+  const actions = useCharacterPageActions();
+
+  if (isLoading) {
+    return <LoadingState />;
   }
 
   return (

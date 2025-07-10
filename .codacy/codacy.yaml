@@ -1,7 +1,13 @@
+engine_configuration:
+    - enabled: false
+      tool: spellcheck
+    - exclude_patterns:
+        - eslint.config.mjs
+      tool: eslint
 exclude_paths:
     - node_modules/**
     - .next/**
-    - ".next/**/*"
+    - .next/**/*
     - dist/**
     - build/**
     - coverage/**
@@ -22,14 +28,8 @@ exclude_paths:
     - '**/*.config.js'
     - '**/*.config.mjs'
     - '**/*.config.ts'
-    - "**/__tests__/**/*"
-    - "**/__mocks__/**/*"
-engine_configuration:
-  - tool: spellcheck
-    enabled: false
-  - tool: eslint
-    exclude_patterns:
-      - "eslint.config.mjs"
+    - '**/__tests__/**/*'
+    - '**/__mocks__/**/*'
 runtimes:
     - dart@3.7.2
     - go@1.22.3

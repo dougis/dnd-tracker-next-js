@@ -4,10 +4,11 @@
 
 import User from './User';
 import { Character } from './Character';
+import { Party } from './Party';
 import { Encounter } from './encounter';
 
 // Export models
-export { User, Character, Encounter };
+export { User, Character, Party, Encounter };
 
 // Export User interfaces
 export type {
@@ -20,6 +21,9 @@ export type {
 
 // Export Character interfaces
 export type { ICharacter, CharacterModel, CharacterSummary } from './Character';
+
+// Export Party interfaces
+export type { IParty, PartyModel } from './Party';
 
 // Export Encounter interfaces
 export type {

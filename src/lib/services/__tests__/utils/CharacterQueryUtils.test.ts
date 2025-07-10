@@ -40,12 +40,81 @@ describe('CharacterQueryUtils', () => {
     },
   ];
 
+  // Helper function to get mocked dependencies
+  const getMocks = () => ({
+    Character: require('../../../models/Character').Character,
+    CharacterValidationUtils: require('../../utils/CharacterValidationUtils').CharacterValidationUtils,
+    CharacterAccessUtils: require('../../utils/CharacterAccessUtils').CharacterAccessUtils,
+  });
+
+  // Helper function to create a standard mock query
+  const createMockQuery = (additionalMethods = {}) => ({
+    skip: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    sort: jest.fn().mockReturnThis(),
+    exec: jest.fn().mockResolvedValue(mockCharacters),
+    ...additionalMethods,
+  });
+
+  // Helper function to expect successful result
+  const expectSuccessResult = (result: any, expectedData?: any) => {
+    expect(result.success).toBe(true);
+    if (expectedData !== undefined) {
+      expect(result.data).toEqual(expectedData);
+    }
+  };
+
+  // Helper function to expect failed result
+  const expectFailedResult = (result: any, expectedCode?: string) => {
+    expect(result.success).toBe(false);
+    if (expectedCode) {
+      expect(result.error.code).toBe(expectedCode);
+    }
+  };
+
+  // Helper function to expect paginated result
+  const expectPaginatedResult = (result: any, expectedTotal: number, expectedPages: number) => {
+    expectSuccessResult(result);
+    expect(result.data.items).toEqual(mockCharacters);
+    expect(result.data.pagination.total).toBe(expectedTotal);
+    expect(result.data.pagination.totalPages).toBe(expectedPages);
+  };
+
+  // Helper function to mock validation error
+  const mockValidationError = (utilMethod: string, errorCode: string, errorMessage: string) => {
+    const { CharacterValidationUtils } = getMocks();
+    CharacterValidationUtils[utilMethod].mockReturnValue({
+      success: false,
+      error: { code: errorCode, message: errorMessage },
+    });
+  };
+
+  // Helper function to mock access error
+  const mockAccessError = (errorCode: string, errorMessage: string) => {
+    const { CharacterAccessUtils } = getMocks();
+    CharacterAccessUtils.prepareUserAccessQuery.mockResolvedValue({
+      success: false,
+      error: { code: errorCode, message: errorMessage },
+    });
+  };
+
+  // Helper function to mock database error
+  const mockDatabaseError = (method: 'find' | 'countDocuments' = 'countDocuments') => {
+    const { Character } = getMocks();
+    if (method === 'find') {
+      Character.find.mockImplementation(() => {
+        throw new Error('Database error');
+      });
+    } else {
+      Character.countDocuments.mockRejectedValue(new Error('Database error'));
+    }
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
 
     // Set up default mocks
-    const { CharacterValidationUtils } = require('../../utils/CharacterValidationUtils');
-    const { CharacterAccessUtils } = require('../../utils/CharacterAccessUtils');
+    const { CharacterValidationUtils, CharacterAccessUtils } = getMocks();
 
     CharacterValidationUtils.validatePagination.mockReturnValue({
       success: true,
@@ -66,57 +135,30 @@ describe('CharacterQueryUtils', () => {
 
   describe('findWithPagination', () => {
     it('should return paginated results', async () => {
-      const { Character } = require('../../../models/Character');
+      const { Character } = getMocks();
       Character.countDocuments.mockResolvedValue(25);
-
-      const mockQuery = {
-        skip: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockCharacters),
-      };
-      Character.find.mockReturnValue(mockQuery);
+      Character.find.mockReturnValue(createMockQuery());
 
       const result = await CharacterQueryUtils.findWithPagination({}, validUserId);
-      expect(result.success).toBe(true);
-      expect(result.data.items).toEqual(mockCharacters);
-      expect(result.data.pagination.total).toBe(25);
-      expect(result.data.pagination.totalPages).toBe(2);
+      expectPaginatedResult(result, 25, 2);
     });
 
     it('should handle pagination validation errors', async () => {
-      const { CharacterValidationUtils } = require('../../utils/CharacterValidationUtils');
-      CharacterValidationUtils.validatePagination.mockReturnValue({
-        success: false,
-        error: { code: 'INVALID_PAGINATION', message: 'Invalid pagination' },
-      });
-
+      mockValidationError('validatePagination', 'INVALID_PAGINATION', 'Invalid pagination');
       const result = await CharacterQueryUtils.findWithPagination({}, validUserId);
-      expect(result.success).toBe(false);
+      expectFailedResult(result);
     });
 
     it('should handle user access query errors', async () => {
-      const { CharacterAccessUtils } = require('../../utils/CharacterAccessUtils');
-      CharacterAccessUtils.prepareUserAccessQuery.mockResolvedValue({
-        success: false,
-        error: { code: 'INVALID_USER', message: 'Invalid user' },
-      });
-
+      mockAccessError('INVALID_USER', 'Invalid user');
       const result = await CharacterQueryUtils.findWithPagination({}, validUserId);
-      expect(result.success).toBe(false);
+      expectFailedResult(result);
     });
 
     it('should apply field selection', async () => {
-      const { Character } = require('../../../models/Character');
+      const { Character } = getMocks();
       Character.countDocuments.mockResolvedValue(1);
-
-      const mockQuery = {
-        skip: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockCharacters),
-      };
+      const mockQuery = createMockQuery({ select: jest.fn().mockReturnThis() });
       Character.find.mockReturnValue(mockQuery);
 
       const options = { includeFields: ['name', 'type'] };
@@ -125,16 +167,9 @@ describe('CharacterQueryUtils', () => {
     });
 
     it('should apply field exclusion', async () => {
-      const { Character } = require('../../../models/Character');
+      const { Character } = getMocks();
       Character.countDocuments.mockResolvedValue(1);
-
-      const mockQuery = {
-        skip: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockCharacters),
-      };
+      const mockQuery = createMockQuery({ select: jest.fn().mockReturnThis() });
       Character.find.mockReturnValue(mockQuery);
 
       const options = { excludeFields: ['description', 'history'] };
@@ -143,210 +178,134 @@ describe('CharacterQueryUtils', () => {
     });
 
     it('should handle database errors', async () => {
-      const { Character } = require('../../../models/Character');
-      Character.countDocuments.mockRejectedValue(new Error('Database error'));
-
+      mockDatabaseError();
       const result = await CharacterQueryUtils.findWithPagination({}, validUserId);
-      expect(result.success).toBe(false);
-      expect(result.error.code).toBe(CHARACTER_ERROR_CODES.DATABASE_ERROR);
+      expectFailedResult(result, CHARACTER_ERROR_CODES.DATABASE_ERROR);
     });
   });
 
   describe('findWithUserAccess', () => {
     it('should return characters with user access control', async () => {
-      const { Character } = require('../../../models/Character');
-      const mockQuery = {
-        sort: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockCharacters),
-      };
-      Character.find.mockReturnValue(mockQuery);
+      const { Character } = getMocks();
+      Character.find.mockReturnValue(createMockQuery());
 
       const result = await CharacterQueryUtils.findWithUserAccess({}, validUserId);
-      expect(result.success).toBe(true);
-      expect(result.data).toEqual(mockCharacters);
+      expectSuccessResult(result, mockCharacters);
     });
 
     it('should handle user access query errors', async () => {
-      const { CharacterAccessUtils } = require('../../utils/CharacterAccessUtils');
-      CharacterAccessUtils.prepareUserAccessQuery.mockResolvedValue({
-        success: false,
-        error: { code: 'INVALID_USER', message: 'Invalid user' },
-      });
-
+      mockAccessError('INVALID_USER', 'Invalid user');
       const result = await CharacterQueryUtils.findWithUserAccess({}, validUserId);
-      expect(result.success).toBe(false);
+      expectFailedResult(result);
     });
   });
 
   describe('findByOwner', () => {
     it('should find characters by owner with pagination', async () => {
-      const { Character } = require('../../../models/Character');
+      const { Character } = getMocks();
       Character.countDocuments.mockResolvedValue(5);
-
-      const mockQuery = {
-        skip: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockCharacters),
-      };
-      Character.find.mockReturnValue(mockQuery);
+      Character.find.mockReturnValue(createMockQuery());
 
       const result = await CharacterQueryUtils.findByOwner(validUserId, 1, 10);
-      expect(result.success).toBe(true);
+      expectSuccessResult(result);
       expect(result.data.items).toEqual(mockCharacters);
     });
 
     it('should handle invalid owner ID', async () => {
-      const { CharacterValidationUtils } = require('../../utils/CharacterValidationUtils');
-      CharacterValidationUtils.validateObjectId.mockReturnValue({
-        success: false,
-        error: { code: CHARACTER_ERROR_CODES.INVALID_OWNER_ID, message: 'Invalid owner ID' },
-      });
-
+      mockValidationError('validateObjectId', CHARACTER_ERROR_CODES.INVALID_OWNER_ID, 'Invalid owner ID');
       const result = await CharacterQueryUtils.findByOwner('invalid');
-      expect(result.success).toBe(false);
-      expect(result.error.code).toBe(CHARACTER_ERROR_CODES.INVALID_OWNER_ID);
+      expectFailedResult(result, CHARACTER_ERROR_CODES.INVALID_OWNER_ID);
     });
   });
 
   describe('searchCharacters', () => {
     it('should search characters with text search', async () => {
-      const { Character } = require('../../../models/Character');
-      const mockQuery = {
-        sort: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockCharacters),
-      };
-      Character.find.mockReturnValue(mockQuery);
+      const { Character } = getMocks();
+      Character.find.mockReturnValue(createMockQuery());
 
       const result = await CharacterQueryUtils.searchCharacters('gandalf', validUserId);
-      expect(result.success).toBe(true);
-      expect(result.data).toEqual(mockCharacters);
+      expectSuccessResult(result, mockCharacters);
     });
 
     it('should handle invalid search criteria', async () => {
-      const { CharacterValidationUtils } = require('../../utils/CharacterValidationUtils');
-      CharacterValidationUtils.validateSearchCriteria.mockReturnValue({
-        success: false,
-        error: { code: CHARACTER_ERROR_CODES.INVALID_SEARCH_CRITERIA, message: 'Invalid search' },
-      });
-
+      mockValidationError('validateSearchCriteria', CHARACTER_ERROR_CODES.INVALID_SEARCH_CRITERIA, 'Invalid search');
       const result = await CharacterQueryUtils.searchCharacters('', validUserId);
-      expect(result.success).toBe(false);
-      expect(result.error.code).toBe(CHARACTER_ERROR_CODES.INVALID_SEARCH_CRITERIA);
+      expectFailedResult(result, CHARACTER_ERROR_CODES.INVALID_SEARCH_CRITERIA);
     });
   });
 
   describe('findByClass', () => {
     it('should find characters by class', async () => {
-      const { Character } = require('../../../models/Character');
-      const mockQuery = {
-        sort: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockCharacters),
-      };
-      Character.find.mockReturnValue(mockQuery);
+      const { Character } = getMocks();
+      Character.find.mockReturnValue(createMockQuery());
 
       const result = await CharacterQueryUtils.findByClass('wizard', validUserId);
-      expect(result.success).toBe(true);
-      expect(result.data).toEqual(mockCharacters);
+      expectSuccessResult(result, mockCharacters);
     });
   });
 
   describe('findByRace', () => {
     it('should find characters by race', async () => {
-      const { Character } = require('../../../models/Character');
-      const mockQuery = {
-        sort: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockCharacters),
-      };
-      Character.find.mockReturnValue(mockQuery);
+      const { Character } = getMocks();
+      Character.find.mockReturnValue(createMockQuery());
 
       const result = await CharacterQueryUtils.findByRace('elf', validUserId);
-      expect(result.success).toBe(true);
-      expect(result.data).toEqual(mockCharacters);
+      expectSuccessResult(result, mockCharacters);
     });
   });
 
   describe('findByType', () => {
     it('should find characters by type', async () => {
-      const { Character } = require('../../../models/Character');
-      const mockQuery = {
-        sort: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockCharacters),
-      };
-      Character.find.mockReturnValue(mockQuery);
+      const { Character } = getMocks();
+      Character.find.mockReturnValue(createMockQuery());
 
       const result = await CharacterQueryUtils.findByType('pc', validUserId);
-      expect(result.success).toBe(true);
-      expect(result.data).toEqual(mockCharacters);
+      expectSuccessResult(result, mockCharacters);
     });
   });
 
   describe('findPublicCharacters', () => {
     it('should find public characters', async () => {
-      const { Character } = require('../../../models/Character');
-      const mockQuery = {
-        sort: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockCharacters),
-      };
-      Character.find.mockReturnValue(mockQuery);
+      const { Character } = getMocks();
+      Character.find.mockReturnValue(createMockQuery());
 
       const result = await CharacterQueryUtils.findPublicCharacters();
-      expect(result.success).toBe(true);
-      expect(result.data).toEqual(mockCharacters);
+      expectSuccessResult(result, mockCharacters);
     });
 
     it('should handle database errors', async () => {
-      const { Character } = require('../../../models/Character');
-      Character.find.mockImplementation(() => {
-        throw new Error('Database error');
-      });
-
+      mockDatabaseError('find');
       const result = await CharacterQueryUtils.findPublicCharacters();
-      expect(result.success).toBe(false);
-      expect(result.error.code).toBe(CHARACTER_ERROR_CODES.DATABASE_ERROR);
+      expectFailedResult(result, CHARACTER_ERROR_CODES.DATABASE_ERROR);
     });
   });
 
   describe('countByOwner', () => {
     it('should count characters by owner', async () => {
-      const { Character } = require('../../../models/Character');
+      const { Character } = getMocks();
       Character.countDocuments.mockResolvedValue(5);
 
       const result = await CharacterQueryUtils.countByOwner(validUserId);
-      expect(result.success).toBe(true);
-      expect(result.data).toBe(5);
+      expectSuccessResult(result, 5);
     });
 
     it('should handle invalid owner ID', async () => {
-      const { CharacterValidationUtils } = require('../../utils/CharacterValidationUtils');
-      CharacterValidationUtils.validateObjectId.mockReturnValue({
-        success: false,
-        error: { code: CHARACTER_ERROR_CODES.INVALID_OWNER_ID, message: 'Invalid owner ID' },
-      });
-
+      mockValidationError('validateObjectId', CHARACTER_ERROR_CODES.INVALID_OWNER_ID, 'Invalid owner ID');
       const result = await CharacterQueryUtils.countByOwner('invalid');
-      expect(result.success).toBe(false);
-      expect(result.error.code).toBe(CHARACTER_ERROR_CODES.INVALID_OWNER_ID);
+      expectFailedResult(result, CHARACTER_ERROR_CODES.INVALID_OWNER_ID);
     });
 
     it('should handle database errors', async () => {
-      const { Character } = require('../../../models/Character');
-      Character.countDocuments.mockRejectedValue(new Error('Database error'));
-
+      mockDatabaseError();
       const result = await CharacterQueryUtils.countByOwner(validUserId);
-      expect(result.success).toBe(false);
-      expect(result.error.code).toBe(CHARACTER_ERROR_CODES.DATABASE_ERROR);
+      expectFailedResult(result, CHARACTER_ERROR_CODES.DATABASE_ERROR);
     });
   });
 
   describe('findWithAdvancedFilter', () => {
     it('should find characters with advanced filters', async () => {
-      const { Character } = require('../../../models/Character');
-      const mockQuery = {
-        sort: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockCharacters),
-      };
-      Character.find.mockReturnValue(mockQuery);
+      const { Character } = getMocks();
+      Character.find.mockReturnValue(createMockQuery());
 
       const filter = {
         classes: ['wizard', 'sorcerer'],
@@ -356,17 +315,12 @@ describe('CharacterQueryUtils', () => {
       };
 
       const result = await CharacterQueryUtils.findWithAdvancedFilter(filter, validUserId);
-      expect(result.success).toBe(true);
-      expect(result.data).toEqual(mockCharacters);
+      expectSuccessResult(result, mockCharacters);
     });
 
     it('should handle search in advanced filter', async () => {
-      const { Character } = require('../../../models/Character');
-      const mockQuery = {
-        sort: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockCharacters),
-      };
-      Character.find.mockReturnValue(mockQuery);
+      const { Character } = getMocks();
+      Character.find.mockReturnValue(createMockQuery());
 
       const filter = {
         search: 'gandalf',
@@ -374,30 +328,20 @@ describe('CharacterQueryUtils', () => {
       };
 
       const result = await CharacterQueryUtils.findWithAdvancedFilter(filter, validUserId);
-      expect(result.success).toBe(true);
+      expectSuccessResult(result);
     });
 
     it('should handle search validation errors', async () => {
-      const { CharacterValidationUtils } = require('../../utils/CharacterValidationUtils');
-      CharacterValidationUtils.validateSearchCriteria.mockReturnValue({
-        success: false,
-        error: { code: CHARACTER_ERROR_CODES.INVALID_SEARCH_CRITERIA, message: 'Invalid search' },
-      });
-
+      mockValidationError('validateSearchCriteria', CHARACTER_ERROR_CODES.INVALID_SEARCH_CRITERIA, 'Invalid search');
       const filter = { search: 'invalid-search-term' };
       const result = await CharacterQueryUtils.findWithAdvancedFilter(filter, validUserId);
-      expect(result.success).toBe(false);
+      expectFailedResult(result);
     });
 
     it('should handle database errors', async () => {
-      const { Character } = require('../../../models/Character');
-      Character.find.mockImplementation(() => {
-        throw new Error('Database error');
-      });
-
+      mockDatabaseError('find');
       const result = await CharacterQueryUtils.findWithAdvancedFilter({}, validUserId);
-      expect(result.success).toBe(false);
-      expect(result.error.code).toBe(CHARACTER_ERROR_CODES.DATABASE_ERROR);
+      expectFailedResult(result, CHARACTER_ERROR_CODES.DATABASE_ERROR);
     });
   });
 });
