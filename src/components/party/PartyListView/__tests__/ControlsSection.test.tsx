@@ -106,14 +106,15 @@ describe('ControlsSection', () => {
       const sortTrigger = screen.getByRole('combobox');
       fireEvent.click(sortTrigger);
 
-      expect(screen.getByText('Name (A-Z)')).toBeInTheDocument();
-      expect(screen.getByText('Name (Z-A)')).toBeInTheDocument();
-      expect(screen.getByText('Newest First')).toBeInTheDocument();
-      expect(screen.getByText('Oldest First')).toBeInTheDocument();
-      expect(screen.getByText('Most Members')).toBeInTheDocument();
-      expect(screen.getByText('Fewest Members')).toBeInTheDocument();
-      expect(screen.getByText('Most Recent Activity')).toBeInTheDocument();
-      expect(screen.getByText('Least Recent Activity')).toBeInTheDocument();
+      // Use getAllByText to handle potential duplicates from trigger and dropdown
+      expect(screen.getAllByText('Name (A-Z)').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Name (Z-A)').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Newest First').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Oldest First').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Most Members').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Fewest Members').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Most Recent Activity').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Least Recent Activity').length).toBeGreaterThan(0);
     });
   });
 
