@@ -89,9 +89,7 @@ export interface FilterCallbacks {
   onClearFilters: () => void;
 }
 
-export interface TableSortConfig {
-  sortBy: PartySortBy;
-  sortOrder: SortOrder;
+export interface TableSortConfig extends SortConfig {
   onSort: (_sortBy: PartySortBy, _sortOrder: SortOrder) => void;
 }
 

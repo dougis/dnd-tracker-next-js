@@ -71,6 +71,53 @@ function sortParties(parties: PartyListItem[], sortBy: PartySortBy, sortOrder: S
   });
 }
 
+// Utility function to simulate API delay
+async function simulateApiDelay(): Promise<void> {
+  await new Promise(resolve => setTimeout(resolve, 500));
+}
+
+// Utility function to create pagination info
+function createPaginationInfo(currentPage: number, totalItems: number, limit: number): PaginationInfo {
+  return {
+    currentPage,
+    totalPages: Math.ceil(totalItems / limit),
+    totalItems,
+    itemsPerPage: limit,
+  };
+}
+
+// Utility function to process party data with filtering, sorting, and pagination
+async function processPartyData({
+  parties,
+  searchQuery,
+  filters,
+  sortBy,
+  sortOrder,
+  currentPage,
+  limit,
+}: {
+  parties: PartyListItem[];
+  searchQuery: string;
+  filters: PartyFilters;
+  sortBy: PartySortBy;
+  sortOrder: SortOrder;
+  currentPage: number;
+  limit: number;
+}): Promise<{ items: PartyListItem[]; pagination: PaginationInfo }> {
+  const filteredParties = applyFilters(parties, searchQuery, filters);
+  sortParties(filteredParties, sortBy, sortOrder);
+
+  const totalItems = filteredParties.length;
+  const startIndex = (currentPage - 1) * limit;
+  const endIndex = startIndex + limit;
+  const paginatedParties = filteredParties.slice(startIndex, endIndex);
+
+  return {
+    items: paginatedParties,
+    pagination: createPaginationInfo(currentPage, totalItems, limit),
+  };
+}
+
 // Mock data for development - this will be replaced with real API calls
 const mockParties: PartyListItem[] = [
   {
@@ -128,27 +175,19 @@ export function usePartyData({
     setError(null);
 
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Apply filters and sorting (mock implementation)
-      const filteredParties = applyFilters(mockParties, searchQuery, filters);
-      sortParties(filteredParties, sortBy, sortOrder);
-
-      // Apply pagination
-      const totalItems = filteredParties.length;
-      const totalPages = Math.ceil(totalItems / limit);
-      const startIndex = (currentPage - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedParties = filteredParties.slice(startIndex, endIndex);
-
-      setParties(paginatedParties);
-      setPagination({
+      await simulateApiDelay();
+      const paginatedResult = await processPartyData({
+        parties: mockParties,
+        searchQuery,
+        filters,
+        sortBy,
+        sortOrder,
         currentPage,
-        totalPages,
-        totalItems,
-        itemsPerPage: limit,
+        limit,
       });
+
+      setParties(paginatedResult.items);
+      setPagination(paginatedResult.pagination);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred while fetching parties');
     } finally {

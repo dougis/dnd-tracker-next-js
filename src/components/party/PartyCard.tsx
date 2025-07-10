@@ -105,32 +105,56 @@ function PartyTags({ tags }: { tags: string[] }) {
   );
 }
 
+// Helper component for stat display
+function StatRow({ 
+  leftContent, 
+  rightContent 
+}: { 
+  leftContent: React.ReactNode; 
+  rightContent: React.ReactNode; 
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-4 text-sm">
+      <div>{leftContent}</div>
+      <div className="text-right">{rightContent}</div>
+    </div>
+  );
+}
+
 // Party statistics
 function PartyStats({ party }: { party: PartyListItem }) {
   return (
     <>
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">{party.memberCount}</span>
-          <span className="text-muted-foreground">members</span>
-        </div>
-        <div className="text-right">
-          <div className="font-medium">Level {party.averageLevel || '-'}</div>
-          <div className="text-xs text-muted-foreground">average</div>
-        </div>
-      </div>
+      <StatRow
+        leftContent={
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <span className="font-medium">{party.memberCount}</span>
+            <span className="text-muted-foreground">members</span>
+          </div>
+        }
+        rightContent={
+          <>
+            <div className="font-medium">Level {party.averageLevel || '-'}</div>
+            <div className="text-xs text-muted-foreground">average</div>
+          </>
+        }
+      />
 
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <div className="text-muted-foreground">Player Characters</div>
-          <div className="font-medium">{party.playerCharacterCount}</div>
-        </div>
-        <div className="text-right">
-          <div className="text-muted-foreground">Max Members</div>
-          <div className="font-medium">{party.settings.maxMembers}</div>
-        </div>
-      </div>
+      <StatRow
+        leftContent={
+          <>
+            <div className="text-muted-foreground">Player Characters</div>
+            <div className="font-medium">{party.playerCharacterCount}</div>
+          </>
+        }
+        rightContent={
+          <>
+            <div className="text-muted-foreground">Max Members</div>
+            <div className="font-medium">{party.settings.maxMembers}</div>
+          </>
+        }
+      />
     </>
   );
 }

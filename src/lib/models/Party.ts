@@ -142,50 +142,59 @@ partySchema.virtual('averageLevel').get(async function () {
   return Math.round(totalLevel / members.length);
 });
 
-// Instance method: Add member to party
-partySchema.methods.addMember = async function (characterId: Types.ObjectId): Promise<void> {
+// Helper function to get current member count
+async function getCurrentMemberCount(partyId: Types.ObjectId): Promise<number> {
   const Character = mongoose.model('Character');
-
-  // Check if party is at max capacity
-  const currentMemberCount = await Character.countDocuments({
-    partyId: this._id,
+  return await Character.countDocuments({
+    partyId,
     isDeleted: { $ne: true },
   });
+}
+
+// Helper function to update character party membership
+async function updateCharacterParty(characterId: Types.ObjectId, partyId: Types.ObjectId): Promise<void> {
+  const Character = mongoose.model('Character');
+  await Character.findByIdAndUpdate(characterId, { partyId });
+}
+
+// Instance method: Add member to party
+partySchema.methods.addMember = async function (characterId: Types.ObjectId): Promise<void> {
+  const currentMemberCount = await getCurrentMemberCount(this._id);
 
   if (currentMemberCount >= this.settings.maxMembers) {
     throw new Error('Party is at maximum capacity');
   }
 
-  // Update character's partyId
-  await Character.findByIdAndUpdate(characterId, {
-    partyId: this._id,
-  });
-
-  // Update party's last activity
+  await updateCharacterParty(characterId, this._id);
   this.updateActivity();
 };
 
-// Instance method: Remove member from party
-partySchema.methods.removeMember = async function (characterId: Types.ObjectId): Promise<void> {
+// Helper function to remove character from party
+async function removeCharacterFromParty(characterId: Types.ObjectId): Promise<void> {
   const Character = mongoose.model('Character');
-
-  // Remove partyId from character
   await Character.findByIdAndUpdate(characterId, {
     $unset: { partyId: 1 },
   });
+}
 
-  // Update party's last activity
+// Instance method: Remove member from party
+partySchema.methods.removeMember = async function (characterId: Types.ObjectId): Promise<void> {
+  await removeCharacterFromParty(characterId);
   this.updateActivity();
 };
 
-// Instance method: Get all party members
-partySchema.methods.getMembers = async function (): Promise<any[]> {
+// Helper function to find party members
+async function findPartyMembers(partyId: Types.ObjectId): Promise<any[]> {
   const Character = mongoose.model('Character');
-
   return await Character.find({
-    partyId: this._id,
+    partyId,
     isDeleted: { $ne: true },
   }).sort({ name: 1 });
+}
+
+// Instance method: Get all party members
+partySchema.methods.getMembers = async function (): Promise<any[]> {
+  return await findPartyMembers(this._id);
 };
 
 // Instance method: Update last activity
