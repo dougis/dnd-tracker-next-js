@@ -1,3 +1,4 @@
+import React from 'react';
 import { screen, fireEvent } from '@testing-library/react';
 
 /**
@@ -98,5 +99,13 @@ export const createButtonHelpers = {
     expect(mainCreateButton).toBeInTheDocument();
     expect(mainCreateButton).toBeEnabled();
     return mainCreateButton;
+  },
+};
+
+export const renderHelpers = {
+  renderPage: () => {
+    const { render } = require('@testing-library/react');
+    const CharactersPage = require('../page').default;
+    return render(React.createElement(CharactersPage));
   },
 };

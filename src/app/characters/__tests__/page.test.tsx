@@ -1,14 +1,14 @@
 import React from 'react';
-import { render, waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import CharactersPage from '../page';
 import {
   mockSessionSetup,
   formHelpers,
   testActions,
   expectations,
   createButtonHelpers,
+  renderHelpers,
 } from './test-helpers';
 
 // Mock dependencies
@@ -80,7 +80,7 @@ describe('CharactersPage', () => {
   describe('Authentication States', () => {
     it('shows loading state while session is loading', () => {
       mockUseSession.mockReturnValue(mockSessionSetup.loading as any);
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
 
       expectations.loadingState();
       expectations.appLayout();
@@ -88,14 +88,14 @@ describe('CharactersPage', () => {
 
     it('redirects to signin when unauthenticated', () => {
       mockUseSession.mockReturnValue(mockSessionSetup.unauthenticated as any);
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
 
       expect(mockPush).toHaveBeenCalledWith('/signin');
     });
 
     it('renders page content when authenticated', () => {
       mockUseSession.mockReturnValue(mockSessionSetup.authenticated as any);
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
 
       expectations.pageContent();
       expectations.characterListView();
@@ -108,12 +108,12 @@ describe('CharactersPage', () => {
     });
 
     it('displays correct page title and description', () => {
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
       expectations.pageContent();
     });
 
     it('displays create character button', () => {
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
       expectations.createButtonsExist();
       const mainCreateButton = createButtonHelpers.findMainCreateButton();
       expect(mainCreateButton).toBeInTheDocument();
@@ -126,20 +126,20 @@ describe('CharactersPage', () => {
     });
 
     it('navigates to character detail when character is selected', () => {
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
       testActions.selectCharacter();
       expect(mockPush).toHaveBeenCalledWith('/characters/char1');
     });
 
     it('navigates to character detail when character is edited', () => {
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
       testActions.editCharacter();
       expect(mockPush).toHaveBeenCalledWith('/characters/char1');
     });
 
     it('logs character deletion (placeholder implementation)', () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
 
       testActions.deleteCharacter();
       expect(consoleSpy).toHaveBeenCalledWith('Delete character:', 'char1');
@@ -148,7 +148,7 @@ describe('CharactersPage', () => {
 
     it('logs character duplication (placeholder implementation)', () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
 
       testActions.duplicateCharacter();
       expect(consoleSpy).toHaveBeenCalledWith('Duplicate character:', 'char1');
@@ -162,7 +162,7 @@ describe('CharactersPage', () => {
     });
 
     it('opens character creation form when create button is clicked', () => {
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
 
       formHelpers.expectFormHidden();
       formHelpers.clickMainCreateButton();
@@ -170,7 +170,7 @@ describe('CharactersPage', () => {
     });
 
     it('opens character creation form from empty state', () => {
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
 
       formHelpers.expectFormHidden();
       formHelpers.clickEmptyStateCreateButton();
@@ -178,7 +178,7 @@ describe('CharactersPage', () => {
     });
 
     it('closes form and navigates to new character on creation success', async () => {
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
 
       formHelpers.clickMainCreateButton();
       formHelpers.expectFormVisible();
@@ -191,7 +191,7 @@ describe('CharactersPage', () => {
     });
 
     it('closes form on cancellation', () => {
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
 
       formHelpers.clickMainCreateButton();
       formHelpers.expectFormVisible();
@@ -200,7 +200,7 @@ describe('CharactersPage', () => {
     });
 
     it('handles creation success without character ID gracefully', async () => {
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
 
       formHelpers.clickMainCreateButton();
       formHelpers.clickCreationSuccess();
@@ -217,14 +217,14 @@ describe('CharactersPage', () => {
     });
 
     it('passes correct props to CharacterListView', () => {
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
 
       expectations.characterListView();
       expectations.characterActions();
     });
 
     it('passes correct props to CharacterCreationForm', () => {
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
 
       expectations.characterCreationForm();
       expectations.formControls();
@@ -237,18 +237,18 @@ describe('CharactersPage', () => {
     });
 
     it('has proper heading structure', () => {
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
       expectations.headingStructure();
     });
 
     it('has accessible create character button', () => {
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
       expectations.createButtonsExist();
       createButtonHelpers.verifyMainCreateButton();
     });
 
     it('provides appropriate aria context', () => {
-      render(<CharactersPage />);
+      renderHelpers.renderPage();
 
       expectations.appLayout();
       expectations.characterListView();

@@ -21,6 +21,7 @@ import {
   mockFailedCharacterFetch,
   mockPendingCharacterFetch,
 } from './__tests__/page-test-utils';
+import { shareTestHelpers, backButtonTestHelpers } from './__tests__/share-test-helpers';
 
 // Mock dependencies
 jest.mock('next/navigation', () => ({
@@ -184,95 +185,55 @@ describe('CharacterDetailClient', () => {
     const testCharacter = createBasicCharacter();
     mockSuccessfulCharacterFetch(testCharacter, mockFetch);
 
-    // Mock navigator.share
     const mockShare = jest.fn().mockResolvedValue(undefined);
-    Object.defineProperty(navigator, 'share', {
-      value: mockShare,
-      writable: true,
-    });
+    shareTestHelpers.setupNavigatorShare(mockShare);
 
     renderCharacterPage();
 
     await waitForText(testCharacter.name);
-    fireEvent.click(screen.getByText('Share'));
+    shareTestHelpers.clickShareButton();
 
-    expect(mockShare).toHaveBeenCalledWith({
-      title: `${testCharacter.name} - D&D Character`,
-      text: `Check out my D&D character: ${testCharacter.name}`,
-      url: `${window.location.origin}/characters/${testCharacter._id}`,
-    });
+    shareTestHelpers.expectShareApiCall(mockShare, testCharacter.name, testCharacter._id);
   });
 
   it('should handle share functionality fallback to clipboard', async () => {
     const testCharacter = createBasicCharacter();
     mockSuccessfulCharacterFetch(testCharacter, mockFetch);
 
-    // Mock clipboard API
     const mockWriteText = jest.fn().mockResolvedValue(undefined);
-    Object.defineProperty(navigator, 'clipboard', {
-      value: { writeText: mockWriteText },
-      writable: true,
-    });
-
-    // Mock alert
-    window.alert = jest.fn();
-
-    // Remove navigator.share to test fallback
-    Object.defineProperty(navigator, 'share', {
-      value: undefined,
-      writable: true,
-    });
+    shareTestHelpers.setupClipboardApi(mockWriteText);
+    const mockAlert = shareTestHelpers.mockWindowAlert();
+    shareTestHelpers.removeNavigatorShare();
 
     renderCharacterPage();
 
     await waitForText(testCharacter.name);
-    fireEvent.click(screen.getByText('Share'));
+    shareTestHelpers.clickShareButton();
+    await shareTestHelpers.waitForAsync();
 
-    // Wait for async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 0));
-
-    expect(mockWriteText).toHaveBeenCalledWith(
-      `${window.location.origin}/characters/${testCharacter._id}`
-    );
-    expect(window.alert).toHaveBeenCalledWith('Character link copied to clipboard!');
+    shareTestHelpers.expectClipboardCall(mockWriteText, testCharacter._id);
+    shareTestHelpers.expectAlertCall(mockAlert);
   });
 
   it('should handle share functionality error with prompt fallback', async () => {
     const testCharacter = createBasicCharacter();
     mockSuccessfulCharacterFetch(testCharacter, mockFetch);
 
-    // Mock clipboard API to throw error
-    const mockWriteText = jest.fn().mockRejectedValue(new Error('Clipboard failed'));
-    Object.defineProperty(navigator, 'clipboard', {
-      value: { writeText: mockWriteText },
-      writable: true,
-    });
-
-    // Mock prompt and console.error
-    window.prompt = jest.fn();
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
-    // Remove navigator.share to test fallback
-    Object.defineProperty(navigator, 'share', {
-      value: undefined,
-      writable: true,
-    });
+    const mockWriteText = jest.fn();
+    const { consoleSpy } = shareTestHelpers.setupErrorScenario(mockWriteText);
+    shareTestHelpers.setupClipboardApi(mockWriteText);
+    const mockPrompt = shareTestHelpers.mockWindowPrompt();
+    shareTestHelpers.removeNavigatorShare();
 
     renderCharacterPage();
 
     await waitForText(testCharacter.name);
-    fireEvent.click(screen.getByText('Share'));
+    shareTestHelpers.clickShareButton();
+    await shareTestHelpers.waitForAsync();
 
-    // Wait for async error handling to complete
-    await new Promise(resolve => setTimeout(resolve, 0));
-
-    expect(consoleSpy).toHaveBeenCalledWith('Error sharing character:', expect.any(Error));
-    expect(window.prompt).toHaveBeenCalledWith(
-      'Share this character link:',
-      `${window.location.origin}/characters/${testCharacter._id}`
-    );
-
-    consoleSpy.mockRestore();
+    shareTestHelpers.expectErrorHandling(consoleSpy);
+    shareTestHelpers.expectPromptCall(mockPrompt, testCharacter._id);
+    shareTestHelpers.restoreConsoleSpy(consoleSpy);
   });
 
   it('should handle back button click', async () => {
@@ -282,9 +243,8 @@ describe('CharacterDetailClient', () => {
     renderCharacterPage();
 
     await waitForText(testCharacter.name);
-    fireEvent.click(screen.getByText('Back'));
-
-    expect(mockRouterBack).toHaveBeenCalled();
+    backButtonTestHelpers.clickBackButton();
+    backButtonTestHelpers.expectBackNavigation(mockRouterBack);
   });
 
   it('should handle back button click from loading state', () => {
@@ -292,8 +252,8 @@ describe('CharacterDetailClient', () => {
 
     renderCharacterPage();
 
-    fireEvent.click(screen.getByText('Back'));
-    expect(mockRouterBack).toHaveBeenCalled();
+    backButtonTestHelpers.clickBackButton();
+    backButtonTestHelpers.expectBackNavigation(mockRouterBack);
   });
 
   it('should handle back button click from error state', async () => {
@@ -302,8 +262,8 @@ describe('CharacterDetailClient', () => {
     renderCharacterPage();
 
     await waitForText('Character not found');
-    fireEvent.click(screen.getByText('Back'));
-    expect(mockRouterBack).toHaveBeenCalled();
+    backButtonTestHelpers.clickBackButton();
+    backButtonTestHelpers.expectBackNavigation(mockRouterBack);
   });
 
   it('should handle back button click from not found state', async () => {
@@ -316,7 +276,7 @@ describe('CharacterDetailClient', () => {
     renderCharacterPage();
 
     await waitForText('Character not found');
-    fireEvent.click(screen.getByText('Back'));
-    expect(mockRouterBack).toHaveBeenCalled();
+    backButtonTestHelpers.clickBackButton();
+    backButtonTestHelpers.expectBackNavigation(mockRouterBack);
   });
 });
