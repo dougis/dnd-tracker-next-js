@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { useSession } from 'next-auth/react';
 import SettingsPage from '../page';
 import '@testing-library/jest-dom';

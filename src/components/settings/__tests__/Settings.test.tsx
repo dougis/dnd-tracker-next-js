@@ -81,7 +81,7 @@ describe('Settings Component', () => {
 
       const nameInput = screen.getByDisplayValue('Test User');
       fireEvent.change(nameInput, { target: { value: '' } });
-      
+
       const saveButton = screen.getByRole('button', { name: /save profile/i });
       fireEvent.click(saveButton);
 
@@ -232,7 +232,7 @@ describe('Settings Component', () => {
   describe('Loading States', () => {
     it('should show loading state during save', async () => {
       mockUpdateUser.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
-      
+
       render(<Settings />);
 
       const saveButton = screen.getByRole('button', { name: /save profile/i });
@@ -244,7 +244,7 @@ describe('Settings Component', () => {
 
     it('should show success message after save', async () => {
       mockUpdateUser.mockResolvedValue({ success: true });
-      
+
       render(<Settings />);
 
       const saveButton = screen.getByRole('button', { name: /save profile/i });
@@ -259,7 +259,7 @@ describe('Settings Component', () => {
   describe('Error Handling', () => {
     it('should handle API errors gracefully', async () => {
       mockUpdateUser.mockRejectedValue(new Error('API Error'));
-      
+
       render(<Settings />);
 
       const saveButton = screen.getByRole('button', { name: /save profile/i });

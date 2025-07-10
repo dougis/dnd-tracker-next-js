@@ -32,18 +32,17 @@ interface FormErrors {
 
 export function Settings({}: SettingsProps) {
   const { data: session, status } = useSession();
-  const [isLoading, setIsLoading] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
-  
+
   // Form state
   const [profileData, setProfileData] = useState({
     name: session?.user?.name || '',
     email: session?.user?.email || '',
   });
-  
+
   const [notifications, setNotifications] = useState<NotificationPreferences>({
     ...DEFAULT_NOTIFICATION_PREFERENCES,
     ...(session?.user?.notifications || {}),
@@ -63,11 +62,15 @@ export function Settings({}: SettingsProps) {
   const validateForm = (data: typeof profileData): FormErrors => {
     const errors: FormErrors = {};
 
-    if (!data.name || data.name.trim().length < VALIDATION_RULES.name.minLength) {
+    if (!data.name || data.name.trim().length === 0) {
       errors.name = 'Name is required';
+    } else if (data.name.trim().length < VALIDATION_RULES.name.minLength) {
+      errors.name = `Name must be at least ${VALIDATION_RULES.name.minLength} characters`;
     }
 
-    if (!data.email || !VALIDATION_RULES.email.pattern.test(data.email)) {
+    if (!data.email || data.email.trim().length === 0) {
+      errors.email = 'Email is required';
+    } else if (!VALIDATION_RULES.email.pattern.test(data.email)) {
       errors.email = 'Please enter a valid email address';
     }
 
@@ -77,11 +80,11 @@ export function Settings({}: SettingsProps) {
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
+    setFormErrors({});
 
     const errors = validateForm(profileData);
-    setFormErrors(errors);
-
     if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
       return;
     }
 
@@ -93,7 +96,7 @@ export function Settings({}: SettingsProps) {
         email: profileData.email,
       });
       setMessage({ type: 'success', text: 'Settings saved successfully' });
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Failed to save settings. Please try again.' });
     } finally {
       setIsLoadingProfile(false);
@@ -110,7 +113,7 @@ export function Settings({}: SettingsProps) {
         notifications,
       });
       setMessage({ type: 'success', text: 'Settings saved successfully' });
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Failed to save settings. Please try again.' });
     } finally {
       setIsLoadingNotifications(false);
@@ -154,7 +157,7 @@ export function Settings({}: SettingsProps) {
                   <p className="text-sm text-destructive">{formErrors.name}</p>
                 )}
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -169,7 +172,7 @@ export function Settings({}: SettingsProps) {
                   <p className="text-sm text-destructive">{formErrors.email}</p>
                 )}
               </div>
-              
+
               <Button type="submit" disabled={isLoadingProfile}>
                 {isLoadingProfile ? 'Saving...' : 'Save Profile'}
               </Button>
@@ -195,7 +198,7 @@ export function Settings({}: SettingsProps) {
                     disabled={isLoadingNotifications}
                   />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <Label htmlFor="combat-reminders">Combat reminders</Label>
                   <Switch
@@ -205,7 +208,7 @@ export function Settings({}: SettingsProps) {
                     disabled={isLoadingNotifications}
                   />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <Label htmlFor="encounter-updates">Encounter updates</Label>
                   <Switch
@@ -216,7 +219,7 @@ export function Settings({}: SettingsProps) {
                   />
                 </div>
               </div>
-              
+
               <Button type="submit" disabled={isLoadingNotifications}>
                 {isLoadingNotifications ? 'Saving...' : 'Save Notifications'}
               </Button>
@@ -260,9 +263,9 @@ export function Settings({}: SettingsProps) {
                   <Badge variant="secondary">{currentTier === 'free' ? 'Free' : 'Premium'}</Badge>
                 </div>
               </div>
-              
+
               <Separator />
-              
+
               <div data-testid="subscription-features">
                 <p className="font-medium mb-2">Your plan includes:</p>
                 <ul className="text-sm space-y-1">
@@ -274,7 +277,7 @@ export function Settings({}: SettingsProps) {
                   ))}
                 </ul>
               </div>
-              
+
               {currentTier === 'free' && (
                 <Button onClick={() => setShowUpgradeModal(true)}>
                   Upgrade Plan

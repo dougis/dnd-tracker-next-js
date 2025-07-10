@@ -16,13 +16,13 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {status === 'unauthenticated' && (
+      {(status === 'unauthenticated' || (status === 'authenticated' && !session?.user?.id)) && (
         <div className="flex items-center justify-center h-64">
           <div className="text-muted-foreground">Please sign in to access your settings.</div>
         </div>
       )}
 
-      {status === 'authenticated' && session?.user && (
+      {status === 'authenticated' && session?.user?.id && (
         <main className="container mx-auto px-4 py-8">
           <header className="mb-8">
             <h1 className="text-3xl font-bold text-foreground">Settings</h1>
