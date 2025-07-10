@@ -173,11 +173,11 @@ describe('PartyCard', () => {
 
       const menuTrigger = screen.getByLabelText('Party actions');
       await user.click(menuTrigger);
-      
+
       await waitFor(async () => {
         await user.click(screen.getByText('View Details'));
       });
-      
+
       expect(consoleSpy).toHaveBeenCalledWith('View party:', 'party-1');
     });
 
@@ -187,11 +187,11 @@ describe('PartyCard', () => {
 
       const menuTrigger = screen.getByLabelText('Party actions');
       await user.click(menuTrigger);
-      
+
       await waitFor(async () => {
         await user.click(screen.getByText('Edit Party'));
       });
-      
+
       expect(consoleSpy).toHaveBeenCalledWith('Edit party:', 'party-1');
     });
 
@@ -201,11 +201,11 @@ describe('PartyCard', () => {
 
       const menuTrigger = screen.getByLabelText('Party actions');
       await user.click(menuTrigger);
-      
+
       await waitFor(async () => {
         await user.click(screen.getByText('Delete Party'));
       });
-      
+
       expect(consoleSpy).toHaveBeenCalledWith('Delete party:', 'party-1');
     });
   });
