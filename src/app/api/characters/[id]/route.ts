@@ -7,16 +7,16 @@ import {
   validateCharacterUpdate
 } from '../helpers/route-helpers';
 
-interface RouteContext {
-  params: Promise<{ id: string }>;
-}
-
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { error, userId } = await initializeRoute(request);
     if (error) return error;
 
-    const { id } = await context.params;
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     const result = await CharacterService.getCharacterById(id, userId!);
     return handleSimpleResult(result);
   } catch (error) {
@@ -24,12 +24,16 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }
 }
 
-export async function PUT(request: NextRequest, context: RouteContext) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { error, userId } = await initializeRoute(request);
     if (error) return error;
 
-    const { id } = await context.params;
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     const body = await request.json();
     const validation = validateCharacterUpdate(body);
     if (!validation.isValid) return validation.error!;
@@ -41,12 +45,16 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   }
 }
 
-export async function DELETE(request: NextRequest, context: RouteContext) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { error, userId } = await initializeRoute(request);
     if (error) return error;
 
-    const { id } = await context.params;
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     const result = await CharacterService.deleteCharacter(id, userId!);
     return handleSimpleResult(result, 'Character deleted successfully');
   } catch (error) {
