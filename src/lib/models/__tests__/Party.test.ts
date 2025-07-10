@@ -50,8 +50,8 @@ const MockPartyModel = {
   deleteMany: jest.fn(),
 };
 
-// Mock Character model
-const MockCharacterModel = {
+// Mock Character model (unused but kept for potential future test expansion)
+const _MockCharacterModel = {
   create: jest.fn(),
   find: jest.fn(),
   findById: jest.fn(),
@@ -60,8 +60,8 @@ const MockCharacterModel = {
   deleteMany: jest.fn(),
 };
 
-// Mock User model
-const MockUserModel = {
+// Mock User model (unused but kept for potential future test expansion)
+const _MockUserModel = {
   create: jest.fn(),
   deleteMany: jest.fn(),
 };
@@ -140,17 +140,17 @@ describe('Party Model', () => {
 
     it('should add member to party', async () => {
       const characterId = new Types.ObjectId();
-      
+
       await mockParty.addMember(characterId);
-      
+
       expect(mockParty.addMember).toHaveBeenCalledWith(characterId);
     });
 
     it('should remove member from party', async () => {
       const characterId = new Types.ObjectId();
-      
+
       await mockParty.removeMember(characterId);
-      
+
       expect(mockParty.removeMember).toHaveBeenCalledWith(characterId);
     });
 
@@ -159,11 +159,11 @@ describe('Party Model', () => {
         { _id: new Types.ObjectId(), name: 'Member 1' },
         { _id: new Types.ObjectId(), name: 'Member 2' },
       ];
-      
+
       mockParty.getMembers.mockResolvedValue(mockMembers);
-      
+
       const members = await mockParty.getMembers();
-      
+
       expect(members).toHaveLength(2);
       expect(members[0].name).toBe('Member 1');
       expect(mockParty.getMembers).toHaveBeenCalled();

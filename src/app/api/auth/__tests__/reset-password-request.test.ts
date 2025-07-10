@@ -99,7 +99,7 @@ describe('POST /api/auth/reset-password-request', () => {
   });
 
   describe('Validation errors', () => {
-    const testValidationError = async (invalidData: any, expectedErrorCheck?: (errors: any) => void) => {
+    const testValidationError = async (invalidData: any, expectedErrorCheck?: (_errors: any) => void) => {
       const { response, responseData } = await executeRequest(invalidData);
       expectValidationError(response, responseData);
       if (expectedErrorCheck) {
