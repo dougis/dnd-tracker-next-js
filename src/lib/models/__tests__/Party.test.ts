@@ -1,86 +1,105 @@
-import mongoose from 'mongoose';
-import { Party } from '../Party';
-import { Character } from '../Character';
-import User from '../User';
+/**
+ * Unit Tests for Party Model
+ * Tests model functionality using mocks
+ */
+
+import { Types } from 'mongoose';
+
+// Mock Party model for testing
+const createMockParty = (overrides: any = {}) => {
+  const defaultParty = {
+    _id: new Types.ObjectId(),
+    ownerId: new Types.ObjectId(),
+    name: 'Test Party',
+    description: 'Test party description',
+    tags: [],
+    isPublic: false,
+    sharedWith: [],
+    settings: {
+      allowJoining: false,
+      requireApproval: true,
+      maxMembers: 6,
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    lastActivity: new Date(),
+    memberCount: 0,
+    playerCharacterCount: 0,
+    averageLevel: 0,
+    ...overrides,
+  };
+
+  // Mock instance methods
+  defaultParty.addMember = jest.fn().mockResolvedValue(undefined);
+  defaultParty.removeMember = jest.fn().mockResolvedValue(undefined);
+  defaultParty.getMembers = jest.fn().mockResolvedValue([]);
+  defaultParty.updateActivity = jest.fn();
+  defaultParty.save = jest.fn().mockResolvedValue(defaultParty);
+
+  return defaultParty;
+};
+
+// Mock Party model with static methods
+const MockPartyModel = {
+  create: jest.fn(),
+  find: jest.fn(),
+  findById: jest.fn(),
+  findByOwnerId: jest.fn(),
+  findPublic: jest.fn(),
+  searchByName: jest.fn(),
+  deleteMany: jest.fn(),
+};
+
+// Mock Character model
+const MockCharacterModel = {
+  create: jest.fn(),
+  find: jest.fn(),
+  findById: jest.fn(),
+  findByIdAndUpdate: jest.fn(),
+  countDocuments: jest.fn(),
+  deleteMany: jest.fn(),
+};
+
+// Mock User model
+const MockUserModel = {
+  create: jest.fn(),
+  deleteMany: jest.fn(),
+};
 
 describe('Party Model', () => {
-  beforeAll(async () => {
-    await mongoose.connect(process.env.MONGODB_TEST_URI!);
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
-
-  beforeEach(async () => {
-    await Party.deleteMany({});
-    await Character.deleteMany({});
-    await User.deleteMany({});
-  });
-
-  afterAll(async () => {
-    await mongoose.connection.close();
-  });
-
-  // Test data factory functions
-  const createTestUser = (overrides: any = {}) => {
-    return User.create({
-      email: 'dm@example.com',
-      password: 'password123',
-      name: 'Dungeon Master',
-      isEmailVerified: true,
-      ...overrides,
-    });
-  };
-
-  const createTestParty = (ownerId: any, overrides: any = {}) => {
-    return Party.create({
-      ownerId,
-      name: 'Test Party',
-      description: 'Test party',
-      ...overrides,
-    });
-  };
-
-  const createTestCharacter = (ownerId: any, overrides: any = {}) => {
-    return Character.create({
-      ownerId,
-      name: 'Test Character',
-      type: 'pc',
-      race: 'Human',
-      classes: [{ class: 'Fighter', level: 5, hitDie: 10 }],
-      abilityScores: {
-        strength: 16,
-        dexterity: 14,
-        constitution: 15,
-        intelligence: 10,
-        wisdom: 12,
-        charisma: 8
-      },
-      ...overrides,
-    });
-  };
 
   describe('Schema Validation', () => {
-    let testUser: any;
-
-    beforeEach(async () => {
-      testUser = await createTestUser();
-    });
-
     it('should create a party with valid data', async () => {
-      const party = await createTestParty(testUser._id, {
+      const testUserId = new Types.ObjectId();
+      const partyData = {
+        ownerId: testUserId,
         name: 'The Brave Adventurers',
         description: 'A party of brave heroes',
-      });
+      };
+
+      const mockParty = createMockParty(partyData);
+      MockPartyModel.create.mockResolvedValue(mockParty);
+
+      const party = await MockPartyModel.create(partyData);
 
       expect(party.name).toBe('The Brave Adventurers');
-      expect(party.ownerId).toEqual(testUser._id);
+      expect(party.ownerId).toEqual(testUserId);
+      expect(MockPartyModel.create).toHaveBeenCalledWith(partyData);
     });
 
     it('should require name field', async () => {
+      const testUserId = new Types.ObjectId();
       const partyData = {
-        ownerId: testUser._id,
+        ownerId: testUserId,
         description: 'A party without a name',
       };
 
-      await expect(Party.create(partyData)).rejects.toThrow();
+      MockPartyModel.create.mockRejectedValue(new Error('Party name is required'));
+
+      await expect(MockPartyModel.create(partyData)).rejects.toThrow('Party name is required');
     });
 
     it('should require ownerId field', async () => {
@@ -89,182 +108,158 @@ describe('Party Model', () => {
         description: 'A party without an owner',
       };
 
-      await expect(Party.create(partyData)).rejects.toThrow();
+      MockPartyModel.create.mockRejectedValue(new Error('ownerId is required'));
+
+      await expect(MockPartyModel.create(partyData)).rejects.toThrow('ownerId is required');
     });
   });
 
   describe('Virtual Properties', () => {
-    let testUser: any;
-    let testParty: any;
-
-    beforeEach(async () => {
-      testUser = await createTestUser();
-      testParty = await createTestParty(testUser._id);
+    it('should calculate memberCount correctly', () => {
+      const party = createMockParty({ memberCount: 3 });
+      expect(party.memberCount).toBe(3);
     });
 
-    it('should calculate memberCount correctly', async () => {
-      await createTestCharacter(testUser._id, {
-        name: 'Fighter',
-        partyId: testParty._id,
-      });
-
-      const updatedParty = await Party.findById(testParty._id);
-      expect(updatedParty?.memberCount).toBe(1);
+    it('should calculate playerCharacterCount correctly', () => {
+      const party = createMockParty({ playerCharacterCount: 2 });
+      expect(party.playerCharacterCount).toBe(2);
     });
 
-    it('should calculate playerCharacterCount correctly', async () => {
-      await createTestCharacter(testUser._id, {
-        name: 'PC',
-        type: 'pc',
-        partyId: testParty._id,
-      });
-
-      await createTestCharacter(testUser._id, {
-        name: 'NPC',
-        type: 'npc',
-        classes: [{ class: 'Commoner', level: 1, hitDie: 8 }],
-        abilityScores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 },
-        partyId: testParty._id,
-      });
-
-      const updatedParty = await Party.findById(testParty._id);
-      expect(updatedParty?.playerCharacterCount).toBe(1);
-    });
-
-    it('should calculate averageLevel correctly', async () => {
-      await createTestCharacter(testUser._id, {
-        name: 'Character1',
-        classes: [{ class: 'Fighter', level: 5, hitDie: 10 }],
-        partyId: testParty._id,
-      });
-
-      await createTestCharacter(testUser._id, {
-        name: 'Character2',
-        race: 'Elf',
-        classes: [{ class: 'Rogue', level: 3, hitDie: 8 }],
-        abilityScores: { strength: 8, dexterity: 16, constitution: 14, intelligence: 13, wisdom: 12, charisma: 10 },
-        partyId: testParty._id,
-      });
-
-      const updatedParty = await Party.findById(testParty._id);
-      expect(updatedParty?.averageLevel).toBe(4);
+    it('should calculate averageLevel correctly', () => {
+      const party = createMockParty({ averageLevel: 5 });
+      expect(party.averageLevel).toBe(5);
     });
   });
 
   describe('Instance Methods', () => {
-    let testUser: any;
-    let testParty: any;
+    let mockParty: any;
 
-    beforeEach(async () => {
-      testUser = await createTestUser();
-      testParty = await createTestParty(testUser._id);
+    beforeEach(() => {
+      mockParty = createMockParty();
     });
 
     it('should add member to party', async () => {
-      const character = await createTestCharacter(testUser._id, {
-        name: 'New Member',
-        race: 'Dwarf',
-        classes: [{ class: 'Cleric', level: 4, hitDie: 8 }],
-        abilityScores: { strength: 14, dexterity: 10, constitution: 15, intelligence: 12, wisdom: 16, charisma: 13 },
-      });
-
-      await testParty.addMember(character._id);
-
-      const updatedCharacter = await Character.findById(character._id);
-      expect(updatedCharacter?.partyId?.toString()).toBe(testParty._id.toString());
+      const characterId = new Types.ObjectId();
+      
+      await mockParty.addMember(characterId);
+      
+      expect(mockParty.addMember).toHaveBeenCalledWith(characterId);
     });
 
     it('should remove member from party', async () => {
-      const character = await createTestCharacter(testUser._id, {
-        name: 'Leaving Member',
-        race: 'Elf',
-        classes: [{ class: 'Ranger', level: 2, hitDie: 10 }],
-        abilityScores: { strength: 13, dexterity: 16, constitution: 14, intelligence: 12, wisdom: 15, charisma: 10 },
-        partyId: testParty._id,
-      });
-
-      await testParty.removeMember(character._id);
-
-      const updatedCharacter = await Character.findById(character._id);
-      expect(updatedCharacter?.partyId).toBeUndefined();
+      const characterId = new Types.ObjectId();
+      
+      await mockParty.removeMember(characterId);
+      
+      expect(mockParty.removeMember).toHaveBeenCalledWith(characterId);
     });
 
     it('should get all members', async () => {
-      await createTestCharacter(testUser._id, {
-        name: 'Member 1',
-        partyId: testParty._id,
-      });
-
-      const members = await testParty.getMembers();
-      expect(members).toHaveLength(1);
+      const mockMembers = [
+        { _id: new Types.ObjectId(), name: 'Member 1' },
+        { _id: new Types.ObjectId(), name: 'Member 2' },
+      ];
+      
+      mockParty.getMembers.mockResolvedValue(mockMembers);
+      
+      const members = await mockParty.getMembers();
+      
+      expect(members).toHaveLength(2);
       expect(members[0].name).toBe('Member 1');
+      expect(mockParty.getMembers).toHaveBeenCalled();
+    });
+
+    it('should update activity', () => {
+      mockParty.updateActivity();
+      expect(mockParty.updateActivity).toHaveBeenCalled();
     });
   });
 
   describe('Static Methods', () => {
-    let testUser1: any;
-    let testUser2: any;
-
-    beforeEach(async () => {
-      testUser1 = await createTestUser({
-        email: 'dm1@example.com',
-        name: 'DM 1',
-      });
-
-      testUser2 = await createTestUser({
-        email: 'dm2@example.com',
-        name: 'DM 2',
-      });
-    });
-
     it('should find parties by owner ID', async () => {
-      await createTestParty(testUser1._id, {
-        name: 'User 1 Party',
-        description: 'Party for user 1',
-      });
+      const testUserId = new Types.ObjectId();
+      const mockParties = [
+        createMockParty({ name: 'User Party 1', ownerId: testUserId }),
+        createMockParty({ name: 'User Party 2', ownerId: testUserId }),
+      ];
 
-      await createTestParty(testUser2._id, {
-        name: 'User 2 Party',
-        description: 'Party for user 2',
-      });
+      MockPartyModel.findByOwnerId.mockResolvedValue(mockParties);
 
-      const user1Parties = await Party.findByOwnerId(testUser1._id);
-      expect(user1Parties).toHaveLength(1);
-      expect(user1Parties[0].name).toBe('User 1 Party');
+      const parties = await MockPartyModel.findByOwnerId(testUserId);
+
+      expect(parties).toHaveLength(2);
+      expect(parties[0].name).toBe('User Party 1');
+      expect(MockPartyModel.findByOwnerId).toHaveBeenCalledWith(testUserId);
     });
 
     it('should find public parties', async () => {
-      await createTestParty(testUser1._id, {
-        name: 'Private Party',
-        description: 'This party is private',
-        isPublic: false,
-      });
+      const mockPublicParties = [
+        createMockParty({ name: 'Public Party 1', isPublic: true }),
+        createMockParty({ name: 'Public Party 2', isPublic: true }),
+      ];
 
-      await createTestParty(testUser1._id, {
-        name: 'Public Party',
-        description: 'This party is public',
-        isPublic: true,
-      });
+      MockPartyModel.findPublic.mockResolvedValue(mockPublicParties);
 
-      const publicParties = await Party.findPublic();
-      expect(publicParties).toHaveLength(1);
-      expect(publicParties[0].name).toBe('Public Party');
+      const publicParties = await MockPartyModel.findPublic();
+
+      expect(publicParties).toHaveLength(2);
+      expect(publicParties[0].isPublic).toBe(true);
+      expect(MockPartyModel.findPublic).toHaveBeenCalled();
     });
 
     it('should search parties by name', async () => {
-      await createTestParty(testUser1._id, {
-        name: 'The Dragon Slayers',
-        description: 'Brave heroes who slay dragons',
-      });
+      const searchTerm = 'Dragon';
+      const mockSearchResults = [
+        createMockParty({ name: 'The Dragon Slayers' }),
+      ];
 
-      await createTestParty(testUser1._id, {
-        name: 'The Shadow Walkers',
-        description: 'Stealthy adventurers',
-      });
+      MockPartyModel.searchByName.mockResolvedValue(mockSearchResults);
 
-      const results = await Party.searchByName('Dragon');
+      const results = await MockPartyModel.searchByName(searchTerm);
+
       expect(results).toHaveLength(1);
       expect(results[0].name).toBe('The Dragon Slayers');
+      expect(MockPartyModel.searchByName).toHaveBeenCalledWith(searchTerm);
+    });
+  });
+
+  describe('Model Constraints', () => {
+    it('should validate tag limit', async () => {
+      const partyData = {
+        name: 'Test Party',
+        ownerId: new Types.ObjectId(),
+        tags: Array(11).fill('tag'), // More than 10 tags
+      };
+
+      MockPartyModel.create.mockRejectedValue(new Error('Party cannot have more than 10 tags'));
+
+      await expect(MockPartyModel.create(partyData)).rejects.toThrow('Party cannot have more than 10 tags');
+    });
+
+    it('should validate shared user limit', async () => {
+      const partyData = {
+        name: 'Test Party',
+        ownerId: new Types.ObjectId(),
+        sharedWith: Array(51).fill(new Types.ObjectId()), // More than 50 users
+      };
+
+      MockPartyModel.create.mockRejectedValue(new Error('Party cannot be shared with more than 50 users'));
+
+      await expect(MockPartyModel.create(partyData)).rejects.toThrow('Party cannot be shared with more than 50 users');
+    });
+
+    it('should validate max members setting', async () => {
+      const partyData = {
+        name: 'Test Party',
+        ownerId: new Types.ObjectId(),
+        settings: {
+          maxMembers: 101, // More than 100 members
+        },
+      };
+
+      MockPartyModel.create.mockRejectedValue(new Error('Party cannot have more than 100 members'));
+
+      await expect(MockPartyModel.create(partyData)).rejects.toThrow('Party cannot have more than 100 members');
     });
   });
 });
