@@ -68,7 +68,7 @@ function sortParties(parties: PartyListItem[], sortBy: PartySortBy, sortOrder: S
   parties.sort((a, b) => {
     const aValue = normalizeSortValue(a[sortBy], sortBy);
     const bValue = normalizeSortValue(b[sortBy], sortBy);
-    
+
     // Inline comparison logic to avoid Codacy parsing issues
     if (sortOrder === 'asc') {
       return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;

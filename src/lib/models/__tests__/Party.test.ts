@@ -45,13 +45,13 @@ describe('Party Model', () => {
       type: 'pc',
       race: 'Human',
       classes: [{ class: 'Fighter', level: 5, hitDie: 10 }],
-      abilityScores: { 
-        strength: 16, 
-        dexterity: 14, 
-        constitution: 15, 
-        intelligence: 10, 
-        wisdom: 12, 
-        charisma: 8 
+      abilityScores: {
+        strength: 16,
+        dexterity: 14,
+        constitution: 15,
+        intelligence: 10,
+        wisdom: 12,
+        charisma: 8
       },
       ...overrides,
     });
