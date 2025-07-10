@@ -10,8 +10,8 @@ interface AuthenticatedPageProps {
   unauthenticatedMessage?: string;
 }
 
-export function AuthenticatedPage({ 
-  children, 
+export function AuthenticatedPage({
+  children,
   loadingMessage = 'Loading...',
   unauthenticatedMessage = 'Please sign in to access this page.'
 }: AuthenticatedPageProps) {
