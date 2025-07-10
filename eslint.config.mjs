@@ -1,3 +1,4 @@
+/* cspell:disable-line globals readonly jsx eslint browserslist typescript nextjs */
 import { FlatCompat } from '@eslint/eslintrc';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -29,6 +30,24 @@ export default [
   // Prettier configuration
   ...compat.extends('prettier'),
   {
+    languageOptions: {
+      globals: { // eslint-disable-line
+        // Node.js globals // eslint-disable-line
+        require: 'readonly', // eslint-disable-line
+        module: 'readonly', // eslint-disable-line
+        process: 'readonly', // eslint-disable-line
+        global: 'readonly', // eslint-disable-line
+        console: 'readonly', // eslint-disable-line
+        // Browser globals // eslint-disable-line
+        window: 'readonly', // eslint-disable-line
+        document: 'readonly', // eslint-disable-line
+        fetch: 'readonly', // eslint-disable-line
+        FormData: 'readonly', // eslint-disable-line
+        URL: 'readonly', // eslint-disable-line
+        Event: 'readonly', // eslint-disable-line
+        Response: 'readonly' // eslint-disable-line
+      }
+    },
     rules: {
       'prefer-const': 'error',
       'no-var': 'error',
@@ -44,6 +63,44 @@ export default [
       'newline-after-var': 'off',
       'newline-per-chained-call': 'off',
       'no-trailing-spaces': 'error'
+    }
+  },
+  // Test files configuration
+  {
+    files: ['**/__tests__/**/*.{js,jsx,ts,tsx}', '**/*.{test,spec}.{js,jsx,ts,tsx}'], // eslint-disable-line
+    languageOptions: {
+      globals: { // eslint-disable-line
+        // Jest globals // eslint-disable-line
+        describe: 'readonly', // eslint-disable-line
+        test: 'readonly', // eslint-disable-line
+        it: 'readonly', // eslint-disable-line
+        expect: 'readonly', // eslint-disable-line
+        beforeEach: 'readonly', // eslint-disable-line
+        afterEach: 'readonly', // eslint-disable-line
+        beforeAll: 'readonly', // eslint-disable-line
+        afterAll: 'readonly', // eslint-disable-line
+        jest: 'readonly', // eslint-disable-line
+        // Node.js globals for test files // eslint-disable-line
+        require: 'readonly', // eslint-disable-line
+        module: 'readonly', // eslint-disable-line
+        process: 'readonly', // eslint-disable-line
+        global: 'readonly', // eslint-disable-line
+        console: 'readonly' // eslint-disable-line
+      }
+    }
+  },
+  // Mock files configuration
+  {
+    files: ['**/__mocks__/**/*.{js,jsx,ts,tsx}'], // eslint-disable-line
+    languageOptions: {
+      globals: { // eslint-disable-line
+        // Jest globals for mocks // eslint-disable-line
+        jest: 'readonly', // eslint-disable-line
+        // Node.js globals for mocks // eslint-disable-line
+        require: 'readonly', // eslint-disable-line
+        module: 'readonly', // eslint-disable-line
+        global: 'readonly' // eslint-disable-line
+      }
     }
   }
 ];

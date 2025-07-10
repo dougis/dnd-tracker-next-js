@@ -1,9 +1,14 @@
 exclude_paths:
     - node_modules/**
     - .next/**
+    - ".next/**/*"
     - dist/**
     - build/**
     - coverage/**
+    - out/**
+    - .vercel/**
+    - public/**
+    - plato_report/**
     - eslint.config.mjs
     - postcss.config.mjs
     - next.config.js
@@ -14,6 +19,17 @@ exclude_paths:
     - jest.sequencer.js
     - tailwind.config.ts
     - docker-entrypoint.js
+    - '**/*.config.js'
+    - '**/*.config.mjs'
+    - '**/*.config.ts'
+    - "**/__tests__/**/*"
+    - "**/__mocks__/**/*"
+engine_configuration:
+  - tool: spellcheck
+    enabled: false
+  - tool: eslint
+    exclude_patterns:
+      - "eslint.config.mjs"
 runtimes:
     - dart@3.7.2
     - go@1.22.3
