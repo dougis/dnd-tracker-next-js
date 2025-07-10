@@ -1,12 +1,14 @@
 import { screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {
-  createDefaultProps,
   renderNotificationsSection,
   getSwitchElements,
   createLoadingProps,
   createAllDisabledProps,
   createAllEnabledProps,
+  setupSwitchTest,
+  setupSubmissionTest,
+  expectAllSwitchesDisabled,
 } from './notifications-test-helpers';
 
 describe('NotificationsSection', () => {
@@ -49,34 +51,25 @@ describe('NotificationsSection', () => {
     });
 
     it('should handle switch changes', () => {
-      const mockOnNotificationChange = jest.fn();
-      const props = createDefaultProps({ onNotificationChange: mockOnNotificationChange });
-      renderNotificationsSection(props);
+      const { mockOnNotificationChange, switches } = setupSwitchTest('email');
 
-      const { emailSwitch } = getSwitchElements();
-      fireEvent.click(emailSwitch);
+      fireEvent.click(switches.emailSwitch);
 
       expect(mockOnNotificationChange).toHaveBeenCalledWith('email');
     });
 
     it('should handle combat switch changes', () => {
-      const mockOnNotificationChange = jest.fn();
-      const props = createDefaultProps({ onNotificationChange: mockOnNotificationChange });
-      renderNotificationsSection(props);
+      const { mockOnNotificationChange, switches } = setupSwitchTest('combat');
 
-      const { combatSwitch } = getSwitchElements();
-      fireEvent.click(combatSwitch);
+      fireEvent.click(switches.combatSwitch);
 
       expect(mockOnNotificationChange).toHaveBeenCalledWith('combat');
     });
 
     it('should handle encounter switch changes', () => {
-      const mockOnNotificationChange = jest.fn();
-      const props = createDefaultProps({ onNotificationChange: mockOnNotificationChange });
-      renderNotificationsSection(props);
+      const { mockOnNotificationChange, switches } = setupSwitchTest('encounters');
 
-      const { encounterSwitch } = getSwitchElements();
-      fireEvent.click(encounterSwitch);
+      fireEvent.click(switches.encounterSwitch);
 
       expect(mockOnNotificationChange).toHaveBeenCalledWith('encounters');
     });
@@ -86,11 +79,7 @@ describe('NotificationsSection', () => {
     it('should disable switches when loading', () => {
       renderNotificationsSection(createLoadingProps());
 
-      const { emailSwitch, combatSwitch, encounterSwitch } = getSwitchElements();
-
-      expect(emailSwitch).toBeDisabled();
-      expect(combatSwitch).toBeDisabled();
-      expect(encounterSwitch).toBeDisabled();
+      expectAllSwitchesDisabled();
     });
 
     it('should show loading text on submit button', () => {
@@ -103,9 +92,7 @@ describe('NotificationsSection', () => {
 
   describe('Form Submission', () => {
     it('should call onSubmit when form is submitted', () => {
-      const mockOnSubmit = jest.fn();
-      const props = createDefaultProps({ onSubmit: mockOnSubmit });
-      renderNotificationsSection(props);
+      const { mockOnSubmit } = setupSubmissionTest();
 
       const form = screen.getByRole('button', { name: 'Save Notifications' }).closest('form');
       fireEvent.submit(form!);
@@ -114,9 +101,7 @@ describe('NotificationsSection', () => {
     });
 
     it('should call onSubmit when button is clicked', () => {
-      const mockOnSubmit = jest.fn();
-      const props = createDefaultProps({ onSubmit: mockOnSubmit });
-      renderNotificationsSection(props);
+      const { mockOnSubmit } = setupSubmissionTest();
 
       const submitButton = screen.getByRole('button', { name: 'Save Notifications' });
       fireEvent.click(submitButton);

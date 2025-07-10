@@ -56,3 +56,36 @@ export const createAllEnabledProps = () => createDefaultProps({
     securityAlerts: true,
   },
 });
+
+// Test action helpers
+export const setupSwitchTest = (_notificationKey: string) => {
+  const mockOnNotificationChange = jest.fn();
+  const props = createDefaultProps({ onNotificationChange: mockOnNotificationChange });
+  renderNotificationsSection(props);
+  const switches = getSwitchElements();
+  return { mockOnNotificationChange, switches };
+};
+
+export const setupSubmissionTest = () => {
+  const mockOnSubmit = jest.fn();
+  const props = createDefaultProps({ onSubmit: mockOnSubmit });
+  renderNotificationsSection(props);
+  return { mockOnSubmit };
+};
+
+// Common expectations
+export const expectSwitchStates = (expected: { email: boolean; combat: boolean; encounters: boolean }) => {
+  const { emailSwitch, combatSwitch, encounterSwitch } = getSwitchElements();
+
+  expect(emailSwitch).toBeChecked() === expected.email;
+  expect(combatSwitch).toBeChecked() === expected.combat;
+  expect(encounterSwitch).toBeChecked() === expected.encounters;
+};
+
+export const expectAllSwitchesDisabled = () => {
+  const { emailSwitch, combatSwitch, encounterSwitch } = getSwitchElements();
+
+  expect(emailSwitch).toBeDisabled();
+  expect(combatSwitch).toBeDisabled();
+  expect(encounterSwitch).toBeDisabled();
+};

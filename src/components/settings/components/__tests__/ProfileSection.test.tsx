@@ -1,18 +1,16 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { ProfileSection } from '../ProfileSection';
+import { fireEvent, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-
-const defaultProps = {
-  profileData: {
-    name: 'Test User',
-    email: 'test@example.com',
-  },
-  setProfileData: jest.fn(),
-  formErrors: {},
-  isLoadingProfile: false,
-  onSubmit: jest.fn(),
-};
+import {
+  createDefaultProps,
+  createPropsWithErrors,
+  createLoadingProps,
+  renderProfileSection,
+  expectFormElement,
+  expectErrorMessage,
+  expectSubmitButton,
+  fireInputChange,
+  fireFormSubmit,
+} from './profile-test-helpers';
 
 describe('ProfileSection', () => {
   beforeEach(() => {
@@ -21,52 +19,52 @@ describe('ProfileSection', () => {
 
   describe('Rendering', () => {
     it('should render profile section with correct title', () => {
-      render(<ProfileSection {...defaultProps} />);
+      renderProfileSection();
 
       expect(screen.getByText('User Profile')).toBeInTheDocument();
       expect(screen.getByText('Update your personal information and account details')).toBeInTheDocument();
     });
 
     it('should render name and email inputs', () => {
-      render(<ProfileSection {...defaultProps} />);
+      renderProfileSection();
 
-      expect(screen.getByLabelText('Name')).toBeInTheDocument();
-      expect(screen.getByLabelText('Email')).toBeInTheDocument();
+      expectFormElement('Name');
+      expectFormElement('Email');
     });
 
     it('should render submit button', () => {
-      render(<ProfileSection {...defaultProps} />);
+      renderProfileSection();
 
-      expect(screen.getByRole('button', { name: 'Save Profile' })).toBeInTheDocument();
+      expectSubmitButton('Save Profile');
     });
   });
 
   describe('Form Values', () => {
     it('should display current profile data', () => {
-      render(<ProfileSection {...defaultProps} />);
+      renderProfileSection();
 
-      expect(screen.getByDisplayValue('Test User')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('test@example.com')).toBeInTheDocument();
+      expectFormElement('Name', 'Test User');
+      expectFormElement('Email', 'test@example.com');
     });
 
     it('should handle name input change', () => {
-      render(<ProfileSection {...defaultProps} />);
+      const props = createDefaultProps();
+      renderProfileSection(props);
 
-      const nameInput = screen.getByLabelText('Name');
-      fireEvent.change(nameInput, { target: { value: 'Updated Name' } });
+      fireInputChange('Name', 'Updated Name');
 
-      expect(defaultProps.setProfileData).toHaveBeenCalledWith(
+      expect(props.setProfileData).toHaveBeenCalledWith(
         expect.any(Function)
       );
     });
 
     it('should handle email input change', () => {
-      render(<ProfileSection {...defaultProps} />);
+      const props = createDefaultProps();
+      renderProfileSection(props);
 
-      const emailInput = screen.getByLabelText('Email');
-      fireEvent.change(emailInput, { target: { value: 'updated@example.com' } });
+      fireInputChange('Email', 'updated@example.com');
 
-      expect(defaultProps.setProfileData).toHaveBeenCalledWith(
+      expect(props.setProfileData).toHaveBeenCalledWith(
         expect.any(Function)
       );
     });
@@ -74,114 +72,101 @@ describe('ProfileSection', () => {
 
   describe('Form Validation', () => {
     it('should display name error', () => {
-      const propsWithErrors = {
-        ...defaultProps,
-        formErrors: { name: 'Name is required' },
-      };
+      const propsWithErrors = createPropsWithErrors({ name: 'Name is required' });
 
-      render(<ProfileSection {...propsWithErrors} />);
+      renderProfileSection(propsWithErrors);
 
-      expect(screen.getByText('Name is required')).toBeInTheDocument();
+      expectErrorMessage('Name is required');
     });
 
     it('should display email error', () => {
-      const propsWithErrors = {
-        ...defaultProps,
-        formErrors: { email: 'Please enter a valid email address' },
-      };
+      const propsWithErrors = createPropsWithErrors({ email: 'Please enter a valid email address' });
 
-      render(<ProfileSection {...propsWithErrors} />);
+      renderProfileSection(propsWithErrors);
 
-      expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument();
+      expectErrorMessage('Please enter a valid email address');
     });
 
     it('should display multiple errors', () => {
-      const propsWithErrors = {
-        ...defaultProps,
-        formErrors: {
-          name: 'Name is required',
-          email: 'Please enter a valid email address',
-        },
-      };
+      const propsWithErrors = createPropsWithErrors({
+        name: 'Name is required',
+        email: 'Please enter a valid email address',
+      });
 
-      render(<ProfileSection {...propsWithErrors} />);
+      renderProfileSection(propsWithErrors);
 
-      expect(screen.getByText('Name is required')).toBeInTheDocument();
-      expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument();
+      expectErrorMessage('Name is required');
+      expectErrorMessage('Please enter a valid email address');
     });
   });
 
   describe('Loading State', () => {
     it('should disable inputs when loading', () => {
-      const loadingProps = {
-        ...defaultProps,
-        isLoadingProfile: true,
-      };
+      const loadingProps = createLoadingProps();
 
-      render(<ProfileSection {...loadingProps} />);
+      renderProfileSection(loadingProps);
 
-      expect(screen.getByLabelText('Name')).toBeDisabled();
-      expect(screen.getByLabelText('Email')).toBeDisabled();
+      const nameInput = expectFormElement('Name');
+      const emailInput = expectFormElement('Email');
+      expect(nameInput).toBeDisabled();
+      expect(emailInput).toBeDisabled();
     });
 
     it('should show loading text on submit button', () => {
-      const loadingProps = {
-        ...defaultProps,
-        isLoadingProfile: true,
-      };
+      const loadingProps = createLoadingProps();
 
-      render(<ProfileSection {...loadingProps} />);
+      renderProfileSection(loadingProps);
 
-      expect(screen.getByRole('button', { name: 'Saving...' })).toBeInTheDocument();
-      expect(screen.getByRole('button')).toBeDisabled();
+      expectSubmitButton('Saving...', true);
     });
   });
 
   describe('Form Submission', () => {
     it('should call onSubmit when form is submitted', () => {
-      render(<ProfileSection {...defaultProps} />);
+      const props = createDefaultProps();
+      renderProfileSection(props);
 
-      const form = screen.getByRole('button', { name: 'Save Profile' }).closest('form');
-      fireEvent.submit(form!);
+      fireFormSubmit();
 
-      expect(defaultProps.onSubmit).toHaveBeenCalled();
+      expect(props.onSubmit).toHaveBeenCalled();
     });
 
     it('should call onSubmit when button is clicked', () => {
-      render(<ProfileSection {...defaultProps} />);
+      const props = createDefaultProps();
+      renderProfileSection(props);
 
-      const submitButton = screen.getByRole('button', { name: 'Save Profile' });
+      const submitButton = expectSubmitButton('Save Profile');
       fireEvent.click(submitButton);
 
-      expect(defaultProps.onSubmit).toHaveBeenCalled();
+      expect(props.onSubmit).toHaveBeenCalled();
     });
   });
 
   describe('Input Properties', () => {
     it('should have correct input types', () => {
-      render(<ProfileSection {...defaultProps} />);
+      renderProfileSection();
 
-      const emailInput = screen.getByLabelText('Email');
+      const emailInput = expectFormElement('Email');
 
       // Name input doesn't explicitly set type, defaults to text
       expect(emailInput).toHaveAttribute('type', 'email');
     });
 
     it('should have correct input names', () => {
-      render(<ProfileSection {...defaultProps} />);
+      renderProfileSection();
 
-      const nameInput = screen.getByLabelText('Name');
-      const emailInput = screen.getByLabelText('Email');
+      const nameInput = expectFormElement('Name');
+      const emailInput = expectFormElement('Email');
 
       expect(nameInput).toHaveAttribute('name', 'name');
       expect(emailInput).toHaveAttribute('name', 'email');
     });
 
     it('should have correct input ids', () => {
-      render(<ProfileSection {...defaultProps} />);
+      renderProfileSection();
 
-      const nameInput = screen.getByLabelText('Name');
-      const emailInput = screen.getByLabelText('Email');
+      const nameInput = expectFormElement('Name');
+      const emailInput = expectFormElement('Email');
 
       expect(nameInput).toHaveAttribute('id', 'name');
       expect(emailInput).toHaveAttribute('id', 'email');

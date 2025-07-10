@@ -59,3 +59,33 @@ export const actAsync = async (callback: () => Promise<void>) => {
     await callback();
   });
 };
+
+// Test setup helpers
+export const setupUseSettingsFormTest = () => {
+  const mockEvent = createMockEvent();
+  const mockSession = createMockSessionReturn();
+  return { mockEvent, mockSession };
+};
+
+// Common test data patterns
+export const createProfileDataWith = (overrides: Partial<{ name: string; email: string }> = {}) => ({
+  name: 'Test User',
+  email: 'test@example.com',
+  ...overrides,
+});
+
+export const createValidationErrors = (errors: { name?: string; email?: string }) => errors;
+
+// Common assertion helpers
+export const expectNoApiCall = (mockFn: jest.MockedFunction<any>) => {
+  expect(mockFn).not.toHaveBeenCalled();
+};
+
+export const expectApiCallWith = (mockFn: jest.MockedFunction<any>, userId: string, data: any) => {
+  expect(mockFn).toHaveBeenCalledWith(userId, data);
+};
+
+export const expectLoadingState = (result: any, field: 'profile' | 'notifications', isLoading: boolean) => {
+  const loadingField = field === 'profile' ? 'isLoadingProfile' : 'isLoadingNotifications';
+  expect(result.current[loadingField]).toBe(isLoading);
+};

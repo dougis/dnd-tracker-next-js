@@ -4,13 +4,18 @@ import { useSettingsForm } from '../useSettingsForm';
 import { updateUser } from '@/lib/api/users';
 import '@testing-library/jest-dom';
 import {
-  createMockEvent,
   createMockSessionReturn,
   createAsyncPromise,
   expectSuccessMessage,
   expectErrorMessage,
   expectValidationErrors,
   actAsync,
+  setupUseSettingsFormTest,
+  createProfileDataWith,
+  createValidationErrors,
+  expectNoApiCall,
+  expectApiCallWith,
+  expectLoadingState,
 } from './test-helpers';
 
 // Mock next-auth
@@ -31,10 +36,7 @@ describe('useSettingsForm', () => {
     it('should initialize with user profile data', () => {
       const { result } = renderHook(() => useSettingsForm());
 
-      expect(result.current.profileData).toEqual({
-        name: 'Test User',
-        email: 'test@example.com',
-      });
+      expect(result.current.profileData).toEqual(createProfileDataWith());
     });
 
     it('should initialize with user notification preferences', () => {
@@ -63,15 +65,13 @@ describe('useSettingsForm', () => {
   describe('Profile Data Management', () => {
     it('should update profile data', () => {
       const { result } = renderHook(() => useSettingsForm());
+      const updatedData = createProfileDataWith({ name: 'Updated Name', email: 'updated@example.com' });
 
       act(() => {
-        result.current.setProfileData({ name: 'Updated Name', email: 'updated@example.com' });
+        result.current.setProfileData(updatedData);
       });
 
-      expect(result.current.profileData).toEqual({
-        name: 'Updated Name',
-        email: 'updated@example.com',
-      });
+      expect(result.current.profileData).toEqual(updatedData);
     });
   });
 
@@ -103,44 +103,43 @@ describe('useSettingsForm', () => {
     it('should handle successful profile submission', async () => {
       mockUpdateUser.mockResolvedValue({ success: true });
       const { result } = renderHook(() => useSettingsForm());
-      const mockEvent = createMockEvent();
+      const { mockEvent } = setupUseSettingsFormTest();
 
       await actAsync(async () => {
         await result.current.handleProfileSubmit(mockEvent);
       });
 
       expect(mockEvent.preventDefault).toHaveBeenCalled();
-      expect(mockUpdateUser).toHaveBeenCalledWith('1', {
-        name: 'Test User',
-        email: 'test@example.com',
-      });
+      expectApiCallWith(mockUpdateUser, '1', createProfileDataWith());
       expectSuccessMessage(result);
     });
 
     it('should handle profile submission with validation errors', async () => {
       const { result } = renderHook(() => useSettingsForm());
-
-      act(() => {
-        result.current.setProfileData({ name: '', email: 'invalid-email' });
+      const invalidData = createProfileDataWith({ name: '', email: 'invalid-email' });
+      const expectedErrors = createValidationErrors({
+        name: 'Name is required',
+        email: 'Please enter a valid email address',
       });
 
-      const mockEvent = createMockEvent();
+      act(() => {
+        result.current.setProfileData(invalidData);
+      });
+
+      const { mockEvent } = setupUseSettingsFormTest();
 
       await actAsync(async () => {
         await result.current.handleProfileSubmit(mockEvent);
       });
 
-      expectValidationErrors(result, {
-        name: 'Name is required',
-        email: 'Please enter a valid email address',
-      });
-      expect(mockUpdateUser).not.toHaveBeenCalled();
+      expectValidationErrors(result, expectedErrors);
+      expectNoApiCall(mockUpdateUser);
     });
 
     it('should handle profile submission API error', async () => {
       mockUpdateUser.mockRejectedValue(new Error('API Error'));
       const { result } = renderHook(() => useSettingsForm());
-      const mockEvent = createMockEvent();
+      const { mockEvent } = setupUseSettingsFormTest();
 
       await actAsync(async () => {
         await result.current.handleProfileSubmit(mockEvent);
@@ -154,20 +153,20 @@ describe('useSettingsForm', () => {
       mockUpdateUser.mockReturnValue(promise);
 
       const { result } = renderHook(() => useSettingsForm());
-      const mockEvent = createMockEvent();
+      const { mockEvent } = setupUseSettingsFormTest();
 
       act(() => {
         result.current.handleProfileSubmit(mockEvent);
       });
 
-      expect(result.current.isLoadingProfile).toBe(true);
+      expectLoadingState(result, 'profile', true);
 
       await act(async () => {
         resolvePromise({ success: true });
         await promise;
       });
 
-      expect(result.current.isLoadingProfile).toBe(false);
+      expectLoadingState(result, 'profile', false);
     });
   });
 
@@ -175,14 +174,14 @@ describe('useSettingsForm', () => {
     it('should handle successful notifications submission', async () => {
       mockUpdateUser.mockResolvedValue({ success: true });
       const { result } = renderHook(() => useSettingsForm());
-      const mockEvent = createMockEvent();
+      const { mockEvent } = setupUseSettingsFormTest();
 
       await actAsync(async () => {
         await result.current.handleNotificationsSubmit(mockEvent);
       });
 
       expect(mockEvent.preventDefault).toHaveBeenCalled();
-      expect(mockUpdateUser).toHaveBeenCalledWith('1', {
+      expectApiCallWith(mockUpdateUser, '1', {
         notifications: result.current.notifications,
       });
       expectSuccessMessage(result);
@@ -191,7 +190,7 @@ describe('useSettingsForm', () => {
     it('should handle notifications submission API error', async () => {
       mockUpdateUser.mockRejectedValue(new Error('API Error'));
       const { result } = renderHook(() => useSettingsForm());
-      const mockEvent = createMockEvent();
+      const { mockEvent } = setupUseSettingsFormTest();
 
       await actAsync(async () => {
         await result.current.handleNotificationsSubmit(mockEvent);
@@ -205,32 +204,33 @@ describe('useSettingsForm', () => {
       mockUpdateUser.mockReturnValue(promise);
 
       const { result } = renderHook(() => useSettingsForm());
-      const mockEvent = createMockEvent();
+      const { mockEvent } = setupUseSettingsFormTest();
 
       act(() => {
         result.current.handleNotificationsSubmit(mockEvent);
       });
 
-      expect(result.current.isLoadingNotifications).toBe(true);
+      expectLoadingState(result, 'notifications', true);
 
       await act(async () => {
         resolvePromise({ success: true });
         await promise;
       });
 
-      expect(result.current.isLoadingNotifications).toBe(false);
+      expectLoadingState(result, 'notifications', false);
     });
   });
 
   describe('Form Validation', () => {
     it('should validate required name field', async () => {
       const { result } = renderHook(() => useSettingsForm());
+      const invalidData = createProfileDataWith({ name: '', email: 'test@example.com' });
 
       act(() => {
-        result.current.setProfileData({ name: '', email: 'test@example.com' });
+        result.current.setProfileData(invalidData);
       });
 
-      const mockEvent = createMockEvent();
+      const { mockEvent } = setupUseSettingsFormTest();
 
       await actAsync(async () => {
         await result.current.handleProfileSubmit(mockEvent);
@@ -241,12 +241,13 @@ describe('useSettingsForm', () => {
 
     it('should validate name minimum length', async () => {
       const { result } = renderHook(() => useSettingsForm());
+      const invalidData = createProfileDataWith({ name: 'A', email: 'test@example.com' });
 
       act(() => {
-        result.current.setProfileData({ name: 'A', email: 'test@example.com' });
+        result.current.setProfileData(invalidData);
       });
 
-      const mockEvent = createMockEvent();
+      const { mockEvent } = setupUseSettingsFormTest();
 
       await actAsync(async () => {
         await result.current.handleProfileSubmit(mockEvent);
@@ -257,12 +258,13 @@ describe('useSettingsForm', () => {
 
     it('should validate email format', async () => {
       const { result } = renderHook(() => useSettingsForm());
+      const invalidData = createProfileDataWith({ name: 'Test User', email: 'invalid-email' });
 
       act(() => {
-        result.current.setProfileData({ name: 'Test User', email: 'invalid-email' });
+        result.current.setProfileData(invalidData);
       });
 
-      const mockEvent = createMockEvent();
+      const { mockEvent } = setupUseSettingsFormTest();
 
       await actAsync(async () => {
         await result.current.handleProfileSubmit(mockEvent);
@@ -273,11 +275,12 @@ describe('useSettingsForm', () => {
 
     it('should clear form errors on new submission', async () => {
       const { result } = renderHook(() => useSettingsForm());
-      const mockEvent = createMockEvent();
+      const { mockEvent } = setupUseSettingsFormTest();
 
       // First submission with errors
+      const invalidData = createProfileDataWith({ name: '', email: 'invalid' });
       act(() => {
-        result.current.setProfileData({ name: '', email: 'invalid' });
+        result.current.setProfileData(invalidData);
       });
 
       await actAsync(async () => {
@@ -287,8 +290,9 @@ describe('useSettingsForm', () => {
       expect(Object.keys(result.current.formErrors)).toHaveLength(2);
 
       // Fix the data and submit again
+      const validData = createProfileDataWith();
       act(() => {
-        result.current.setProfileData({ name: 'Test User', email: 'test@example.com' });
+        result.current.setProfileData(validData);
       });
 
       mockUpdateUser.mockResolvedValue({ success: true });

@@ -1,8 +1,6 @@
 'use client';
 
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import SettingsPage from '../page';
 import '@testing-library/jest-dom';
 import {
   mockUseSession,
@@ -13,6 +11,13 @@ import {
   nullSessionMock,
   userWithEmailOnlyMock,
   userWithNameAndEmailMock,
+  renderSettingsPage,
+  expectLoadingState,
+  expectUnauthenticatedState,
+  expectAuthenticatedState,
+  expectSettingsComponent,
+  expectPageStructure,
+  expectAccessibilityStructure,
 } from './page-test-helpers';
 
 // Mock next-auth
@@ -39,29 +44,25 @@ describe('SettingsPage', () => {
     it('should show loading state when session is loading', () => {
       mockUseSession.mockReturnValue(loadingSessionMock);
 
-      render(<SettingsPage />);
+      renderSettingsPage();
 
-      expect(screen.getByText('Loading...')).toBeInTheDocument();
-      expect(screen.queryByTestId('settings-component')).not.toBeInTheDocument();
+      expectLoadingState();
     });
 
     it('should show unauthenticated message when user is not signed in', () => {
       mockUseSession.mockReturnValue(unauthenticatedSessionMock);
 
-      render(<SettingsPage />);
+      renderSettingsPage();
 
-      expect(screen.getByText('Please sign in to access your settings.')).toBeInTheDocument();
-      expect(screen.queryByTestId('settings-component')).not.toBeInTheDocument();
+      expectUnauthenticatedState();
     });
 
     it('should render settings component when user is authenticated', () => {
       mockUseSession.mockReturnValue(createSessionMock());
 
-      render(<SettingsPage />);
+      renderSettingsPage();
 
-      expect(screen.getByTestId('settings-component')).toBeInTheDocument();
-      expect(screen.getByText('Settings')).toBeInTheDocument();
-      expect(screen.getByText('Manage your account settings and preferences')).toBeInTheDocument();
+      expectAuthenticatedState();
     });
   });
 
@@ -70,24 +71,10 @@ describe('SettingsPage', () => {
       mockUseSession.mockReturnValue(createSessionMock());
     });
 
-    it('should render within AppLayout', () => {
-      render(<SettingsPage />);
+    it('should have complete page structure', () => {
+      renderSettingsPage();
 
-      expect(screen.getByTestId('app-layout')).toBeInTheDocument();
-    });
-
-    it('should have proper heading structure', () => {
-      render(<SettingsPage />);
-
-      const heading = screen.getByRole('heading', { level: 1 });
-      expect(heading).toHaveTextContent('Settings');
-    });
-
-    it('should have container styling for responsive design', () => {
-      render(<SettingsPage />);
-
-      const mainContainer = screen.getByRole('main');
-      expect(mainContainer).toHaveClass('container', 'mx-auto', 'px-4', 'py-8');
+      expectPageStructure();
     });
   });
 
@@ -95,17 +82,17 @@ describe('SettingsPage', () => {
     it('should handle user with only email', () => {
       mockUseSession.mockReturnValue(userWithEmailOnlyMock);
 
-      render(<SettingsPage />);
+      renderSettingsPage();
 
-      expect(screen.getByTestId('settings-component')).toBeInTheDocument();
+      expectSettingsComponent();
     });
 
     it('should handle user with name and email', () => {
       mockUseSession.mockReturnValue(userWithNameAndEmailMock);
 
-      render(<SettingsPage />);
+      renderSettingsPage();
 
-      expect(screen.getByTestId('settings-component')).toBeInTheDocument();
+      expectSettingsComponent();
     });
   });
 
@@ -113,17 +100,17 @@ describe('SettingsPage', () => {
     it('should handle session data without user object', () => {
       mockUseSession.mockReturnValue(sessionWithoutUserMock);
 
-      render(<SettingsPage />);
+      renderSettingsPage();
 
-      expect(screen.getByText('Please sign in to access your settings.')).toBeInTheDocument();
+      expectUnauthenticatedState();
     });
 
     it('should handle null session data with authenticated status', () => {
       mockUseSession.mockReturnValue(nullSessionMock);
 
-      render(<SettingsPage />);
+      renderSettingsPage();
 
-      expect(screen.getByText('Please sign in to access your settings.')).toBeInTheDocument();
+      expectUnauthenticatedState();
     });
   });
 
@@ -133,21 +120,17 @@ describe('SettingsPage', () => {
     });
 
     it('should have proper semantic structure', () => {
-      render(<SettingsPage />);
+      renderSettingsPage();
 
-      expect(screen.getByRole('main')).toBeInTheDocument();
-      expect(screen.getByRole('banner')).toBeInTheDocument();
-      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+      expectAccessibilityStructure();
     });
 
     it('should have accessible loading state', () => {
       mockUseSession.mockReturnValue(loadingSessionMock);
 
-      render(<SettingsPage />);
+      renderSettingsPage();
 
-      const loadingElement = screen.getByText('Loading...');
-      expect(loadingElement).toBeInTheDocument();
-      expect(loadingElement.closest('div')).toHaveClass('text-muted-foreground');
+      expectLoadingState();
     });
   });
 });
