@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { Party } from '../Party';
 import { Character } from '../Character';
 import User from '../User';
+
 describe('Party Model', () => {
   beforeAll(async () => {
     await mongoose.connect(process.env.MONGODB_TEST_URI!);
@@ -17,21 +18,54 @@ describe('Party Model', () => {
     await mongoose.connection.close();
   });
 
+  // Test data factory functions
+  const createTestUser = (overrides: any = {}) => {
+    return User.create({
+      email: 'dm@example.com',
+      password: 'password123',
+      name: 'Dungeon Master',
+      isEmailVerified: true,
+      ...overrides,
+    });
+  };
+
+  const createTestParty = (ownerId: any, overrides: any = {}) => {
+    return Party.create({
+      ownerId,
+      name: 'Test Party',
+      description: 'Test party',
+      ...overrides,
+    });
+  };
+
+  const createTestCharacter = (ownerId: any, overrides: any = {}) => {
+    return Character.create({
+      ownerId,
+      name: 'Test Character',
+      type: 'pc',
+      race: 'Human',
+      classes: [{ class: 'Fighter', level: 5, hitDie: 10 }],
+      abilityScores: { 
+        strength: 16, 
+        dexterity: 14, 
+        constitution: 15, 
+        intelligence: 10, 
+        wisdom: 12, 
+        charisma: 8 
+      },
+      ...overrides,
+    });
+  };
+
   describe('Schema Validation', () => {
     let testUser: any;
 
     beforeEach(async () => {
-      testUser = await User.create({
-        email: 'dm@example.com',
-        password: 'password123',
-        name: 'Dungeon Master',
-        isEmailVerified: true,
-      });
+      testUser = await createTestUser();
     });
 
     it('should create a party with valid data', async () => {
-      const party = await Party.create({
-        ownerId: testUser._id,
+      const party = await createTestParty(testUser._id, {
         name: 'The Brave Adventurers',
         description: 'A party of brave heroes',
       });
@@ -64,28 +98,13 @@ describe('Party Model', () => {
     let testParty: any;
 
     beforeEach(async () => {
-      testUser = await User.create({
-        email: 'dm@example.com',
-        password: 'password123',
-        name: 'Dungeon Master',
-        isEmailVerified: true,
-      });
-
-      testParty = await Party.create({
-        ownerId: testUser._id,
-        name: 'Test Party',
-        description: 'Test party',
-      });
+      testUser = await createTestUser();
+      testParty = await createTestParty(testUser._id);
     });
 
     it('should calculate memberCount correctly', async () => {
-      await Character.create({
-        ownerId: testUser._id,
+      await createTestCharacter(testUser._id, {
         name: 'Fighter',
-        type: 'pc',
-        race: 'Human',
-        classes: [{ class: 'Fighter', level: 5, hitDie: 10 }],
-        abilityScores: { strength: 16, dexterity: 14, constitution: 15, intelligence: 10, wisdom: 12, charisma: 8 },
         partyId: testParty._id,
       });
 
@@ -94,21 +113,15 @@ describe('Party Model', () => {
     });
 
     it('should calculate playerCharacterCount correctly', async () => {
-      await Character.create({
-        ownerId: testUser._id,
+      await createTestCharacter(testUser._id, {
         name: 'PC',
         type: 'pc',
-        race: 'Human',
-        classes: [{ class: 'Fighter', level: 5, hitDie: 10 }],
-        abilityScores: { strength: 16, dexterity: 14, constitution: 15, intelligence: 10, wisdom: 12, charisma: 8 },
         partyId: testParty._id,
       });
 
-      await Character.create({
-        ownerId: testUser._id,
+      await createTestCharacter(testUser._id, {
         name: 'NPC',
         type: 'npc',
-        race: 'Human',
         classes: [{ class: 'Commoner', level: 1, hitDie: 8 }],
         abilityScores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 },
         partyId: testParty._id,
@@ -119,20 +132,14 @@ describe('Party Model', () => {
     });
 
     it('should calculate averageLevel correctly', async () => {
-      await Character.create({
-        ownerId: testUser._id,
+      await createTestCharacter(testUser._id, {
         name: 'Character1',
-        type: 'pc',
-        race: 'Human',
         classes: [{ class: 'Fighter', level: 5, hitDie: 10 }],
-        abilityScores: { strength: 16, dexterity: 14, constitution: 15, intelligence: 10, wisdom: 12, charisma: 8 },
         partyId: testParty._id,
       });
 
-      await Character.create({
-        ownerId: testUser._id,
+      await createTestCharacter(testUser._id, {
         name: 'Character2',
-        type: 'pc',
         race: 'Elf',
         classes: [{ class: 'Rogue', level: 3, hitDie: 8 }],
         abilityScores: { strength: 8, dexterity: 16, constitution: 14, intelligence: 13, wisdom: 12, charisma: 10 },
@@ -149,25 +156,13 @@ describe('Party Model', () => {
     let testParty: any;
 
     beforeEach(async () => {
-      testUser = await User.create({
-        email: 'dm@example.com',
-        password: 'password123',
-        name: 'Dungeon Master',
-        isEmailVerified: true,
-      });
-
-      testParty = await Party.create({
-        ownerId: testUser._id,
-        name: 'Test Party',
-        description: 'Test party',
-      });
+      testUser = await createTestUser();
+      testParty = await createTestParty(testUser._id);
     });
 
     it('should add member to party', async () => {
-      const character = await Character.create({
-        ownerId: testUser._id,
+      const character = await createTestCharacter(testUser._id, {
         name: 'New Member',
-        type: 'pc',
         race: 'Dwarf',
         classes: [{ class: 'Cleric', level: 4, hitDie: 8 }],
         abilityScores: { strength: 14, dexterity: 10, constitution: 15, intelligence: 12, wisdom: 16, charisma: 13 },
@@ -180,10 +175,8 @@ describe('Party Model', () => {
     });
 
     it('should remove member from party', async () => {
-      const character = await Character.create({
-        ownerId: testUser._id,
+      const character = await createTestCharacter(testUser._id, {
         name: 'Leaving Member',
-        type: 'pc',
         race: 'Elf',
         classes: [{ class: 'Ranger', level: 2, hitDie: 10 }],
         abilityScores: { strength: 13, dexterity: 16, constitution: 14, intelligence: 12, wisdom: 15, charisma: 10 },
@@ -197,13 +190,8 @@ describe('Party Model', () => {
     });
 
     it('should get all members', async () => {
-      await Character.create({
-        ownerId: testUser._id,
+      await createTestCharacter(testUser._id, {
         name: 'Member 1',
-        type: 'pc',
-        race: 'Human',
-        classes: [{ class: 'Fighter', level: 1, hitDie: 10 }],
-        abilityScores: { strength: 16, dexterity: 14, constitution: 15, intelligence: 10, wisdom: 12, charisma: 8 },
         partyId: testParty._id,
       });
 
@@ -218,30 +206,24 @@ describe('Party Model', () => {
     let testUser2: any;
 
     beforeEach(async () => {
-      testUser1 = await User.create({
+      testUser1 = await createTestUser({
         email: 'dm1@example.com',
-        password: 'password123',
         name: 'DM 1',
-        isEmailVerified: true,
       });
 
-      testUser2 = await User.create({
+      testUser2 = await createTestUser({
         email: 'dm2@example.com',
-        password: 'password123',
         name: 'DM 2',
-        isEmailVerified: true,
       });
     });
 
     it('should find parties by owner ID', async () => {
-      await Party.create({
-        ownerId: testUser1._id,
+      await createTestParty(testUser1._id, {
         name: 'User 1 Party',
         description: 'Party for user 1',
       });
 
-      await Party.create({
-        ownerId: testUser2._id,
+      await createTestParty(testUser2._id, {
         name: 'User 2 Party',
         description: 'Party for user 2',
       });
@@ -252,15 +234,13 @@ describe('Party Model', () => {
     });
 
     it('should find public parties', async () => {
-      await Party.create({
-        ownerId: testUser1._id,
+      await createTestParty(testUser1._id, {
         name: 'Private Party',
         description: 'This party is private',
         isPublic: false,
       });
 
-      await Party.create({
-        ownerId: testUser1._id,
+      await createTestParty(testUser1._id, {
         name: 'Public Party',
         description: 'This party is public',
         isPublic: true,
@@ -272,14 +252,12 @@ describe('Party Model', () => {
     });
 
     it('should search parties by name', async () => {
-      await Party.create({
-        ownerId: testUser1._id,
+      await createTestParty(testUser1._id, {
         name: 'The Dragon Slayers',
         description: 'Brave heroes who slay dragons',
       });
 
-      await Party.create({
-        ownerId: testUser1._id,
+      await createTestParty(testUser1._id, {
         name: 'The Shadow Walkers',
         description: 'Stealthy adventurers',
       });
