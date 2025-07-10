@@ -73,58 +73,42 @@ function sortParties(parties: PartyListItem[], sortBy: PartySortBy, sortOrder: S
   });
 }
 
-// Factory function to create mock party data
-function createMockParty(
-  id: string,
-  name: string,
-  description: string,
-  tags: string[],
-  settings: { allowJoining: boolean; requireApproval: boolean; maxMembers: number },
-  date: string,
-  memberCount: number,
-  averageLevel: number
-): PartyListItem {
-  return {
-    id,
-    ownerId: 'user-123' as any,
-    name,
-    description,
-    members: [],
-    tags,
-    isPublic: false,
-    sharedWith: [],
-    settings,
-    createdAt: new Date(date),
-    updatedAt: new Date(date),
-    lastActivity: new Date(date),
-    memberCount,
-    playerCharacterCount: memberCount,
-    averageLevel,
-  };
-}
-
 // Mock data for development - this will be replaced with real API calls
 const mockParties: PartyListItem[] = [
-  createMockParty(
-    'party-1',
-    'The Brave Adventurers',
-    'A party of brave heroes ready to face any challenge',
-    ['heroic', 'balanced'],
-    { allowJoining: true, requireApproval: false, maxMembers: 6 },
-    '2023-01-01',
-    4,
-    5
-  ),
-  createMockParty(
-    'party-2',
-    'The Shadow Walkers',
-    'Stealthy rogues and assassins operating in the shadows',
-    ['stealth', 'urban'],
-    { allowJoining: false, requireApproval: true, maxMembers: 4 },
-    '2023-01-02',
-    3,
-    7
-  ),
+  {
+    id: 'party-1',
+    ownerId: 'user-123' as any,
+    name: 'The Brave Adventurers',
+    description: 'A party of brave heroes ready to face any challenge',
+    members: [],
+    tags: ['heroic', 'balanced'],
+    isPublic: false,
+    sharedWith: [],
+    settings: { allowJoining: true, requireApproval: false, maxMembers: 6 },
+    createdAt: new Date('2023-01-01'),
+    updatedAt: new Date('2023-01-01'),
+    lastActivity: new Date('2023-01-01'),
+    memberCount: 4,
+    playerCharacterCount: 4,
+    averageLevel: 5,
+  },
+  {
+    id: 'party-2',
+    ownerId: 'user-123' as any,
+    name: 'The Shadow Walkers',
+    description: 'Stealthy rogues and assassins operating in the shadows',
+    members: [],
+    tags: ['stealth', 'urban'],
+    isPublic: false,
+    sharedWith: [],
+    settings: { allowJoining: false, requireApproval: true, maxMembers: 4 },
+    createdAt: new Date('2023-01-02'),
+    updatedAt: new Date('2023-01-02'),
+    lastActivity: new Date('2023-01-02'),
+    memberCount: 3,
+    playerCharacterCount: 3,
+    averageLevel: 7,
+  },
 ];
 
 export function usePartyData({

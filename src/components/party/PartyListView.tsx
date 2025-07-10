@@ -9,47 +9,6 @@ import { usePartySelection } from './hooks/usePartySelection';
 import { ErrorFallback } from './PartyListView/ErrorFallback';
 import { ControlsSection } from './PartyListView/ControlsSection';
 import { ContentSection } from './PartyListView/ContentSection';
-import type { PartySortBy, SortOrder } from './types';
-
-// Configuration utility functions
-const createSortConfig = (sortBy: PartySortBy, sortOrder: SortOrder) => ({
-  sortBy,
-  sortOrder,
-});
-
-const createFilterCallbacks = (
-  updateFilters: any,
-  updateSearchQuery: any,
-  updateSort: any,
-  clearFilters: any
-) => ({
-  onFiltersChange: updateFilters,
-  onSearchChange: updateSearchQuery,
-  onSortChange: updateSort,
-  onClearFilters: clearFilters,
-});
-
-const createTableSortConfig = (
-  sortBy: PartySortBy,
-  sortOrder: SortOrder,
-  updateSort: any
-) => ({
-  sortBy,
-  sortOrder,
-  onSort: updateSort,
-});
-
-const createTableSelectionConfig = (
-  selectedParties: string[],
-  isAllSelected: boolean,
-  selectAll: any,
-  selectParty: any
-) => ({
-  selectedParties,
-  isAllSelected,
-  onSelectAll: selectAll,
-  onSelectParty: selectParty,
-});
 
 export function PartyListView() {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
@@ -89,7 +48,6 @@ export function PartyListView() {
   } = usePartySelection(parties);
 
   const handleCreateParty = () => {
-    // TODO: Navigate to party creation
     console.log('Create new party');
   };
 
@@ -97,20 +55,18 @@ export function PartyListView() {
     return <ErrorFallback onRetry={refetch} error={error} />;
   }
 
-  const configs = {
-    sort: createSortConfig(sortBy, sortOrder),
-    filterCallbacks: createFilterCallbacks(updateFilters, updateSearchQuery, updateSort, clearFilters),
-    tableSort: createTableSortConfig(sortBy, sortOrder, updateSort),
-    tableSelection: createTableSelectionConfig(selectedParties, isAllSelected, selectAll, selectParty),
-  };
-
   return (
     <div className="space-y-6">
       <ControlsSection
         filters={filters}
         searchQuery={searchQuery}
-        sortConfig={configs.sort}
-        filterCallbacks={configs.filterCallbacks}
+        sortConfig={{ sortBy, sortOrder }}
+        filterCallbacks={{
+          onFiltersChange: updateFilters,
+          onSearchChange: updateSearchQuery,
+          onSortChange: updateSort,
+          onClearFilters: clearFilters,
+        }}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         onCreateParty={handleCreateParty}
@@ -136,8 +92,17 @@ export function PartyListView() {
         tableProps={{
           parties,
           isLoading,
-          sortConfig: configs.tableSort,
-          selectionConfig: configs.tableSelection,
+          sortConfig: {
+            sortBy,
+            sortOrder,
+            onSort: updateSort,
+          },
+          selectionConfig: {
+            selectedParties,
+            isAllSelected,
+            onSelectAll: selectAll,
+            onSelectParty: selectParty,
+          },
           onRefetch: refetch,
         }}
       />
