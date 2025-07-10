@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { Party } from '../Party';
 import { Character } from '../Character';
 import User from '../User';
+import { cleanupTestData } from './partyTestUtils';
 
 describe('Party Model', () => {
   beforeAll(async () => {
@@ -9,9 +10,7 @@ describe('Party Model', () => {
   });
 
   beforeEach(async () => {
-    await Party.deleteMany({});
-    await Character.deleteMany({});
-    await User.deleteMany({});
+    await cleanupTestData();
   });
 
   afterAll(async () => {

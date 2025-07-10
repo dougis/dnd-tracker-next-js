@@ -21,6 +21,59 @@ interface UsePartyDataReturn {
   refetch: () => void;
 }
 
+// Utility function to apply filters to parties
+function applyFilters(parties: PartyListItem[], searchQuery: string, filters: PartyFilters): PartyListItem[] {
+  let filtered = [...parties];
+
+  // Apply search filter
+  if (searchQuery.trim()) {
+    filtered = filtered.filter(party =>
+      party.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      party.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+
+  // Apply member count filter
+  if (filters.memberCount.length > 0) {
+    filtered = filtered.filter(party =>
+      filters.memberCount.includes(party.memberCount)
+    );
+  }
+
+  // Apply tags filter
+  if (filters.tags.length > 0) {
+    filtered = filtered.filter(party =>
+      filters.tags.some(tag => party.tags.includes(tag))
+    );
+  }
+
+  return filtered;
+}
+
+// Utility function to sort parties
+function sortParties(parties: PartyListItem[], sortBy: PartySortBy, sortOrder: SortOrder): void {
+  parties.sort((a, b) => {
+    let aValue: any = a[sortBy];
+    let bValue: any = b[sortBy];
+
+    if (sortBy === 'createdAt' || sortBy === 'updatedAt' || sortBy === 'lastActivity') {
+      aValue = new Date(aValue).getTime();
+      bValue = new Date(bValue).getTime();
+    }
+
+    if (typeof aValue === 'string') {
+      aValue = aValue.toLowerCase();
+      bValue = bValue.toLowerCase();
+    }
+
+    if (sortOrder === 'asc') {
+      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+    } else {
+      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+    }
+  });
+}
+
 // Mock data for development - this will be replaced with real API calls
 const mockParties: PartyListItem[] = [
   {
@@ -89,52 +142,9 @@ export function usePartyData({
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Apply filters and search (mock implementation)
-      let filteredParties = [...mockParties];
-
-      // Apply search filter
-      if (searchQuery.trim()) {
-        filteredParties = filteredParties.filter(party =>
-          party.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          party.description.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      }
-
-      // Apply member count filter
-      if (filters.memberCount.length > 0) {
-        filteredParties = filteredParties.filter(party =>
-          filters.memberCount.includes(party.memberCount)
-        );
-      }
-
-      // Apply tags filter
-      if (filters.tags.length > 0) {
-        filteredParties = filteredParties.filter(party =>
-          filters.tags.some(tag => party.tags.includes(tag))
-        );
-      }
-
-      // Apply sorting
-      filteredParties.sort((a, b) => {
-        let aValue: any = a[sortBy];
-        let bValue: any = b[sortBy];
-
-        if (sortBy === 'createdAt' || sortBy === 'updatedAt' || sortBy === 'lastActivity') {
-          aValue = new Date(aValue).getTime();
-          bValue = new Date(bValue).getTime();
-        }
-
-        if (typeof aValue === 'string') {
-          aValue = aValue.toLowerCase();
-          bValue = bValue.toLowerCase();
-        }
-
-        if (sortOrder === 'asc') {
-          return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-        } else {
-          return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-        }
-      });
+      // Apply filters and sorting (mock implementation)
+      const filteredParties = applyFilters(mockParties, searchQuery, filters);
+      sortParties(filteredParties, sortBy, sortOrder);
 
       // Apply pagination
       const totalItems = filteredParties.length;
