@@ -106,12 +106,12 @@ function PartyTags({ tags }: { tags: string[] }) {
 }
 
 // Helper component for stat display
-function StatRow({ 
-  leftContent, 
-  rightContent 
-}: { 
-  leftContent: React.ReactNode; 
-  rightContent: React.ReactNode; 
+function StatRow({
+  leftContent,
+  rightContent
+}: {
+  leftContent: React.ReactNode;
+  rightContent: React.ReactNode;
 }) {
   return (
     <div className="grid grid-cols-2 gap-4 text-sm">

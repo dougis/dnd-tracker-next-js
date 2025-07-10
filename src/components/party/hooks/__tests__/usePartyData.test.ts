@@ -320,7 +320,7 @@ describe('usePartyData', () => {
 
       // The hook should handle errors and not crash
       expect(result.current.error).toBe(null);
-      
+
       console.error = originalError;
     });
   });
