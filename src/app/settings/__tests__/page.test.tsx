@@ -79,39 +79,29 @@ describe('SettingsPage', () => {
   });
 
   describe('User Context', () => {
-    it('should handle user with only email', () => {
-      mockUseSession.mockReturnValue(userWithEmailOnlyMock);
+    const testUserVariant = (mockSession: any, testName: string) => {
+      it(`should handle ${testName}`, () => {
+        mockUseSession.mockReturnValue(mockSession);
+        renderSettingsPage();
+        expectSettingsComponent();
+      });
+    };
 
-      renderSettingsPage();
-
-      expectSettingsComponent();
-    });
-
-    it('should handle user with name and email', () => {
-      mockUseSession.mockReturnValue(userWithNameAndEmailMock);
-
-      renderSettingsPage();
-
-      expectSettingsComponent();
-    });
+    testUserVariant(userWithEmailOnlyMock, 'user with only email');
+    testUserVariant(userWithNameAndEmailMock, 'user with name and email');
   });
 
   describe('Error Handling', () => {
-    it('should handle session data without user object', () => {
-      mockUseSession.mockReturnValue(sessionWithoutUserMock);
+    const testErrorCase = (mockSession: any, testName: string) => {
+      it(`should handle ${testName}`, () => {
+        mockUseSession.mockReturnValue(mockSession);
+        renderSettingsPage();
+        expectUnauthenticatedState();
+      });
+    };
 
-      renderSettingsPage();
-
-      expectUnauthenticatedState();
-    });
-
-    it('should handle null session data with authenticated status', () => {
-      mockUseSession.mockReturnValue(nullSessionMock);
-
-      renderSettingsPage();
-
-      expectUnauthenticatedState();
-    });
+    testErrorCase(sessionWithoutUserMock, 'session data without user object');
+    testErrorCase(nullSessionMock, 'null session data with authenticated status');
   });
 
   describe('Accessibility', () => {
