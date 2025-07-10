@@ -29,6 +29,24 @@ export default [
   // Prettier configuration
   ...compat.extends('prettier'),
   {
+    languageOptions: {
+      globals: {
+        // Node.js globals
+        require: 'readonly',
+        module: 'readonly',
+        process: 'readonly',
+        global: 'readonly',
+        console: 'readonly',
+        // Browser globals
+        window: 'readonly',
+        document: 'readonly',
+        fetch: 'readonly',
+        FormData: 'readonly',
+        URL: 'readonly',
+        Event: 'readonly',
+        Response: 'readonly'
+      }
+    },
     rules: {
       'prefer-const': 'error',
       'no-var': 'error',
@@ -44,6 +62,44 @@ export default [
       'newline-after-var': 'off',
       'newline-per-chained-call': 'off',
       'no-trailing-spaces': 'error'
+    }
+  },
+  // Test files configuration
+  {
+    files: ['**/__tests__/**/*.{js,jsx,ts,tsx}', '**/*.{test,spec}.{js,jsx,ts,tsx}'],
+    languageOptions: {
+      globals: {
+        // Jest globals
+        describe: 'readonly',
+        test: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        jest: 'readonly',
+        // Node.js globals for test files
+        require: 'readonly',
+        module: 'readonly',
+        process: 'readonly',
+        global: 'readonly',
+        console: 'readonly'
+      }
+    }
+  },
+  // Mock files configuration
+  {
+    files: ['**/__mocks__/**/*.{js,jsx,ts,tsx}'],
+    languageOptions: {
+      globals: {
+        // Jest globals for mocks
+        jest: 'readonly',
+        // Node.js globals for mocks
+        require: 'readonly',
+        module: 'readonly',
+        global: 'readonly'
+      }
     }
   }
 ];
