@@ -94,10 +94,9 @@ encounterSchema.post('save', function (doc, next) {
 });
 
 // Create and export the model
-export const Encounter = mongoose.model<IEncounter, EncounterModel>(
-  'Encounter',
-  encounterSchema
-);
+export const Encounter =
+  (mongoose.models.Encounter as EncounterModel) ||
+  mongoose.model<IEncounter, EncounterModel>('Encounter', encounterSchema);
 
 // Re-export interfaces for convenience
 export * from './interfaces';
