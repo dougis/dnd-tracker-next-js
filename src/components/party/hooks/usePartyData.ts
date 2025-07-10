@@ -21,32 +21,39 @@ interface UsePartyDataReturn {
   refetch: () => void;
 }
 
+// Utility function to check if text matches search query
+function matchesSearchQuery(text: string, searchQuery: string): boolean {
+  return text.toLowerCase().includes(searchQuery.toLowerCase());
+}
+
+// Utility function to apply search filter
+function applySearchFilter(parties: PartyListItem[], searchQuery: string): PartyListItem[] {
+  if (!searchQuery.trim()) return parties;
+  
+  return parties.filter(party =>
+    matchesSearchQuery(party.name, searchQuery) ||
+    matchesSearchQuery(party.description, searchQuery)
+  );
+}
+
+// Utility function to apply member count filter
+function applyMemberCountFilter(parties: PartyListItem[], memberCountFilter: number[]): PartyListItem[] {
+  if (memberCountFilter.length === 0) return parties;
+  return parties.filter(party => memberCountFilter.includes(party.memberCount));
+}
+
+// Utility function to apply tags filter
+function applyTagsFilter(parties: PartyListItem[], tagsFilter: string[]): PartyListItem[] {
+  if (tagsFilter.length === 0) return parties;
+  return parties.filter(party => tagsFilter.some(tag => party.tags.includes(tag)));
+}
+
 // Utility function to apply filters to parties
 function applyFilters(parties: PartyListItem[], searchQuery: string, filters: PartyFilters): PartyListItem[] {
   let filtered = [...parties];
-
-  // Apply search filter
-  if (searchQuery.trim()) {
-    filtered = filtered.filter(party =>
-      party.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      party.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }
-
-  // Apply member count filter
-  if (filters.memberCount.length > 0) {
-    filtered = filtered.filter(party =>
-      filters.memberCount.includes(party.memberCount)
-    );
-  }
-
-  // Apply tags filter
-  if (filters.tags.length > 0) {
-    filtered = filtered.filter(party =>
-      filters.tags.some(tag => party.tags.includes(tag))
-    );
-  }
-
+  filtered = applySearchFilter(filtered, searchQuery);
+  filtered = applyMemberCountFilter(filtered, filters.memberCount);
+  filtered = applyTagsFilter(filtered, filters.tags);
   return filtered;
 }
 
@@ -86,6 +93,13 @@ function createPaginationInfo(currentPage: number, totalItems: number, limit: nu
   };
 }
 
+// Utility function to paginate items
+function paginateItems<T>(items: T[], currentPage: number, limit: number): T[] {
+  const startIndex = (currentPage - 1) * limit;
+  const endIndex = startIndex + limit;
+  return items.slice(startIndex, endIndex);
+}
+
 // Utility function to process party data with filtering, sorting, and pagination
 async function processPartyData({
   parties,
@@ -106,11 +120,9 @@ async function processPartyData({
 }): Promise<{ items: PartyListItem[]; pagination: PaginationInfo }> {
   const filteredParties = applyFilters(parties, searchQuery, filters);
   sortParties(filteredParties, sortBy, sortOrder);
-
+  
   const totalItems = filteredParties.length;
-  const startIndex = (currentPage - 1) * limit;
-  const endIndex = startIndex + limit;
-  const paginatedParties = filteredParties.slice(startIndex, endIndex);
+  const paginatedParties = paginateItems(filteredParties, currentPage, limit);
 
   return {
     items: paginatedParties,
@@ -156,19 +168,27 @@ const mockParties: PartyListItem[] = [
   },
 ];
 
-export function usePartyData({
-  filters,
-  searchQuery,
-  sortBy,
-  sortOrder,
-  page: _page = 1,
-  limit = 20,
-}: UsePartyDataParams): UsePartyDataReturn {
+// Hook for managing party data state
+function usePartyState(initialPage: number = 1) {
   const [parties, setParties] = useState<PartyListItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [currentPage, setCurrentPage] = useState(_page);
+  const [currentPage, setCurrentPage] = useState(initialPage);
+
+  return {
+    parties, setParties,
+    isLoading, setIsLoading,
+    error, setError,
+    pagination, setPagination,
+    currentPage, setCurrentPage,
+  };
+}
+
+// Hook for party data operations
+function usePartyOperations(state: ReturnType<typeof usePartyState>, params: UsePartyDataParams) {
+  const { filters, searchQuery, sortBy, sortOrder, limit = 20 } = params;
+  const { setParties, setIsLoading, setError, setPagination, currentPage, setCurrentPage } = state;
 
   const fetchParties = useCallback(async () => {
     setIsLoading(true);
@@ -193,25 +213,41 @@ export function usePartyData({
     } finally {
       setIsLoading(false);
     }
-  }, [filters, searchQuery, sortBy, sortOrder, currentPage, limit]);
+  }, [filters, searchQuery, sortBy, sortOrder, currentPage, limit, setParties, setIsLoading, setError, setPagination]);
 
   const goToPage = useCallback((newPage: number) => {
     setCurrentPage(newPage);
-  }, []);
+  }, [setCurrentPage]);
 
   const refetch = useCallback(() => {
     fetchParties();
   }, [fetchParties]);
+
+  return { fetchParties, goToPage, refetch };
+}
+
+export function usePartyData({
+  filters,
+  searchQuery,
+  sortBy,
+  sortOrder,
+  page: _page = 1,
+  limit = 20,
+}: UsePartyDataParams): UsePartyDataReturn {
+  const state = usePartyState(_page);
+  const { fetchParties, goToPage, refetch } = usePartyOperations(state, {
+    filters, searchQuery, sortBy, sortOrder, page: _page, limit
+  });
 
   useEffect(() => {
     fetchParties();
   }, [fetchParties]);
 
   return {
-    parties,
-    isLoading,
-    error,
-    pagination,
+    parties: state.parties,
+    isLoading: state.isLoading,
+    error: state.error,
+    pagination: state.pagination,
     goToPage,
     refetch,
   };

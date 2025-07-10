@@ -12,6 +12,68 @@ import {
 } from '@/components/ui/select';
 import type { PartyFilters, SortConfig, FilterCallbacks, PartySortBy, SortOrder } from '../types';
 
+// Sort options configuration
+const SORT_OPTIONS = [
+  { value: 'name-asc', label: 'Name (A-Z)' },
+  { value: 'name-desc', label: 'Name (Z-A)' },
+  { value: 'createdAt-desc', label: 'Newest First' },
+  { value: 'createdAt-asc', label: 'Oldest First' },
+  { value: 'memberCount-desc', label: 'Most Members' },
+  { value: 'memberCount-asc', label: 'Fewest Members' },
+  { value: 'lastActivity-desc', label: 'Most Recent Activity' },
+  { value: 'lastActivity-asc', label: 'Least Recent Activity' },
+];
+
+// Utility function to parse sort value
+function parseSortValue(value: string): [PartySortBy, SortOrder] {
+  return value.split('-') as [PartySortBy, SortOrder];
+}
+
+// Search input component
+function SearchInput({ searchQuery, onSearchChange }: {
+  searchQuery: string;
+  onSearchChange: (_query: string) => void;
+}) {
+  return (
+    <div className="flex-1 max-w-sm">
+      <Input
+        placeholder="Search parties..."
+        value={searchQuery}
+        onChange={(e) => onSearchChange(e.target.value)}
+      />
+    </div>
+  );
+}
+
+// Sort select component
+function SortSelect({ sortConfig, onSortChange }: {
+  sortConfig: SortConfig;
+  onSortChange: (_sortBy: PartySortBy, _sortOrder: SortOrder) => void;
+}) {
+  const handleSortChange = (value: string) => {
+    const [sortBy, sortOrder] = parseSortValue(value);
+    onSortChange(sortBy, sortOrder);
+  };
+
+  return (
+    <Select
+      value={`${sortConfig.sortBy}-${sortConfig.sortOrder}`}
+      onValueChange={handleSortChange}
+    >
+      <SelectTrigger className="w-48">
+        <SelectValue placeholder="Sort by..." />
+      </SelectTrigger>
+      <SelectContent>
+        {SORT_OPTIONS.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 // Search and sort controls
 function SearchAndSort({
   searchQuery,
@@ -26,35 +88,8 @@ function SearchAndSort({
 }) {
   return (
     <>
-      <div className="flex-1 max-w-sm">
-        <Input
-          placeholder="Search parties..."
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-        />
-      </div>
-
-      <Select
-        value={`${sortConfig.sortBy}-${sortConfig.sortOrder}`}
-        onValueChange={(value) => {
-          const [sortBy, sortOrder] = value.split('-') as [PartySortBy, SortOrder];
-          onSortChange(sortBy, sortOrder);
-        }}
-      >
-        <SelectTrigger className="w-48">
-          <SelectValue placeholder="Sort by..." />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-          <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-          <SelectItem value="createdAt-desc">Newest First</SelectItem>
-          <SelectItem value="createdAt-asc">Oldest First</SelectItem>
-          <SelectItem value="memberCount-desc">Most Members</SelectItem>
-          <SelectItem value="memberCount-asc">Fewest Members</SelectItem>
-          <SelectItem value="lastActivity-desc">Most Recent Activity</SelectItem>
-          <SelectItem value="lastActivity-asc">Least Recent Activity</SelectItem>
-        </SelectContent>
-      </Select>
+      <SearchInput searchQuery={searchQuery} onSearchChange={onSearchChange} />
+      <SortSelect sortConfig={sortConfig} onSortChange={onSortChange} />
     </>
   );
 }
@@ -99,6 +134,67 @@ interface ControlsSectionProps {
   onCreateParty: () => void;
 }
 
+// Utility function to check if filters are active
+function hasActiveFilters(searchQuery: string, filters: PartyFilters): boolean {
+  return Boolean(searchQuery || filters.memberCount.length > 0 || filters.tags.length > 0);
+}
+
+// Left section with search and filters
+function LeftSection({
+  searchQuery,
+  sortConfig,
+  filters,
+  onSearchChange,
+  onSortChange,
+  onClearFilters
+}: {
+  searchQuery: string;
+  sortConfig: SortConfig;
+  filters: PartyFilters;
+  onSearchChange: (_query: string) => void;
+  onSortChange: (_sortBy: PartySortBy, _sortOrder: SortOrder) => void;
+  onClearFilters: () => void;
+}) {
+  const showClearFilters = hasActiveFilters(searchQuery, filters);
+
+  return (
+    <div className="flex flex-1 gap-4">
+      <SearchAndSort
+        searchQuery={searchQuery}
+        sortConfig={sortConfig}
+        onSearchChange={onSearchChange}
+        onSortChange={onSortChange}
+      />
+      {showClearFilters && (
+        <Button variant="outline" onClick={onClearFilters}>
+          Clear Filters
+        </Button>
+      )}
+    </div>
+  );
+}
+
+// Right section with view toggle and create button
+function RightSection({
+  viewMode,
+  onViewModeChange,
+  onCreateParty
+}: {
+  viewMode: 'grid' | 'table';
+  onViewModeChange: (_mode: 'grid' | 'table') => void;
+  onCreateParty: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <ViewModeToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
+      <Button onClick={onCreateParty}>
+        <Plus className="mr-2 h-4 w-4" />
+        Create Party
+      </Button>
+    </div>
+  );
+}
+
 export function ControlsSection({
   filters,
   searchQuery,
@@ -109,35 +205,22 @@ export function ControlsSection({
   onCreateParty,
 }: ControlsSectionProps) {
   const { onSearchChange, onSortChange, onClearFilters } = filterCallbacks;
-  const hasActiveFilters = searchQuery || filters.memberCount.length > 0 || filters.tags.length > 0;
 
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      {/* Left side - Search and filters */}
-      <div className="flex flex-1 gap-4">
-        <SearchAndSort
-          searchQuery={searchQuery}
-          sortConfig={sortConfig}
-          onSearchChange={onSearchChange}
-          onSortChange={onSortChange}
-        />
-
-        {hasActiveFilters && (
-          <Button variant="outline" onClick={onClearFilters}>
-            Clear Filters
-          </Button>
-        )}
-      </div>
-
-      {/* Right side - View mode and create button */}
-      <div className="flex items-center gap-2">
-        <ViewModeToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
-
-        <Button onClick={onCreateParty}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Party
-        </Button>
-      </div>
+      <LeftSection
+        searchQuery={searchQuery}
+        sortConfig={sortConfig}
+        filters={filters}
+        onSearchChange={onSearchChange}
+        onSortChange={onSortChange}
+        onClearFilters={onClearFilters}
+      />
+      <RightSection
+        viewMode={viewMode}
+        onViewModeChange={onViewModeChange}
+        onCreateParty={onCreateParty}
+      />
     </div>
   );
 }

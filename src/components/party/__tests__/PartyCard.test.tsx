@@ -1,77 +1,56 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  createMockParty,
+  setupConsoleSpy,
+  renderPartyCard,
+  renderPartyCardWithSelection,
+  expectBasicPartyInfo,
+  expectPartyStats,
+  expectPartyTags,
+  expectLastActivity,
+  expectPublicBadge,
+  expectOpenBadge,
+  getMenuTrigger,
+  openMenuAndClickItem,
+  expectSelectionCheckbox,
+  clickSelectionCheckbox,
+  expectCheckboxState,
+} from './partyCardTestHelpers';
 import { PartyCard } from '../PartyCard';
-import type { PartyListItem } from '../types';
-
-// Mock date-fns
-jest.mock('date-fns', () => ({
-  formatDistanceToNow: jest.fn(() => '2 hours ago'),
-}));
-
-// Mock console.log for action handlers
-const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
 describe('PartyCard', () => {
-  const mockParty: PartyListItem = {
-    id: 'party-1',
-    ownerId: 'user-123' as any,
-    name: 'The Brave Adventurers',
-    description: 'A party of brave heroes ready to face any challenge',
-    members: [],
-    tags: ['heroic', 'balanced'],
-    isPublic: false,
-    sharedWith: [],
-    settings: {
-      allowJoining: true,
-      requireApproval: false,
-      maxMembers: 6,
-    },
-    createdAt: new Date('2023-01-01'),
-    updatedAt: new Date('2023-01-01'),
-    lastActivity: new Date('2023-01-01'),
-    memberCount: 4,
-    playerCharacterCount: 4,
-    averageLevel: 5,
-  };
+  const mockParty = createMockParty();
+  const { spy: consoleSpy, clear: clearConsoleSpy, restore: restoreConsoleSpy } = setupConsoleSpy();
 
   beforeEach(() => {
-    consoleSpy.mockClear();
+    clearConsoleSpy();
   });
 
   afterAll(() => {
-    consoleSpy.mockRestore();
+    restoreConsoleSpy();
   });
 
   describe('Basic Rendering', () => {
     it('should render party name and description', () => {
-      render(<PartyCard party={mockParty} />);
-
-      expect(screen.getByText('The Brave Adventurers')).toBeInTheDocument();
-      expect(screen.getByText('A party of brave heroes ready to face any challenge')).toBeInTheDocument();
+      renderPartyCard(mockParty);
+      expectBasicPartyInfo(mockParty);
     });
 
     it('should render party statistics', () => {
-      render(<PartyCard party={mockParty} />);
-
-      expect(screen.getAllByText('4')).toHaveLength(2); // member count appears twice
-      expect(screen.getByText('members')).toBeInTheDocument();
-      expect(screen.getByText('Level 5')).toBeInTheDocument();
-      expect(screen.getByText('average')).toBeInTheDocument();
-      expect(screen.getByText('Player Characters')).toBeInTheDocument();
-      expect(screen.getByText('Max Members')).toBeInTheDocument();
-      expect(screen.getByText('6')).toBeInTheDocument(); // max members
+      renderPartyCard(mockParty);
+      expectPartyStats(mockParty);
     });
 
     it('should render party tags', () => {
-      render(<PartyCard party={mockParty} />);
-
-      expect(screen.getByText('heroic')).toBeInTheDocument();
-      expect(screen.getByText('balanced')).toBeInTheDocument();
+      renderPartyCard(mockParty);
+      expectPartyTags(mockParty.tags);
     });
 
     it('should render last activity', () => {
-      render(<PartyCard party={mockParty} />);
-
-      expect(screen.getByText('Active 2 hours ago')).toBeInTheDocument();
+      renderPartyCard(mockParty);
+      expectLastActivity();
     });
   });
 

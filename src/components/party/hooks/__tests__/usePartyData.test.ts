@@ -1,28 +1,26 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { usePartyData } from '../usePartyData';
+import {
+  defaultParams,
+  setupTimers,
+  advanceTimersAndWaitForLoading,
+  createParamsWithSearchQuery,
+  createParamsWithFilters,
+  createParamsWithSort,
+  createParamsWithPagination,
+  expectBasicHookFunctions,
+  expectPaginationInfo,
+  expectPartyResults,
+  setupConsoleMock,
+  waitFor
+} from './testHelpers';
 import type { PartyFilters } from '../../types';
 
 // Mock the setTimeout for simulating API delay
 jest.useFakeTimers();
 
 describe('usePartyData', () => {
-  const defaultParams = {
-    filters: { memberCount: [], tags: [] } as PartyFilters,
-    searchQuery: '',
-    sortBy: 'name' as const,
-    sortOrder: 'asc' as const,
-    page: 1,
-    limit: 20,
-  };
-
-  beforeEach(() => {
-    jest.clearAllTimers();
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
-    jest.useFakeTimers();
-  });
+  setupTimers();
 
   describe('Initial State', () => {
     it('should return initial loading state', () => {
@@ -39,29 +37,18 @@ describe('usePartyData', () => {
     it('should fetch and return parties after loading', async () => {
       const { result } = renderHook(() => usePartyData(defaultParams));
 
-      // Fast-forward timers to simulate API delay
-      jest.advanceTimersByTime(500);
+      await advanceTimersAndWaitForLoading(result);
 
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.parties).toHaveLength(2);
-      expect(result.current.parties[0].name).toBe('The Brave Adventurers');
-      expect(result.current.parties[1].name).toBe('The Shadow Walkers');
+      expectPartyResults(result, 2, ['The Brave Adventurers', 'The Shadow Walkers']);
       expect(result.current.error).toBe(null);
     });
 
     it('should return pagination info', async () => {
       const { result } = renderHook(() => usePartyData(defaultParams));
 
-      jest.advanceTimersByTime(500);
+      await advanceTimersAndWaitForLoading(result);
 
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.pagination).toEqual({
+      expectPaginationInfo(result, {
         currentPage: 1,
         totalPages: 1,
         totalItems: 2,
@@ -72,110 +59,59 @@ describe('usePartyData', () => {
 
   describe('Search Functionality', () => {
     it('should filter parties by search query', async () => {
-      const params = {
-        ...defaultParams,
-        searchQuery: 'brave',
-      };
-
+      const params = createParamsWithSearchQuery('brave');
       const { result } = renderHook(() => usePartyData(params));
 
-      jest.advanceTimersByTime(500);
+      await advanceTimersAndWaitForLoading(result);
 
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.parties).toHaveLength(1);
-      expect(result.current.parties[0].name).toBe('The Brave Adventurers');
+      expectPartyResults(result, 1, ['The Brave Adventurers']);
     });
 
     it('should search in description as well', async () => {
-      const params = {
-        ...defaultParams,
-        searchQuery: 'stealthy',
-      };
-
+      const params = createParamsWithSearchQuery('stealthy');
       const { result } = renderHook(() => usePartyData(params));
 
-      jest.advanceTimersByTime(500);
+      await advanceTimersAndWaitForLoading(result);
 
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.parties).toHaveLength(1);
-      expect(result.current.parties[0].name).toBe('The Shadow Walkers');
+      expectPartyResults(result, 1, ['The Shadow Walkers']);
     });
 
     it('should be case insensitive', async () => {
-      const params = {
-        ...defaultParams,
-        searchQuery: 'BRAVE',
-      };
-
+      const params = createParamsWithSearchQuery('BRAVE');
       const { result } = renderHook(() => usePartyData(params));
 
-      jest.advanceTimersByTime(500);
+      await advanceTimersAndWaitForLoading(result);
 
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.parties).toHaveLength(1);
-      expect(result.current.parties[0].name).toBe('The Brave Adventurers');
+      expectPartyResults(result, 1, ['The Brave Adventurers']);
     });
   });
 
   describe('Filtering', () => {
     it('should filter by member count', async () => {
-      const params = {
-        ...defaultParams,
-        filters: { memberCount: [4], tags: [] } as PartyFilters,
-      };
-
+      const params = createParamsWithFilters({ memberCount: [4], tags: [] } as PartyFilters);
       const { result } = renderHook(() => usePartyData(params));
 
-      jest.advanceTimersByTime(500);
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
+      await advanceTimersAndWaitForLoading(result);
 
       expect(result.current.parties).toHaveLength(1);
       expect(result.current.parties[0].memberCount).toBe(4);
     });
 
     it('should filter by tags', async () => {
-      const params = {
-        ...defaultParams,
-        filters: { memberCount: [], tags: ['heroic'] } as PartyFilters,
-      };
-
+      const params = createParamsWithFilters({ memberCount: [], tags: ['heroic'] } as PartyFilters);
       const { result } = renderHook(() => usePartyData(params));
 
-      jest.advanceTimersByTime(500);
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
+      await advanceTimersAndWaitForLoading(result);
 
       expect(result.current.parties).toHaveLength(1);
       expect(result.current.parties[0].tags).toContain('heroic');
     });
 
     it('should apply multiple filters', async () => {
-      const params = {
-        ...defaultParams,
-        filters: { memberCount: [4], tags: ['heroic'] } as PartyFilters,
-      };
-
+      const params = createParamsWithFilters({ memberCount: [4], tags: ['heroic'] } as PartyFilters);
       const { result } = renderHook(() => usePartyData(params));
 
-      jest.advanceTimersByTime(500);
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
+      await advanceTimersAndWaitForLoading(result);
 
       expect(result.current.parties).toHaveLength(1);
       expect(result.current.parties[0].memberCount).toBe(4);
@@ -185,100 +121,53 @@ describe('usePartyData', () => {
 
   describe('Sorting', () => {
     it('should sort by name ascending', async () => {
-      const params = {
-        ...defaultParams,
-        sortBy: 'name' as const,
-        sortOrder: 'asc' as const,
-      };
-
+      const params = createParamsWithSort('name', 'asc');
       const { result } = renderHook(() => usePartyData(params));
 
-      jest.advanceTimersByTime(500);
+      await advanceTimersAndWaitForLoading(result);
 
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.parties[0].name).toBe('The Brave Adventurers');
-      expect(result.current.parties[1].name).toBe('The Shadow Walkers');
+      expectPartyResults(result, 2, ['The Brave Adventurers', 'The Shadow Walkers']);
     });
 
     it('should sort by name descending', async () => {
-      const params = {
-        ...defaultParams,
-        sortBy: 'name' as const,
-        sortOrder: 'desc' as const,
-      };
-
+      const params = createParamsWithSort('name', 'desc');
       const { result } = renderHook(() => usePartyData(params));
 
-      jest.advanceTimersByTime(500);
+      await advanceTimersAndWaitForLoading(result);
 
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.parties[0].name).toBe('The Shadow Walkers');
-      expect(result.current.parties[1].name).toBe('The Brave Adventurers');
+      expectPartyResults(result, 2, ['The Shadow Walkers', 'The Brave Adventurers']);
     });
 
     it('should sort by member count', async () => {
-      const params = {
-        ...defaultParams,
-        sortBy: 'memberCount' as const,
-        sortOrder: 'desc' as const,
-      };
-
+      const params = createParamsWithSort('memberCount', 'desc');
       const { result } = renderHook(() => usePartyData(params));
 
-      jest.advanceTimersByTime(500);
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
+      await advanceTimersAndWaitForLoading(result);
 
       expect(result.current.parties[0].memberCount).toBe(4);
       expect(result.current.parties[1].memberCount).toBe(3);
     });
 
     it('should sort by date fields', async () => {
-      const params = {
-        ...defaultParams,
-        sortBy: 'createdAt' as const,
-        sortOrder: 'asc' as const,
-      };
-
+      const params = createParamsWithSort('createdAt', 'asc');
       const { result } = renderHook(() => usePartyData(params));
 
-      jest.advanceTimersByTime(500);
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
+      await advanceTimersAndWaitForLoading(result);
 
       // Check that parties are sorted by creation date
-      expect(result.current.parties).toHaveLength(2);
+      expectPartyResults(result, 2);
     });
   });
 
   describe('Pagination', () => {
     it('should handle pagination correctly', async () => {
-      const params = {
-        ...defaultParams,
-        page: 1,
-        limit: 1,
-      };
-
+      const params = createParamsWithPagination(1, 1);
       const { result } = renderHook(() => usePartyData(params));
 
-      jest.advanceTimersByTime(500);
+      await advanceTimersAndWaitForLoading(result);
 
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.parties).toHaveLength(1);
-      expect(result.current.pagination).toEqual({
+      expectPartyResults(result, 1);
+      expectPaginationInfo(result, {
         currentPage: 1,
         totalPages: 2,
         totalItems: 2,
@@ -289,39 +178,29 @@ describe('usePartyData', () => {
     it('should handle page navigation', async () => {
       const { result } = renderHook(() => usePartyData(defaultParams));
 
-      jest.advanceTimersByTime(500);
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
+      await advanceTimersAndWaitForLoading(result);
 
       // Test goToPage function
       result.current.goToPage(2);
 
-      expect(result.current.goToPage).toBeDefined();
-      expect(typeof result.current.goToPage).toBe('function');
+      expectBasicHookFunctions(result);
     });
   });
 
   describe('Error Handling', () => {
     it('should handle errors gracefully', async () => {
       // Mock processPartyData to throw an error
-      const originalError = console.error;
-      console.error = jest.fn();
+      const restoreConsole = setupConsoleMock();
 
       // We can't easily mock the internal functions, so we'll test the structure
       const { result } = renderHook(() => usePartyData(defaultParams));
 
-      jest.advanceTimersByTime(500);
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
+      await advanceTimersAndWaitForLoading(result);
 
       // The hook should handle errors and not crash
       expect(result.current.error).toBe(null);
 
-      console.error = originalError;
+      restoreConsole();
     });
   });
 
@@ -329,37 +208,24 @@ describe('usePartyData', () => {
     it('should provide refetch function', async () => {
       const { result } = renderHook(() => usePartyData(defaultParams));
 
-      jest.advanceTimersByTime(500);
+      await advanceTimersAndWaitForLoading(result);
 
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.refetch).toBeDefined();
-      expect(typeof result.current.refetch).toBe('function');
+      expectBasicHookFunctions(result);
     });
 
     it('should refetch data when called', async () => {
       const { result } = renderHook(() => usePartyData(defaultParams));
 
-      jest.advanceTimersByTime(500);
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
+      await advanceTimersAndWaitForLoading(result);
 
       // Call refetch
       result.current.refetch();
 
       // Wait for the refetch to complete
-      jest.advanceTimersByTime(500);
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
+      await advanceTimersAndWaitForLoading(result);
 
       // Verify refetch function exists and is callable
-      expect(typeof result.current.refetch).toBe('function');
+      expectBasicHookFunctions(result);
     });
   });
 
@@ -367,11 +233,8 @@ describe('usePartyData', () => {
     it('should normalize sort values correctly for dates', () => {
       // This tests that our date normalization works correctly
       // Since the functions are internal, we test through the hook behavior
-      const { result } = renderHook(() => usePartyData({
-        ...defaultParams,
-        sortBy: 'lastActivity',
-        sortOrder: 'desc',
-      }));
+      const params = createParamsWithSort('lastActivity', 'desc');
+      const { result } = renderHook(() => usePartyData(params));
 
       jest.advanceTimersByTime(500);
 
@@ -380,11 +243,8 @@ describe('usePartyData', () => {
     });
 
     it('should handle string normalization for non-date fields', () => {
-      const { result } = renderHook(() => usePartyData({
-        ...defaultParams,
-        sortBy: 'name',
-        sortOrder: 'asc',
-      }));
+      const params = createParamsWithSort('name', 'asc');
+      const { result } = renderHook(() => usePartyData(params));
 
       jest.advanceTimersByTime(500);
 

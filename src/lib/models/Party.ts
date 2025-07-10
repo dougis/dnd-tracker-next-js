@@ -128,6 +128,13 @@ function calculateCharacterLevel(character: any): number {
   return character.classes.reduce((sum: number, charClass: any) => sum + charClass.level, 0);
 }
 
+// Helper function to calculate average level from members
+function calculateAverageLevel(members: any[]): number {
+  if (members.length === 0) return 0;
+  const totalLevel = members.reduce((sum, character) => sum + calculateCharacterLevel(character), 0);
+  return Math.round(totalLevel / members.length);
+}
+
 // Virtual for average level
 partySchema.virtual('averageLevel').get(async function () {
   const Character = mongoose.model('Character');
@@ -135,11 +142,7 @@ partySchema.virtual('averageLevel').get(async function () {
     partyId: this._id,
     isDeleted: { $ne: true },
   });
-
-  if (members.length === 0) return 0;
-
-  const totalLevel = members.reduce((sum, character) => sum + calculateCharacterLevel(character), 0);
-  return Math.round(totalLevel / members.length);
+  return calculateAverageLevel(members);
 });
 
 // Helper function to get current member count
@@ -157,14 +160,17 @@ async function updateCharacterParty(characterId: Types.ObjectId, partyId: Types.
   await Character.findByIdAndUpdate(characterId, { partyId });
 }
 
+// Helper function to validate party capacity
+function validatePartyCapacity(currentCount: number, maxMembers: number): void {
+  if (currentCount >= maxMembers) {
+    throw new Error('Party is at maximum capacity');
+  }
+}
+
 // Instance method: Add member to party
 partySchema.methods.addMember = async function (characterId: Types.ObjectId): Promise<void> {
   const currentMemberCount = await getCurrentMemberCount(this._id);
-
-  if (currentMemberCount >= this.settings.maxMembers) {
-    throw new Error('Party is at maximum capacity');
-  }
-
+  validatePartyCapacity(currentMemberCount, this.settings.maxMembers);
   await updateCharacterParty(characterId, this._id);
   this.updateActivity();
 };
@@ -203,6 +209,20 @@ partySchema.methods.updateActivity = function (): void {
   this.save();
 };
 
+// Helper function to apply party indexes
+function applyPartyIndexes(schema: Schema): void {
+  // Apply common indexes
+  commonIndexes.ownerBased(schema);
+  commonIndexes.publicContent(schema);
+  commonIndexes.temporal(schema);
+  
+  // Party-specific indexes
+  schema.index({ name: 'text', description: 'text' });
+  schema.index({ tags: 1 });
+  schema.index({ 'settings.allowJoining': 1 });
+  schema.index({ lastActivity: -1 });
+}
+
 // Static method: Find parties by owner ID
 partySchema.statics.findByOwnerId = function (ownerId: Types.ObjectId) {
   return this.find({ ownerId }).sort({ name: 1 });
@@ -227,19 +247,29 @@ partySchema.statics.findSharedWith = function (userId: Types.ObjectId) {
   }).sort({ name: 1 });
 };
 
+// Helper function to validate party name
+function validatePartyName(name: string): void {
+  if (!name || name.trim().length === 0) {
+    throw new Error('Party name is required');
+  }
+}
+
+// Helper function to ensure last activity is set
+function ensureLastActivity(party: any): void {
+  if (!party.lastActivity) {
+    party.lastActivity = new Date();
+  }
+}
+
 // Pre-save middleware for validation
 partySchema.pre('save', function (next) {
-  // Ensure name is not empty
-  if (!this.name || this.name.trim().length === 0) {
-    return next(new Error('Party name is required'));
+  try {
+    validatePartyName(this.name);
+    ensureLastActivity(this);
+    next();
+  } catch (error) {
+    next(error);
   }
-
-  // Update lastActivity on save
-  if (!this.lastActivity) {
-    this.lastActivity = new Date();
-  }
-
-  next();
 });
 
 // Post-save middleware for logging
@@ -248,16 +278,8 @@ partySchema.post('save', function (doc, next) {
   next();
 });
 
-// Apply common indexes
-commonIndexes.ownerBased(partySchema);
-commonIndexes.publicContent(partySchema);
-commonIndexes.temporal(partySchema);
-
-// Party-specific indexes
-partySchema.index({ name: 'text', description: 'text' });
-partySchema.index({ tags: 1 });
-partySchema.index({ 'settings.allowJoining': 1 });
-partySchema.index({ lastActivity: -1 });
+// Apply all party indexes
+applyPartyIndexes(partySchema);
 
 // Create and export the model
 export const Party = mongoose.model<IParty, PartyModel>('Party', partySchema);

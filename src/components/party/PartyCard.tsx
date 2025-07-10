@@ -23,12 +23,75 @@ interface PartyActions {
   handleDeleteParty: () => void;
 }
 
-function usePartyActions(party: PartyListItem): PartyActions {
+// Utility function to create party actions
+function createPartyActions(partyId: string): PartyActions {
   return {
-    handleViewParty: () => console.log('View party:', party.id),
-    handleEditParty: () => console.log('Edit party:', party.id),
-    handleDeleteParty: () => console.log('Delete party:', party.id),
+    handleViewParty: () => console.log('View party:', partyId),
+    handleEditParty: () => console.log('Edit party:', partyId),
+    handleDeleteParty: () => console.log('Delete party:', partyId),
   };
+}
+
+// Party title and description component
+function PartyTitleSection({ name, description }: { name: string; description?: string }) {
+  return (
+    <div className="flex-1 min-w-0">
+      <h3 className="font-semibold text-lg truncate">{name}</h3>
+      {description && (
+        <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+          {description}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// Selection checkbox component
+function SelectionCheckbox({ isSelected, onSelect, partyId, partyName }: {
+  isSelected: boolean;
+  onSelect?: (_id: string) => void;
+  partyId: string;
+  partyName: string;
+}) {
+  if (!onSelect) return null;
+  
+  return (
+    <Checkbox
+      checked={isSelected}
+      onCheckedChange={() => onSelect(partyId)}
+      aria-label={`Select ${partyName}`}
+    />
+  );
+}
+
+// Actions dropdown menu component
+function ActionsDropdown({ actions }: { actions: PartyActions }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={actions.handleViewParty}>
+          <Eye className="mr-2 h-4 w-4" />
+          View Details
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={actions.handleEditParty}>
+          <Settings className="mr-2 h-4 w-4" />
+          Edit Party
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={actions.handleDeleteParty}
+          className="text-destructive"
+        >
+          Delete Party
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
 
 // Party header with selection and actions
@@ -40,46 +103,15 @@ function PartyCardHeader({ party, isSelected, onSelect, actions }: {
 }) {
   return (
     <div className="flex items-start justify-between">
-      <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-lg truncate">{party.name}</h3>
-        {party.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-            {party.description}
-          </p>
-        )}
-      </div>
+      <PartyTitleSection name={party.name} description={party.description} />
       <div className="flex items-center gap-2 ml-2">
-        {onSelect && (
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={() => onSelect(party.id)}
-            aria-label={`Select ${party.name}`}
-          />
-        )}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={actions.handleViewParty}>
-              <Eye className="mr-2 h-4 w-4" />
-              View Details
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={actions.handleEditParty}>
-              <Settings className="mr-2 h-4 w-4" />
-              Edit Party
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={actions.handleDeleteParty}
-              className="text-destructive"
-            >
-              Delete Party
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <SelectionCheckbox
+          isSelected={isSelected}
+          onSelect={onSelect}
+          partyId={party.id}
+          partyName={party.name}
+        />
+        <ActionsDropdown actions={actions} />
       </div>
     </div>
   );
@@ -121,26 +153,35 @@ function StatRow({
   );
 }
 
+// Member info component
+function MemberInfo({ memberCount }: { memberCount: number }) {
+  return (
+    <div className="flex items-center gap-2">
+      <Users className="h-4 w-4 text-muted-foreground" />
+      <span className="font-medium">{memberCount}</span>
+      <span className="text-muted-foreground">members</span>
+    </div>
+  );
+}
+
+// Average level component
+function AverageLevel({ averageLevel }: { averageLevel: number }) {
+  return (
+    <>
+      <div className="font-medium">Level {averageLevel || '-'}</div>
+      <div className="text-xs text-muted-foreground">average</div>
+    </>
+  );
+}
+
 // Party statistics
 function PartyStats({ party }: { party: PartyListItem }) {
   return (
     <>
       <StatRow
-        leftContent={
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">{party.memberCount}</span>
-            <span className="text-muted-foreground">members</span>
-          </div>
-        }
-        rightContent={
-          <>
-            <div className="font-medium">Level {party.averageLevel || '-'}</div>
-            <div className="text-xs text-muted-foreground">average</div>
-          </>
-        }
+        leftContent={<MemberInfo memberCount={party.memberCount} />}
+        rightContent={<AverageLevel averageLevel={party.averageLevel} />}
       />
-
       <StatRow
         leftContent={
           <>
@@ -192,15 +233,20 @@ function PartyFooter({ party, isHovered, onViewClick }: {
   );
 }
 
+// Utility function to get card CSS classes
+function getCardClasses(isSelected: boolean): string {
+  const baseClasses = 'transition-all duration-200 hover:shadow-md';
+  const selectedClasses = isSelected ? 'ring-2 ring-primary' : '';
+  return `${baseClasses} ${selectedClasses}`;
+}
+
 export function PartyCard({ party, isSelected = false, onSelect }: PartyCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const actions = usePartyActions(party);
+  const actions = createPartyActions(party.id);
 
   return (
     <Card
-      className={`transition-all duration-200 hover:shadow-md ${
-        isSelected ? 'ring-2 ring-primary' : ''
-      }`}
+      className={getCardClasses(isSelected)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
