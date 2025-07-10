@@ -24,110 +24,77 @@ export const mockSessionSetup = {
   },
 };
 
+// Common element getters to reduce duplication
+const getElement = (testId: string) => screen.getByTestId(testId);
+const getFormElement = () => getElement('character-creation-form');
+const getMainCreateButton = () => {
+  const createButtons = screen.getAllByRole('button', { name: /create character/i });
+  return createButtons.find(button =>
+    !button.hasAttribute('data-testid') ||
+    button.getAttribute('data-testid') !== 'create-character-empty'
+  );
+};
+
+// Common action helpers
+const clickElement = (testId: string) => fireEvent.click(getElement(testId));
+const expectElementStyle = (element: HTMLElement, style: string, value: string) =>
+  expect(element).toHaveStyle(`${style}: ${value}`);
+
 export const formHelpers = {
-  expectFormHidden: () => {
-    expect(screen.getByTestId('character-creation-form')).toHaveStyle('display: none');
-  },
-
-  expectFormVisible: () => {
-    expect(screen.getByTestId('character-creation-form')).toHaveStyle('display: block');
-  },
-
-  getMainCreateButton: () => {
-    const createButtons = screen.getAllByRole('button', { name: /create character/i });
-    return createButtons.find(button =>
-      !button.hasAttribute('data-testid') ||
-      button.getAttribute('data-testid') !== 'create-character-empty'
-    );
-  },
-
+  expectFormHidden: () => expectElementStyle(getFormElement(), 'display', 'none'),
+  expectFormVisible: () => expectElementStyle(getFormElement(), 'display', 'block'),
+  getMainCreateButton,
   clickMainCreateButton: () => {
-    const button = formHelpers.getMainCreateButton();
-    if (button) {
-      fireEvent.click(button);
-    }
+    const button = getMainCreateButton();
+    if (button) fireEvent.click(button);
     return button;
   },
-
-  clickEmptyStateCreateButton: () => {
-    fireEvent.click(screen.getByTestId('create-character-empty'));
-  },
-
-  clickCreationSuccess: () => {
-    fireEvent.click(screen.getByTestId('creation-success'));
-  },
-
-  clickCreationCancel: () => {
-    fireEvent.click(screen.getByTestId('creation-cancel'));
-  },
+  clickEmptyStateCreateButton: () => clickElement('create-character-empty'),
+  clickCreationSuccess: () => clickElement('creation-success'),
+  clickCreationCancel: () => clickElement('creation-cancel'),
 };
 
 export const testActions = {
-  selectCharacter: () => fireEvent.click(screen.getByTestId('select-character')),
-  editCharacter: () => fireEvent.click(screen.getByTestId('edit-character')),
-  deleteCharacter: () => fireEvent.click(screen.getByTestId('delete-character')),
-  duplicateCharacter: () => fireEvent.click(screen.getByTestId('duplicate-character')),
+  selectCharacter: () => clickElement('select-character'),
+  editCharacter: () => clickElement('edit-character'),
+  deleteCharacter: () => clickElement('delete-character'),
+  duplicateCharacter: () => clickElement('duplicate-character'),
 };
+
+// Common expectation helpers
+const expectElementExists = (testId: string) => expect(getElement(testId)).toBeInTheDocument();
+const expectTextExists = (text: string) => expect(screen.getByText(text)).toBeInTheDocument();
+const expectMultipleElements = (testIds: string[]) => testIds.forEach(expectElementExists);
 
 export const expectations = {
   pageContent: () => {
-    expect(screen.getByText('Characters')).toBeInTheDocument();
-    expect(screen.getByText('Manage and organize your D&D characters')).toBeInTheDocument();
+    expectTextExists('Characters');
+    expectTextExists('Manage and organize your D&D characters');
   },
-
-  characterListView: () => {
-    expect(screen.getByTestId('character-list-view')).toBeInTheDocument();
-  },
-
-  characterCreationForm: () => {
-    expect(screen.getByTestId('character-creation-form')).toBeInTheDocument();
-  },
-
-  loadingState: () => {
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
-  },
-
-  appLayout: () => {
-    expect(screen.getByTestId('app-layout')).toBeInTheDocument();
-  },
-
+  characterListView: () => expectElementExists('character-list-view'),
+  characterCreationForm: () => expectElementExists('character-creation-form'),
+  loadingState: () => expectTextExists('Loading...'),
+  appLayout: () => expectElementExists('app-layout'),
   headingStructure: () => {
     const heading = screen.getByRole('heading', { name: 'Characters' });
     expect(heading).toBeInTheDocument();
     expect(heading.tagName).toBe('H1');
   },
-
   createButtonsExist: () => {
     const createButtons = screen.getAllByRole('button', { name: /create character/i });
     expect(createButtons.length).toBeGreaterThan(0);
     return createButtons;
   },
-
-  formControls: () => {
-    expect(screen.getByTestId('creation-success')).toBeInTheDocument();
-    expect(screen.getByTestId('creation-cancel')).toBeInTheDocument();
-  },
-
-  characterActions: () => {
-    expect(screen.getByTestId('select-character')).toBeInTheDocument();
-    expect(screen.getByTestId('edit-character')).toBeInTheDocument();
-    expect(screen.getByTestId('delete-character')).toBeInTheDocument();
-    expect(screen.getByTestId('duplicate-character')).toBeInTheDocument();
-    expect(screen.getByTestId('create-character-empty')).toBeInTheDocument();
-  },
+  formControls: () => expectMultipleElements(['creation-success', 'creation-cancel']),
+  characterActions: () => expectMultipleElements([
+    'select-character', 'edit-character', 'delete-character', 'duplicate-character', 'create-character-empty'
+  ]),
 };
 
 export const createButtonHelpers = {
-  findMainCreateButton: () => {
-    const createButtons = screen.getAllByRole('button', { name: /create character/i });
-    return createButtons.find(button =>
-      !button.hasAttribute('data-testid') ||
-      button.getAttribute('data-testid') !== 'create-character-empty'
-    );
-  },
-
+  findMainCreateButton: getMainCreateButton,
   verifyMainCreateButton: () => {
-    const mainCreateButton = createButtonHelpers.findMainCreateButton();
+    const mainCreateButton = getMainCreateButton();
     expect(mainCreateButton).toBeInTheDocument();
     expect(mainCreateButton).toBeEnabled();
     return mainCreateButton;
