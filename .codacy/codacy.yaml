@@ -24,6 +24,9 @@ exclude_paths:
     - '**/*.config.ts'
     - "**/__tests__/**/*"
     - "**/__mocks__/**/*"
+engine_configuration:
+  - tool: spellcheck
+    enabled: false
 runtimes:
     - dart@3.7.2
     - go@1.22.3

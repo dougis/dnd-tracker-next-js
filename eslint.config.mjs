@@ -1,3 +1,4 @@
+/* cspell:disable-line globals readonly jsx eslint browserslist typescript nextjs */
 import { FlatCompat } from '@eslint/eslintrc';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
