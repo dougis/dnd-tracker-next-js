@@ -179,4 +179,144 @@ describe('CharacterDetailClient', () => {
       'Born in a small village, this character has a rich history.'
     ]);
   });
+
+  it('should handle share functionality with navigator.share API', async () => {
+    const testCharacter = createBasicCharacter();
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
+
+    // Mock navigator.share
+    const mockShare = jest.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'share', {
+      value: mockShare,
+      writable: true,
+    });
+
+    renderCharacterPage();
+
+    await waitForText(testCharacter.name);
+    fireEvent.click(screen.getByText('Share'));
+
+    expect(mockShare).toHaveBeenCalledWith({
+      title: `${testCharacter.name} - D&D Character`,
+      text: `Check out my D&D character: ${testCharacter.name}`,
+      url: `${window.location.origin}/characters/${testCharacter._id}`,
+    });
+  });
+
+  it('should handle share functionality fallback to clipboard', async () => {
+    const testCharacter = createBasicCharacter();
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
+
+    // Mock clipboard API
+    const mockWriteText = jest.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: mockWriteText },
+      writable: true,
+    });
+
+    // Mock alert
+    window.alert = jest.fn();
+
+    // Remove navigator.share to test fallback
+    Object.defineProperty(navigator, 'share', {
+      value: undefined,
+      writable: true,
+    });
+
+    renderCharacterPage();
+
+    await waitForText(testCharacter.name);
+    fireEvent.click(screen.getByText('Share'));
+
+    // Wait for async operations to complete
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(mockWriteText).toHaveBeenCalledWith(
+      `${window.location.origin}/characters/${testCharacter._id}`
+    );
+    expect(window.alert).toHaveBeenCalledWith('Character link copied to clipboard!');
+  });
+
+  it('should handle share functionality error with prompt fallback', async () => {
+    const testCharacter = createBasicCharacter();
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
+
+    // Mock clipboard API to throw error
+    const mockWriteText = jest.fn().mockRejectedValue(new Error('Clipboard failed'));
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: mockWriteText },
+      writable: true,
+    });
+
+    // Mock prompt and console.error
+    window.prompt = jest.fn();
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+    // Remove navigator.share to test fallback
+    Object.defineProperty(navigator, 'share', {
+      value: undefined,
+      writable: true,
+    });
+
+    renderCharacterPage();
+
+    await waitForText(testCharacter.name);
+    fireEvent.click(screen.getByText('Share'));
+
+    // Wait for async error handling to complete
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(consoleSpy).toHaveBeenCalledWith('Error sharing character:', expect.any(Error));
+    expect(window.prompt).toHaveBeenCalledWith(
+      'Share this character link:',
+      `${window.location.origin}/characters/${testCharacter._id}`
+    );
+
+    consoleSpy.mockRestore();
+  });
+
+  it('should handle back button click', async () => {
+    const testCharacter = createBasicCharacter();
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
+
+    renderCharacterPage();
+
+    await waitForText(testCharacter.name);
+    fireEvent.click(screen.getByText('Back'));
+
+    expect(mockRouterBack).toHaveBeenCalled();
+  });
+
+  it('should handle back button click from loading state', () => {
+    mockPendingCharacterFetch(mockFetch);
+
+    renderCharacterPage();
+
+    fireEvent.click(screen.getByText('Back'));
+    expect(mockRouterBack).toHaveBeenCalled();
+  });
+
+  it('should handle back button click from error state', async () => {
+    mockFailedCharacterFetch('Character not found', mockFetch);
+
+    renderCharacterPage();
+
+    await waitForText('Character not found');
+    fireEvent.click(screen.getByText('Back'));
+    expect(mockRouterBack).toHaveBeenCalled();
+  });
+
+  it('should handle back button click from not found state', async () => {
+    // Mock empty response (no character returned)
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ character: null }),
+    });
+
+    renderCharacterPage();
+
+    await waitForText('Character not found');
+    fireEvent.click(screen.getByText('Back'));
+    expect(mockRouterBack).toHaveBeenCalled();
+  });
 });
