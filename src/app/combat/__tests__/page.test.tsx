@@ -8,10 +8,21 @@ jest.mock('next-auth/react');
 const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
 
 // Mock child components
-jest.mock('@/components/layout/AppLayout', () => ({
-  AppLayout: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="app-layout">{children}</div>
-  ),
+jest.mock('@/components/layout/AuthenticatedPage', () => ({
+  AuthenticatedPage: ({ children, unauthenticatedMessage }: { children: React.ReactNode; unauthenticatedMessage?: string }) => {
+    const { useSession } = require('next-auth/react');
+    const { status } = useSession();
+    
+    if (status === 'loading') {
+      return <div>Loading...</div>;
+    }
+    
+    if (status === 'unauthenticated') {
+      return <div>{unauthenticatedMessage || 'Please sign in to access this page.'}</div>;
+    }
+    
+    return <div data-testid="app-layout">{children}</div>;
+  },
 }));
 
 jest.mock('@/components/combat/CombatToolbar', () => ({
