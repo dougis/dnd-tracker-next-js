@@ -29,7 +29,7 @@ function matchesSearchQuery(text: string, searchQuery: string): boolean {
 // Utility function to apply search filter
 function applySearchFilter(parties: PartyListItem[], searchQuery: string): PartyListItem[] {
   if (!searchQuery.trim()) return parties;
-  
+
   return parties.filter(party =>
     matchesSearchQuery(party.name, searchQuery) ||
     matchesSearchQuery(party.description, searchQuery)
@@ -120,7 +120,7 @@ async function processPartyData({
 }): Promise<{ items: PartyListItem[]; pagination: PaginationInfo }> {
   const filteredParties = applyFilters(parties, searchQuery, filters);
   sortParties(filteredParties, sortBy, sortOrder);
-  
+
   const totalItems = filteredParties.length;
   const paginatedParties = paginateItems(filteredParties, currentPage, limit);
 

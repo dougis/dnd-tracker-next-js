@@ -13,19 +13,19 @@ import { ContentSection } from './PartyListView/ContentSection';
 // Hook for managing party list state
 function usePartyListState() {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
-  
+
   const filterState = usePartyFilters();
   const { filters, searchQuery, sortBy, sortOrder } = filterState;
-  
+
   const dataState = usePartyData({
     filters,
     searchQuery,
     sortBy,
     sortOrder,
   });
-  
+
   const selectionState = usePartySelection(dataState.parties);
-  
+
   return {
     viewMode,
     setViewMode,
@@ -82,7 +82,7 @@ function buildTableProps(
 
 export function PartyListView() {
   const { viewMode, setViewMode, filterState, dataState, selectionState } = usePartyListState();
-  
+
   const handleCreateParty = () => {
     console.log('Create new party');
   };

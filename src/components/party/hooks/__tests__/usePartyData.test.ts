@@ -11,8 +11,7 @@ import {
   expectBasicHookFunctions,
   expectPaginationInfo,
   expectPartyResults,
-  setupConsoleMock,
-  waitFor
+  setupConsoleMock
 } from './testHelpers';
 import type { PartyFilters } from '../../types';
 

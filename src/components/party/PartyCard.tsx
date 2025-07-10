@@ -54,7 +54,7 @@ function SelectionCheckbox({ isSelected, onSelect, partyId, partyName }: {
   partyName: string;
 }) {
   if (!onSelect) return null;
-  
+
   return (
     <Checkbox
       checked={isSelected}

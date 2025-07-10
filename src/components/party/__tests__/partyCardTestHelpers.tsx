@@ -84,7 +84,7 @@ export function expectPartyTags(tags: string[], maxVisible = 3) {
   visibleTags.forEach(tag => {
     expect(screen.getByText(tag)).toBeInTheDocument();
   });
-  
+
   if (tags.length > maxVisible) {
     expect(screen.getByText(`+${tags.length - maxVisible}`)).toBeInTheDocument();
   }
@@ -122,7 +122,7 @@ export function getMenuTrigger() {
 export function openMenuAndClickItem(itemText: string) {
   const menuTrigger = getMenuTrigger();
   expect(menuTrigger).toBeInTheDocument();
-  
+
   if (menuTrigger) {
     fireEvent.click(menuTrigger);
     fireEvent.click(screen.getByText(itemText));

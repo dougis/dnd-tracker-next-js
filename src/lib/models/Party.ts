@@ -210,12 +210,12 @@ partySchema.methods.updateActivity = function (): void {
 };
 
 // Helper function to apply party indexes
-function applyPartyIndexes(schema: Schema): void {
+function applyPartyIndexes(schema: Schema<any>): void {
   // Apply common indexes
   commonIndexes.ownerBased(schema);
   commonIndexes.publicContent(schema);
   commonIndexes.temporal(schema);
-  
+
   // Party-specific indexes
   schema.index({ name: 'text', description: 'text' });
   schema.index({ tags: 1 });
@@ -268,7 +268,7 @@ partySchema.pre('save', function (next) {
     ensureLastActivity(this);
     next();
   } catch (error) {
-    next(error);
+    next(error as Error);
   }
 });
 
@@ -279,7 +279,7 @@ partySchema.post('save', function (doc, next) {
 });
 
 // Apply all party indexes
-applyPartyIndexes(partySchema);
+applyPartyIndexes(partySchema as Schema<any>);
 
 // Create and export the model
 export const Party = mongoose.model<IParty, PartyModel>('Party', partySchema);

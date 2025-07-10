@@ -30,7 +30,7 @@ import { waitFor } from '@testing-library/react';
 // Mock timer advance and wait for loading
 export async function advanceTimersAndWaitForLoading(result: any, time: number = 500) {
   jest.advanceTimersByTime(time);
-  
+
   await waitFor(() => {
     expect(result.current.isLoading).toBe(false);
   });
@@ -95,7 +95,7 @@ export function expectPartyResults(result: any, expectedLength: number, expected
 export function setupConsoleMock() {
   const originalError = console.error;
   console.error = jest.fn();
-  
+
   return () => {
     console.error = originalError;
   };
