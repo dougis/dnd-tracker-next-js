@@ -23,397 +23,217 @@ describe('POST /api/auth/resend-verification', () => {
     return req;
   };
 
+  // Helper function to execute POST request and return response data
+  const executeRequest = async (requestData: any) => {
+    const request = createMockRequest(requestData);
+    const response = await POST(request);
+    const responseData = await response.json();
+    return { response, responseData };
+  };
+
+  // Helper function to mock successful service response
+  const mockSuccessfulResend = () => {
+    UserService.resendVerificationEmail = jest.fn().mockResolvedValue({
+      success: true,
+      data: { message: 'Verification email resent' },
+    });
+  };
+
+  // Helper function to mock service error response
+  const mockServiceError = (message: string, statusCode?: number) => {
+    UserService.resendVerificationEmail = jest.fn().mockResolvedValue({
+      success: false,
+      error: {
+        message,
+        ...(statusCode && { statusCode }),
+      },
+    });
+  };
+
+  // Helper function to verify success response
+  const expectSuccessResponse = (response: Response, responseData: any, expectedEmail: string) => {
+    expect(response.status).toBe(200);
+    expect(responseData).toEqual({
+      success: true,
+      message: 'Verification email resent successfully',
+    });
+    expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(expectedEmail);
+  };
+
+  // Helper function to verify validation error response
+  const expectValidationError = (response: Response, responseData: any) => {
+    expect(response.status).toBe(400);
+    expect(responseData.success).toBe(false);
+    expect(responseData.message).toBe('Validation error');
+    expect(responseData.errors).toBeDefined();
+    expect(UserService.resendVerificationEmail).not.toHaveBeenCalled();
+  };
+
+  // Helper function to verify service error response
+  const expectServiceError = (response: Response, responseData: any, expectedStatus: number, expectedMessage: string, expectedEmail: string) => {
+    expect(response.status).toBe(expectedStatus);
+    expect(responseData).toEqual({
+      success: false,
+      message: expectedMessage,
+    });
+    expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(expectedEmail);
+  };
+
+  // Helper function to verify unexpected error response
+  const expectUnexpectedError = (response: Response, responseData: any) => {
+    expect(response.status).toBe(500);
+    expect(responseData).toEqual({
+      success: false,
+      message: 'An unexpected error occurred',
+    });
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('Success scenarios', () => {
     it('successfully resends verification email for valid email', async () => {
-      // Mock successful resend verification email
-      UserService.resendVerificationEmail = jest.fn().mockResolvedValue({
-        success: true,
-        data: { message: 'Verification email resent' },
-      });
-
-      const request = createMockRequest(mockResendVerificationData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(responseData).toEqual({
-        success: true,
-        message: 'Verification email resent successfully',
-      });
-      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(
-        mockResendVerificationData.email
-      );
+      mockSuccessfulResend();
+      const { response, responseData } = await executeRequest(mockResendVerificationData);
+      expectSuccessResponse(response, responseData, mockResendVerificationData.email);
     });
   });
 
   describe('Validation errors', () => {
+    const testValidationError = async (invalidData: any, expectedErrorCheck?: (errors: any) => void) => {
+      const { response, responseData } = await executeRequest(invalidData);
+      expectValidationError(response, responseData);
+      if (expectedErrorCheck) {
+        expectedErrorCheck(responseData.errors);
+      }
+    };
+
     it('returns validation error for missing email', async () => {
-      const invalidData = {};
-
-      const request = createMockRequest(invalidData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(responseData.success).toBe(false);
-      expect(responseData.message).toBe('Validation error');
-      expect(responseData.errors).toBeDefined();
-      expect(responseData.errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            field: 'email',
-            message: 'Required',
-          }),
-        ])
-      );
-      expect(UserService.resendVerificationEmail).not.toHaveBeenCalled();
+      await testValidationError({}, (errors) => {
+        expect(errors).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              field: 'email',
+              message: 'Required',
+            }),
+          ])
+        );
+      });
     });
 
     it('returns validation error for invalid email format', async () => {
-      const invalidData = { email: 'invalid-email-format' };
-
-      const request = createMockRequest(invalidData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(responseData.success).toBe(false);
-      expect(responseData.message).toBe('Validation error');
-      expect(responseData.errors).toBeDefined();
-      expect(responseData.errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            field: 'email',
-            message: expect.stringContaining('email'),
-          }),
-        ])
-      );
-      expect(UserService.resendVerificationEmail).not.toHaveBeenCalled();
+      await testValidationError({ email: 'invalid-email-format' }, (errors) => {
+        expect(errors).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              field: 'email',
+              message: expect.stringContaining('email'),
+            }),
+          ])
+        );
+      });
     });
 
     it('returns validation error for empty email', async () => {
-      const invalidData = { email: '' };
-
-      const request = createMockRequest(invalidData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(responseData.success).toBe(false);
-      expect(responseData.message).toBe('Validation error');
-      expect(responseData.errors).toBeDefined();
-      expect(UserService.resendVerificationEmail).not.toHaveBeenCalled();
+      await testValidationError({ email: '' });
     });
 
     it('returns validation error for non-string email', async () => {
-      const invalidData = { email: 123 };
-
-      const request = createMockRequest(invalidData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(responseData.success).toBe(false);
-      expect(responseData.message).toBe('Validation error');
-      expect(responseData.errors).toBeDefined();
-      expect(UserService.resendVerificationEmail).not.toHaveBeenCalled();
+      await testValidationError({ email: 123 });
     });
 
     it('returns validation error for email with invalid domain', async () => {
-      const invalidData = { email: 'test@invalid' };
-
-      const request = createMockRequest(invalidData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(responseData.success).toBe(false);
-      expect(responseData.message).toBe('Validation error');
-      expect(responseData.errors).toBeDefined();
-      expect(UserService.resendVerificationEmail).not.toHaveBeenCalled();
+      await testValidationError({ email: 'test@invalid' });
     });
   });
 
   describe('Service errors', () => {
     it('handles user not found error', async () => {
-      const mockError = {
-        success: false,
-        error: {
-          message: 'User not found',
-          statusCode: 404,
-        },
-      };
-
-      UserService.resendVerificationEmail = jest
-        .fn()
-        .mockResolvedValue(mockError);
-
-      const request = createMockRequest(mockResendVerificationData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(404);
-      expect(responseData).toEqual({
-        success: false,
-        message: 'User not found',
-      });
-      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(
-        mockResendVerificationData.email
-      );
+      mockServiceError('User not found', 404);
+      const { response, responseData } = await executeRequest(mockResendVerificationData);
+      expectServiceError(response, responseData, 404, 'User not found', mockResendVerificationData.email);
     });
 
     it('handles already verified email error', async () => {
-      const mockError = {
-        success: false,
-        error: {
-          message: 'Email is already verified',
-          statusCode: 409,
-        },
-      };
-
-      UserService.resendVerificationEmail = jest
-        .fn()
-        .mockResolvedValue(mockError);
-
-      const request = createMockRequest(mockResendVerificationData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(409);
-      expect(responseData).toEqual({
-        success: false,
-        message: 'Email is already verified',
-      });
-      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(
-        mockResendVerificationData.email
-      );
+      mockServiceError('Email is already verified', 409);
+      const { response, responseData } = await executeRequest(mockResendVerificationData);
+      expectServiceError(response, responseData, 409, 'Email is already verified', mockResendVerificationData.email);
     });
 
     it('handles rate limiting error', async () => {
-      const mockError = {
-        success: false,
-        error: {
-          message: 'Too many verification emails sent. Please try again later.',
-          statusCode: 429,
-        },
-      };
-
-      UserService.resendVerificationEmail = jest
-        .fn()
-        .mockResolvedValue(mockError);
-
-      const request = createMockRequest(mockResendVerificationData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(429);
-      expect(responseData).toEqual({
-        success: false,
-        message: 'Too many verification emails sent. Please try again later.',
-      });
-      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(
-        mockResendVerificationData.email
-      );
+      mockServiceError('Too many verification emails sent. Please try again later.', 429);
+      const { response, responseData } = await executeRequest(mockResendVerificationData);
+      expectServiceError(response, responseData, 429, 'Too many verification emails sent. Please try again later.', mockResendVerificationData.email);
     });
 
     it('handles email service failure error', async () => {
-      const mockError = {
-        success: false,
-        error: {
-          message: 'Failed to send verification email',
-          statusCode: 503,
-        },
-      };
-
-      UserService.resendVerificationEmail = jest
-        .fn()
-        .mockResolvedValue(mockError);
-
-      const request = createMockRequest(mockResendVerificationData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(503);
-      expect(responseData).toEqual({
-        success: false,
-        message: 'Failed to send verification email',
-      });
-      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(
-        mockResendVerificationData.email
-      );
+      mockServiceError('Failed to send verification email', 503);
+      const { response, responseData } = await executeRequest(mockResendVerificationData);
+      expectServiceError(response, responseData, 503, 'Failed to send verification email', mockResendVerificationData.email);
     });
 
     it('handles database error', async () => {
-      const mockError = {
-        success: false,
-        error: {
-          message: 'Database connection failed',
-          statusCode: 500,
-        },
-      };
-
-      UserService.resendVerificationEmail = jest
-        .fn()
-        .mockResolvedValue(mockError);
-
-      const request = createMockRequest(mockResendVerificationData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(500);
-      expect(responseData).toEqual({
-        success: false,
-        message: 'Database connection failed',
-      });
-      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(
-        mockResendVerificationData.email
-      );
+      mockServiceError('Database connection failed', 500);
+      const { response, responseData } = await executeRequest(mockResendVerificationData);
+      expectServiceError(response, responseData, 500, 'Database connection failed', mockResendVerificationData.email);
     });
 
     it('handles service error without status code', async () => {
-      const mockError = {
-        success: false,
-        error: {
-          message: 'Service error',
-        },
-      };
-
-      UserService.resendVerificationEmail = jest
-        .fn()
-        .mockResolvedValue(mockError);
-
-      const request = createMockRequest(mockResendVerificationData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(responseData).toEqual({
-        success: false,
-        message: 'Service error',
-      });
-      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(
-        mockResendVerificationData.email
-      );
+      mockServiceError('Service error');
+      const { response, responseData } = await executeRequest(mockResendVerificationData);
+      expectServiceError(response, responseData, 400, 'Service error', mockResendVerificationData.email);
     });
 
     it('handles service error without message', async () => {
-      const mockError = {
+      UserService.resendVerificationEmail = jest.fn().mockResolvedValue({
         success: false,
-        error: {
-          statusCode: 500,
-        },
-      };
-
-      UserService.resendVerificationEmail = jest
-        .fn()
-        .mockResolvedValue(mockError);
-
-      const request = createMockRequest(mockResendVerificationData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(500);
-      expect(responseData).toEqual({
-        success: false,
-        message: 'Unknown error',
+        error: { statusCode: 500 },
       });
-      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(
-        mockResendVerificationData.email
-      );
+      const { response, responseData } = await executeRequest(mockResendVerificationData);
+      expectServiceError(response, responseData, 500, 'Unknown error', mockResendVerificationData.email);
     });
   });
 
   describe('Unexpected errors', () => {
     it('handles service method throwing an error', async () => {
-      UserService.resendVerificationEmail = jest
-        .fn()
-        .mockRejectedValue(new Error('Network error'));
-
-      const request = createMockRequest(mockResendVerificationData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(500);
-      expect(responseData).toEqual({
-        success: false,
-        message: 'An unexpected error occurred',
-      });
-      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(
-        mockResendVerificationData.email
-      );
+      UserService.resendVerificationEmail = jest.fn().mockRejectedValue(new Error('Network error'));
+      const { response, responseData } = await executeRequest(mockResendVerificationData);
+      expectUnexpectedError(response, responseData);
+      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(mockResendVerificationData.email);
     });
 
     it('handles malformed JSON request', async () => {
       const req = new NextRequest('https://example.com');
       (req.json as jest.Mock).mockRejectedValue(new Error('Invalid JSON'));
-
       const response = await POST(req);
       const responseData = await response.json();
-
-      expect(response.status).toBe(500);
-      expect(responseData).toEqual({
-        success: false,
-        message: 'An unexpected error occurred',
-      });
+      expectUnexpectedError(response, responseData);
       expect(UserService.resendVerificationEmail).not.toHaveBeenCalled();
     });
 
     it('handles service returning null', async () => {
       UserService.resendVerificationEmail = jest.fn().mockResolvedValue(null);
-
-      const request = createMockRequest(mockResendVerificationData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(500);
-      expect(responseData).toEqual({
-        success: false,
-        message: 'An unexpected error occurred',
-      });
+      const { response, responseData } = await executeRequest(mockResendVerificationData);
+      expectUnexpectedError(response, responseData);
     });
 
     it('handles service returning undefined', async () => {
-      UserService.resendVerificationEmail = jest
-        .fn()
-        .mockResolvedValue(undefined);
-
-      const request = createMockRequest(mockResendVerificationData);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(500);
-      expect(responseData).toEqual({
-        success: false,
-        message: 'An unexpected error occurred',
-      });
+      UserService.resendVerificationEmail = jest.fn().mockResolvedValue(undefined);
+      const { response, responseData } = await executeRequest(mockResendVerificationData);
+      expectUnexpectedError(response, responseData);
     });
   });
 
   describe('Edge cases', () => {
     it('handles null request body', async () => {
-      const request = createMockRequest(null);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(responseData.success).toBe(false);
-      expect(responseData.message).toBe('Validation error');
-      expect(UserService.resendVerificationEmail).not.toHaveBeenCalled();
+      const { response, responseData } = await executeRequest(null);
+      expectValidationError(response, responseData);
     });
 
     it('handles undefined request body', async () => {
-      const request = createMockRequest(undefined);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(responseData.success).toBe(false);
-      expect(responseData.message).toBe('Validation error');
-      expect(UserService.resendVerificationEmail).not.toHaveBeenCalled();
+      const { response, responseData } = await executeRequest(undefined);
+      expectValidationError(response, responseData);
     });
 
     it('handles extra properties in request body', async () => {
@@ -422,76 +242,33 @@ describe('POST /api/auth/resend-verification', () => {
         extraField: 'should be ignored',
         anotherField: 123,
       };
-
-      UserService.resendVerificationEmail = jest.fn().mockResolvedValue({
-        success: true,
-        data: { message: 'Verification email resent' },
-      });
-
-      const request = createMockRequest(dataWithExtra);
-      const response = await POST(request);
-      const responseData = await response.json();
-
+      mockSuccessfulResend();
+      const { response, responseData } = await executeRequest(dataWithExtra);
       expect(response.status).toBe(200);
       expect(responseData.success).toBe(true);
-      // Should only pass the email to service (getUserByEmailSchema extracts only email)
-      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(
-        mockResendVerificationData.email
-      );
+      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(mockResendVerificationData.email);
     });
 
     it('handles very long email address', async () => {
       const longEmail = 'a'.repeat(50) + '@' + 'b'.repeat(50) + '.com';
       const dataWithLongEmail = { email: longEmail };
-
-      UserService.resendVerificationEmail = jest.fn().mockResolvedValue({
-        success: true,
-        data: { message: 'Verification email resent' },
-      });
-
-      const request = createMockRequest(dataWithLongEmail);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(responseData.success).toBe(true);
-      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(
-        longEmail
-      );
+      mockSuccessfulResend();
+      const { response, responseData } = await executeRequest(dataWithLongEmail);
+      expectSuccessResponse(response, responseData, longEmail);
     });
 
     it('handles email with unicode characters as validation error', async () => {
       const unicodeEmail = 'tëst@ëxämplë.com';
-      const dataWithUnicodeEmail = { email: unicodeEmail };
-
-      const request = createMockRequest(dataWithUnicodeEmail);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(responseData.success).toBe(false);
-      expect(responseData.message).toBe('Validation error');
-      expect(UserService.resendVerificationEmail).not.toHaveBeenCalled();
+      const { response, responseData } = await executeRequest({ email: unicodeEmail });
+      expectValidationError(response, responseData);
     });
 
     it('handles email with plus addressing', async () => {
       const plusEmail = 'test+tag@example.com';
       const dataWithPlusEmail = { email: plusEmail };
-
-      UserService.resendVerificationEmail = jest.fn().mockResolvedValue({
-        success: true,
-        data: { message: 'Verification email resent' },
-      });
-
-      const request = createMockRequest(dataWithPlusEmail);
-      const response = await POST(request);
-      const responseData = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(responseData.success).toBe(true);
-      expect(UserService.resendVerificationEmail).toHaveBeenCalledWith(
-        plusEmail
-      );
+      mockSuccessfulResend();
+      const { response, responseData } = await executeRequest(dataWithPlusEmail);
+      expectSuccessResponse(response, responseData, plusEmail);
     });
   });
 });
