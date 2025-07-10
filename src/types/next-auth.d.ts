@@ -7,11 +7,27 @@ declare module 'next-auth' {
     user: {
       id: string;
       subscriptionTier: string;
+      notifications?: {
+        email?: boolean;
+        combat?: boolean;
+        encounters?: boolean;
+        weeklyDigest?: boolean;
+        productUpdates?: boolean;
+        securityAlerts?: boolean;
+      };
     } & DefaultSession['user'];
   }
 
   interface User extends DefaultUser {
     subscriptionTier: string;
+    notifications?: {
+      email?: boolean;
+      combat?: boolean;
+      encounters?: boolean;
+      weeklyDigest?: boolean;
+      productUpdates?: boolean;
+      securityAlerts?: boolean;
+    };
   }
 }
 
