@@ -1,5 +1,4 @@
 import React from 'react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { LucideIcon } from 'lucide-react';
 
@@ -29,11 +28,11 @@ export default function CommunityResourceItem({
       <p className="text-sm text-muted-foreground mb-3">
         {description}
       </p>
-      <Link href={href} target="_blank" rel="noopener noreferrer">
+      <a href={href} target="_blank" rel="noopener noreferrer">
         <Button variant="outline" size="sm">
           {buttonText}
         </Button>
-      </Link>
+      </a>
     </div>
   );
 }

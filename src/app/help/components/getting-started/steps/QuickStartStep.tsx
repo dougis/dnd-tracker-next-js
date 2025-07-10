@@ -29,7 +29,7 @@ export default function QuickStartStep({
           {description}
         </p>
         <Link
-          href={linkHref}
+          href={linkHref as any}
           className="text-primary hover:underline text-sm font-medium"
         >
           {linkText} →
