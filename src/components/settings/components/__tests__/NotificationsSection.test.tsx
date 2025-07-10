@@ -1,21 +1,13 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { NotificationsSection } from '../NotificationsSection';
+import { screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-
-const defaultProps = {
-  notifications: {
-    email: true,
-    combat: false,
-    encounters: true,
-    weeklyDigest: false,
-    productUpdates: true,
-    securityAlerts: true,
-  },
-  onNotificationChange: jest.fn(),
-  isLoadingNotifications: false,
-  onSubmit: jest.fn(),
-};
+import {
+  createDefaultProps,
+  renderNotificationsSection,
+  getSwitchElements,
+  createLoadingProps,
+  createAllDisabledProps,
+  createAllEnabledProps,
+} from './notifications-test-helpers';
 
 describe('NotificationsSection', () => {
   beforeEach(() => {
@@ -24,14 +16,14 @@ describe('NotificationsSection', () => {
 
   describe('Rendering', () => {
     it('should render notifications section with correct title', () => {
-      render(<NotificationsSection {...defaultProps} />);
+      renderNotificationsSection();
 
       expect(screen.getByText('Notification Preferences')).toBeInTheDocument();
       expect(screen.getByText('Manage how you receive updates and alerts')).toBeInTheDocument();
     });
 
     it('should render all notification switches', () => {
-      render(<NotificationsSection {...defaultProps} />);
+      renderNotificationsSection();
 
       expect(screen.getByLabelText('Email notifications')).toBeInTheDocument();
       expect(screen.getByLabelText('Combat reminders')).toBeInTheDocument();
@@ -39,7 +31,7 @@ describe('NotificationsSection', () => {
     });
 
     it('should render submit button', () => {
-      render(<NotificationsSection {...defaultProps} />);
+      renderNotificationsSection();
 
       expect(screen.getByRole('button', { name: 'Save Notifications' })).toBeInTheDocument();
     });
@@ -47,11 +39,9 @@ describe('NotificationsSection', () => {
 
   describe('Switch States', () => {
     it('should show correct switch states', () => {
-      render(<NotificationsSection {...defaultProps} />);
+      renderNotificationsSection();
 
-      const emailSwitch = screen.getByLabelText('Email notifications');
-      const combatSwitch = screen.getByLabelText('Combat reminders');
-      const encounterSwitch = screen.getByLabelText('Encounter updates');
+      const { emailSwitch, combatSwitch, encounterSwitch } = getSwitchElements();
 
       expect(emailSwitch).toBeChecked();
       expect(combatSwitch).not.toBeChecked();
@@ -59,45 +49,44 @@ describe('NotificationsSection', () => {
     });
 
     it('should handle switch changes', () => {
-      render(<NotificationsSection {...defaultProps} />);
+      const mockOnNotificationChange = jest.fn();
+      const props = createDefaultProps({ onNotificationChange: mockOnNotificationChange });
+      renderNotificationsSection(props);
 
-      const emailSwitch = screen.getByLabelText('Email notifications');
+      const { emailSwitch } = getSwitchElements();
       fireEvent.click(emailSwitch);
 
-      expect(defaultProps.onNotificationChange).toHaveBeenCalledWith('email');
+      expect(mockOnNotificationChange).toHaveBeenCalledWith('email');
     });
 
     it('should handle combat switch changes', () => {
-      render(<NotificationsSection {...defaultProps} />);
+      const mockOnNotificationChange = jest.fn();
+      const props = createDefaultProps({ onNotificationChange: mockOnNotificationChange });
+      renderNotificationsSection(props);
 
-      const combatSwitch = screen.getByLabelText('Combat reminders');
+      const { combatSwitch } = getSwitchElements();
       fireEvent.click(combatSwitch);
 
-      expect(defaultProps.onNotificationChange).toHaveBeenCalledWith('combat');
+      expect(mockOnNotificationChange).toHaveBeenCalledWith('combat');
     });
 
     it('should handle encounter switch changes', () => {
-      render(<NotificationsSection {...defaultProps} />);
+      const mockOnNotificationChange = jest.fn();
+      const props = createDefaultProps({ onNotificationChange: mockOnNotificationChange });
+      renderNotificationsSection(props);
 
-      const encounterSwitch = screen.getByLabelText('Encounter updates');
+      const { encounterSwitch } = getSwitchElements();
       fireEvent.click(encounterSwitch);
 
-      expect(defaultProps.onNotificationChange).toHaveBeenCalledWith('encounters');
+      expect(mockOnNotificationChange).toHaveBeenCalledWith('encounters');
     });
   });
 
   describe('Loading State', () => {
     it('should disable switches when loading', () => {
-      const loadingProps = {
-        ...defaultProps,
-        isLoadingNotifications: true,
-      };
+      renderNotificationsSection(createLoadingProps());
 
-      render(<NotificationsSection {...loadingProps} />);
-
-      const emailSwitch = screen.getByLabelText('Email notifications');
-      const combatSwitch = screen.getByLabelText('Combat reminders');
-      const encounterSwitch = screen.getByLabelText('Encounter updates');
+      const { emailSwitch, combatSwitch, encounterSwitch } = getSwitchElements();
 
       expect(emailSwitch).toBeDisabled();
       expect(combatSwitch).toBeDisabled();
@@ -105,12 +94,7 @@ describe('NotificationsSection', () => {
     });
 
     it('should show loading text on submit button', () => {
-      const loadingProps = {
-        ...defaultProps,
-        isLoadingNotifications: true,
-      };
-
-      render(<NotificationsSection {...loadingProps} />);
+      renderNotificationsSection(createLoadingProps());
 
       expect(screen.getByRole('button', { name: 'Saving...' })).toBeInTheDocument();
       expect(screen.getByRole('button')).toBeDisabled();
@@ -119,31 +103,33 @@ describe('NotificationsSection', () => {
 
   describe('Form Submission', () => {
     it('should call onSubmit when form is submitted', () => {
-      render(<NotificationsSection {...defaultProps} />);
+      const mockOnSubmit = jest.fn();
+      const props = createDefaultProps({ onSubmit: mockOnSubmit });
+      renderNotificationsSection(props);
 
       const form = screen.getByRole('button', { name: 'Save Notifications' }).closest('form');
       fireEvent.submit(form!);
 
-      expect(defaultProps.onSubmit).toHaveBeenCalled();
+      expect(mockOnSubmit).toHaveBeenCalled();
     });
 
     it('should call onSubmit when button is clicked', () => {
-      render(<NotificationsSection {...defaultProps} />);
+      const mockOnSubmit = jest.fn();
+      const props = createDefaultProps({ onSubmit: mockOnSubmit });
+      renderNotificationsSection(props);
 
       const submitButton = screen.getByRole('button', { name: 'Save Notifications' });
       fireEvent.click(submitButton);
 
-      expect(defaultProps.onSubmit).toHaveBeenCalled();
+      expect(mockOnSubmit).toHaveBeenCalled();
     });
   });
 
   describe('Switch Properties', () => {
     it('should have correct switch ids', () => {
-      render(<NotificationsSection {...defaultProps} />);
+      renderNotificationsSection();
 
-      const emailSwitch = screen.getByLabelText('Email notifications');
-      const combatSwitch = screen.getByLabelText('Combat reminders');
-      const encounterSwitch = screen.getByLabelText('Encounter updates');
+      const { emailSwitch, combatSwitch, encounterSwitch } = getSwitchElements();
 
       expect(emailSwitch).toHaveAttribute('id', 'email-notifications');
       expect(combatSwitch).toHaveAttribute('id', 'combat-reminders');
@@ -153,23 +139,9 @@ describe('NotificationsSection', () => {
 
   describe('Different Notification States', () => {
     it('should handle all notifications disabled', () => {
-      const allDisabledProps = {
-        ...defaultProps,
-        notifications: {
-          email: false,
-          combat: false,
-          encounters: false,
-          weeklyDigest: false,
-          productUpdates: false,
-          securityAlerts: false,
-        },
-      };
+      renderNotificationsSection(createAllDisabledProps());
 
-      render(<NotificationsSection {...allDisabledProps} />);
-
-      const emailSwitch = screen.getByLabelText('Email notifications');
-      const combatSwitch = screen.getByLabelText('Combat reminders');
-      const encounterSwitch = screen.getByLabelText('Encounter updates');
+      const { emailSwitch, combatSwitch, encounterSwitch } = getSwitchElements();
 
       expect(emailSwitch).not.toBeChecked();
       expect(combatSwitch).not.toBeChecked();
@@ -177,23 +149,9 @@ describe('NotificationsSection', () => {
     });
 
     it('should handle all notifications enabled', () => {
-      const allEnabledProps = {
-        ...defaultProps,
-        notifications: {
-          email: true,
-          combat: true,
-          encounters: true,
-          weeklyDigest: true,
-          productUpdates: true,
-          securityAlerts: true,
-        },
-      };
+      renderNotificationsSection(createAllEnabledProps());
 
-      render(<NotificationsSection {...allEnabledProps} />);
-
-      const emailSwitch = screen.getByLabelText('Email notifications');
-      const combatSwitch = screen.getByLabelText('Combat reminders');
-      const encounterSwitch = screen.getByLabelText('Encounter updates');
+      const { emailSwitch, combatSwitch, encounterSwitch } = getSwitchElements();
 
       expect(emailSwitch).toBeChecked();
       expect(combatSwitch).toBeChecked();

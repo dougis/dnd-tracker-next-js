@@ -3,14 +3,13 @@
 import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { useSettingsForm } from './hooks/useSettingsForm';
 import { ProfileSection } from './components/ProfileSection';
 import { NotificationsSection } from './components/NotificationsSection';
 import { SubscriptionSection } from './components/SubscriptionSection';
 import { SecuritySection } from './components/SecuritySection';
+import { ThemeSection } from './components/ThemeSection';
+import { UpgradeModal, PasswordModal, DeleteModal } from './components/SettingsModals';
 import { type SubscriptionTier } from './constants';
 
 export function Settings() {
@@ -62,24 +61,7 @@ export function Settings() {
           onSubmit={handleNotificationsSubmit}
         />
 
-        {/* Theme & Display */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Theme & Display</CardTitle>
-            <CardDescription>Customize your application appearance</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <label>Theme</label>
-                  <p className="text-sm text-muted-foreground">Switch between light and dark themes</p>
-                </div>
-                <ThemeToggle />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <ThemeSection />
 
         <SubscriptionSection
           currentTier={currentTier}
@@ -92,62 +74,22 @@ export function Settings() {
         />
       </div>
 
-      {/* Modals - Simplified for now */}
-      {showUpgradeModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-lg">
-            <CardHeader>
-              <CardTitle>Choose Your Plan</CardTitle>
-              <CardDescription>Upgrade to unlock more features</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p>Plan upgrade functionality coming soon!</p>
-              <Button onClick={() => setShowUpgradeModal(false)} className="mt-4">
-                Close
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {showPasswordModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-lg">
-            <CardHeader>
-              <CardTitle>Change Password</CardTitle>
-              <CardDescription>Update your account password</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p>Password change functionality coming soon!</p>
-              <Button onClick={() => setShowPasswordModal(false)} className="mt-4">
-                Close
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-lg">
-            <CardHeader>
-              <CardTitle>Delete Account</CardTitle>
-              <CardDescription>This action cannot be undone</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-destructive mb-4">
-                Are you sure you want to delete your account? All your data will be permanently removed.
-              </p>
-              <div className="flex gap-4">
-                <Button variant="destructive">Confirm Delete</Button>
-                <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+      />
+      <PasswordModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+      />
+      <DeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={() => {
+          // TODO: Implement account deletion
+          setShowDeleteModal(false);
+        }}
+      />
     </div>
   );
 }

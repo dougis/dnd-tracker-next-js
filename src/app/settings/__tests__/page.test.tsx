@@ -2,13 +2,21 @@
 
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { useSession } from 'next-auth/react';
 import SettingsPage from '../page';
 import '@testing-library/jest-dom';
+import {
+  mockUseSession,
+  createSessionMock,
+  loadingSessionMock,
+  unauthenticatedSessionMock,
+  sessionWithoutUserMock,
+  nullSessionMock,
+  userWithEmailOnlyMock,
+  userWithNameAndEmailMock,
+} from './page-test-helpers';
 
 // Mock next-auth
 jest.mock('next-auth/react');
-const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
 
 // Mock AppLayout
 jest.mock('@/components/layout/AppLayout', () => ({
@@ -29,11 +37,7 @@ describe('SettingsPage', () => {
 
   describe('Authentication States', () => {
     it('should show loading state when session is loading', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'loading',
-        update: jest.fn(),
-      });
+      mockUseSession.mockReturnValue(loadingSessionMock);
 
       render(<SettingsPage />);
 
@@ -42,11 +46,7 @@ describe('SettingsPage', () => {
     });
 
     it('should show unauthenticated message when user is not signed in', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-        update: jest.fn(),
-      });
+      mockUseSession.mockReturnValue(unauthenticatedSessionMock);
 
       render(<SettingsPage />);
 
@@ -55,18 +55,7 @@ describe('SettingsPage', () => {
     });
 
     it('should render settings component when user is authenticated', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            name: 'Test User',
-            email: 'test@example.com',
-          },
-          expires: '2024-12-31',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      mockUseSession.mockReturnValue(createSessionMock());
 
       render(<SettingsPage />);
 
@@ -78,18 +67,7 @@ describe('SettingsPage', () => {
 
   describe('Page Structure', () => {
     beforeEach(() => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            name: 'Test User',
-            email: 'test@example.com',
-          },
-          expires: '2024-12-31',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      mockUseSession.mockReturnValue(createSessionMock());
     });
 
     it('should render within AppLayout', () => {
@@ -115,17 +93,7 @@ describe('SettingsPage', () => {
 
   describe('User Context', () => {
     it('should handle user with only email', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            email: 'test@example.com',
-          },
-          expires: '2024-12-31',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      mockUseSession.mockReturnValue(userWithEmailOnlyMock);
 
       render(<SettingsPage />);
 
@@ -133,18 +101,7 @@ describe('SettingsPage', () => {
     });
 
     it('should handle user with name and email', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            name: 'John Doe',
-            email: 'john@example.com',
-          },
-          expires: '2024-12-31',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      mockUseSession.mockReturnValue(userWithNameAndEmailMock);
 
       render(<SettingsPage />);
 
@@ -154,13 +111,7 @@ describe('SettingsPage', () => {
 
   describe('Error Handling', () => {
     it('should handle session data without user object', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          expires: '2024-12-31',
-        } as any,
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      mockUseSession.mockReturnValue(sessionWithoutUserMock);
 
       render(<SettingsPage />);
 
@@ -168,11 +119,7 @@ describe('SettingsPage', () => {
     });
 
     it('should handle null session data with authenticated status', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      mockUseSession.mockReturnValue(nullSessionMock);
 
       render(<SettingsPage />);
 
@@ -182,18 +129,7 @@ describe('SettingsPage', () => {
 
   describe('Accessibility', () => {
     beforeEach(() => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: '1',
-            name: 'Test User',
-            email: 'test@example.com',
-          },
-          expires: '2024-12-31',
-        },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      mockUseSession.mockReturnValue(createSessionMock());
     });
 
     it('should have proper semantic structure', () => {
@@ -205,11 +141,7 @@ describe('SettingsPage', () => {
     });
 
     it('should have accessible loading state', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'loading',
-        update: jest.fn(),
-      });
+      mockUseSession.mockReturnValue(loadingSessionMock);
 
       render(<SettingsPage />);
 

@@ -3,6 +3,15 @@ import { useSession } from 'next-auth/react';
 import { useSettingsForm } from '../useSettingsForm';
 import { updateUser } from '@/lib/api/users';
 import '@testing-library/jest-dom';
+import {
+  createMockEvent,
+  createMockSessionReturn,
+  createAsyncPromise,
+  expectSuccessMessage,
+  expectErrorMessage,
+  expectValidationErrors,
+  actAsync,
+} from './test-helpers';
 
 // Mock next-auth
 jest.mock('next-auth/react');
@@ -12,32 +21,10 @@ const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
 jest.mock('@/lib/api/users');
 const mockUpdateUser = updateUser as jest.MockedFunction<typeof updateUser>;
 
-const mockSession = {
-  user: {
-    id: '1',
-    name: 'Test User',
-    email: 'test@example.com',
-    subscriptionTier: 'free',
-    notifications: {
-      email: true,
-      combat: false,
-      encounters: true,
-      weeklyDigest: false,
-      productUpdates: true,
-      securityAlerts: true,
-    },
-  },
-  expires: '2024-12-31',
-};
-
 describe('useSettingsForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseSession.mockReturnValue({
-      data: mockSession,
-      status: 'authenticated',
-      update: jest.fn(),
-    });
+    mockUseSession.mockReturnValue(createMockSessionReturn());
   });
 
   describe('Initial State', () => {
@@ -116,12 +103,9 @@ describe('useSettingsForm', () => {
     it('should handle successful profile submission', async () => {
       mockUpdateUser.mockResolvedValue({ success: true });
       const { result } = renderHook(() => useSettingsForm());
+      const mockEvent = createMockEvent();
 
-      const mockEvent = {
-        preventDefault: jest.fn(),
-      } as unknown as React.FormEvent;
-
-      await act(async () => {
+      await actAsync(async () => {
         await result.current.handleProfileSubmit(mockEvent);
       });
 
@@ -130,10 +114,7 @@ describe('useSettingsForm', () => {
         name: 'Test User',
         email: 'test@example.com',
       });
-      expect(result.current.message).toEqual({
-        type: 'success',
-        text: 'Settings saved successfully',
-      });
+      expectSuccessMessage(result);
     });
 
     it('should handle profile submission with validation errors', async () => {
@@ -143,15 +124,13 @@ describe('useSettingsForm', () => {
         result.current.setProfileData({ name: '', email: 'invalid-email' });
       });
 
-      const mockEvent = {
-        preventDefault: jest.fn(),
-      } as unknown as React.FormEvent;
+      const mockEvent = createMockEvent();
 
-      await act(async () => {
+      await actAsync(async () => {
         await result.current.handleProfileSubmit(mockEvent);
       });
 
-      expect(result.current.formErrors).toEqual({
+      expectValidationErrors(result, {
         name: 'Name is required',
         email: 'Please enter a valid email address',
       });
@@ -161,33 +140,21 @@ describe('useSettingsForm', () => {
     it('should handle profile submission API error', async () => {
       mockUpdateUser.mockRejectedValue(new Error('API Error'));
       const { result } = renderHook(() => useSettingsForm());
+      const mockEvent = createMockEvent();
 
-      const mockEvent = {
-        preventDefault: jest.fn(),
-      } as unknown as React.FormEvent;
-
-      await act(async () => {
+      await actAsync(async () => {
         await result.current.handleProfileSubmit(mockEvent);
       });
 
-      expect(result.current.message).toEqual({
-        type: 'error',
-        text: 'Failed to save settings. Please try again.',
-      });
+      expectErrorMessage(result);
     });
 
     it('should show loading state during profile submission', async () => {
-      let resolvePromise: (_value: any) => void;
-      const promise = new Promise(resolve => {
-        resolvePromise = resolve;
-      });
+      const { promise, resolvePromise } = createAsyncPromise();
       mockUpdateUser.mockReturnValue(promise);
 
       const { result } = renderHook(() => useSettingsForm());
-
-      const mockEvent = {
-        preventDefault: jest.fn(),
-      } as unknown as React.FormEvent;
+      const mockEvent = createMockEvent();
 
       act(() => {
         result.current.handleProfileSubmit(mockEvent);
@@ -208,12 +175,9 @@ describe('useSettingsForm', () => {
     it('should handle successful notifications submission', async () => {
       mockUpdateUser.mockResolvedValue({ success: true });
       const { result } = renderHook(() => useSettingsForm());
+      const mockEvent = createMockEvent();
 
-      const mockEvent = {
-        preventDefault: jest.fn(),
-      } as unknown as React.FormEvent;
-
-      await act(async () => {
+      await actAsync(async () => {
         await result.current.handleNotificationsSubmit(mockEvent);
       });
 
@@ -221,42 +185,27 @@ describe('useSettingsForm', () => {
       expect(mockUpdateUser).toHaveBeenCalledWith('1', {
         notifications: result.current.notifications,
       });
-      expect(result.current.message).toEqual({
-        type: 'success',
-        text: 'Settings saved successfully',
-      });
+      expectSuccessMessage(result);
     });
 
     it('should handle notifications submission API error', async () => {
       mockUpdateUser.mockRejectedValue(new Error('API Error'));
       const { result } = renderHook(() => useSettingsForm());
+      const mockEvent = createMockEvent();
 
-      const mockEvent = {
-        preventDefault: jest.fn(),
-      } as unknown as React.FormEvent;
-
-      await act(async () => {
+      await actAsync(async () => {
         await result.current.handleNotificationsSubmit(mockEvent);
       });
 
-      expect(result.current.message).toEqual({
-        type: 'error',
-        text: 'Failed to save settings. Please try again.',
-      });
+      expectErrorMessage(result);
     });
 
     it('should show loading state during notifications submission', async () => {
-      let resolvePromise: (_value: any) => void;
-      const promise = new Promise(resolve => {
-        resolvePromise = resolve;
-      });
+      const { promise, resolvePromise } = createAsyncPromise();
       mockUpdateUser.mockReturnValue(promise);
 
       const { result } = renderHook(() => useSettingsForm());
-
-      const mockEvent = {
-        preventDefault: jest.fn(),
-      } as unknown as React.FormEvent;
+      const mockEvent = createMockEvent();
 
       act(() => {
         result.current.handleNotificationsSubmit(mockEvent);
@@ -281,11 +230,9 @@ describe('useSettingsForm', () => {
         result.current.setProfileData({ name: '', email: 'test@example.com' });
       });
 
-      const mockEvent = {
-        preventDefault: jest.fn(),
-      } as unknown as React.FormEvent;
+      const mockEvent = createMockEvent();
 
-      await act(async () => {
+      await actAsync(async () => {
         await result.current.handleProfileSubmit(mockEvent);
       });
 
@@ -299,11 +246,9 @@ describe('useSettingsForm', () => {
         result.current.setProfileData({ name: 'A', email: 'test@example.com' });
       });
 
-      const mockEvent = {
-        preventDefault: jest.fn(),
-      } as unknown as React.FormEvent;
+      const mockEvent = createMockEvent();
 
-      await act(async () => {
+      await actAsync(async () => {
         await result.current.handleProfileSubmit(mockEvent);
       });
 
@@ -317,11 +262,9 @@ describe('useSettingsForm', () => {
         result.current.setProfileData({ name: 'Test User', email: 'invalid-email' });
       });
 
-      const mockEvent = {
-        preventDefault: jest.fn(),
-      } as unknown as React.FormEvent;
+      const mockEvent = createMockEvent();
 
-      await act(async () => {
+      await actAsync(async () => {
         await result.current.handleProfileSubmit(mockEvent);
       });
 
@@ -330,17 +273,14 @@ describe('useSettingsForm', () => {
 
     it('should clear form errors on new submission', async () => {
       const { result } = renderHook(() => useSettingsForm());
+      const mockEvent = createMockEvent();
 
       // First submission with errors
       act(() => {
         result.current.setProfileData({ name: '', email: 'invalid' });
       });
 
-      const mockEvent = {
-        preventDefault: jest.fn(),
-      } as unknown as React.FormEvent;
-
-      await act(async () => {
+      await actAsync(async () => {
         await result.current.handleProfileSubmit(mockEvent);
       });
 
@@ -353,7 +293,7 @@ describe('useSettingsForm', () => {
 
       mockUpdateUser.mockResolvedValue({ success: true });
 
-      await act(async () => {
+      await actAsync(async () => {
         await result.current.handleProfileSubmit(mockEvent);
       });
 
