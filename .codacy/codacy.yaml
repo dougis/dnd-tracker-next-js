@@ -13,6 +13,7 @@ exclude_paths:
     - coverage/**
     - out/**
     - .vercel/**
+    - .git/**
     - public/**
     - plato_report/**
     - eslint.config.mjs
@@ -28,8 +29,12 @@ exclude_paths:
     - '**/*.config.js'
     - '**/*.config.mjs'
     - '**/*.config.ts'
-    - '**/__tests__/**/*'
-    - '**/__mocks__/**/*'
+    - '**/*.test.ts'
+    - '**/*.test.tsx'
+    - '**/*.test.js'
+    - '**/*.test.jsx'
+    - "**/__tests__/**/*"
+    - "**/__mocks__/**/*"
 runtimes:
     - dart@3.7.2
     - go@1.22.3
