@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,7 +13,10 @@ import {
 } from '@/components/ui/dialog';
 import { Plus, Download } from 'lucide-react';
 import { ParticipantForm } from './ParticipantForm';
+import { CharacterLibraryInterface } from './CharacterLibraryInterface';
+import { validateCharactersForConversion } from './utils/characterConversion';
 import type { ParticipantFormData } from './hooks/useParticipantForm';
+import type { ICharacter } from '@/lib/models/Character';
 
 interface BaseDialogProps {
   isOpen: boolean;
@@ -89,6 +92,8 @@ interface ParticipantDialogsProps {
   // Import dialog props
   isImportDialogOpen: boolean;
   onImportDialogOpenChange: (_open: boolean) => void;
+  onImportCharacters: (_characters: ICharacter[]) => void;
+  userId: string;
   // Form props
   formData: ParticipantFormData;
   formErrors: Record<string, string>;
@@ -165,7 +170,33 @@ export function EditParticipantDialog({
 export function ImportParticipantDialog({
   isImportDialogOpen,
   onImportDialogOpenChange,
-}: Pick<ParticipantDialogsProps, 'isImportDialogOpen' | 'onImportDialogOpenChange'>) {
+  onImportCharacters,
+  userId,
+}: Pick<ParticipantDialogsProps, 'isImportDialogOpen' | 'onImportDialogOpenChange' | 'onImportCharacters' | 'userId'>) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleImportCharacters = async (characters: ICharacter[]) => {
+    if (characters.length === 0) return;
+
+    setIsLoading(true);
+    try {
+      // Validate characters before conversion
+      const { validCharacters, invalidCharacters } = validateCharactersForConversion(characters);
+
+      if (invalidCharacters.length > 0) {
+        console.warn('Some characters could not be imported:', invalidCharacters);
+      }
+
+      if (validCharacters.length > 0) {
+        await onImportCharacters(validCharacters);
+        onImportDialogOpenChange(false);
+      }
+    } catch (error) {
+      console.error('Error importing characters:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <Dialog open={isImportDialogOpen} onOpenChange={onImportDialogOpenChange}>
       <DialogTrigger asChild>
@@ -174,7 +205,7 @@ export function ImportParticipantDialog({
           Import from Library
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-4xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Import Characters</DialogTitle>
           <DialogDescription>
@@ -182,9 +213,11 @@ export function ImportParticipantDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <p className="text-sm text-gray-500">
-            Character library integration coming soon...
-          </p>
+          <CharacterLibraryInterface
+            onImportCharacters={handleImportCharacters}
+            isLoading={isLoading}
+            userId={userId}
+          />
         </div>
         <DialogFooter>
           <Button
