@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -11,7 +11,7 @@ jest.mock('next/navigation', () => ({
 }));
 
 // Test helper functions
-const renderHelpPage = () => renderHelpPage();
+const renderHelpPage = () => render(<HelpPage />);
 
 const getTabByName = (name: RegExp) => screen.getByRole('tab', { name });
 
