@@ -24,6 +24,71 @@ const ADDITIONAL_TEST_CONSTANTS = {
   VALID_CHARACTER_ID_3: '65f1a2b3c4d5e6f7a8b9c0d7',
 };
 
+// Test helper functions to reduce code duplication
+const createValidParticipantData = (overrides = {}) => ({
+  characterId: ADDITIONAL_TEST_CONSTANTS.VALID_CHARACTER_ID,
+  name: 'Test Character',
+  type: 'pc' as const,
+  maxHitPoints: 25,
+  currentHitPoints: 25,
+  temporaryHitPoints: 0,
+  armorClass: 15,
+  initiative: 12,
+  isPlayer: true,
+  isVisible: true,
+  notes: '',
+  conditions: [],
+  position: { x: 0, y: 0 },
+  ...overrides,
+});
+
+const createInvalidParticipantData = () => ({
+  characterId: 'invalid-id',
+  name: '',
+  type: 'pc' as const,
+  maxHitPoints: -1,
+  currentHitPoints: -1,
+  temporaryHitPoints: 0,
+  armorClass: -1,
+  initiative: 0,
+  isPlayer: true,
+  isVisible: true,
+  notes: '',
+  conditions: [],
+  position: { x: 0, y: 0 },
+});
+
+const testParticipantOperation = async (
+  operation: 'add' | 'remove' | 'update',
+  encounterId: string,
+  participantData: any,
+  participantId?: string,
+  updateData?: any
+) => {
+  switch (operation) {
+    case 'add':
+      return EncounterServiceParticipants.addParticipant(encounterId, participantData);
+    case 'remove':
+      return EncounterServiceParticipants.removeParticipant(encounterId, participantId!);
+    case 'update':
+      return EncounterServiceParticipants.updateParticipant(encounterId, participantId!, updateData);
+    default:
+      throw new Error('Invalid operation');
+  }
+};
+
+const createMockEncounterWithParticipants = (participantIds: string[]) => {
+  const mockEncounter = createTestEncounter();
+  mockEncounter.participants = participantIds.map((id, index) => ({
+    characterId: new Types.ObjectId(id),
+    name: `Character ${index + 1}`,
+  })) as IParticipantReference[];
+  return mockEncounter;
+};
+
+const testReorderOperation = (encounterId: string, participantIds: string[]) =>
+  EncounterServiceParticipants.reorderParticipants(encounterId, participantIds);
+
 jest.mock('@/lib/models/encounter', () => ({
   Encounter: {
     findById: jest.fn(),
@@ -50,30 +115,13 @@ describe('EncounterServiceParticipants', () => {
   describe('addParticipant', () => {
     it('should successfully add a participant', async () => {
       const encounterId = ADDITIONAL_TEST_CONSTANTS.VALID_ENCOUNTER_ID;
-      const participantData = {
-        characterId: ADDITIONAL_TEST_CONSTANTS.VALID_CHARACTER_ID,
-        name: 'Test Character',
-        type: 'pc' as const,
-        maxHitPoints: 25,
-        currentHitPoints: 25,
-        temporaryHitPoints: 0,
-        armorClass: 15,
-        initiative: 12,
-        isPlayer: true,
-        isVisible: true,
-        notes: '',
-        conditions: [],
-        position: { x: 0, y: 0 },
-      };
+      const participantData = createValidParticipantData();
 
       const mockEncounter = createTestEncounter();
       mockEncounter.addParticipant = jest.fn();
       const mockSave = setupBasicMockWithSave(mockEncounter);
 
-      const result = await EncounterServiceParticipants.addParticipant(
-        encounterId,
-        participantData
-      );
+      const result = await testParticipantOperation('add', encounterId, participantData);
 
       expectSuccess(result, mockEncounter);
       expect(mockEncounter.addParticipant).toHaveBeenCalledWith(
@@ -84,27 +132,9 @@ describe('EncounterServiceParticipants', () => {
 
     it('should handle invalid participant data', async () => {
       const encounterId = ADDITIONAL_TEST_CONSTANTS.VALID_ENCOUNTER_ID;
-      const invalidParticipantData = {
-        characterId: 'invalid-id',
-        name: '',
-        type: 'pc' as const,
-        maxHitPoints: -1,
-        currentHitPoints: -1,
-        temporaryHitPoints: 0,
-        armorClass: -1,
-        initiative: 0,
-        isPlayer: true,
-        isVisible: true,
-        notes: '',
-        conditions: [],
-        position: { x: 0, y: 0 },
-      };
+      const invalidParticipantData = createInvalidParticipantData();
 
-      const result = await EncounterServiceParticipants.addParticipant(
-        encounterId,
-        invalidParticipantData
-      );
-
+      const result = await testParticipantOperation('add', encounterId, invalidParticipantData);
       expectError(result, 'ENCOUNTER_VALIDATION_ERROR');
     });
 
@@ -113,29 +143,21 @@ describe('EncounterServiceParticipants', () => {
       const participantData = createTestParticipant();
 
       setupBasicMock('findById', null);
-
-      const result = await EncounterServiceParticipants.addParticipant(
-        encounterId,
-        participantData
-      );
-
+      const result = await testParticipantOperation('add', encounterId, participantData);
       expectError(result, 'ENCOUNTER_VALIDATION_ERROR');
     });
   });
 
   describe('removeParticipant', () => {
-    it('should successfully remove a participant', async () => {
-      const encounterId = ADDITIONAL_TEST_CONSTANTS.VALID_ENCOUNTER_ID;
-      const participantId = ADDITIONAL_TEST_CONSTANTS.VALID_CHARACTER_ID;
+    const encounterId = ADDITIONAL_TEST_CONSTANTS.VALID_ENCOUNTER_ID;
+    const participantId = ADDITIONAL_TEST_CONSTANTS.VALID_CHARACTER_ID;
 
+    it('should successfully remove a participant', async () => {
       const mockEncounter = createTestEncounter();
       mockEncounter.removeParticipant = jest.fn().mockReturnValue(true);
       const mockSave = setupBasicMockWithSave(mockEncounter);
 
-      const result = await EncounterServiceParticipants.removeParticipant(
-        encounterId,
-        participantId
-      );
+      const result = await testParticipantOperation('remove', encounterId, null, participantId);
 
       expectSuccess(result, mockEncounter);
       expect(mockEncounter.removeParticipant).toHaveBeenCalledWith(participantId);
@@ -143,55 +165,32 @@ describe('EncounterServiceParticipants', () => {
     });
 
     it('should handle participant not found', async () => {
-      const encounterId = ADDITIONAL_TEST_CONSTANTS.VALID_ENCOUNTER_ID;
-      const participantId = ADDITIONAL_TEST_CONSTANTS.VALID_CHARACTER_ID;
-
       const mockEncounter = createTestEncounter();
       mockEncounter.removeParticipant = jest.fn().mockReturnValue(false);
       setupBasicMock('findById', mockEncounter);
 
-      const result = await EncounterServiceParticipants.removeParticipant(
-        encounterId,
-        participantId
-      );
-
+      const result = await testParticipantOperation('remove', encounterId, null, participantId);
       expectError(result, 'PARTICIPANT_NOT_FOUND');
     });
 
     it('should handle encounter not found', async () => {
-      const encounterId = ADDITIONAL_TEST_CONSTANTS.VALID_ENCOUNTER_ID;
-      const participantId = ADDITIONAL_TEST_CONSTANTS.VALID_CHARACTER_ID;
-
       setupBasicMock('findById', null);
-
-      const result = await EncounterServiceParticipants.removeParticipant(
-        encounterId,
-        participantId
-      );
-
+      const result = await testParticipantOperation('remove', encounterId, null, participantId);
       expectError(result, 'ENCOUNTER_NOT_FOUND');
     });
   });
 
   describe('updateParticipant', () => {
-    it('should successfully update a participant', async () => {
-      const encounterId = ADDITIONAL_TEST_CONSTANTS.VALID_ENCOUNTER_ID;
-      const participantId = ADDITIONAL_TEST_CONSTANTS.VALID_CHARACTER_ID;
-      const updateData = {
-        name: 'Updated Character',
-        hitPoints: 30,
-        armorClass: 16,
-      };
+    const encounterId = ADDITIONAL_TEST_CONSTANTS.VALID_ENCOUNTER_ID;
+    const participantId = ADDITIONAL_TEST_CONSTANTS.VALID_CHARACTER_ID;
 
+    it('should successfully update a participant', async () => {
+      const updateData = { name: 'Updated Character', hitPoints: 30, armorClass: 16 };
       const mockEncounter = createTestEncounter();
       mockEncounter.updateParticipant = jest.fn().mockReturnValue(true);
       const mockSave = setupBasicMockWithSave(mockEncounter);
 
-      const result = await EncounterServiceParticipants.updateParticipant(
-        encounterId,
-        participantId,
-        updateData
-      );
+      const result = await testParticipantOperation('update', encounterId, null, participantId, updateData);
 
       expectSuccess(result, mockEncounter);
       expect(mockEncounter.updateParticipant).toHaveBeenCalledWith(
@@ -202,36 +201,20 @@ describe('EncounterServiceParticipants', () => {
     });
 
     it('should handle participant not found for update', async () => {
-      const encounterId = ADDITIONAL_TEST_CONSTANTS.VALID_ENCOUNTER_ID;
-      const participantId = ADDITIONAL_TEST_CONSTANTS.VALID_CHARACTER_ID;
       const updateData = { name: 'Updated Character' };
-
       const mockEncounter = createTestEncounter();
       mockEncounter.updateParticipant = jest.fn().mockReturnValue(false);
       setupBasicMock('findById', mockEncounter);
 
-      const result = await EncounterServiceParticipants.updateParticipant(
-        encounterId,
-        participantId,
-        updateData
-      );
-
+      const result = await testParticipantOperation('update', encounterId, null, participantId, updateData);
       expectError(result, 'PARTICIPANT_NOT_FOUND');
     });
 
     it('should handle encounter not found for update', async () => {
-      const encounterId = ADDITIONAL_TEST_CONSTANTS.VALID_ENCOUNTER_ID;
-      const participantId = ADDITIONAL_TEST_CONSTANTS.VALID_CHARACTER_ID;
       const updateData = { name: 'Updated Character' };
-
       setupBasicMock('findById', null);
 
-      const result = await EncounterServiceParticipants.updateParticipant(
-        encounterId,
-        participantId,
-        updateData
-      );
-
+      const result = await testParticipantOperation('update', encounterId, null, participantId, updateData);
       expectError(result, 'ENCOUNTER_NOT_FOUND');
     });
   });
@@ -245,19 +228,11 @@ describe('EncounterServiceParticipants', () => {
     ];
 
     it('should successfully reorder participants', async () => {
-      const mockEncounter = createTestEncounter();
-      mockEncounter.participants = [
-        { characterId: new Types.ObjectId(validParticipantIds[0]), name: 'Character 1' },
-        { characterId: new Types.ObjectId(validParticipantIds[1]), name: 'Character 2' },
-        { characterId: new Types.ObjectId(validParticipantIds[2]), name: 'Character 3' },
-      ] as IParticipantReference[];
-
+      const mockEncounter = createMockEncounterWithParticipants(validParticipantIds);
       const mockSave = setupBasicMockWithSave(mockEncounter);
+      const reorderedIds = [validParticipantIds[2], validParticipantIds[0], validParticipantIds[1]];
 
-      const result = await EncounterServiceParticipants.reorderParticipants(
-        validEncounterId,
-        [validParticipantIds[2], validParticipantIds[0], validParticipantIds[1]]
-      );
+      const result = await testReorderOperation(validEncounterId, reorderedIds);
 
       expectSuccess(result, mockEncounter);
       expect(mockSave).toHaveBeenCalled();
@@ -265,91 +240,49 @@ describe('EncounterServiceParticipants', () => {
     });
 
     it('should handle invalid encounter ID format', async () => {
-      const result = await EncounterServiceParticipants.reorderParticipants(
-        'invalid-id',
-        validParticipantIds
-      );
-
+      const result = await testReorderOperation('invalid-id', validParticipantIds);
       expectError(result, 'ENCOUNTER_VALIDATION_ERROR');
     });
 
     it('should handle empty participant IDs array', async () => {
-      const result = await EncounterServiceParticipants.reorderParticipants(
-        validEncounterId,
-        []
-      );
-
+      const result = await testReorderOperation(validEncounterId, []);
       expectError(result, 'ENCOUNTER_VALIDATION_ERROR');
     });
 
     it('should handle invalid participant ID format', async () => {
-      const result = await EncounterServiceParticipants.reorderParticipants(
-        validEncounterId,
-        ['invalid-id', validParticipantIds[1]]
-      );
-
+      const result = await testReorderOperation(validEncounterId, ['invalid-id', validParticipantIds[1]]);
       expectError(result, 'ENCOUNTER_VALIDATION_ERROR');
     });
 
     it('should handle encounter not found', async () => {
       setupBasicMock('findById', null);
-
-      const result = await EncounterServiceParticipants.reorderParticipants(
-        validEncounterId,
-        validParticipantIds
-      );
-
+      const result = await testReorderOperation(validEncounterId, validParticipantIds);
       expectError(result, 'ENCOUNTER_NOT_FOUND');
     });
 
     it('should handle missing participant validation', async () => {
-      const mockEncounter = createTestEncounter();
-      mockEncounter.participants = [
-        { characterId: new Types.ObjectId(validParticipantIds[0]), name: 'Character 1' },
-      ] as IParticipantReference[];
-
+      const mockEncounter = createMockEncounterWithParticipants([validParticipantIds[0]]);
       setupBasicMock('findById', mockEncounter);
 
-      const result = await EncounterServiceParticipants.reorderParticipants(
-        validEncounterId,
-        [validParticipantIds[0], validParticipantIds[1]] // Second ID doesn't exist
-      );
-
+      const result = await testReorderOperation(validEncounterId, [validParticipantIds[0], validParticipantIds[1]]);
       expectError(result, 'PARTICIPANT_NOT_FOUND');
     });
 
     it('should handle incomplete participant list validation', async () => {
-      const mockEncounter = createTestEncounter();
-      mockEncounter.participants = [
-        { characterId: new Types.ObjectId(validParticipantIds[0]), name: 'Character 1' },
-        { characterId: new Types.ObjectId(validParticipantIds[1]), name: 'Character 2' },
-      ] as IParticipantReference[];
-
+      const mockEncounter = createMockEncounterWithParticipants([validParticipantIds[0], validParticipantIds[1]]);
       setupBasicMock('findById', mockEncounter);
 
-      const result = await EncounterServiceParticipants.reorderParticipants(
-        validEncounterId,
-        [validParticipantIds[0]] // Missing one participant
-      );
-
+      const result = await testReorderOperation(validEncounterId, [validParticipantIds[0]]);
       expectError(result, 'ENCOUNTER_VALIDATION_ERROR');
     });
 
     it('should handle database errors during save', async () => {
-      const mockEncounter = createTestEncounter();
-      mockEncounter.participants = [
-        { characterId: new Types.ObjectId(validParticipantIds[0]), name: 'Character 1' },
-      ] as IParticipantReference[];
-
+      const mockEncounter = createMockEncounterWithParticipants([validParticipantIds[0]]);
       const mockSave = jest.fn().mockRejectedValue(new Error('Database error'));
       mockEncounter.save = mockSave;
       setupBasicMock('findById', mockEncounter);
 
-      const result = await EncounterServiceParticipants.reorderParticipants(
-        validEncounterId,
-        [validParticipantIds[0]]
-      );
-
+      const result = await testReorderOperation(validEncounterId, [validParticipantIds[0]]);
       expectError(result, 'PARTICIPANT_REORDER_FAILED');
     });
   });
