@@ -6,19 +6,18 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Shield, 
-  Swords, 
-  Users, 
-  Timer, 
+import {
+  Shield,
+  Swords,
+  Users,
+  Timer,
   Heart,
   Plus,
-  Play,
-  AlertCircle 
+  AlertCircle
 } from 'lucide-react';
 
 export default function CombatPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
 
   return (
     <AppLayout>

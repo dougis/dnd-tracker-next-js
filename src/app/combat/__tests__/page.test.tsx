@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { useSession } from 'next-auth/react';
 import CombatPage from '../page';
 
@@ -90,25 +90,10 @@ describe('Combat Page', () => {
       expect(screen.getByText('Start a new encounter to begin combat tracking')).toBeInTheDocument();
     });
 
-    it('includes initiative tracker when combat is active', async () => {
-      // Mock having an active combat session
-      const mockActiveCombat = {
-        id: 'encounter1',
-        name: 'Test Encounter',
-        combatState: {
-          isActive: true,
-          currentRound: 1,
-          currentTurn: 0,
-        },
-        participants: [
-          { id: 'char1', name: 'Test Character', isPlayer: true },
-        ],
-      };
-
-      // We'll need to mock the combat data loading in implementation
+    it('includes initiative tracker when combat is active', () => {
+      // Check that the page structure is in place for combat display
       render(<CombatPage />);
 
-      // Check that the page structure is in place for combat display
       expect(screen.getByText('Combat Tracker')).toBeInTheDocument();
     });
 
@@ -132,7 +117,7 @@ describe('Combat Page', () => {
 
     it('has proper responsive design classes', () => {
       const { container } = render(<CombatPage />);
-      
+
       const mainContent = container.querySelector('main');
       expect(mainContent).toHaveClass('container', 'mx-auto', 'px-4', 'py-8');
     });
@@ -161,10 +146,10 @@ describe('Combat Page', () => {
 
     it('has proper semantic structure', () => {
       const { container } = render(<CombatPage />);
-      
+
       const main = container.querySelector('main');
       const header = container.querySelector('header');
-      
+
       expect(main).toBeInTheDocument();
       expect(header).toBeInTheDocument();
     });
@@ -187,7 +172,7 @@ describe('Combat Page', () => {
 
     it('maintains consistent spacing and layout', () => {
       const { container } = render(<CombatPage />);
-      
+
       const mainElement = container.querySelector('main');
       expect(mainElement).toHaveClass('container', 'mx-auto', 'px-4', 'py-8');
     });
