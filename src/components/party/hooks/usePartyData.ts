@@ -50,26 +50,24 @@ function applyFilters(parties: PartyListItem[], searchQuery: string, filters: Pa
   return filtered;
 }
 
+// Date field types for sort normalization
+const DATE_FIELDS = ['createdAt', 'updatedAt', 'lastActivity'] as const;
+
 // Utility function to normalize sort values
 function normalizeSortValue(value: any, sortBy: PartySortBy): any {
-  if (sortBy === 'createdAt' || sortBy === 'updatedAt' || sortBy === 'lastActivity') {
+  if (DATE_FIELDS.includes(sortBy as any)) {
     return new Date(value).getTime();
   }
-
-  if (typeof value === 'string') {
-    return value.toLowerCase();
-  }
-
-  return value;
+  return typeof value === 'string' ? value.toLowerCase() : value;
 }
 
-// Utility function to sort parties - simplified to avoid parser issues
+// Utility function to sort parties
 function sortParties(parties: PartyListItem[], sortBy: PartySortBy, sortOrder: SortOrder): void {
-  const ascending = sortOrder === 'asc';
+  const multiplier = sortOrder === 'asc' ? 1 : -1;
   parties.sort((a, b) => {
     const aVal = normalizeSortValue(a[sortBy], sortBy);
     const bVal = normalizeSortValue(b[sortBy], sortBy);
-    return ascending ? (aVal < bVal ? -1 : aVal > bVal ? 1 : 0) : (aVal > bVal ? -1 : aVal < bVal ? 1 : 0);
+    return (aVal < bVal ? -1 : aVal > bVal ? 1 : 0) * multiplier;
   });
 }
 

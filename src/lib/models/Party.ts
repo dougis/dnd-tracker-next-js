@@ -123,6 +123,11 @@ partySchema.virtual('playerCharacterCount').get(async function () {
   return count;
 });
 
+// Helper function to calculate character total level
+function calculateCharacterLevel(character: any): number {
+  return character.classes.reduce((sum: number, charClass: any) => sum + charClass.level, 0);
+}
+
 // Virtual for average level
 partySchema.virtual('averageLevel').get(async function () {
   const Character = mongoose.model('Character');
@@ -133,14 +138,7 @@ partySchema.virtual('averageLevel').get(async function () {
 
   if (members.length === 0) return 0;
 
-  const totalLevel = members.reduce((sum, character) => {
-    const characterLevel = character.classes.reduce(
-      (classSum: number, charClass: any) => classSum + charClass.level,
-      0
-    );
-    return sum + characterLevel;
-  }, 0);
-
+  const totalLevel = members.reduce((sum, character) => sum + calculateCharacterLevel(character), 0);
   return Math.round(totalLevel / members.length);
 });
 
