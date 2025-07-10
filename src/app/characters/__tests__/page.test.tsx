@@ -139,10 +139,10 @@ describe('CharactersPage', () => {
 
       const createButtons = screen.getAllByRole('button', { name: /create character/i });
       expect(createButtons.length).toBeGreaterThan(0);
-      
+
       // Find the main create button (not the empty state one)
-      const mainCreateButton = createButtons.find(button => 
-        !button.hasAttribute('data-testid') || 
+      const mainCreateButton = createButtons.find(button =>
+        !button.hasAttribute('data-testid') ||
         button.getAttribute('data-testid') !== 'create-character-empty'
       );
       expect(mainCreateButton).toBeInTheDocument();
@@ -180,25 +180,25 @@ describe('CharactersPage', () => {
 
     it('logs character deletion (placeholder implementation)', () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       render(<CharactersPage />);
 
       fireEvent.click(screen.getByTestId('delete-character'));
 
       expect(consoleSpy).toHaveBeenCalledWith('Delete character:', 'char1');
-      
+
       consoleSpy.mockRestore();
     });
 
     it('logs character duplication (placeholder implementation)', () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       render(<CharactersPage />);
 
       fireEvent.click(screen.getByTestId('duplicate-character'));
 
       expect(consoleSpy).toHaveBeenCalledWith('Duplicate character:', 'char1');
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -224,11 +224,11 @@ describe('CharactersPage', () => {
 
       // Find and click the main create character button (not the empty state one)
       const createButtons = screen.getAllByRole('button', { name: /create character/i });
-      const mainCreateButton = createButtons.find(button => 
-        !button.hasAttribute('data-testid') || 
+      const mainCreateButton = createButtons.find(button =>
+        !button.hasAttribute('data-testid') ||
         button.getAttribute('data-testid') !== 'create-character-empty'
       );
-      
+
       fireEvent.click(mainCreateButton!);
 
       // Form should now be visible
@@ -253,11 +253,11 @@ describe('CharactersPage', () => {
 
       // Find and click the main create character button
       const createButtons = screen.getAllByRole('button', { name: /create character/i });
-      const mainCreateButton = createButtons.find(button => 
-        !button.hasAttribute('data-testid') || 
+      const mainCreateButton = createButtons.find(button =>
+        !button.hasAttribute('data-testid') ||
         button.getAttribute('data-testid') !== 'create-character-empty'
       );
-      
+
       fireEvent.click(mainCreateButton!);
       expect(screen.getByTestId('character-creation-form')).toHaveStyle('display: block');
 
@@ -276,11 +276,11 @@ describe('CharactersPage', () => {
 
       // Find and click the main create character button
       const createButtons = screen.getAllByRole('button', { name: /create character/i });
-      const mainCreateButton = createButtons.find(button => 
-        !button.hasAttribute('data-testid') || 
+      const mainCreateButton = createButtons.find(button =>
+        !button.hasAttribute('data-testid') ||
         button.getAttribute('data-testid') !== 'create-character-empty'
       );
-      
+
       fireEvent.click(mainCreateButton!);
       expect(screen.getByTestId('character-creation-form')).toHaveStyle('display: block');
 
@@ -296,11 +296,11 @@ describe('CharactersPage', () => {
 
       // Find and click the main create character button
       const createButtons = screen.getAllByRole('button', { name: /create character/i });
-      const mainCreateButton = createButtons.find(button => 
-        !button.hasAttribute('data-testid') || 
+      const mainCreateButton = createButtons.find(button =>
+        !button.hasAttribute('data-testid') ||
         button.getAttribute('data-testid') !== 'create-character-empty'
       );
-      
+
       fireEvent.click(mainCreateButton!);
 
       // Simulate creation success with no ID
@@ -331,7 +331,7 @@ describe('CharactersPage', () => {
 
       const characterListView = screen.getByTestId('character-list-view');
       expect(characterListView).toBeInTheDocument();
-      
+
       // Test that all callback functions are working
       expect(screen.getByTestId('select-character')).toBeInTheDocument();
       expect(screen.getByTestId('edit-character')).toBeInTheDocument();
@@ -345,7 +345,7 @@ describe('CharactersPage', () => {
 
       const characterCreationForm = screen.getByTestId('character-creation-form');
       expect(characterCreationForm).toBeInTheDocument();
-      
+
       // Test that form controls are working
       expect(screen.getByTestId('creation-success')).toBeInTheDocument();
       expect(screen.getByTestId('creation-cancel')).toBeInTheDocument();
@@ -378,10 +378,10 @@ describe('CharactersPage', () => {
 
       const createButtons = screen.getAllByRole('button', { name: /create character/i });
       expect(createButtons.length).toBeGreaterThan(0);
-      
+
       // Find the main create button
-      const mainCreateButton = createButtons.find(button => 
-        !button.hasAttribute('data-testid') || 
+      const mainCreateButton = createButtons.find(button =>
+        !button.hasAttribute('data-testid') ||
         button.getAttribute('data-testid') !== 'create-character-empty'
       );
       expect(mainCreateButton).toBeInTheDocument();

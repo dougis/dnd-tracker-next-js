@@ -12,7 +12,7 @@ import { PlusIcon } from 'lucide-react';
 import type { ICharacter } from '@/lib/models/Character';
 
 // Note: Metadata export won't work in client components, but keeping for reference
-const metadata: Metadata = {
+const _metadata: Metadata = {
   title: 'Characters - D&D Encounter Tracker',
   description: 'Manage and organize your D&D characters',
 };
