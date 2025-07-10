@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -9,6 +10,17 @@ jest.mock('next/navigation', () => ({
   usePathname: jest.fn(() => '/help'),
 }));
 
+// Test helper functions
+const renderHelpPage = () => renderHelpPage();
+
+const getTabByName = (name: RegExp) => screen.getByRole('tab', { name });
+
+const clickTab = async (name: RegExp) => {
+  const tab = getTabByName(name);
+  await userEvent.click(tab);
+  return tab;
+};
+
 describe('HelpPage Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -16,7 +28,7 @@ describe('HelpPage Component', () => {
 
   describe('Page Structure and Layout', () => {
     it('renders the help page with correct title and structure', () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       expect(screen.getByText('Help & Support')).toBeInTheDocument();
       expect(screen.getByText(/D&D Encounter Tracker Documentation/)).toBeInTheDocument();
@@ -24,7 +36,7 @@ describe('HelpPage Component', () => {
     });
 
     it('renders the main help card with proper styling', () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       const helpCard = screen.getByTestId('help-main-card');
       expect(helpCard).toBeInTheDocument();
@@ -32,7 +44,7 @@ describe('HelpPage Component', () => {
     });
 
     it('displays the help page description', () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       expect(
         screen.getByText(/comprehensive guide to using the D&D Encounter Tracker/i)
@@ -42,7 +54,7 @@ describe('HelpPage Component', () => {
 
   describe('Navigation Tabs', () => {
     it('renders all help section tabs', () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       expect(screen.getByRole('tab', { name: /getting started/i })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: /user guides/i })).toBeInTheDocument();
@@ -53,37 +65,34 @@ describe('HelpPage Component', () => {
     });
 
     it('shows getting started tab as default active tab', () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       const gettingStartedTab = screen.getByRole('tab', { name: /getting started/i });
       expect(gettingStartedTab).toHaveAttribute('aria-selected', 'true');
     });
 
     it('switches between tabs correctly', async () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
-      const faqTab = screen.getByRole('tab', { name: /faq/i });
-      await userEvent.click(faqTab);
+      const faqTab = await clickTab(/faq/i);
 
       expect(faqTab).toHaveAttribute('aria-selected', 'true');
-      expect(screen.getByRole('tab', { name: /getting started/i })).toHaveAttribute('aria-selected', 'false');
+      expect(getTabByName(/getting started/i)).toHaveAttribute('aria-selected', 'false');
     });
 
     it('displays correct content for each tab', async () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       // Check Getting Started content
       expect(screen.getByText(/welcome to the d&d encounter tracker/i)).toBeInTheDocument();
 
       // Switch to FAQ tab
-      const faqTab = screen.getByRole('tab', { name: /faq/i });
-      await userEvent.click(faqTab);
+      await clickTab(/faq/i);
 
       expect(screen.getByText(/frequently asked questions/i)).toBeInTheDocument();
 
       // Switch to Features tab
-      const featuresTab = screen.getByRole('tab', { name: /features/i });
-      await userEvent.click(featuresTab);
+      await clickTab(/features/i);
 
       expect(screen.getByText(/feature documentation/i)).toBeInTheDocument();
     });
@@ -91,7 +100,7 @@ describe('HelpPage Component', () => {
 
   describe('Search Functionality', () => {
     it('renders search input in help page', () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       const searchInput = screen.getByPlaceholderText(/search help topics/i);
       expect(searchInput).toBeInTheDocument();
@@ -99,7 +108,7 @@ describe('HelpPage Component', () => {
     });
 
     it('filters content based on search query', async () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       const searchInput = screen.getByPlaceholderText(/search help topics/i);
       await userEvent.type(searchInput, 'character');
@@ -111,7 +120,7 @@ describe('HelpPage Component', () => {
     });
 
     it('shows no results message for invalid search', async () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       const searchInput = screen.getByPlaceholderText(/search help topics/i);
       await userEvent.type(searchInput, 'xyz123nonexistent');
@@ -122,7 +131,7 @@ describe('HelpPage Component', () => {
     });
 
     it('clears search results when search is cleared', async () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       const searchInput = screen.getByPlaceholderText(/search help topics/i);
       await userEvent.type(searchInput, 'character');
@@ -135,7 +144,7 @@ describe('HelpPage Component', () => {
 
   describe('Getting Started Section', () => {
     it('displays getting started content', () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       expect(screen.getByText(/welcome to the d&d encounter tracker/i)).toBeInTheDocument();
       expect(screen.getAllByText(/quick start guide/i)).toHaveLength(2); // appears in intro text and card title
@@ -145,7 +154,7 @@ describe('HelpPage Component', () => {
     });
 
     it('includes links to relevant sections', () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       expect(screen.getByRole('link', { name: /character creation guide/i })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /party management/i })).toBeInTheDocument();
@@ -155,10 +164,9 @@ describe('HelpPage Component', () => {
 
   describe('User Guides Section', () => {
     it('displays user guides when tab is selected', async () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
-      const guidesTab = screen.getByRole('tab', { name: /user guides/i });
-      await userEvent.click(guidesTab);
+      await clickTab(/user guides/i);
 
       expect(screen.getByText(/user guides & tutorials/i)).toBeInTheDocument();
       expect(screen.getByText(/character management/i)).toBeInTheDocument();
@@ -167,10 +175,9 @@ describe('HelpPage Component', () => {
     });
 
     it('includes step-by-step tutorials', async () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
-      const guidesTab = screen.getByRole('tab', { name: /user guides/i });
-      await userEvent.click(guidesTab);
+      await clickTab(/user guides/i);
 
       expect(screen.getByText(/how to create a character/i)).toBeInTheDocument();
       expect(screen.getByText(/how to manage initiative/i)).toBeInTheDocument();
@@ -180,10 +187,9 @@ describe('HelpPage Component', () => {
 
   describe('FAQ Section', () => {
     it('displays FAQ content when tab is selected', async () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
-      const faqTab = screen.getByRole('tab', { name: /faq/i });
-      await userEvent.click(faqTab);
+      await clickTab(/faq/i);
 
       expect(screen.getByText(/frequently asked questions/i)).toBeInTheDocument();
       expect(screen.getByText(/how do I add a new character/i)).toBeInTheDocument();
@@ -192,10 +198,9 @@ describe('HelpPage Component', () => {
     });
 
     it('allows expanding and collapsing FAQ items', async () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
-      const faqTab = screen.getByRole('tab', { name: /faq/i });
-      await userEvent.click(faqTab);
+      await clickTab(/faq/i);
 
       const faqItem = screen.getByRole('button', { name: /how do I add a new character/i });
       await userEvent.click(faqItem);
@@ -206,10 +211,9 @@ describe('HelpPage Component', () => {
 
   describe('Features Section', () => {
     it('displays feature documentation when tab is selected', async () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
-      const featuresTab = screen.getByRole('tab', { name: /features/i });
-      await userEvent.click(featuresTab);
+      await clickTab(/features/i);
 
       expect(screen.getByText(/feature documentation/i)).toBeInTheDocument();
       expect(screen.getByText(/character management/i)).toBeInTheDocument();
@@ -219,10 +223,9 @@ describe('HelpPage Component', () => {
     });
 
     it('includes subscription tier information', async () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
-      const featuresTab = screen.getByRole('tab', { name: /features/i });
-      await userEvent.click(featuresTab);
+      await clickTab(/features/i);
 
       expect(screen.getByText(/subscription tiers/i)).toBeInTheDocument();
       expect(screen.getByText(/free adventurer/i)).toBeInTheDocument();
@@ -232,10 +235,9 @@ describe('HelpPage Component', () => {
 
   describe('Troubleshooting Section', () => {
     it('displays troubleshooting guides when tab is selected', async () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
-      const troubleshootingTab = screen.getByRole('tab', { name: /troubleshooting/i });
-      await userEvent.click(troubleshootingTab);
+      await clickTab(/troubleshooting/i);
 
       expect(screen.getByText(/troubleshooting guides/i)).toBeInTheDocument();
       expect(screen.getAllByText(/common issues/i)).toHaveLength(2); // appears in intro and card title
@@ -244,10 +246,9 @@ describe('HelpPage Component', () => {
     });
 
     it('includes technical support information', async () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
-      const troubleshootingTab = screen.getByRole('tab', { name: /troubleshooting/i });
-      await userEvent.click(troubleshootingTab);
+      await clickTab(/troubleshooting/i);
 
       expect(screen.getByText(/browser compatibility/i)).toBeInTheDocument();
       expect(screen.getByText(/clearing cache and cookies/i)).toBeInTheDocument();
@@ -256,10 +257,9 @@ describe('HelpPage Component', () => {
 
   describe('Contact Support Section', () => {
     it('displays contact information when tab is selected', async () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
-      const contactTab = screen.getByRole('tab', { name: /contact support/i });
-      await userEvent.click(contactTab);
+      await clickTab(/contact support/i);
 
       expect(screen.getAllByText(/contact support/i)).toHaveLength(3); // tab, section header, and button
       expect(screen.getByText(/need additional help/i)).toBeInTheDocument();
@@ -267,20 +267,18 @@ describe('HelpPage Component', () => {
     });
 
     it('includes support response time information', async () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
-      const contactTab = screen.getByRole('tab', { name: /contact support/i });
-      await userEvent.click(contactTab);
+      await clickTab(/contact support/i);
 
       expect(screen.getAllByText(/response time/i)).toHaveLength(3); // appears in multiple places
       expect(screen.getByText(/24-48 hours/i)).toBeInTheDocument();
     });
 
     it('displays community resources', async () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
-      const contactTab = screen.getByRole('tab', { name: /contact support/i });
-      await userEvent.click(contactTab);
+      await clickTab(/contact support/i);
 
       expect(screen.getByText(/community resources/i)).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /github discussions/i })).toBeInTheDocument();
@@ -290,21 +288,21 @@ describe('HelpPage Component', () => {
 
   describe('Responsive Design', () => {
     it('renders help page with proper responsive layout', () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       const helpContainer = screen.getByTestId('help-container');
       expect(helpContainer).toHaveClass('container', 'mx-auto', 'px-4');
     });
 
     it('displays tab navigation in mobile-friendly format', () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       const tabsList = screen.getByRole('tablist');
       expect(tabsList).toHaveClass('grid', 'grid-cols-3', 'md:grid-cols-6', 'gap-2');
     });
 
     it('adjusts content layout for different screen sizes', () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       const contentArea = screen.getByTestId('help-content');
       expect(contentArea).toHaveClass('mt-6');
@@ -313,7 +311,7 @@ describe('HelpPage Component', () => {
 
   describe('SEO and Metadata', () => {
     it('includes proper page metadata', () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       // This would typically be tested at the page level with Next.js metadata
       // Skip document.title test as it's handled by Next.js metadata
@@ -323,7 +321,7 @@ describe('HelpPage Component', () => {
 
   describe('Accessibility', () => {
     it('has proper heading hierarchy', () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       // The main title is actually a CardTitle (div), not a semantic heading
       const mainTitle = screen.getByText('Help & Support');
@@ -331,7 +329,7 @@ describe('HelpPage Component', () => {
     });
 
     it('has proper tab navigation with keyboard support', () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       const tabList = screen.getByRole('tablist');
       expect(tabList).toBeInTheDocument();
@@ -343,7 +341,7 @@ describe('HelpPage Component', () => {
     });
 
     it('includes proper ARIA labels and descriptions', () => {
-      render(<HelpPage />);
+      renderHelpPage();
 
       const searchInput = screen.getByPlaceholderText(/search help topics/i);
       expect(searchInput).toHaveAttribute('aria-label', 'Search help topics');
