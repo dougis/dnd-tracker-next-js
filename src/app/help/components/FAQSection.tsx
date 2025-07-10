@@ -82,15 +82,15 @@ export default function FAQSection() {
   const categories = ['All', ...Array.from(new Set(faqData.map(item => item.category)))];
 
   const toggleExpanded = (itemId: string) => {
-    setExpandedItems(prev => 
-      prev.includes(itemId) 
+    setExpandedItems(prev =>
+      prev.includes(itemId)
         ? prev.filter(id => id !== itemId)
         : [...prev, itemId]
     );
   };
 
-  const filteredFAQ = selectedCategory === 'All' 
-    ? faqData 
+  const filteredFAQ = selectedCategory === 'All'
+    ? faqData
     : faqData.filter(item => item.category === selectedCategory);
 
   return (

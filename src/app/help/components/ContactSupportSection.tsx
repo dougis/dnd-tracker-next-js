@@ -39,7 +39,7 @@ export default function ContactSupportSection() {
                   <strong>Billing Questions:</strong> billing@dndtracker.com
                 </p>
               </div>
-              
+
               <div className="border rounded-lg p-3">
                 <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
                   <Clock className="h-4 w-4" />
@@ -269,8 +269,8 @@ export default function ContactSupportSection() {
             <div>
               <h4 className="font-semibold text-sm mb-2">Response Expectations</h4>
               <p className="text-sm text-muted-foreground">
-                We strive to provide helpful, timely responses to all support requests. 
-                Response times vary based on your subscription tier and the complexity of the issue. 
+                We strive to provide helpful, timely responses to all support requests.
+                Response times vary based on your subscription tier and the complexity of the issue.
                 For urgent matters affecting paid subscribers, we offer expedited support channels.
               </p>
             </div>

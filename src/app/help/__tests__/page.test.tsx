@@ -78,13 +78,13 @@ describe('HelpPage Component', () => {
       // Switch to FAQ tab
       const faqTab = screen.getByRole('tab', { name: /faq/i });
       await userEvent.click(faqTab);
-      
+
       expect(screen.getByText(/frequently asked questions/i)).toBeInTheDocument();
 
       // Switch to Features tab
       const featuresTab = screen.getByRole('tab', { name: /features/i });
       await userEvent.click(featuresTab);
-      
+
       expect(screen.getByText(/feature documentation/i)).toBeInTheDocument();
     });
   });

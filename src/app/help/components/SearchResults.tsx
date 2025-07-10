@@ -35,7 +35,7 @@ export default function SearchResults({ query, onClearSearch }: SearchResultsPro
       id: 'character-import',
       title: 'Character Import/Export',
       content: 'Import characters from D&D Beyond or export your characters for backup. You can paste a D&D Beyond character sheet URL or export data.',
-      category: 'Characters', 
+      category: 'Characters',
       section: 'Features',
       relevance: 0.8
     },
@@ -50,7 +50,7 @@ export default function SearchResults({ query, onClearSearch }: SearchResultsPro
   ];
 
   // Filter results based on query
-  const filteredResults = mockResults.filter(result => 
+  const filteredResults = mockResults.filter(result =>
     result.title.toLowerCase().includes(query.toLowerCase()) ||
     result.content.toLowerCase().includes(query.toLowerCase()) ||
     result.category.toLowerCase().includes(query.toLowerCase())
@@ -58,11 +58,11 @@ export default function SearchResults({ query, onClearSearch }: SearchResultsPro
 
   const highlightText = (text: string, query: string) => {
     if (!query) return text;
-    
+
     const regex = new RegExp(`(${query})`, 'gi');
     const parts = text.split(regex);
-    
-    return parts.map((part, index) => 
+
+    return parts.map((part, index) =>
       regex.test(part) ? (
         <mark key={index} className="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">
           {part}
@@ -91,7 +91,7 @@ export default function SearchResults({ query, onClearSearch }: SearchResultsPro
           <p className="text-sm text-muted-foreground">
             Found {filteredResults.length} result{filteredResults.length !== 1 ? 's' : ''}
           </p>
-          
+
           {filteredResults.map((result) => (
             <Card key={result.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
@@ -140,8 +140,8 @@ export default function SearchResults({ query, onClearSearch }: SearchResultsPro
                 <li>• Browsing our help categories</li>
               </ul>
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="mt-4"
               onClick={onClearSearch}
             >

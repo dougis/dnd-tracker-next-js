@@ -10,7 +10,7 @@ export default function GettingStartedSection() {
       <div>
         <h2 className="text-2xl font-bold mb-4">Welcome to the D&D Encounter Tracker</h2>
         <p className="text-lg text-muted-foreground mb-6">
-          Get started with the most comprehensive D&D encounter management tool. 
+          Get started with the most comprehensive D&D encounter management tool.
           Follow this quick start guide to begin tracking your adventures.
         </p>
       </div>
@@ -32,11 +32,11 @@ export default function GettingStartedSection() {
               <div className="flex-1">
                 <h4 className="font-semibold mb-2">Create Your First Character</h4>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Start by adding player characters or NPCs to your library. You can create detailed 
+                  Start by adding player characters or NPCs to your library. You can create detailed
                   character sheets with stats, abilities, and equipment.
                 </p>
-                <Link 
-                  href="/characters" 
+                <Link
+                  href="/characters"
                   className="text-primary hover:underline text-sm font-medium"
                 >
                   Character Creation Guide →
@@ -50,11 +50,11 @@ export default function GettingStartedSection() {
               <div className="flex-1">
                 <h4 className="font-semibold mb-2">Set Up a Party</h4>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Group your characters together to form adventuring parties. This makes it easy 
+                  Group your characters together to form adventuring parties. This makes it easy
                   to manage multiple characters for encounters.
                 </p>
-                <Link 
-                  href="/parties" 
+                <Link
+                  href="/parties"
                   className="text-primary hover:underline text-sm font-medium"
                 >
                   Party Management →
@@ -68,11 +68,11 @@ export default function GettingStartedSection() {
               <div className="flex-1">
                 <h4 className="font-semibold mb-2">Build Your First Encounter</h4>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Create encounters by adding creatures, setting difficulty, and configuring 
+                  Create encounters by adding creatures, setting difficulty, and configuring
                   environmental factors for your combat sessions.
                 </p>
-                <Link 
-                  href="/encounters" 
+                <Link
+                  href="/encounters"
                   className="text-primary hover:underline text-sm font-medium"
                 >
                   Encounter Builder →
@@ -86,11 +86,11 @@ export default function GettingStartedSection() {
               <div className="flex-1">
                 <h4 className="font-semibold mb-2">Start Combat</h4>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Launch into combat mode to track initiative, manage HP/damage, and run 
+                  Launch into combat mode to track initiative, manage HP/damage, and run
                   smooth combat encounters with automated turn management.
                 </p>
-                <Link 
-                  href="/combat" 
+                <Link
+                  href="/combat"
                   className="text-primary hover:underline text-sm font-medium"
                 >
                   Combat Tracking Guide →
@@ -146,7 +146,7 @@ export default function GettingStartedSection() {
         <CardContent>
           <div className="space-y-3">
             <p className="text-sm">
-              Ready to dive deeper? Check out our comprehensive user guides for detailed 
+              Ready to dive deeper? Check out our comprehensive user guides for detailed
               tutorials on each feature.
             </p>
             <div className="flex flex-wrap gap-2">

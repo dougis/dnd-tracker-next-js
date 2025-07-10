@@ -32,7 +32,7 @@ export default function HelpContent() {
         <CardDescription>
           D&D Encounter Tracker Documentation - Your comprehensive guide to using the D&D Encounter Tracker for managing characters, encounters, and combat sessions.
         </CardDescription>
-        
+
         {/* Search Section */}
         <div className="relative mt-4">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
