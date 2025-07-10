@@ -109,6 +109,7 @@ function ViewModeToggle({
         size="sm"
         onClick={() => onViewModeChange('grid')}
         className="rounded-r-none"
+        aria-label="Grid view"
       >
         <Grid3X3 className="h-4 w-4" />
       </Button>
@@ -117,6 +118,7 @@ function ViewModeToggle({
         size="sm"
         onClick={() => onViewModeChange('table')}
         className="rounded-l-none"
+        aria-label="List view"
       >
         <List className="h-4 w-4" />
       </Button>
