@@ -424,7 +424,6 @@ characterSchema.index({ race: 1 });
 
 
 // Create and export the model
-export const Character = mongoose.model<ICharacter, CharacterModel>(
-  'Character',
-  characterSchema
-);
+export const Character =
+  (mongoose.models.Character as CharacterModel) ||
+  mongoose.model<ICharacter, CharacterModel>('Character', characterSchema);

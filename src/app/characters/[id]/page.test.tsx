@@ -21,6 +21,7 @@ import {
   mockFailedCharacterFetch,
   mockPendingCharacterFetch,
 } from './__tests__/page-test-utils';
+import { shareTestHelpers, backButtonTestHelpers } from './__tests__/share-test-helpers';
 
 // Mock dependencies
 jest.mock('next/navigation', () => ({
@@ -178,5 +179,104 @@ describe('CharacterDetailClient', () => {
     await clickTabAndWait(user, 'Notes', [
       'Born in a small village, this character has a rich history.'
     ]);
+  });
+
+  it('should handle share functionality with navigator.share API', async () => {
+    const testCharacter = createBasicCharacter();
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
+
+    const mockShare = jest.fn().mockResolvedValue(undefined);
+    shareTestHelpers.setupNavigatorShare(mockShare);
+
+    renderCharacterPage();
+
+    await waitForText(testCharacter.name);
+    shareTestHelpers.clickShareButton();
+
+    shareTestHelpers.expectShareApiCall(mockShare, testCharacter.name, testCharacter._id);
+  });
+
+  it('should handle share functionality fallback to clipboard', async () => {
+    const testCharacter = createBasicCharacter();
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
+
+    const mockWriteText = jest.fn().mockResolvedValue(undefined);
+    shareTestHelpers.setupClipboardApi(mockWriteText);
+    const mockAlert = shareTestHelpers.mockWindowAlert();
+    shareTestHelpers.removeNavigatorShare();
+
+    renderCharacterPage();
+
+    await waitForText(testCharacter.name);
+    shareTestHelpers.clickShareButton();
+    await shareTestHelpers.waitForAsync();
+
+    shareTestHelpers.expectClipboardCall(mockWriteText, testCharacter._id);
+    shareTestHelpers.expectAlertCall(mockAlert);
+  });
+
+  it('should handle share functionality error with prompt fallback', async () => {
+    const testCharacter = createBasicCharacter();
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
+
+    const mockWriteText = jest.fn();
+    const { consoleSpy } = shareTestHelpers.setupErrorScenario(mockWriteText);
+    shareTestHelpers.setupClipboardApi(mockWriteText);
+    const mockPrompt = shareTestHelpers.mockWindowPrompt();
+    shareTestHelpers.removeNavigatorShare();
+
+    renderCharacterPage();
+
+    await waitForText(testCharacter.name);
+    shareTestHelpers.clickShareButton();
+    await shareTestHelpers.waitForAsync();
+
+    shareTestHelpers.expectErrorHandling(consoleSpy);
+    shareTestHelpers.expectPromptCall(mockPrompt, testCharacter._id);
+    shareTestHelpers.restoreConsoleSpy(consoleSpy);
+  });
+
+  it('should handle back button click', async () => {
+    const testCharacter = createBasicCharacter();
+    mockSuccessfulCharacterFetch(testCharacter, mockFetch);
+
+    renderCharacterPage();
+
+    await waitForText(testCharacter.name);
+    backButtonTestHelpers.clickBackButton();
+    backButtonTestHelpers.expectBackNavigation(mockRouterBack);
+  });
+
+  it('should handle back button click from loading state', () => {
+    mockPendingCharacterFetch(mockFetch);
+
+    renderCharacterPage();
+
+    backButtonTestHelpers.clickBackButton();
+    backButtonTestHelpers.expectBackNavigation(mockRouterBack);
+  });
+
+  it('should handle back button click from error state', async () => {
+    mockFailedCharacterFetch('Character not found', mockFetch);
+
+    renderCharacterPage();
+
+    await waitForText('Character not found');
+    backButtonTestHelpers.clickBackButton();
+    backButtonTestHelpers.expectBackNavigation(mockRouterBack);
+  });
+
+  it('should handle back button click from not found state', async () => {
+    // Mock empty response (no character returned)
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ character: null }),
+    });
+
+    renderCharacterPage();
+
+    await waitForText('Character not found');
+    backButtonTestHelpers.clickBackButton();
+    backButtonTestHelpers.expectBackNavigation(mockRouterBack);
   });
 });
