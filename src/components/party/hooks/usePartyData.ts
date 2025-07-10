@@ -55,11 +55,11 @@ function normalizeSortValue(value: any, sortBy: PartySortBy): any {
   if (sortBy === 'createdAt' || sortBy === 'updatedAt' || sortBy === 'lastActivity') {
     return new Date(value).getTime();
   }
-  
+
   if (typeof value === 'string') {
     return value.toLowerCase();
   }
-  
+
   return value;
 }
 
