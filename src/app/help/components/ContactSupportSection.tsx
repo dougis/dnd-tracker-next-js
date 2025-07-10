@@ -156,7 +156,7 @@ export default function ContactSupportSection() {
                 <p className="text-sm text-muted-foreground mb-3">
                   Browse existing discussions, ask questions, and share your experiences.
                 </p>
-                <Link href="/community" target="_blank" rel="noopener noreferrer">
+                <Link href="https://community.dndtracker.com" target="_blank" rel="noopener noreferrer">
                   <Button variant="outline" size="sm">
                     Visit Forums
                   </Button>
@@ -171,7 +171,7 @@ export default function ContactSupportSection() {
                 <p className="text-sm text-muted-foreground mb-3">
                   Search our comprehensive knowledge base for detailed guides and solutions.
                 </p>
-                <Link href="/kb" target="_blank" rel="noopener noreferrer">
+                <Link href="https://kb.dndtracker.com" target="_blank" rel="noopener noreferrer">
                   <Button variant="outline" size="sm">
                     Browse Knowledge Base
                   </Button>

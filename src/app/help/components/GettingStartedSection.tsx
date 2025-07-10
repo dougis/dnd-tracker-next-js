@@ -54,7 +54,7 @@ export default function GettingStartedSection() {
                   to manage multiple characters for encounters.
                 </p>
                 <Link
-                  href="/parties"
+                  href="/characters"
                   className="text-primary hover:underline text-sm font-medium"
                 >
                   Party Management →
