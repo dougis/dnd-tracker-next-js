@@ -50,27 +50,34 @@ function applyFilters(parties: PartyListItem[], searchQuery: string, filters: Pa
   return filtered;
 }
 
+// Utility function to normalize sort values
+function normalizeSortValue(value: any, sortBy: PartySortBy): any {
+  if (sortBy === 'createdAt' || sortBy === 'updatedAt' || sortBy === 'lastActivity') {
+    return new Date(value).getTime();
+  }
+  
+  if (typeof value === 'string') {
+    return value.toLowerCase();
+  }
+  
+  return value;
+}
+
+// Utility function to compare two values
+function compareValues(aValue: any, bValue: any, sortOrder: SortOrder): number {
+  if (sortOrder === 'asc') {
+    return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+  } else {
+    return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+  }
+}
+
 // Utility function to sort parties
 function sortParties(parties: PartyListItem[], sortBy: PartySortBy, sortOrder: SortOrder): void {
   parties.sort((a, b) => {
-    let aValue: any = a[sortBy];
-    let bValue: any = b[sortBy];
-
-    if (sortBy === 'createdAt' || sortBy === 'updatedAt' || sortBy === 'lastActivity') {
-      aValue = new Date(aValue).getTime();
-      bValue = new Date(bValue).getTime();
-    }
-
-    if (typeof aValue === 'string') {
-      aValue = aValue.toLowerCase();
-      bValue = bValue.toLowerCase();
-    }
-
-    if (sortOrder === 'asc') {
-      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-    } else {
-      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-    }
+    const aValue = normalizeSortValue(a[sortBy], sortBy);
+    const bValue = normalizeSortValue(b[sortBy], sortBy);
+    return compareValues(aValue, bValue, sortOrder);
   });
 }
 
