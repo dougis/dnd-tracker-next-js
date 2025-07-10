@@ -122,11 +122,50 @@ const mockPagination = {
   totalItems: 10,
 };
 
-describe('PartyListView', () => {
+// Helper function to create mock data configurations
+function createMockDataConfig(overrides = {}) {
+  return {
+    parties: mockParties,
+    isLoading: false,
+    error: null,
+    pagination: mockPagination,
+    goToPage: jest.fn(),
+    refetch: jest.fn(),
+    ...overrides,
+  };
+}
+
+// Helper function to setup mocks with common configuration
+function setupMocks(dataOverrides = {}, selectionOverrides = {}) {
   const mockUsePartyData = require('../hooks/usePartyData').usePartyData;
   const mockUsePartyFilters = require('../hooks/usePartyFilters').usePartyFilters;
   const mockUsePartySelection = require('../hooks/usePartySelection').usePartySelection;
 
+  mockUsePartyFilters.mockReturnValue({
+    filters: {},
+    searchQuery: '',
+    sortBy: 'name',
+    sortOrder: 'asc',
+    updateFilters: jest.fn(),
+    updateSearchQuery: jest.fn(),
+    updateSort: jest.fn(),
+    clearFilters: jest.fn(),
+  });
+
+  mockUsePartyData.mockReturnValue(createMockDataConfig(dataOverrides));
+
+  mockUsePartySelection.mockReturnValue({
+    selectedParties: [],
+    selectAll: jest.fn(),
+    selectParty: jest.fn(),
+    clearSelection: jest.fn(),
+    isAllSelected: false,
+    hasSelection: false,
+    ...selectionOverrides,
+  });
+}
+
+describe('PartyListView', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
@@ -134,51 +173,13 @@ describe('PartyListView', () => {
       data: mockSession,
       status: 'authenticated',
     });
-
-    // Default mock implementations
-    mockUsePartyFilters.mockReturnValue({
-      filters: {},
-      searchQuery: '',
-      sortBy: 'name',
-      sortOrder: 'asc',
-      updateFilters: jest.fn(),
-      updateSearchQuery: jest.fn(),
-      updateSort: jest.fn(),
-      clearFilters: jest.fn(),
-    });
-
-    mockUsePartyData.mockReturnValue({
-      parties: mockParties,
-      isLoading: false,
-      error: null,
-      pagination: mockPagination,
-      goToPage: jest.fn(),
-      refetch: jest.fn(),
-    });
-
-    mockUsePartySelection.mockReturnValue({
-      selectedParties: [],
-      selectAll: jest.fn(),
-      selectParty: jest.fn(),
-      clearSelection: jest.fn(),
-      isAllSelected: false,
-      hasSelection: false,
-    });
+    setupMocks();
   });
 
   describe('Loading State', () => {
     it('should display loading state', () => {
-      mockUsePartyData.mockReturnValue({
-        parties: [],
-        isLoading: true,
-        error: null,
-        pagination: null,
-        goToPage: jest.fn(),
-        refetch: jest.fn(),
-      });
-
+      setupMocks({ parties: [], isLoading: true, pagination: null });
       render(<PartyListView />);
-
       expect(screen.getByTestId('content-section')).toBeInTheDocument();
     });
   });
@@ -186,17 +187,8 @@ describe('PartyListView', () => {
   describe('Error State', () => {
     it('should display error fallback when error occurs', () => {
       const mockError = new Error('Failed to load parties');
-      mockUsePartyData.mockReturnValue({
-        parties: [],
-        isLoading: false,
-        error: mockError,
-        pagination: null,
-        goToPage: jest.fn(),
-        refetch: jest.fn(),
-      });
-
+      setupMocks({ parties: [], error: mockError, pagination: null });
       render(<PartyListView />);
-
       expect(screen.getByTestId('error-fallback')).toBeInTheDocument();
       expect(screen.getByText('Error occurred')).toBeInTheDocument();
     });
@@ -204,17 +196,8 @@ describe('PartyListView', () => {
     it('should handle retry action', () => {
       const mockRefetch = jest.fn();
       const mockError = new Error('Failed to load parties');
-      mockUsePartyData.mockReturnValue({
-        parties: [],
-        isLoading: false,
-        error: mockError,
-        pagination: null,
-        goToPage: jest.fn(),
-        refetch: mockRefetch,
-      });
-
+      setupMocks({ parties: [], error: mockError, pagination: null, refetch: mockRefetch });
       render(<PartyListView />);
-
       fireEvent.click(screen.getByText('Retry'));
       expect(mockRefetch).toHaveBeenCalled();
     });
@@ -246,39 +229,24 @@ describe('PartyListView', () => {
   describe('Party Selection', () => {
     it('should not show batch actions when no parties selected', () => {
       render(<PartyListView />);
-
       expect(screen.queryByTestId('batch-actions')).not.toBeInTheDocument();
     });
 
     it('should show batch actions when parties are selected', () => {
-      mockUsePartySelection.mockReturnValue({
-        selectedParties: ['party-1'],
-        selectAll: jest.fn(),
-        selectParty: jest.fn(),
-        clearSelection: jest.fn(),
-        isAllSelected: false,
-        hasSelection: true,
-      });
-
+      setupMocks({}, { selectedParties: ['party-1'], hasSelection: true });
       render(<PartyListView />);
-
       expect(screen.getByTestId('batch-actions')).toBeInTheDocument();
       expect(screen.getByText('Selected: 1')).toBeInTheDocument();
     });
 
     it('should handle clear selection', () => {
       const mockClearSelection = jest.fn();
-      mockUsePartySelection.mockReturnValue({
+      setupMocks({}, {
         selectedParties: ['party-1'],
-        selectAll: jest.fn(),
-        selectParty: jest.fn(),
-        clearSelection: mockClearSelection,
-        isAllSelected: false,
         hasSelection: true,
+        clearSelection: mockClearSelection
       });
-
       render(<PartyListView />);
-
       fireEvent.click(screen.getByText('Clear Selection'));
       expect(mockClearSelection).toHaveBeenCalled();
     });
@@ -300,40 +268,21 @@ describe('PartyListView', () => {
   describe('Pagination', () => {
     it('should render pagination when available', () => {
       render(<PartyListView />);
-
       expect(screen.getByTestId('pagination')).toBeInTheDocument();
       expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
       expect(screen.getByText('Total: 10')).toBeInTheDocument();
     });
 
     it('should not render pagination when not available', () => {
-      mockUsePartyData.mockReturnValue({
-        parties: mockParties,
-        isLoading: false,
-        error: null,
-        pagination: null,
-        goToPage: jest.fn(),
-        refetch: jest.fn(),
-      });
-
+      setupMocks({ pagination: null });
       render(<PartyListView />);
-
       expect(screen.queryByTestId('pagination')).not.toBeInTheDocument();
     });
 
     it('should handle page change', () => {
       const mockGoToPage = jest.fn();
-      mockUsePartyData.mockReturnValue({
-        parties: mockParties,
-        isLoading: false,
-        error: null,
-        pagination: mockPagination,
-        goToPage: mockGoToPage,
-        refetch: jest.fn(),
-      });
-
+      setupMocks({ goToPage: mockGoToPage });
       render(<PartyListView />);
-
       fireEvent.click(screen.getByText('Next'));
       expect(mockGoToPage).toHaveBeenCalledWith(2);
     });
@@ -342,23 +291,13 @@ describe('PartyListView', () => {
   describe('Party Display', () => {
     it('should display parties in content section', () => {
       render(<PartyListView />);
-
       expect(screen.getByTestId('party-party-1')).toBeInTheDocument();
       expect(screen.getByTestId('party-party-2')).toBeInTheDocument();
     });
 
     it('should handle empty party list', () => {
-      mockUsePartyData.mockReturnValue({
-        parties: [],
-        isLoading: false,
-        error: null,
-        pagination: null,
-        goToPage: jest.fn(),
-        refetch: jest.fn(),
-      });
-
+      setupMocks({ parties: [], pagination: null });
       render(<PartyListView />);
-
       expect(screen.getByTestId('content-section')).toBeInTheDocument();
       expect(screen.queryByTestId('party-party-1')).not.toBeInTheDocument();
     });
