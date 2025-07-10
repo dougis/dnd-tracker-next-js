@@ -63,18 +63,13 @@ function normalizeSortValue(value: any, sortBy: PartySortBy): any {
   return value;
 }
 
-// Utility function to sort parties
+// Utility function to sort parties - simplified to avoid parser issues
 function sortParties(parties: PartyListItem[], sortBy: PartySortBy, sortOrder: SortOrder): void {
+  const ascending = sortOrder === 'asc';
   parties.sort((a, b) => {
-    const aValue = normalizeSortValue(a[sortBy], sortBy);
-    const bValue = normalizeSortValue(b[sortBy], sortBy);
-
-    // Inline comparison logic to avoid Codacy parsing issues
-    if (sortOrder === 'asc') {
-      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-    } else {
-      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-    }
+    const aVal = normalizeSortValue(a[sortBy], sortBy);
+    const bVal = normalizeSortValue(b[sortBy], sortBy);
+    return ascending ? (aVal < bVal ? -1 : aVal > bVal ? 1 : 0) : (aVal > bVal ? -1 : aVal < bVal ? 1 : 0);
   });
 }
 
