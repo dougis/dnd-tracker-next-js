@@ -27,6 +27,9 @@ exclude_paths:
 engine_configuration:
   - tool: spellcheck
     enabled: false
+  - tool: eslint
+    exclude_patterns:
+      - "eslint.config.mjs"
 runtimes:
     - dart@3.7.2
     - go@1.22.3
