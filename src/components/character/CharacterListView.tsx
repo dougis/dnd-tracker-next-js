@@ -21,6 +21,7 @@ export interface CharacterListViewProps {
   onCharacterEdit?: (_character: ICharacter) => void;
   onCharacterDelete?: (_character: ICharacter) => void;
   onCharacterDuplicate?: (_character: ICharacter) => void;
+  onCreateCharacter?: () => void;
 }
 
 export function CharacterListView({
@@ -29,6 +30,7 @@ export function CharacterListView({
   onCharacterEdit,
   onCharacterDelete,
   onCharacterDuplicate,
+  onCreateCharacter,
 }: CharacterListViewProps) {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -83,7 +85,7 @@ export function CharacterListView({
   if (loading) return <LoadingState />;
   if (error) return <ErrorState error={error} />;
   if (!charactersData || processedCharacters.length === 0) {
-    return <EmptyState onCreateCharacter={() => router.push('/')} />;
+    return <EmptyState onCreateCharacter={onCreateCharacter || (() => router.push('/'))} />;
   }
 
   return (
