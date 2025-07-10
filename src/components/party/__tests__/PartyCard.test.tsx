@@ -2,6 +2,8 @@ import {
   render,
   screen,
   fireEvent,
+  waitFor,
+  userEvent,
   createMockParty,
   setupConsoleSpy,
   renderPartyCard,
@@ -136,8 +138,8 @@ describe('PartyCard', () => {
       const mockOnSelect = jest.fn();
       render(<PartyCard party={mockParty} isSelected={true} onSelect={mockOnSelect} />);
 
-      const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
-      expect(checkbox.checked).toBe(true);
+      const checkbox = screen.getByRole('checkbox');
+      expect(checkbox).toHaveAttribute('data-state', 'checked');
     });
   });
 
@@ -145,72 +147,66 @@ describe('PartyCard', () => {
     it('should render actions dropdown menu', () => {
       render(<PartyCard party={mockParty} />);
 
-      const menuButtons = screen.getAllByRole('button');
-      const menuTrigger = menuButtons.find(button => button.querySelector('svg')); // Find button with icon
+      const menuTrigger = screen.getByLabelText('Party actions');
       expect(menuTrigger).toBeInTheDocument();
     });
 
-    it('should show menu items when clicked', () => {
+    it('should show menu items when clicked', async () => {
+      const user = userEvent.setup();
       render(<PartyCard party={mockParty} />);
 
-      const buttons = screen.getAllByRole('button');
-      const menuTrigger = buttons.find(button =>
-        button.querySelector('svg') && !button.textContent?.includes('View')
-      );
+      const menuTrigger = screen.getByLabelText('Party actions');
       expect(menuTrigger).toBeInTheDocument();
 
-      if (menuTrigger) {
-        fireEvent.click(menuTrigger);
+      await user.click(menuTrigger);
 
+      await waitFor(() => {
         expect(screen.getByText('View Details')).toBeInTheDocument();
         expect(screen.getByText('Edit Party')).toBeInTheDocument();
         expect(screen.getByText('Delete Party')).toBeInTheDocument();
-      }
+      });
     });
 
-    it('should handle view party action', () => {
+    it('should handle view party action', async () => {
+      const user = userEvent.setup();
       render(<PartyCard party={mockParty} />);
 
-      const buttons = screen.getAllByRole('button');
-      const menuTrigger = buttons.find(button =>
-        button.querySelector('svg') && !button.textContent?.includes('View')
-      );
-
-      if (menuTrigger) {
-        fireEvent.click(menuTrigger);
-        fireEvent.click(screen.getByText('View Details'));
-        expect(consoleSpy).toHaveBeenCalledWith('View party:', 'party-1');
-      }
+      const menuTrigger = screen.getByLabelText('Party actions');
+      await user.click(menuTrigger);
+      
+      await waitFor(async () => {
+        await user.click(screen.getByText('View Details'));
+      });
+      
+      expect(consoleSpy).toHaveBeenCalledWith('View party:', 'party-1');
     });
 
-    it('should handle edit party action', () => {
+    it('should handle edit party action', async () => {
+      const user = userEvent.setup();
       render(<PartyCard party={mockParty} />);
 
-      const buttons = screen.getAllByRole('button');
-      const menuTrigger = buttons.find(button =>
-        button.querySelector('svg') && !button.textContent?.includes('View')
-      );
-
-      if (menuTrigger) {
-        fireEvent.click(menuTrigger);
-        fireEvent.click(screen.getByText('Edit Party'));
-        expect(consoleSpy).toHaveBeenCalledWith('Edit party:', 'party-1');
-      }
+      const menuTrigger = screen.getByLabelText('Party actions');
+      await user.click(menuTrigger);
+      
+      await waitFor(async () => {
+        await user.click(screen.getByText('Edit Party'));
+      });
+      
+      expect(consoleSpy).toHaveBeenCalledWith('Edit party:', 'party-1');
     });
 
-    it('should handle delete party action', () => {
+    it('should handle delete party action', async () => {
+      const user = userEvent.setup();
       render(<PartyCard party={mockParty} />);
 
-      const buttons = screen.getAllByRole('button');
-      const menuTrigger = buttons.find(button =>
-        button.querySelector('svg') && !button.textContent?.includes('View')
-      );
-
-      if (menuTrigger) {
-        fireEvent.click(menuTrigger);
-        fireEvent.click(screen.getByText('Delete Party'));
-        expect(consoleSpy).toHaveBeenCalledWith('Delete party:', 'party-1');
-      }
+      const menuTrigger = screen.getByLabelText('Party actions');
+      await user.click(menuTrigger);
+      
+      await waitFor(async () => {
+        await user.click(screen.getByText('Delete Party'));
+      });
+      
+      expect(consoleSpy).toHaveBeenCalledWith('Delete party:', 'party-1');
     });
   });
 

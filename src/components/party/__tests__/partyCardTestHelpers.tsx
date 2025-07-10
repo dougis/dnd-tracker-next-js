@@ -1,9 +1,10 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { PartyCard } from '../PartyCard';
 import type { PartyListItem } from '../types';
 
 // Re-export testing library functions for convenience
-export { render, screen, fireEvent };
+export { render, screen, fireEvent, waitFor, userEvent };
 
 // Mock date-fns
 jest.mock('date-fns', () => ({
