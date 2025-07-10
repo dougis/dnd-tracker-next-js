@@ -19,6 +19,15 @@ jest.mock('@/components/combat/CombatToolbar', () => ({
 }));
 
 describe('Combat Page', () => {
+  // Helper function to set up authenticated session
+  const setupAuthenticatedSession = () => {
+    mockUseSession.mockReturnValue({
+      data: { user: { id: 'user1', name: 'Test User' }, expires: '2024-01-01' },
+      status: 'authenticated',
+      update: jest.fn(),
+    });
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -125,11 +134,7 @@ describe('Combat Page', () => {
 
   describe('Accessibility', () => {
     beforeEach(() => {
-      mockUseSession.mockReturnValue({
-        data: { user: { id: 'user1', name: 'Test User' }, expires: '2024-01-01' },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      setupAuthenticatedSession();
     });
 
     it('has proper heading structure', () => {
@@ -157,11 +162,7 @@ describe('Combat Page', () => {
 
   describe('Layout Integration', () => {
     beforeEach(() => {
-      mockUseSession.mockReturnValue({
-        data: { user: { id: 'user1', name: 'Test User' }, expires: '2024-01-01' },
-        status: 'authenticated',
-        update: jest.fn(),
-      });
+      setupAuthenticatedSession();
     });
 
     it('renders within AppLayout', () => {
