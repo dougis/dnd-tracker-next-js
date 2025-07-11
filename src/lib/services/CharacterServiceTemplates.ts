@@ -22,6 +22,7 @@ import {
   CharacterServiceErrors,
 } from './CharacterServiceErrors';
 import { CharacterServiceCRUD } from './CharacterServiceCRUD';
+import { OperationWrapper } from './utils/OperationWrapper';
 
 export interface BulkOperationResult<T> {
   successful: T[];
@@ -38,35 +39,20 @@ export class CharacterServiceTemplates {
     userId: string,
     templateName: string
   ): Promise<ServiceResult<CharacterPreset>> {
-    try {
-      const characterResult = await CharacterServiceCRUD.getCharacterById(characterId, userId);
-      if (!characterResult.success) {
-        return characterResult;
-      }
+    return OperationWrapper.executeWithCustomError(
+      async () => {
+        const characterResult = await CharacterServiceCRUD.getCharacterById(characterId, userId);
+        if (!characterResult.success) {
+          throw new Error(characterResult.error.message);
+        }
 
-      const character = characterResult.data;
-
-      // Create template from character
-      const template: CharacterPreset = {
-        name: templateName,
-        type: character.type as CharacterType,
-        race: character.race as CharacterRace,
-        class: character.classes[0].class as CharacterClass,
-        level: character.classes[0].level,
-        abilityScores: character.abilityScores,
-        hitPoints: character.hitPoints.maximum,
-        armorClass: character.armorClass,
-      };
-
-      return createSuccessResult(template);
-
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.templateCreationFailed(
-          error instanceof Error ? error.message : 'Unknown error'
-        )
-      );
-    }
+        const character = characterResult.data;
+        return this.createTemplateFromCharacter(character, templateName);
+      },
+      (error) => CharacterServiceErrors.templateCreationFailed(
+        error instanceof Error ? error.message : 'Unknown error'
+      )
+    );
   }
 
   /**
@@ -77,70 +63,28 @@ export class CharacterServiceTemplates {
     userId: string,
     newName: string
   ): Promise<ServiceResult<ICharacter>> {
-    try {
-      const characterResult = await CharacterServiceCRUD.getCharacterById(characterId, userId);
-      if (!characterResult.success) {
-        return characterResult;
-      }
+    return OperationWrapper.executeWithCustomError(
+      async () => {
+        const characterResult = await CharacterServiceCRUD.getCharacterById(characterId, userId);
+        if (!characterResult.success) {
+          throw new Error(characterResult.error.message);
+        }
 
-      const originalCharacter = characterResult.data;
-
-      // Create clone data
-      const cloneData: CharacterCreation = {
-        name: newName,
-        type: originalCharacter.type as CharacterType,
-        race: originalCharacter.race as CharacterRace,
-        customRace: originalCharacter.customRace,
-        size: originalCharacter.size as Size,
-        classes: originalCharacter.classes.map(c => ({
-          class: c.class as CharacterClass,
-          level: c.level,
-          hitDie: c.hitDie,
-          subclass: c.subclass,
-        })),
-        abilityScores: originalCharacter.abilityScores,
-        hitPoints: {
-          maximum: originalCharacter.hitPoints.maximum,
-          current: originalCharacter.hitPoints.maximum, // Reset current HP
-          temporary: 0, // Reset temporary HP
-        },
-        armorClass: originalCharacter.armorClass,
-        speed: originalCharacter.speed,
-        proficiencyBonus: originalCharacter.proficiencyBonus,
-        savingThrows: originalCharacter.savingThrows,
-        skills: Object.fromEntries(originalCharacter.skills),
-        equipment: originalCharacter.equipment,
-        spells: originalCharacter.spells.map(spell => ({
-          name: spell.name,
-          level: spell.level,
-          school: spell.school as 'abjuration' | 'conjuration' | 'divination' | 'enchantment' | 'evocation' | 'illusion' | 'necromancy' | 'transmutation',
-          castingTime: spell.castingTime,
-          range: spell.range,
-          components: {
-            verbal: false,
-            somatic: false,
-            material: false,
-            materialComponent: spell.components,
-          },
-          duration: spell.duration,
-          description: spell.description,
-          prepared: spell.isPrepared,
-        })),
-        backstory: originalCharacter.backstory,
-        notes: originalCharacter.notes,
-        imageUrl: originalCharacter.imageUrl,
-      };
-
-      return CharacterServiceCRUD.createCharacter(userId, cloneData);
-
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.operationFailed(
-          'clone character',
-          error instanceof Error ? error.message : 'Unknown error'
-        )
-      );
-    }
+        const originalCharacter = characterResult.data;
+        const cloneData = this.createCloneDataFromCharacter(originalCharacter, newName);
+        
+        const createResult = await CharacterServiceCRUD.createCharacter(userId, cloneData);
+        if (!createResult.success) {
+          throw new Error(createResult.error.message);
+        }
+        
+        return createResult.data;
+      },
+      (error) => CharacterServiceErrors.operationFailed(
+        'clone character',
+        error instanceof Error ? error.message : 'Unknown error'
+      )
+    );
   }
 
   /**
@@ -202,32 +146,11 @@ export class CharacterServiceTemplates {
     ownerId: string,
     charactersData: CharacterCreation[]
   ): Promise<ServiceResult<BulkOperationResult<ICharacter>>> {
-    try {
-      const successful: ICharacter[] = [];
-      const failed: Array<{ data: any; error: string }> = [];
-
-      for (const characterData of charactersData) {
-        const result = await CharacterServiceCRUD.createCharacter(ownerId, characterData);
-        if (result.success) {
-          successful.push(result.data);
-        } else {
-          failed.push({
-            data: characterData,
-            error: result.error.message,
-          });
-        }
-      }
-
-      return createSuccessResult({ successful, failed });
-
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.operationFailed(
-          'create multiple characters',
-          error instanceof Error ? error.message : 'Unknown error'
-        )
-      );
-    }
+    return OperationWrapper.executeBulk(
+      charactersData,
+      (characterData) => CharacterServiceCRUD.createCharacter(ownerId, characterData),
+      'create multiple characters'
+    );
   }
 
   /**
@@ -266,29 +189,101 @@ export class CharacterServiceTemplates {
     userId: string,
     characterIds: string[]
   ): Promise<ServiceResult<void>> {
-    try {
-      for (const characterId of characterIds) {
-        const result = await CharacterServiceCRUD.deleteCharacter(characterId, userId);
-        if (!result.success) {
-          throw new Error(`Failed to delete character ${characterId}: ${result.error.message}`);
+    return OperationWrapper.execute(
+      async () => {
+        for (const characterId of characterIds) {
+          const result = await CharacterServiceCRUD.deleteCharacter(characterId, userId);
+          if (!result.success) {
+            throw new Error(`Failed to delete character ${characterId}: ${result.error.message}`);
+          }
         }
-      }
-
-      return createSuccessResult(void 0);
-
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.operationFailed(
-          'delete multiple characters',
-          error instanceof Error ? error.message : 'Unknown error'
-        )
-      );
-    }
+        return void 0;
+      },
+      'delete multiple characters'
+    );
   }
 
   // ================================
   // Private Helper Methods
   // ================================
+
+  private static createTemplateFromCharacter(
+    character: ICharacter,
+    templateName: string
+  ): CharacterPreset {
+    return {
+      name: templateName,
+      type: character.type as CharacterType,
+      race: character.race as CharacterRace,
+      class: character.classes[0].class as CharacterClass,
+      level: character.classes[0].level,
+      abilityScores: character.abilityScores,
+      hitPoints: character.hitPoints.maximum,
+      armorClass: character.armorClass,
+    };
+  }
+
+  private static createCloneDataFromCharacter(
+    originalCharacter: ICharacter,
+    newName: string
+  ): CharacterCreation {
+    return {
+      name: newName,
+      type: originalCharacter.type as CharacterType,
+      race: originalCharacter.race as CharacterRace,
+      customRace: originalCharacter.customRace,
+      size: originalCharacter.size as Size,
+      classes: this.cloneClasses(originalCharacter.classes),
+      abilityScores: originalCharacter.abilityScores,
+      hitPoints: this.resetHitPoints(originalCharacter.hitPoints),
+      armorClass: originalCharacter.armorClass,
+      speed: originalCharacter.speed,
+      proficiencyBonus: originalCharacter.proficiencyBonus,
+      savingThrows: originalCharacter.savingThrows,
+      skills: Object.fromEntries(originalCharacter.skills),
+      equipment: originalCharacter.equipment,
+      spells: this.cloneSpells(originalCharacter.spells),
+      backstory: originalCharacter.backstory,
+      notes: originalCharacter.notes,
+      imageUrl: originalCharacter.imageUrl,
+    };
+  }
+
+  private static cloneClasses(classes: any[]): any[] {
+    return classes.map(c => ({
+      class: c.class as CharacterClass,
+      level: c.level,
+      hitDie: c.hitDie,
+      subclass: c.subclass,
+    }));
+  }
+
+  private static resetHitPoints(hitPoints: any): any {
+    return {
+      maximum: hitPoints.maximum,
+      current: hitPoints.maximum, // Reset current HP
+      temporary: 0, // Reset temporary HP
+    };
+  }
+
+  private static cloneSpells(spells: any[]): any[] {
+    return spells.map(spell => ({
+      name: spell.name,
+      level: spell.level,
+      school: spell.school as 'abjuration' | 'conjuration' | 'divination' | 'enchantment' | 'evocation' | 'illusion' | 'necromancy' | 'transmutation',
+      castingTime: spell.castingTime,
+      range: spell.range,
+      components: {
+        verbal: false,
+        somatic: false,
+        material: false,
+        materialComponent: spell.components,
+      },
+      duration: spell.duration,
+      description: spell.description,
+      prepared: spell.isPrepared,
+    }));
+  }
 
   private static getHitDieForClass(className: string): number {
     const hitDieMap: Record<string, number> = {
