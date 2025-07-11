@@ -120,8 +120,8 @@ describe('CharacterEditPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Basic Information')).toBeInTheDocument();
       expect(screen.getByText('Ability Scores')).toBeInTheDocument();
-      expect(screen.getByText('Classes')).toBeInTheDocument();
-      expect(screen.getByText('Combat Stats')).toBeInTheDocument();
+      expect(screen.getByText('Character Classes')).toBeInTheDocument();
+      expect(screen.getByText('Combat Statistics')).toBeInTheDocument();
     });
   });
 
