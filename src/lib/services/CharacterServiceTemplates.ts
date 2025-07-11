@@ -17,7 +17,6 @@ import type {
 import type { ICharacter } from '../models/Character';
 import {
   ServiceResult,
-  createSuccessResult,
   createErrorResult,
   CharacterServiceErrors,
 } from './CharacterServiceErrors';
@@ -68,6 +67,26 @@ export class CharacterServiceTemplates {
   }
 
   /**
+   * Execute character operation with template-specific error handling
+   */
+  private static async executeTemplateOperation<T>(
+    characterId: string,
+    userId: string,
+    operation: (_character: ICharacter) => T,
+    _errorType: string = 'template operation'
+  ): Promise<ServiceResult<T>> {
+    return OperationWrapper.executeWithCustomError(
+      async () => {
+        const character = await this.getValidatedCharacter(characterId, userId);
+        return operation(character);
+      },
+      (error) => CharacterServiceErrors.templateCreationFailed(
+        error instanceof Error ? error.message : 'Unknown error'
+      )
+    );
+  }
+
+  /**
    * Create character template
    */
   static async createCharacterTemplate(
@@ -75,14 +94,11 @@ export class CharacterServiceTemplates {
     userId: string,
     templateName: string
   ): Promise<ServiceResult<CharacterPreset>> {
-    return OperationWrapper.executeWithCustomError(
-      async () => {
-        const character = await this.getValidatedCharacter(characterId, userId);
-        return this.createTemplateFromCharacter(character, templateName);
-      },
-      (error) => CharacterServiceErrors.templateCreationFailed(
-        error instanceof Error ? error.message : 'Unknown error'
-      )
+    return this.executeTemplateOperation(
+      characterId,
+      userId,
+      (character) => this.createTemplateFromCharacter(character, templateName),
+      'create character template'
     );
   }
 
@@ -213,26 +229,21 @@ export class CharacterServiceTemplates {
     userId: string,
     updates: Array<{ characterId: string; data: CharacterUpdate }>
   ): Promise<ServiceResult<ICharacter[]>> {
-    try {
-      const results: ICharacter[] = [];
+    return OperationWrapper.execute(
+      async () => {
+        const results: ICharacter[] = [];
 
-      for (const update of updates) {
-        const result = await CharacterServiceCRUD.updateCharacter(update.characterId, userId, update.data);
-        if (result.success) {
-          results.push(result.data);
+        for (const update of updates) {
+          const result = await CharacterServiceCRUD.updateCharacter(update.characterId, userId, update.data);
+          if (result.success) {
+            results.push(result.data);
+          }
         }
-      }
 
-      return createSuccessResult(results);
-
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.operationFailed(
-          'update multiple characters',
-          error instanceof Error ? error.message : 'Unknown error'
-        )
-      );
-    }
+        return results;
+      },
+      'update multiple characters'
+    );
   }
 
   /**

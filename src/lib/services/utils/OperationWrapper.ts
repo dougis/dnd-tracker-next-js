@@ -15,20 +15,38 @@ import {
 export class OperationWrapper {
 
   /**
+   * Helper to create standard database error - eliminates error creation duplication
+   */
+  private static createDatabaseError(operationName: string, error: any) {
+    return CharacterServiceErrors.databaseError(operationName, error);
+  }
+
+  /**
+   * Helper to execute operation with try-catch and standard error handling - eliminates pattern duplication
+   */
+  private static async executeWithStandardErrorHandling<T>(
+    operation: () => Promise<T>,
+    errorHandler: (_error: any) => any
+  ): Promise<ServiceResult<T>> {
+    try {
+      const result = await operation();
+      return createSuccessResult(result);
+    } catch (error) {
+      return createErrorResult(errorHandler(error));
+    }
+  }
+
+  /**
    * Execute async operation with standardized error handling
    */
   static async execute<T>(
     operation: () => Promise<T>,
     operationName: string
   ): Promise<ServiceResult<T>> {
-    try {
-      const result = await operation();
-      return createSuccessResult(result);
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError(operationName, error)
-      );
-    }
+    return this.executeWithStandardErrorHandling(
+      operation,
+      (error) => this.createDatabaseError(operationName, error)
+    );
   }
 
   /**
@@ -57,12 +75,7 @@ export class OperationWrapper {
     operation: () => Promise<T>,
     errorHandler: (_error: any) => any
   ): Promise<ServiceResult<T>> {
-    try {
-      const result = await operation();
-      return createSuccessResult(result);
-    } catch (error) {
-      return createErrorResult(errorHandler(error));
-    }
+    return this.executeWithStandardErrorHandling(operation, errorHandler);
   }
 
   /**
@@ -85,10 +98,8 @@ export class OperationWrapper {
       // If all operations succeed, execute final operation
       const finalResult = await finalOperation();
       return createSuccessResult(finalResult);
-    } catch (_error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError(operationName, _error)
-      );
+    } catch (error) {
+      return createErrorResult(this.createDatabaseError(operationName, error));
     }
   }
 
@@ -113,9 +124,7 @@ export class OperationWrapper {
       const result = await operation();
       return createSuccessResult(result);
     } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError(operationName, error)
-      );
+      return createErrorResult(this.createDatabaseError(operationName, error));
     }
   }
 

@@ -47,6 +47,26 @@ export class CharacterServiceCRUD {
   }
 
   /**
+   * Helper to check ownership with error throwing - eliminates duplication
+   */
+  private static async checkOwnershipWithThrow(characterId: string, userId: string): Promise<void> {
+    const ownershipCheck = await CharacterAccessUtils.checkOwnership(characterId, userId);
+    if (!ownershipCheck.success) {
+      throw new Error(ownershipCheck.error.message);
+    }
+  }
+
+  /**
+   * Helper to validate database result with error throwing - eliminates duplication
+   */
+  private static validateResultWithThrow<T>(result: ServiceResult<T>, _operation: string): T {
+    if (!result.success) {
+      throw new Error(result.error.message);
+    }
+    return result.data;
+  }
+
+  /**
    * Create a new character
    */
   static async createCharacter(
@@ -130,10 +150,7 @@ export class CharacterServiceCRUD {
       validations,
       async () => {
         // Check ownership
-        const ownershipCheck = await CharacterAccessUtils.checkOwnership(characterId, userId);
-        if (!ownershipCheck.success) {
-          throw new Error(ownershipCheck.error.message);
-        }
+        await this.checkOwnershipWithThrow(characterId, userId);
 
         // Get validated data
         const validatedData = this.getValidatedUpdateData(updateData);
@@ -147,11 +164,7 @@ export class CharacterServiceCRUD {
           'character'
         );
 
-        if (!updateResult.success) {
-          throw new Error(updateResult.error.message);
-        }
-
-        return updateResult.data;
+        return this.validateResultWithThrow(updateResult, 'update character');
       },
       'update character'
     );
@@ -172,20 +185,15 @@ export class CharacterServiceCRUD {
       validations,
       async () => {
         // Check ownership
-        const ownershipCheck = await CharacterAccessUtils.checkOwnership(characterId, userId);
-        if (!ownershipCheck.success) {
-          throw new Error(ownershipCheck.error.message);
-        }
+        await this.checkOwnershipWithThrow(characterId, userId);
 
         // Check if character is in use
         const inUseCheck = await CharacterAccessUtils.checkCharacterInUse(characterId);
-        if (!inUseCheck.success) {
-          throw new Error(inUseCheck.error.message);
-        }
+        const inUseData = this.validateResultWithThrow(inUseCheck, 'check character in use');
 
-        if (inUseCheck.data.inUse) {
+        if (inUseData.inUse) {
           throw new Error(
-            `Character ${characterId} is in use: ${inUseCheck.data.usage || 'Unknown'}`
+            `Character ${characterId} is in use: ${inUseData.usage || 'Unknown'}`
           );
         }
 
@@ -196,10 +204,7 @@ export class CharacterServiceCRUD {
           'character'
         );
 
-        if (!deleteResult.success) {
-          throw new Error(deleteResult.error.message);
-        }
-
+        this.validateResultWithThrow(deleteResult, 'delete character');
         return void 0;
       },
       'delete character'

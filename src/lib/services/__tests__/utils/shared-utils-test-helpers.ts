@@ -225,3 +225,22 @@ export const expectBulkSuccess = (result: any, operation: jest.Mock, items: any[
   expect(result.data.failed[0].error).toContain('Invalid character ID');
   expect(operation).toHaveBeenCalledTimes(items.length);
 };
+
+// Helpers for executeWithChecks pattern
+export const expectCheckedOperationSuccess = (result: any, expectedData: any, operation: jest.Mock) => {
+  expect(result.success).toBe(true);
+  expect(result.data).toBe(expectedData);
+  expect(operation).toHaveBeenCalled();
+};
+
+export const expectCheckedOperationError = (result: any, errorFragment: string, operation: jest.Mock) => {
+  expect(result.success).toBe(false);
+  expect(result.error.message).toContain(errorFragment);
+  expect(operation).not.toHaveBeenCalled();
+};
+
+export const expectCheckedOperationAfterValidation = (result: any, errorFragment: string, operation: jest.Mock) => {
+  expect(result.success).toBe(false);
+  expect(result.error.message).toContain(errorFragment);
+  expect(operation).toHaveBeenCalled();
+};

@@ -18,6 +18,9 @@ import {
   expectSequenceFailure,
   createBulkOperation,
   expectBulkSuccess,
+  expectCheckedOperationSuccess,
+  expectCheckedOperationError,
+  expectCheckedOperationAfterValidation,
   TEST_DATA_FACTORY,
 } from './shared-utils-test-helpers';
 
@@ -151,9 +154,7 @@ describe('OperationWrapper', () => {
         'checked operation'
       );
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBe('checked-result');
-      expect(operation).toHaveBeenCalled();
+      expectCheckedOperationSuccess(result, 'checked-result', operation);
     });
 
     it('should return validation error without executing operation', async () => {
@@ -169,9 +170,7 @@ describe('OperationWrapper', () => {
         'checked operation'
       );
 
-      expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Invalid character ID');
-      expect(operation).not.toHaveBeenCalled();
+      expectCheckedOperationError(result, 'Invalid character ID', operation);
     });
 
     it('should handle operation errors after successful validations', async () => {
@@ -186,9 +185,7 @@ describe('OperationWrapper', () => {
         'checked operation'
       );
 
-      expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Database error');
-      expect(operation).toHaveBeenCalled();
+      expectCheckedOperationAfterValidation(result, 'Database error', operation);
     });
   });
 

@@ -142,67 +142,52 @@ export class CharacterServiceStats {
   }
 
   /**
+   * Generic stub method creator - eliminates parameter duplication
+   */
+  private static createStubMethod<T>(defaultValue: T) {
+    return async (_characterId: string, _userId: string): Promise<ServiceResult<T>> => {
+      return this.createStubResult(defaultValue);
+    };
+  }
+
+  /**
    * Calculate spellcasting statistics (stub for now)
    */
-  static async calculateSpellcastingStats(
-    _characterId: string,
-    _userId: string
-  ): Promise<ServiceResult<SpellcastingStats>> {
-    // TODO: Implement spellcasting calculations
-    return this.createStubResult({
-      casterLevel: 0,
-      spellSlots: {},
-      spellAttackBonus: 0,
-      spellSaveDC: 8,
-    });
-  }
+  static calculateSpellcastingStats = this.createStubMethod<SpellcastingStats>({
+    casterLevel: 0,
+    spellSlots: {},
+    spellAttackBonus: 0,
+    spellSaveDC: 8,
+  });
 
   /**
    * Calculate carrying capacity (stub for now)
    */
-  static async calculateCarryingCapacity(
-    _characterId: string,
-    _userId: string
-  ): Promise<ServiceResult<CarryingCapacity>> {
-    // TODO: Implement carrying capacity calculations
-    return this.createStubResult({
-      maximum: 240,
-      current: 55,
-      encumbranceLevel: 'none' as const,
-    });
-  }
+  static calculateCarryingCapacity = this.createStubMethod<CarryingCapacity>({
+    maximum: 240,
+    current: 55,
+    encumbranceLevel: 'none' as const,
+  });
 
   /**
    * Calculate equipment weight (stub for now)
    */
-  static async calculateEquipmentWeight(
-    _characterId: string,
-    _userId: string
-  ): Promise<ServiceResult<EquipmentWeight>> {
-    // TODO: Implement equipment weight calculations
-    return this.createStubResult({
-      total: 55,
-      equipped: 55,
-      carried: 0,
-    });
-  }
+  static calculateEquipmentWeight = this.createStubMethod<EquipmentWeight>({
+    total: 55,
+    equipped: 55,
+    carried: 0,
+  });
 
   /**
    * Calculate experience information (stub for now)
    */
-  static async calculateExperienceInfo(
-    _characterId: string,
-    _userId: string
-  ): Promise<ServiceResult<ExperienceInfo>> {
-    // TODO: Implement experience calculations
-    return this.createStubResult({
-      currentXP: 0,
-      currentLevel: 1,
-      nextLevelXP: 300,
-      xpToNextLevel: 300,
-      isMaxLevel: false,
-    });
-  }
+  static calculateExperienceInfo = this.createStubMethod<ExperienceInfo>({
+    currentXP: 0,
+    currentLevel: 1,
+    nextLevelXP: 300,
+    xpToNextLevel: 300,
+    isMaxLevel: false,
+  });
 
   // ================================
   // Private Helper Methods
