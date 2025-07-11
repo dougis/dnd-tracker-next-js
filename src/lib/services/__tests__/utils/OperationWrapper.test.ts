@@ -7,152 +7,139 @@
 
 import { OperationWrapper } from '../../utils/OperationWrapper';
 import { createSuccessResult, createErrorResult, CharacterServiceErrors } from '../../CharacterServiceErrors';
+import {
+  createMockOperation,
+  createMockSyncOperation,
+  expectOperationSuccess,
+  expectOperationError,
+  expectValidationError,
+  TEST_DATA_FACTORY,
+} from './shared-utils-test-helpers';
 
 describe('OperationWrapper', () => {
   describe('execute', () => {
     it('should return success when operation completes successfully', async () => {
-      const operation = jest.fn().mockResolvedValue('success-result');
+      const operation = createMockOperation(TEST_DATA_FACTORY.operations.finalResult);
 
       const result = await OperationWrapper.execute(operation, 'test operation');
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBe('success-result');
-      expect(operation).toHaveBeenCalled();
+      expectOperationSuccess(result, TEST_DATA_FACTORY.operations.finalResult, operation);
     });
 
     it('should handle operation errors with proper error formatting', async () => {
-      const operationError = new Error('Operation failed');
-      const operation = jest.fn().mockRejectedValue(operationError);
+      const operation = createMockOperation(TEST_DATA_FACTORY.errors.database, true);
 
       const result = await OperationWrapper.execute(operation, 'test operation');
 
-      expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Database error');
-      expect(result.error.message).toContain('test operation');
+      expectOperationError(result, ['Database error', 'test operation'], operation);
     });
 
     it('should handle non-Error exceptions', async () => {
-      const operation = jest.fn().mockRejectedValue('string error');
+      const operation = createMockOperation('string error', true);
 
       const result = await OperationWrapper.execute(operation, 'test operation');
 
-      expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Database error');
+      expectOperationError(result, ['Database error'], operation);
     });
   });
 
   describe('executeSync', () => {
     it('should return success when sync operation completes', () => {
-      const operation = jest.fn().mockReturnValue('sync-result');
+      const operation = createMockSyncOperation('sync-result');
 
       const result = OperationWrapper.executeSync(operation, 'sync operation');
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBe('sync-result');
-      expect(operation).toHaveBeenCalled();
+      expectOperationSuccess(result, 'sync-result', operation);
     });
 
     it('should handle sync operation errors', () => {
-      const operation = jest.fn().mockImplementation(() => {
-        throw new Error('Sync operation failed');
-      });
+      const operation = createMockSyncOperation(new Error('Sync operation failed'), true);
 
       const result = OperationWrapper.executeSync(operation, 'sync operation');
 
-      expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Operation failed');
-      expect(result.error.message).toContain('sync operation');
+      expectOperationError(result, ['Operation failed', 'sync operation']);
     });
 
     it('should handle non-Error sync exceptions', () => {
-      const operation = jest.fn().mockImplementation(() => {
-        throw 'string error';
-      });
+      const operation = createMockSyncOperation('string error', true);
 
       const result = OperationWrapper.executeSync(operation, 'sync operation');
 
-      expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Unknown error');
+      expectOperationError(result, ['Unknown error']);
     });
   });
 
   describe('executeWithCustomError', () => {
     it('should use custom error handler for failures', async () => {
-      const operation = jest.fn().mockRejectedValue(new Error('Custom fail'));
+      const operation = createMockOperation(new Error('Custom fail'), true);
       const errorHandler = jest.fn().mockReturnValue(CharacterServiceErrors.invalidCharacterId('123'));
 
       const result = await OperationWrapper.executeWithCustomError(operation, errorHandler);
 
-      expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Invalid character ID');
+      expectValidationError(result, 'Invalid character ID');
       expect(errorHandler).toHaveBeenCalledWith(expect.any(Error));
     });
 
     it('should return success without calling error handler', async () => {
-      const operation = jest.fn().mockResolvedValue('custom-success');
+      const operation = createMockOperation('custom-success');
       const errorHandler = jest.fn();
 
       const result = await OperationWrapper.executeWithCustomError(operation, errorHandler);
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBe('custom-success');
+      expectOperationSuccess(result, 'custom-success', operation);
       expect(errorHandler).not.toHaveBeenCalled();
     });
   });
 
   describe('executeSequence', () => {
     it('should execute all operations in sequence and return final result', async () => {
-      const operation1 = jest.fn().mockResolvedValue(createSuccessResult('step1'));
-      const operation2 = jest.fn().mockResolvedValue(createSuccessResult('step2'));
-      const finalOperation = jest.fn().mockResolvedValue('final-result');
+      const operations = [
+        createMockOperation(createSuccessResult(TEST_DATA_FACTORY.operations.step1)),
+        createMockOperation(createSuccessResult(TEST_DATA_FACTORY.operations.step2))
+      ];
+      const finalOperation = createMockOperation(TEST_DATA_FACTORY.operations.finalResult);
 
       const result = await OperationWrapper.executeSequence(
-        [operation1, operation2],
+        operations,
         finalOperation,
         'sequence operation'
       );
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBe('final-result');
-      expect(operation1).toHaveBeenCalled();
-      expect(operation2).toHaveBeenCalled();
-      expect(finalOperation).toHaveBeenCalled();
+      expectOperationSuccess(result, TEST_DATA_FACTORY.operations.finalResult, finalOperation);
+      operations.forEach(op => expect(op).toHaveBeenCalled());
     });
 
     it('should stop sequence on first operation failure', async () => {
-      const operation1 = jest.fn().mockResolvedValue(createSuccessResult('step1'));
-      const operation2 = jest.fn().mockResolvedValue(createErrorResult(
-        CharacterServiceErrors.invalidCharacterId('fail')
-      ));
-      const operation3 = jest.fn().mockResolvedValue(createSuccessResult('step3'));
+      const operations = [
+        createMockOperation(createSuccessResult(TEST_DATA_FACTORY.operations.step1)),
+        createMockOperation(createErrorResult(CharacterServiceErrors.invalidCharacterId('fail'))),
+        createMockOperation(createSuccessResult('step3'))
+      ];
       const finalOperation = jest.fn();
 
       const result = await OperationWrapper.executeSequence(
-        [operation1, operation2, operation3],
+        operations,
         finalOperation,
         'sequence operation'
       );
 
-      expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Invalid character ID');
-      expect(operation1).toHaveBeenCalled();
-      expect(operation2).toHaveBeenCalled();
-      expect(operation3).not.toHaveBeenCalled();
-      expect(finalOperation).not.toHaveBeenCalled();
+      expectValidationError(result, 'Invalid character ID', finalOperation);
+      expect(operations[0]).toHaveBeenCalled();
+      expect(operations[1]).toHaveBeenCalled();
+      expect(operations[2]).not.toHaveBeenCalled();
     });
 
     it('should handle final operation errors', async () => {
-      const operation1 = jest.fn().mockResolvedValue(createSuccessResult('step1'));
-      const finalOperation = jest.fn().mockRejectedValue(new Error('Final operation failed'));
+      const operations = [createMockOperation(createSuccessResult(TEST_DATA_FACTORY.operations.step1))];
+      const finalOperation = createMockOperation(TEST_DATA_FACTORY.errors.database, true);
 
       const result = await OperationWrapper.executeSequence(
-        [operation1],
+        operations,
         finalOperation,
         'sequence operation'
       );
 
-      expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Database error');
+      expectOperationError(result, ['Database error'], finalOperation);
     });
   });
 

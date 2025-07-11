@@ -6,23 +6,20 @@
  */
 
 import { DatabaseOperationWrapper } from '../../utils/DatabaseOperationWrapper';
+import {
+  createMockModel,
+  createMockDocument,
+  expectDatabaseSuccess,
+  expectDatabaseError,
+  TEST_DATA_FACTORY,
+} from './shared-utils-test-helpers';
 
 // Mock Mongoose model
-const mockModel = {
-  findById: jest.fn(),
-  findByIdAndUpdate: jest.fn(),
-  findByIdAndDelete: jest.fn(),
-  countDocuments: jest.fn(),
-  find: jest.fn(),
-  findOne: jest.fn(),
-  aggregate: jest.fn(),
-} as any;
+const mockModel = createMockModel();
 
 // Mock document constructor
 const mockDocumentConstructor = jest.fn();
-const mockDocument = {
-  save: jest.fn(),
-};
+const mockDocument = createMockDocument();
 
 // Set up model constructor
 Object.setPrototypeOf(mockDocumentConstructor, mockModel);
@@ -35,56 +32,51 @@ describe('DatabaseOperationWrapper', () => {
 
   describe('findById', () => {
     it('should return success when document is found', async () => {
-      const mockDoc = { _id: '123', name: 'Test' };
+      const mockDoc = TEST_DATA_FACTORY.character.found;
       mockModel.findById.mockResolvedValue(mockDoc);
 
-      const result = await DatabaseOperationWrapper.findById(mockModel, '123', 'character');
+      const result = await DatabaseOperationWrapper.findById(mockModel, TEST_DATA_FACTORY.ids.valid, 'character');
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBe(mockDoc);
-      expect(mockModel.findById).toHaveBeenCalledWith('123');
+      expectDatabaseSuccess(result, mockDoc, mockModel.findById, [TEST_DATA_FACTORY.ids.valid]);
     });
 
     it('should return error when document not found', async () => {
       mockModel.findById.mockResolvedValue(null);
 
-      const result = await DatabaseOperationWrapper.findById(mockModel, '123', 'character');
+      const result = await DatabaseOperationWrapper.findById(mockModel, TEST_DATA_FACTORY.ids.missing, 'character');
 
-      expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Character not found');
+      expectDatabaseError(result, 'Character not found');
     });
 
     it('should handle database errors', async () => {
-      const dbError = new Error('Database connection failed');
-      mockModel.findById.mockRejectedValue(dbError);
+      mockModel.findById.mockRejectedValue(TEST_DATA_FACTORY.errors.database);
 
-      const result = await DatabaseOperationWrapper.findById(mockModel, '123', 'character');
+      const result = await DatabaseOperationWrapper.findById(mockModel, TEST_DATA_FACTORY.ids.valid, 'character');
 
-      expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Database error');
+      expectDatabaseError(result, 'Database error');
     });
   });
 
   describe('findByIdAndUpdate', () => {
     it('should return success when document is updated', async () => {
-      const mockDoc = { _id: '123', name: 'Updated' };
+      const mockDoc = TEST_DATA_FACTORY.character.updated;
       mockModel.findByIdAndUpdate.mockResolvedValue(mockDoc);
 
+      const updateData = { name: 'Updated' };
+      const options = { new: true };
       const result = await DatabaseOperationWrapper.findByIdAndUpdate(
         mockModel,
-        '123',
-        { name: 'Updated' },
-        { new: true },
+        TEST_DATA_FACTORY.ids.valid,
+        updateData,
+        options,
         'character'
       );
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBe(mockDoc);
-      expect(mockModel.findByIdAndUpdate).toHaveBeenCalledWith(
-        '123',
-        { name: 'Updated' },
-        { new: true }
-      );
+      expectDatabaseSuccess(result, mockDoc, mockModel.findByIdAndUpdate, [
+        TEST_DATA_FACTORY.ids.valid,
+        updateData,
+        options
+      ]);
     });
 
     it('should return error when document not found for update', async () => {
@@ -92,59 +84,54 @@ describe('DatabaseOperationWrapper', () => {
 
       const result = await DatabaseOperationWrapper.findByIdAndUpdate(
         mockModel,
-        '123',
+        TEST_DATA_FACTORY.ids.missing,
         { name: 'Updated' },
         { new: true },
         'character'
       );
 
-      expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Character not found');
+      expectDatabaseError(result, 'Character not found');
     });
   });
 
   describe('findByIdAndDelete', () => {
     it('should return success when document is deleted', async () => {
-      const mockDoc = { _id: '123', name: 'Deleted' };
+      const mockDoc = TEST_DATA_FACTORY.character.deleted;
       mockModel.findByIdAndDelete.mockResolvedValue(mockDoc);
 
-      const result = await DatabaseOperationWrapper.findByIdAndDelete(mockModel, '123', 'character');
+      const result = await DatabaseOperationWrapper.findByIdAndDelete(mockModel, TEST_DATA_FACTORY.ids.valid, 'character');
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBe(mockDoc);
-      expect(mockModel.findByIdAndDelete).toHaveBeenCalledWith('123');
+      expectDatabaseSuccess(result, mockDoc, mockModel.findByIdAndDelete, [TEST_DATA_FACTORY.ids.valid]);
     });
 
     it('should return error when document not found for deletion', async () => {
       mockModel.findByIdAndDelete.mockResolvedValue(null);
 
-      const result = await DatabaseOperationWrapper.findByIdAndDelete(mockModel, '123', 'character');
+      const result = await DatabaseOperationWrapper.findByIdAndDelete(mockModel, TEST_DATA_FACTORY.ids.missing, 'character');
 
-      expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Character not found');
+      expectDatabaseError(result, 'Character not found');
     });
   });
 
   describe('createAndSave', () => {
     it('should return success when document is created and saved', async () => {
-      const mockSavedDoc = { _id: '123', name: 'New Character' };
+      const mockSavedDoc = TEST_DATA_FACTORY.character.saved;
       mockDocument.save.mockResolvedValue(mockSavedDoc);
 
+      const newData = TEST_DATA_FACTORY.character.new;
       const result = await DatabaseOperationWrapper.createAndSave(
         mockDocumentConstructor,
-        { name: 'New Character' },
+        newData,
         'character'
       );
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBe(mockSavedDoc);
-      expect(mockDocumentConstructor).toHaveBeenCalledWith({ name: 'New Character' });
+      expectDatabaseSuccess(result, mockSavedDoc);
+      expect(mockDocumentConstructor).toHaveBeenCalledWith(newData);
       expect(mockDocument.save).toHaveBeenCalled();
     });
 
     it('should handle save errors', async () => {
-      const saveError = new Error('Validation failed');
-      mockDocument.save.mockRejectedValue(saveError);
+      mockDocument.save.mockRejectedValue(TEST_DATA_FACTORY.errors.save);
 
       const result = await DatabaseOperationWrapper.createAndSave(
         mockDocumentConstructor,
@@ -152,29 +139,27 @@ describe('DatabaseOperationWrapper', () => {
         'character'
       );
 
-      expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Database error');
+      expectDatabaseError(result, 'Database error');
     });
   });
 
   describe('countDocuments', () => {
     it('should return count when successful', async () => {
-      mockModel.countDocuments.mockResolvedValue(5);
+      const expectedCount = 5;
+      mockModel.countDocuments.mockResolvedValue(expectedCount);
 
+      const filter = { ownerId: TEST_DATA_FACTORY.ids.valid };
       const result = await DatabaseOperationWrapper.countDocuments(
         mockModel,
-        { ownerId: '123' },
+        filter,
         'characters'
       );
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBe(5);
-      expect(mockModel.countDocuments).toHaveBeenCalledWith({ ownerId: '123' });
+      expectDatabaseSuccess(result, expectedCount, mockModel.countDocuments, [filter]);
     });
 
     it('should handle count errors', async () => {
-      const countError = new Error('Database error');
-      mockModel.countDocuments.mockRejectedValue(countError);
+      mockModel.countDocuments.mockRejectedValue(TEST_DATA_FACTORY.errors.database);
 
       const result = await DatabaseOperationWrapper.countDocuments(
         mockModel,
@@ -182,8 +167,7 @@ describe('DatabaseOperationWrapper', () => {
         'characters'
       );
 
-      expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Database error');
+      expectDatabaseError(result, 'Database error');
     });
   });
 
@@ -192,33 +176,32 @@ describe('DatabaseOperationWrapper', () => {
       const mockDocs = [{ _id: '1' }, { _id: '2' }];
       mockModel.find.mockResolvedValue(mockDocs);
 
+      const filter = { ownerId: TEST_DATA_FACTORY.ids.valid };
+      const options = { limit: 10 };
       const result = await DatabaseOperationWrapper.find(
         mockModel,
-        { ownerId: '123' },
-        { limit: 10 },
+        filter,
+        options,
         'characters'
       );
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBe(mockDocs);
-      expect(mockModel.find).toHaveBeenCalledWith({ ownerId: '123' }, null, { limit: 10 });
+      expectDatabaseSuccess(result, mockDocs, mockModel.find, [filter, null, options]);
     });
   });
 
   describe('findOne', () => {
     it('should return document when found', async () => {
-      const mockDoc = { _id: '123' };
+      const mockDoc = TEST_DATA_FACTORY.character.found;
       mockModel.findOne.mockResolvedValue(mockDoc);
 
+      const filter = { name: 'Test' };
       const result = await DatabaseOperationWrapper.findOne(
         mockModel,
-        { name: 'Test' },
+        filter,
         'character'
       );
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBe(mockDoc);
-      expect(mockModel.findOne).toHaveBeenCalledWith({ name: 'Test' });
+      expectDatabaseSuccess(result, mockDoc, mockModel.findOne, [filter]);
     });
 
     it('should return null when not found', async () => {
@@ -230,8 +213,7 @@ describe('DatabaseOperationWrapper', () => {
         'character'
       );
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBe(null);
+      expectDatabaseSuccess(result, null);
     });
   });
 
@@ -247,14 +229,11 @@ describe('DatabaseOperationWrapper', () => {
         'statistics'
       );
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBe(mockResults);
-      expect(mockModel.aggregate).toHaveBeenCalledWith(pipeline);
+      expectDatabaseSuccess(result, mockResults, mockModel.aggregate, [pipeline]);
     });
 
     it('should handle aggregation errors', async () => {
-      const aggError = new Error('Aggregation failed');
-      mockModel.aggregate.mockRejectedValue(aggError);
+      mockModel.aggregate.mockRejectedValue(TEST_DATA_FACTORY.errors.aggregation);
 
       const result = await DatabaseOperationWrapper.aggregate(
         mockModel,
@@ -262,8 +241,7 @@ describe('DatabaseOperationWrapper', () => {
         'statistics'
       );
 
-      expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Database error');
+      expectDatabaseError(result, 'Database error');
     });
   });
 });
