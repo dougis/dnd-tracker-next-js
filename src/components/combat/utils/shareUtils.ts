@@ -1,7 +1,6 @@
 'use client';
 
 import { IEncounter, IInitiativeEntry, IParticipantReference } from '@/lib/models/encounter/interfaces';
-import { findParticipantById } from './participantUtils';
 
 /**
  * Formats an individual initiative entry line
@@ -26,8 +25,13 @@ function formatInitiativeEntry(
 export function buildShareText(encounter: IEncounter): string {
   const header = `Initiative Order - ${encounter.name} (Round ${encounter.combatState.currentRound})\n\n`;
 
+  // Create a Map for O(1) participant lookups instead of O(n) array.find()
+  const participantMap = new Map(
+    encounter.participants.map(p => [p.characterId.toString(), p])
+  );
+
   const orderLines = encounter.combatState.initiativeOrder.map((entry, index) => {
-    const participant = findParticipantById(encounter.participants, entry.participantId.toString());
+    const participant = participantMap.get(entry.participantId.toString());
     return formatInitiativeEntry(entry, index, participant, encounter.combatState.currentTurn);
   }).join('\n');
 

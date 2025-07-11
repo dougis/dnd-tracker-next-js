@@ -6,7 +6,10 @@ import {
   createEncounterWithParticipants,
   createActiveEncounter,
   setupDOMMocks,
-  resetDOMMocks
+  resetDOMMocks,
+  createEncounterWithManyParticipants,
+  runPerformanceTest,
+  runComparativePerformanceTest
 } from './__test-helpers__/combatTestHelpers';
 
 describe('shareUtils', () => {
@@ -49,6 +52,27 @@ describe('shareUtils', () => {
       const result = buildShareText(encounter);
 
       expect(result).toContain('20: Character 1 (15/20 HP) ✓');
+    });
+  });
+
+  describe('performance optimization', () => {
+    it('should handle large numbers of participants efficiently', () => {
+      const participantCount = 100;
+      const encounter = createEncounterWithManyParticipants(participantCount);
+
+      const { result } = runPerformanceTest(() => buildShareText(encounter));
+
+      // Verify all participants are included in output
+      expect(result).toContain('Character 0');
+      expect(result).toContain(`Character ${participantCount - 1}`);
+
+      // Count the number of lines - should have header + participantCount entries
+      const lines = result.split('\n').filter(line => line.trim() !== '');
+      expect(lines.length).toBe(participantCount + 1); // +1 for header
+    });
+
+    it('should maintain consistent performance with Map-based lookups', () => {
+      runComparativePerformanceTest(buildShareText);
     });
   });
 

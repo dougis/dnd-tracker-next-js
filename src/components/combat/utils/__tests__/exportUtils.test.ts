@@ -7,7 +7,10 @@ import {
   createActiveEncounter,
   createParticipantWithConditions,
   setupDOMMocks,
-  resetDOMMocks
+  resetDOMMocks,
+  createEncounterWithManyParticipants,
+  runPerformanceTest,
+  runComparativePerformanceTest
 } from './__test-helpers__/combatTestHelpers';
 
 describe('exportUtils', () => {
@@ -93,6 +96,24 @@ describe('exportUtils', () => {
       const result = generateExportFilename('', 1);
 
       expect(result).toBe('_initiative_round_1.json');
+    });
+  });
+
+  describe('performance optimization', () => {
+    it('should handle large numbers of participants efficiently', () => {
+      const participantCount = 100;
+      const encounter = createEncounterWithManyParticipants(participantCount);
+
+      const { result } = runPerformanceTest(() => buildExportData(encounter));
+
+      // Verify all participants are included
+      expect(result.initiativeOrder).toHaveLength(participantCount);
+      expect(result.initiativeOrder[0].name).toBe('Character 0');
+      expect(result.initiativeOrder[participantCount - 1].name).toBe(`Character ${participantCount - 1}`);
+    });
+
+    it('should maintain consistent performance with Map-based lookups', () => {
+      runComparativePerformanceTest(buildExportData);
     });
   });
 
