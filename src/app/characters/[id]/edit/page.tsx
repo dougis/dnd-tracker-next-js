@@ -4,7 +4,8 @@ import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { characterCreationSchema, CharacterCreation } from '@/lib/validations/character';
+import { characterCreationSchema, CharacterCreation, characterRaceSchema, characterClassSchema, spellSchema } from '@/lib/validations/character';
+import { z } from 'zod';
 import { useFormValidation } from '@/lib/validations/form-integration';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
@@ -101,15 +102,96 @@ function FormActions({
   );
 }
 
+// Helper functions to reduce complexity
+function mapCharacterRace(race: string): z.infer<typeof characterRaceSchema> {
+  // Map database race values to validation schema values
+  const raceMap: Record<string, z.infer<typeof characterRaceSchema>> = {
+    'dragonborn': 'dragonborn',
+    'dwarf': 'dwarf',
+    'elf': 'elf',
+    'gnome': 'gnome',
+    'half-elf': 'half-elf',
+    'halfling': 'halfling',
+    'half-orc': 'half-orc',
+    'human': 'human',
+    'tiefling': 'tiefling',
+    'aarakocra': 'aarakocra',
+    'genasi': 'genasi',
+    'goliath': 'goliath',
+    'aasimar': 'aasimar',
+    'bugbear': 'bugbear',
+    'firbolg': 'firbolg',
+    'goblin': 'goblin',
+    'hobgoblin': 'hobgoblin',
+    'kenku': 'kenku',
+    'kobold': 'kobold',
+    'lizardfolk': 'lizardfolk',
+    'orc': 'orc',
+    'tabaxi': 'tabaxi',
+    'triton': 'triton',
+    'yuan-ti': 'yuan-ti',
+  };
+  return raceMap[race.toLowerCase()] || 'custom';
+}
+
+function mapCharacterClass(charClass: string): z.infer<typeof characterClassSchema> {
+  // Map database class values to validation schema values
+  const classMap: Record<string, z.infer<typeof characterClassSchema>> = {
+    'artificer': 'artificer',
+    'barbarian': 'barbarian',
+    'bard': 'bard',
+    'cleric': 'cleric',
+    'druid': 'druid',
+    'fighter': 'fighter',
+    'monk': 'monk',
+    'paladin': 'paladin',
+    'ranger': 'ranger',
+    'rogue': 'rogue',
+    'sorcerer': 'sorcerer',
+    'warlock': 'warlock',
+    'wizard': 'wizard',
+  };
+  return classMap[charClass.toLowerCase()] || 'fighter';
+}
+
+function mapSpellSchool(school: string): z.infer<typeof spellSchema>['school'] {
+  // Map database spell school values to validation schema values
+  const schoolMap: Record<string, z.infer<typeof spellSchema>['school']> = {
+    'abjuration': 'abjuration',
+    'conjuration': 'conjuration',
+    'divination': 'divination',
+    'enchantment': 'enchantment',
+    'evocation': 'evocation',
+    'illusion': 'illusion',
+    'necromancy': 'necromancy',
+    'transmutation': 'transmutation',
+  };
+  return schoolMap[school.toLowerCase()] || 'evocation';
+}
+
+function transformSpellComponents(components: string): {
+  verbal: boolean;
+  somatic: boolean;
+  material: boolean;
+  materialComponent: string;
+} {
+  return {
+    verbal: components?.includes('V') || false,
+    somatic: components?.includes('S') || false,
+    material: components?.includes('M') || false,
+    materialComponent: components || '',
+  };
+}
+
 function transformCharacterToFormData(character: ICharacter): CharacterCreation {
   return {
     name: character.name,
     type: character.type,
-    race: character.race as any, // Type assertion needed for DB vs validation schema mismatch
+    race: mapCharacterRace(character.race),
     customRace: character.customRace,
     size: character.size,
     classes: character.classes.map(cls => ({
-      class: cls.class as any, // Type assertion needed for DB vs validation schema mismatch
+      class: mapCharacterClass(cls.class),
       level: cls.level,
       hitDie: cls.hitDie,
       subclass: cls.subclass,
@@ -123,15 +205,15 @@ function transformCharacterToFormData(character: ICharacter): CharacterCreation 
     skills: character.skills instanceof Map ? Object.fromEntries(character.skills) : character.skills || {},
     equipment: character.equipment || [],
     spells: (character.spells || []).map(spell => ({
-      ...spell,
-      prepared: spell.isPrepared, // Map isPrepared to prepared for validation schema
-      components: {
-        verbal: spell.components?.includes('V') || false,
-        somatic: spell.components?.includes('S') || false,
-        material: spell.components?.includes('M') || false,
-        materialComponent: spell.components,
-      },
-      school: spell.school as any, // Type assertion needed for DB vs validation schema mismatch
+      name: spell.name,
+      level: spell.level,
+      description: spell.description,
+      school: mapSpellSchool(spell.school),
+      castingTime: spell.castingTime,
+      range: spell.range,
+      duration: spell.duration,
+      components: transformSpellComponents(spell.components),
+      prepared: spell.isPrepared,
     })),
     backstory: character.backstory,
     notes: character.notes,
@@ -199,6 +281,32 @@ export default function CharacterEditPage() {
     router.push(`/characters/${characterId}`);
   };
 
+  // Helper function to handle API submission
+  const submitCharacterUpdate = async (data: CharacterCreation, characterId: string) => {
+    const response = await fetch(`/api/characters/${characterId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to update character');
+    }
+
+    return result;
+  };
+
+  // Helper function to handle submission errors
+  const handleSubmissionError = (err: unknown): FormError => {
+    return {
+      message: err instanceof Error ? err.message : 'Failed to update character',
+    };
+  };
+
   const onSubmit = async (data: CharacterCreation) => {
     if (!characterId) return;
 
@@ -206,26 +314,10 @@ export default function CharacterEditPage() {
     setSubmitError(null);
 
     try {
-      const response = await fetch(`/api/characters/${characterId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to update character');
-      }
-
-      // Redirect to character detail page on success
+      await submitCharacterUpdate(data, characterId);
       router.push(`/characters/${characterId}`);
     } catch (err) {
-      setSubmitError({
-        message: err instanceof Error ? err.message : 'Failed to update character',
-      });
+      setSubmitError(handleSubmissionError(err));
     } finally {
       setIsSubmitting(false);
     }
