@@ -80,6 +80,16 @@ describe('CharacterEditPage', () => {
     });
   };
 
+  // Helper to render component and wait for character to load
+  const renderAndWaitForCharacter = async (character: any) => {
+    mockSuccessfulCharacterFetch(character);
+    render(<CharacterEditPage />);
+    await waitFor(() => {
+      expect(screen.getByDisplayValue(character.name)).toBeInTheDocument();
+    });
+    return character;
+  };
+
   it('should render loading state while fetching character', () => {
     mockFetch.mockReturnValue(new Promise(() => {})); // Never resolves
 
@@ -102,41 +112,26 @@ describe('CharacterEditPage', () => {
     const testCharacter = createMockCharacter({
       skills: new Map([['athletics', true], ['intimidation', true]])
     });
-    mockSuccessfulCharacterFetch(testCharacter);
-
-    render(<CharacterEditPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Edit Character')).toBeInTheDocument();
-    }, { timeout: 5000 });
+    
+    await renderAndWaitForCharacter(testCharacter);
+    expect(screen.getByText('Edit Character')).toBeInTheDocument();
   });
 
   it('should show all form sections for character editing', async () => {
     const testCharacter = createMockCharacter();
-    mockSuccessfulCharacterFetch(testCharacter);
+    await renderAndWaitForCharacter(testCharacter);
 
-    render(<CharacterEditPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Basic Information')).toBeInTheDocument();
-      expect(screen.getByText('Ability Scores')).toBeInTheDocument();
-      expect(screen.getByText('Character Classes')).toBeInTheDocument();
-      expect(screen.getByText('Combat Statistics')).toBeInTheDocument();
-    });
+    expect(screen.getByText('Basic Information')).toBeInTheDocument();
+    expect(screen.getByText('Ability Scores')).toBeInTheDocument();
+    expect(screen.getByText('Character Classes')).toBeInTheDocument();
+    expect(screen.getByText('Combat Statistics')).toBeInTheDocument();
   });
 
   it('should handle form submission successfully', async () => {
     const testCharacter = createMockCharacter();
     const updatedCharacter = { ...testCharacter, name: 'Updated Name' };
     
-    // First mock the initial character fetch
-    mockSuccessfulCharacterFetch(testCharacter);
-    
-    render(<CharacterEditPage />);
-
-    await waitFor(() => {
-      expect(screen.getByDisplayValue(testCharacter.name)).toBeInTheDocument();
-    });
+    await renderAndWaitForCharacter(testCharacter);
 
     // Now mock the character update for form submission
     mockCharacterUpdate(updatedCharacter);
@@ -165,13 +160,7 @@ describe('CharacterEditPage', () => {
 
   it('should show validation errors for invalid input', async () => {
     const testCharacter = createMockCharacter();
-    mockSuccessfulCharacterFetch(testCharacter);
-
-    render(<CharacterEditPage />);
-
-    await waitFor(() => {
-      expect(screen.getByDisplayValue(testCharacter.name)).toBeInTheDocument();
-    });
+    await renderAndWaitForCharacter(testCharacter);
 
     // Clear required field
     const nameField = screen.getByDisplayValue(testCharacter.name);
@@ -184,13 +173,7 @@ describe('CharacterEditPage', () => {
 
   it('should handle cancel action and navigate back', async () => {
     const testCharacter = createMockCharacter();
-    mockSuccessfulCharacterFetch(testCharacter);
-
-    render(<CharacterEditPage />);
-
-    await waitFor(() => {
-      expect(screen.getByDisplayValue(testCharacter.name)).toBeInTheDocument();
-    });
+    await renderAndWaitForCharacter(testCharacter);
 
     const cancelButton = screen.getByText('Cancel');
     fireEvent.click(cancelButton);
