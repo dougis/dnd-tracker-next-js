@@ -79,8 +79,8 @@ export const participantReferenceSchema = z.object({
   ),
 });
 
-// Encounter settings schema for combat configuration
-export const encounterSettingsSchema = z.object({
+// Base encounter settings object schema
+const encounterSettingsBaseSchema = z.object({
   allowPlayerVisibility: z.boolean().default(true),
   autoRollInitiative: z.boolean().default(false),
   trackResources: z.boolean().default(true),
@@ -100,6 +100,24 @@ export const encounterSettingsSchema = z.object({
   ),
   experienceThreshold: createOptionalSchema(challengeRatingSchema),
 });
+
+// Encounter settings schema for combat configuration with validation
+export const encounterSettingsSchema = encounterSettingsBaseSchema.refine(
+  (data) => {
+    // If lair actions are enabled, lairActionInitiative must be provided
+    if (data.enableLairActions && data.lairActionInitiative === undefined) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: 'lairActionInitiative is required when enableLairActions is true',
+    path: ['lairActionInitiative'],
+  }
+);
+
+// Partial settings schema for updates (no validation refinement needed for partial updates)
+export const encounterSettingsPartialSchema = encounterSettingsBaseSchema.partial();
 
 // Combat state schema for active encounter tracking
 export const combatStateSchema = z.object({

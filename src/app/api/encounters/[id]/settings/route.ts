@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterService } from '@/lib/services/EncounterService';
-import { encounterSettingsSchema } from '@/lib/validations/encounter';
+import { encounterSettingsPartialSchema } from '@/lib/validations/encounter';
 import { objectIdSchema } from '@/lib/validations/base';
 import { ZodError } from 'zod';
 
@@ -46,7 +46,7 @@ async function validateEncounterId(params: Promise<{ id: string }>) {
 
 async function validateRequestBody(request: NextRequest) {
   const body = await request.json();
-  const validation = encounterSettingsSchema.partial().safeParse(body);
+  const validation = encounterSettingsPartialSchema.safeParse(body);
 
   if (!validation.success) {
     const zodError = validation.error as ZodError;

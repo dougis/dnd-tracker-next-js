@@ -31,7 +31,8 @@ async function validateEncounterId(params: Promise<{ id: string }>) {
 async function parseUpdateData(request: NextRequest) {
   try {
     const body = await request.json();
-    return { data: updateEncounterSchema.parse(body), error: null };
+    const result = updateEncounterSchema.parse(body);
+    return { data: result, error: null };
   } catch (error) {
     return {
       data: null,
@@ -46,12 +47,18 @@ async function parseUpdateData(request: NextRequest) {
   }
 }
 
+// Helper function to handle service response errors
+function handleServiceError(result: any) {
+  const errorMessage = typeof result.error === 'string' ? result.error : result.error?.message;
+  const status = errorMessage === 'Encounter not found' ? 404 : 500;
+  return NextResponse.json(result, { status });
+}
+
 // Helper function to check encounter existence and ownership
 async function validateEncounterAccess(encounterId: string, userId: string) {
   const existingResult = await EncounterService.getEncounterById(encounterId);
   if (!existingResult.success) {
-    const status = existingResult.error?.message === 'Encounter not found' ? 404 : 500;
-    return NextResponse.json(existingResult, { status });
+    return handleServiceError(existingResult);
   }
 
   if (existingResult.data?.ownerId.toString() !== userId) {
@@ -77,8 +84,7 @@ export async function GET(
 
     const result = await EncounterService.getEncounterById(encounterId);
     if (!result.success) {
-      const status = result.error?.message === 'Encounter not found' ? 404 : 500;
-      return NextResponse.json(result, { status });
+      return handleServiceError(result);
     }
 
     return NextResponse.json(result);
@@ -112,8 +118,7 @@ export async function PUT(
 
     const result = await EncounterService.updateEncounter(encounterId, updateData);
     if (!result.success) {
-      const status = result.error?.message === 'Encounter not found' ? 404 : 500;
-      return NextResponse.json(result, { status });
+      return handleServiceError(result);
     }
 
     return NextResponse.json(result);
@@ -145,8 +150,7 @@ export async function DELETE(
     // Delete encounter
     const result = await EncounterService.deleteEncounter(encounterId);
     if (!result.success) {
-      const status = result.error?.message === 'Encounter not found' ? 404 : 500;
-      return NextResponse.json(result, { status });
+      return handleServiceError(result);
     }
 
     return NextResponse.json(result);

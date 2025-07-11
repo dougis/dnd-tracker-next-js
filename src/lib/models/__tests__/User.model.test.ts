@@ -138,6 +138,8 @@ describe('User Model Unit Tests', () => {
         const publicUser = mockUser.toPublicJSON();
         expect(typeof publicUser.id).toBe('string');
         expect(publicUser.id).toBe(mockUser._id.toString());
+        // Verify it's a valid ObjectId format (24 hex characters)
+        expect(publicUser.id).toMatch(/^[a-f0-9]{24}$/);
       });
     });
 
