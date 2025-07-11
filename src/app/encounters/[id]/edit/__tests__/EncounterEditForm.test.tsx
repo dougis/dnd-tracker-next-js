@@ -56,6 +56,34 @@ describe('EncounterEditForm', () => {
     return render(<EncounterEditForm {...defaultProps} />);
   };
 
+  // Helper to check multiple toggle states at once
+  const expectToggleStates = (toggleChecks: Array<{label: string, state: 'checked' | 'unchecked'}>) => {
+    toggleChecks.forEach(({label, state}) => {
+      expect(screen.getByLabelText(label)).toHaveAttribute('data-state', state);
+    });
+  };
+
+  // Helper for common form sections check
+  const expectFormSections = (sections: string[]) => {
+    sections.forEach(section => {
+      expect(screen.getByText(section)).toBeInTheDocument();
+    });
+  };
+
+  // Helper for common button interactions
+  const clickButtonAndExpectCall = async (user: ReturnType<typeof userEvent.setup>, buttonText: string, mockFn: jest.Mock) => {
+    const button = screen.getByText(buttonText);
+    await user.click(button);
+    expect(mockFn).toHaveBeenCalled();
+  };
+
+  // Helper for checking accessibility labels
+  const expectAccessibilityLabels = (labels: string[]) => {
+    labels.forEach(label => {
+      expect(screen.getByLabelText(label)).toBeInTheDocument();
+    });
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -63,13 +91,7 @@ describe('EncounterEditForm', () => {
   describe('Form Rendering', () => {
     it('should render all form sections', () => {
       renderForm();
-
-      expect(screen.getByText('Basic Information')).toBeInTheDocument();
-      expect(screen.getByText('Participants')).toBeInTheDocument();
-      expect(screen.getByText('Combat Settings')).toBeInTheDocument();
-      expect(screen.getByText('Save Encounter')).toBeInTheDocument();
-      expect(screen.getByText('Cancel')).toBeInTheDocument();
-      expect(screen.getByText('Reset')).toBeInTheDocument();
+      expectFormSections(['Basic Information', 'Participants', 'Combat Settings', 'Save Encounter', 'Cancel', 'Reset']);
     });
 
     it('should display form with proper accessibility attributes', () => {
@@ -221,22 +243,18 @@ describe('EncounterEditForm', () => {
   describe('Settings Section', () => {
     it('should render all setting toggles', () => {
       renderForm();
-
-      expect(screen.getByLabelText('Allow Player Visibility')).toBeInTheDocument();
-      expect(screen.getByLabelText('Auto-roll Initiative')).toBeInTheDocument();
-      expect(screen.getByLabelText('Track Resources')).toBeInTheDocument();
-      expect(screen.getByLabelText('Enable Lair Actions')).toBeInTheDocument();
-      expect(screen.getByLabelText('Enable Grid Movement')).toBeInTheDocument();
+      expectAccessibilityLabels(['Allow Player Visibility', 'Auto-roll Initiative', 'Track Resources', 'Enable Lair Actions', 'Enable Grid Movement']);
     });
 
     it('should reflect current setting values', () => {
       renderForm();
-
-      expect(screen.getByLabelText('Allow Player Visibility')).toHaveAttribute('data-state', 'checked');
-      expect(screen.getByLabelText('Auto-roll Initiative')).toHaveAttribute('data-state', 'unchecked');
-      expect(screen.getByLabelText('Track Resources')).toHaveAttribute('data-state', 'checked');
-      expect(screen.getByLabelText('Enable Lair Actions')).toHaveAttribute('data-state', 'unchecked');
-      expect(screen.getByLabelText('Enable Grid Movement')).toHaveAttribute('data-state', 'unchecked');
+      expectToggleStates([
+        { label: 'Allow Player Visibility', state: 'checked' },
+        { label: 'Auto-roll Initiative', state: 'unchecked' },
+        { label: 'Track Resources', state: 'checked' },
+        { label: 'Enable Lair Actions', state: 'unchecked' },
+        { label: 'Enable Grid Movement', state: 'unchecked' }
+      ]);
     });
 
     it('should show conditional lair action settings', async () => {
@@ -285,11 +303,7 @@ describe('EncounterEditForm', () => {
     it('should call onCancel when cancel button clicked', async () => {
       const user = userEvent.setup();
       renderForm();
-
-      const cancelButton = screen.getByText('Cancel');
-      await user.click(cancelButton);
-
-      expect(mockOnCancel).toHaveBeenCalled();
+      await clickButtonAndExpectCall(user, 'Cancel', mockOnCancel);
     });
 
     it('should call onReset when reset button clicked', async () => {
@@ -325,12 +339,7 @@ describe('EncounterEditForm', () => {
   describe('Accessibility', () => {
     it('should have proper ARIA labels', () => {
       renderForm();
-
-      expect(screen.getByLabelText('Encounter Name')).toBeInTheDocument();
-      expect(screen.getByLabelText('Description')).toBeInTheDocument();
-      expect(screen.getByLabelText('Difficulty')).toBeInTheDocument();
-      expect(screen.getByLabelText('Estimated Duration (minutes)')).toBeInTheDocument();
-      expect(screen.getByLabelText('Target Level')).toBeInTheDocument();
+      expectAccessibilityLabels(['Encounter Name', 'Description', 'Difficulty', 'Estimated Duration (minutes)', 'Target Level']);
     });
 
     it.skip('should associate error messages with form fields', async () => {

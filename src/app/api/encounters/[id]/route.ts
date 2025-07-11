@@ -71,16 +71,49 @@ async function validateEncounterAccess(encounterId: string, userId: string) {
   return existingResult;
 }
 
+// Helper function to handle common catch block errors
+function handleUnexpectedError(error: unknown, operation: string) {
+  console.error(`Error ${operation} encounter:`, error);
+  return NextResponse.json(
+    { success: false, error: 'Internal server error' },
+    { status: 500 }
+  );
+}
+
+// Helper function for common validation steps (auth + encounter ID)
+async function validateBasicRequest(params: Promise<{ id: string }>) {
+  const authResult = await validateAuth();
+  if (authResult instanceof NextResponse) return { error: authResult };
+
+  const encounterId = await validateEncounterId(params);
+  if (encounterId instanceof NextResponse) return { error: encounterId };
+
+  return { authResult, encounterId };
+}
+
+// Helper function for validation steps that include access check
+async function validateRequestWithAccess(params: Promise<{ id: string }>) {
+  const basicResult = await validateBasicRequest(params);
+  if (basicResult.error) return basicResult;
+
+  const { authResult, encounterId } = basicResult;
+  const { userId } = authResult;
+
+  const accessResult = await validateEncounterAccess(encounterId, userId);
+  if (accessResult instanceof NextResponse) return { error: accessResult };
+
+  return { userId, encounterId, accessResult };
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authResult = await validateAuth();
-    if (authResult instanceof NextResponse) return authResult;
+    const validation = await validateBasicRequest(params);
+    if (validation.error) return validation.error;
 
-    const encounterId = await validateEncounterId(params);
-    if (encounterId instanceof NextResponse) return encounterId;
+    const { encounterId } = validation;
 
     const result = await EncounterService.getEncounterById(encounterId);
     if (!result.success) {
@@ -89,11 +122,7 @@ export async function GET(
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Error fetching encounter:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return handleUnexpectedError(error, 'fetching');
   }
 }
 
@@ -102,19 +131,14 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authResult = await validateAuth();
-    if (authResult instanceof NextResponse) return authResult;
-    const { userId } = authResult;
+    const validation = await validateRequestWithAccess(params);
+    if (validation.error) return validation.error;
 
-    const encounterId = await validateEncounterId(params);
-    if (encounterId instanceof NextResponse) return encounterId;
+    const { encounterId } = validation;
 
     const parseResult = await parseUpdateData(request);
     if (parseResult.error) return parseResult.error;
     const updateData = parseResult.data!;
-
-    const accessResult = await validateEncounterAccess(encounterId, userId);
-    if (accessResult instanceof NextResponse) return accessResult;
 
     const result = await EncounterService.updateEncounter(encounterId, updateData);
     if (!result.success) {
@@ -123,11 +147,7 @@ export async function PUT(
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Error updating encounter:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return handleUnexpectedError(error, 'updating');
   }
 }
 
@@ -136,18 +156,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authResult = await validateAuth();
-    if (authResult instanceof NextResponse) return authResult;
-    const { userId } = authResult;
+    const validation = await validateRequestWithAccess(params);
+    if (validation.error) return validation.error;
 
-    const encounterId = await validateEncounterId(params);
-    if (encounterId instanceof NextResponse) return encounterId;
+    const { encounterId } = validation;
 
-    // Validate access
-    const accessResult = await validateEncounterAccess(encounterId, userId);
-    if (accessResult instanceof NextResponse) return accessResult;
-
-    // Delete encounter
     const result = await EncounterService.deleteEncounter(encounterId);
     if (!result.success) {
       return handleServiceError(result);
@@ -155,10 +168,6 @@ export async function DELETE(
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Error deleting encounter:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return handleUnexpectedError(error, 'deleting');
   }
 }

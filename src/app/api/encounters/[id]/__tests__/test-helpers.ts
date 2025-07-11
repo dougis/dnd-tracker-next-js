@@ -140,3 +140,96 @@ export const expectUnauthenticatedResponse = (response: Response, data: any) => 
   expect(data.success).toBe(false);
   expect(data.error).toBe('Authentication required');
 };
+
+// Advanced test execution helpers to reduce duplication
+export const executeApiTest = async (
+  handler: Function,
+  requestData: any = {},
+  method: 'GET' | 'PUT' | 'DELETE' = 'GET',
+  context = createTestContext()
+) => {
+  const request = createMockRequest(requestData, method);
+  const response = await handler(request, context);
+  const data = await response.json();
+  return { request, response, data };
+};
+
+// Mock setup helpers
+export const mockSuccessfulAccessValidation = (
+  mockEncounterService: any,
+  mockApiResponses: any,
+  baseEncounter: any,
+  userId: string
+) => {
+  mockEncounterService.getEncounterById.mockResolvedValue(
+    mockApiResponses.success({ ...baseEncounter, ownerId: userId })
+  );
+};
+
+export const createOwnedEncounter = (baseEncounter: any, userId: string) => ({
+  ...baseEncounter,
+  ownerId: userId,
+});
+
+// Common test pattern helpers
+export const testUnauthenticatedAccess = async (
+  mockAuth: any,
+  handler: Function,
+  requestData: any = {},
+  method: 'GET' | 'PUT' | 'DELETE' = 'GET'
+) => {
+  mockAuth.mockResolvedValue(null);
+  const { response, data } = await executeApiTest(handler, requestData, method);
+  expectUnauthenticatedResponse(response, data);
+  return { response, data };
+};
+
+export const testServiceError = async (
+  serviceMockMethod: jest.MockedFunction<any>,
+  mockApiResponses: any,
+  handler: Function,
+  errorMessage: string,
+  requestData: any = {},
+  method: 'GET' | 'PUT' | 'DELETE' = 'GET'
+) => {
+  serviceMockMethod.mockResolvedValue(mockApiResponses.error(errorMessage));
+  const { response, data } = await executeApiTest(handler, requestData, method);
+  expectErrorResponse(response, data, 500, errorMessage);
+  return { response, data };
+};
+
+export const testEncounterNotFound = async (
+  mockEncounterService: any,
+  mockApiResponses: any,
+  handler: Function,
+  requestData: any = {},
+  method: 'GET' | 'PUT' | 'DELETE' = 'GET',
+  encounterId: string = 'invalid-id'
+) => {
+  mockEncounterService.getEncounterById.mockResolvedValue(mockApiResponses.notFound());
+  const context = createAsyncParams(encounterId);
+  const { response, data } = await executeApiTest(handler, requestData, method, context);
+  expectErrorResponse(response, data, 404, 'Encounter not found');
+  return { response, data };
+};
+
+export const testUnauthorizedAccess = async (
+  mockEncounterService: any,
+  mockApiResponses: any,
+  handler: Function,
+  requestData: any = {},
+  method: 'PUT' | 'DELETE' = 'PUT'
+) => {
+  const unauthorizedEncounter = createTestEncounter(createUnauthorizedEncounter());
+  mockEncounterService.getEncounterById.mockResolvedValue(
+    mockApiResponses.success(unauthorizedEncounter)
+  );
+  const { response, data } = await executeApiTest(handler, requestData, method);
+  expectUnauthorizedResponse(response, data);
+  return { response, data };
+};
+
+export const setupTestMocks = (mockAuth: any, session: any) => {
+  jest.clearAllMocks();
+  mockAuth.mockResolvedValue(session);
+};

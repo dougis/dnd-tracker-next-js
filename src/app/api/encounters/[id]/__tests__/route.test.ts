@@ -11,16 +11,20 @@ import {
   createInvalidUpdateData,
   createInvalidParticipantData,
   createInvalidSettingsData,
-  createMockRequest,
   createTestContext,
   createAsyncParams,
   createJsonParseErrorRequest,
   expectValidationError,
   expectSuccessResponse,
   expectErrorResponse,
-  createUnauthorizedEncounter,
-  expectUnauthorizedResponse,
-  expectUnauthenticatedResponse,
+  executeApiTest,
+  mockSuccessfulAccessValidation,
+  createOwnedEncounter,
+  testUnauthenticatedAccess,
+  testServiceError,
+  testEncounterNotFound,
+  testUnauthorizedAccess,
+  setupTestMocks,
 } from './test-helpers';
 
 // Mock dependencies
@@ -62,8 +66,7 @@ describe('/api/encounters/[id] route', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    mockAuth.mockResolvedValue(mockSession);
+    setupTestMocks(mockAuth, mockSession);
   });
 
   describe('GET /api/encounters/[id]', () => {
@@ -72,9 +75,7 @@ describe('/api/encounters/[id] route', () => {
         mockApiResponses.success(mockEncounter)
       );
 
-      const request = createMockRequest({}, 'GET');
-      const response = await GET(request, createTestContext());
-      const data = await response.json();
+      const { response, data } = await executeApiTest(GET, {}, 'GET');
 
       expectSuccessResponse(response, data);
       expect(data.data.name).toBe('Test Encounter');
@@ -82,37 +83,20 @@ describe('/api/encounters/[id] route', () => {
     });
 
     it('should return 404 when encounter not found', async () => {
-      mockEncounterService.getEncounterById.mockResolvedValue(
-        mockApiResponses.notFound()
-      );
-
-      const request = createMockRequest({}, 'GET');
-      const response = await GET(request, createAsyncParams('invalid-id'));
-      const data = await response.json();
-
-      expectErrorResponse(response, data, 404, 'Encounter not found');
+      await testEncounterNotFound(mockEncounterService, mockApiResponses, GET);
     });
 
     it('should return 401 when user not authenticated', async () => {
-      mockAuth.mockResolvedValue(null);
-
-      const request = createMockRequest({}, 'GET');
-      const response = await GET(request, createTestContext());
-      const data = await response.json();
-
-      expectUnauthenticatedResponse(response, data);
+      await testUnauthenticatedAccess(mockAuth, GET);
     });
 
     it('should handle service errors gracefully', async () => {
-      mockEncounterService.getEncounterById.mockResolvedValue(
-        mockApiResponses.error('Database connection failed')
+      await testServiceError(
+        mockEncounterService.getEncounterById,
+        mockApiResponses,
+        GET,
+        'Database connection failed'
       );
-
-      const request = createMockRequest({}, 'GET');
-      const response = await GET(request, createTestContext());
-      const data = await response.json();
-
-      expectErrorResponse(response, data, 500, 'Database connection failed');
     });
   });
 
@@ -123,17 +107,13 @@ describe('/api/encounters/[id] route', () => {
       const updatedEncounter = { ...mockEncounter, ...validUpdateData };
 
       // Mock the getEncounterById call for access validation
-      mockEncounterService.getEncounterById.mockResolvedValue(
-        mockApiResponses.success({ ...mockEncounter, ownerId: mockUser.id })
-      );
+      mockSuccessfulAccessValidation(mockEncounterService, mockApiResponses, mockEncounter, mockUser.id);
 
       mockEncounterService.updateEncounter.mockResolvedValue(
         mockApiResponses.success(updatedEncounter)
       );
 
-      const request = createMockRequest(validUpdateData);
-      const response = await PUT(request, createTestContext());
-      const data = await response.json();
+      const { response, data } = await executeApiTest(PUT, validUpdateData, 'PUT');
 
       expectSuccessResponse(response, data);
       expect(data.data.name).toBe('Updated Encounter');
@@ -145,54 +125,34 @@ describe('/api/encounters/[id] route', () => {
 
     it('should validate required fields', async () => {
       const invalidData = createInvalidUpdateData();
-
-      const request = createMockRequest(invalidData);
-      const response = await PUT(request, createTestContext());
-      const data = await response.json();
-
+      const { response, data } = await executeApiTest(PUT, invalidData, 'PUT');
       expectValidationError(response, data, 'name');
     });
 
     it('should validate participant structure', async () => {
       const invalidData = createInvalidParticipantData();
-
-      const request = createMockRequest(invalidData);
-      const response = await PUT(request, createTestContext());
-      const data = await response.json();
-
+      const { response, data } = await executeApiTest(PUT, invalidData, 'PUT');
       expectValidationError(response, data, 'participants');
     });
 
     it('should validate settings structure', async () => {
       const invalidData = createInvalidSettingsData();
-
-      const request = createMockRequest(invalidData);
-      const response = await PUT(request, createTestContext());
-      const data = await response.json();
-
+      const { response, data } = await executeApiTest(PUT, invalidData, 'PUT');
       expectValidationError(response, data, 'lairActionInitiative');
     });
 
     it('should return 401 when user not authenticated', async () => {
-      mockAuth.mockResolvedValue(null);
-
-      const request = createMockRequest(createValidUpdateData());
-      const response = await PUT(request, createTestContext());
-      const data = await response.json();
-
-      expectUnauthenticatedResponse(response, data);
+      await testUnauthenticatedAccess(mockAuth, PUT, createValidUpdateData(), 'PUT');
     });
 
     it('should return 404 when encounter not found', async () => {
-      mockEncounterService.getEncounterById.mockResolvedValue(
-        mockApiResponses.notFound()
+      await testEncounterNotFound(
+        mockEncounterService,
+        mockApiResponses,
+        PUT,
+        createValidUpdateData(),
+        'PUT'
       );
-
-      const request = createMockRequest(createValidUpdateData());
-      const response = await PUT(request, createAsyncParams('invalid-id'));
-      const data = await response.json();
-
-      expectErrorResponse(response, data, 404, 'Encounter not found');
     });
 
     it('should handle malformed JSON', async () => {
@@ -205,78 +165,54 @@ describe('/api/encounters/[id] route', () => {
 
     it('should handle service errors gracefully', async () => {
       // Mock access validation to succeed
-      mockEncounterService.getEncounterById.mockResolvedValue(
-        mockApiResponses.success({ ...mockEncounter, ownerId: mockUser.id })
+      mockSuccessfulAccessValidation(mockEncounterService, mockApiResponses, mockEncounter, mockUser.id);
+
+      await testServiceError(
+        mockEncounterService.updateEncounter,
+        mockApiResponses,
+        PUT,
+        'Database write failed',
+        createValidUpdateData(),
+        'PUT'
       );
-
-      mockEncounterService.updateEncounter.mockResolvedValue(
-        mockApiResponses.error('Database write failed')
-      );
-
-      const request = createMockRequest(createValidUpdateData());
-      const response = await PUT(request, createTestContext());
-      const data = await response.json();
-
-      expectErrorResponse(response, data, 500, 'Database write failed');
     });
   });
 
   describe('DELETE /api/encounters/[id]', () => {
     it('should delete encounter successfully', async () => {
       // Mock access validation to succeed
-      mockEncounterService.getEncounterById.mockResolvedValue(
-        mockApiResponses.success({ ...mockEncounter, ownerId: mockUser.id })
-      );
+      mockSuccessfulAccessValidation(mockEncounterService, mockApiResponses, mockEncounter, mockUser.id);
 
       mockEncounterService.deleteEncounter.mockResolvedValue(
         mockApiResponses.success({ deleted: true })
       );
 
-      const request = createMockRequest({}, 'DELETE');
-      const response = await DELETE(request, createTestContext());
-      const data = await response.json();
+      const { response, data } = await executeApiTest(DELETE, {}, 'DELETE');
 
       expectSuccessResponse(response, data);
       expect(mockEncounterService.deleteEncounter).toHaveBeenCalledWith('test-id');
     });
 
     it('should return 401 when user not authenticated', async () => {
-      mockAuth.mockResolvedValue(null);
-
-      const request = createMockRequest({}, 'DELETE');
-      const response = await DELETE(request, createTestContext());
-      const data = await response.json();
-
-      expectUnauthenticatedResponse(response, data);
+      await testUnauthenticatedAccess(mockAuth, DELETE, {}, 'DELETE');
     });
 
     it('should return 404 when encounter not found', async () => {
-      mockEncounterService.getEncounterById.mockResolvedValue(
-        mockApiResponses.notFound()
-      );
-
-      const request = createMockRequest({}, 'DELETE');
-      const response = await DELETE(request, createTestContext());
-      const data = await response.json();
-
-      expectErrorResponse(response, data, 404, 'Encounter not found');
+      await testEncounterNotFound(mockEncounterService, mockApiResponses, DELETE, {}, 'DELETE');
     });
 
     it('should handle service errors gracefully', async () => {
       // Mock access validation to succeed
-      mockEncounterService.getEncounterById.mockResolvedValue(
-        mockApiResponses.success({ ...mockEncounter, ownerId: mockUser.id })
+      mockSuccessfulAccessValidation(mockEncounterService, mockApiResponses, mockEncounter, mockUser.id);
+
+      await testServiceError(
+        mockEncounterService.deleteEncounter,
+        mockApiResponses,
+        DELETE,
+        'Database delete failed',
+        {},
+        'DELETE'
       );
-
-      mockEncounterService.deleteEncounter.mockResolvedValue(
-        mockApiResponses.error('Database delete failed')
-      );
-
-      const request = createMockRequest({}, 'DELETE');
-      const response = await DELETE(request, createTestContext());
-      const data = await response.json();
-
-      expectErrorResponse(response, data, 500, 'Database delete failed');
     });
   });
 
@@ -286,17 +222,13 @@ describe('/api/encounters/[id] route', () => {
         new Error('Unexpected error')
       );
 
-      const request = createMockRequest({}, 'GET');
-      const response = await GET(request, createTestContext());
-      const data = await response.json();
+      const { response, data } = await executeApiTest(GET, {}, 'GET');
 
       expectErrorResponse(response, data, 500, 'Internal server error');
     });
 
     it('should handle missing encounter ID parameter', async () => {
-      const request = createMockRequest({}, 'GET');
-      const response = await GET(request, createAsyncParams(''));
-      const data = await response.json();
+      const { response, data } = await executeApiTest(GET, {}, 'GET', createAsyncParams(''));
 
       expectValidationError(response, data, 'Encounter ID is required');
     });
@@ -304,50 +236,32 @@ describe('/api/encounters/[id] route', () => {
 
   describe('Security', () => {
     it('should validate user ownership for update operations', async () => {
-      const unauthorizedEncounter = createTestEncounter(
-        createUnauthorizedEncounter()
+      await testUnauthorizedAccess(
+        mockEncounterService,
+        mockApiResponses,
+        PUT,
+        { name: 'Unauthorized Update' }
       );
-
-      mockEncounterService.getEncounterById.mockResolvedValue(
-        mockApiResponses.success(unauthorizedEncounter)
-      );
-
-      const request = createMockRequest({ name: 'Unauthorized Update' });
-      const response = await PUT(request, createTestContext());
-      const data = await response.json();
-
-      expectUnauthorizedResponse(response, data);
     });
 
     it('should validate user ownership for delete operations', async () => {
-      const unauthorizedEncounter = createTestEncounter(
-        createUnauthorizedEncounter()
+      await testUnauthorizedAccess(
+        mockEncounterService,
+        mockApiResponses,
+        DELETE,
+        {},
+        'DELETE'
       );
-
-      mockEncounterService.getEncounterById.mockResolvedValue(
-        mockApiResponses.success(unauthorizedEncounter)
-      );
-
-      const request = createMockRequest({}, 'DELETE');
-      const response = await DELETE(request, createTestContext());
-      const data = await response.json();
-
-      expectUnauthorizedResponse(response, data);
     });
 
     it('should sanitize sensitive data in responses', async () => {
-      const sensitiveEncounter = createTestEncounter({
-        // Include any sensitive fields that should be filtered
-        ownerId: mockUser.id,
-      });
+      const sensitiveEncounter = createOwnedEncounter(mockEncounter, mockUser.id);
 
       mockEncounterService.getEncounterById.mockResolvedValue(
         mockApiResponses.success(sensitiveEncounter)
       );
 
-      const request = createMockRequest({}, 'GET');
-      const response = await GET(request, createTestContext());
-      const data = await response.json();
+      const { response, data } = await executeApiTest(GET, {}, 'GET');
 
       expectSuccessResponse(response, data);
       // Verify sensitive fields are handled appropriately

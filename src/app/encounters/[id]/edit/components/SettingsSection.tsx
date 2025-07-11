@@ -92,7 +92,7 @@ export function SettingsSection({ form }: SettingsSectionProps) {
               label="Allow Player Visibility"
               description="Players can see encounter information and participant status"
             />
-            
+
             <SwitchFormField
               control={control}
               name="settings.autoRollInitiative"
@@ -101,7 +101,7 @@ export function SettingsSection({ form }: SettingsSectionProps) {
               label="Auto-roll Initiative"
               description="Automatically roll initiative for all participants when combat starts"
             />
-            
+
             <SwitchFormField
               control={control}
               name="settings.trackResources"

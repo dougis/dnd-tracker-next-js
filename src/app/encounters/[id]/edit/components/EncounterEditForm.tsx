@@ -14,6 +14,20 @@ import { ParticipantsSection } from './ParticipantsSection';
 import { SettingsSection } from './SettingsSection';
 import { Save, RotateCcw, X } from 'lucide-react';
 
+// Helper component to reduce Card structure duplication
+const FormSection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+  <Card>
+    <CardHeader>
+      <CardTitle className="flex items-center space-x-2">
+        <span>{title}</span>
+      </CardTitle>
+    </CardHeader>
+    <CardContent>
+      {children}
+    </CardContent>
+  </Card>
+);
+
 interface EncounterEditFormProps {
   encounter: UpdateEncounter;
   onSubmit: (_data: UpdateEncounter) => Promise<void>;
@@ -91,47 +105,22 @@ export function EncounterEditForm({
         aria-label="Edit encounter form"
       >
       {/* Basic Information Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <span>Basic Information</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BasicInfoSection form={form} />
-        </CardContent>
-      </Card>
+      <FormSection title="Basic Information">
+        <BasicInfoSection form={form} />
+      </FormSection>
 
       {/* Participants Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <span>Participants</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ParticipantsSection form={form} />
-        </CardContent>
-      </Card>
+      <FormSection title="Participants">
+        <ParticipantsSection form={form} />
+      </FormSection>
 
       {/* Settings Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <span>Combat Settings</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SettingsSection form={form} />
-        </CardContent>
-      </Card>
+      <FormSection title="Combat Settings">
+        <SettingsSection form={form} />
+      </FormSection>
 
       {/* Form Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Form Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <FormSection title="Form Actions">
           <div className="flex flex-col sm:flex-row gap-3 justify-end">
             <Button
               type="button"
@@ -189,8 +178,7 @@ export function EncounterEditForm({
               </ul>
             </div>
           )}
-        </CardContent>
-      </Card>
+      </FormSection>
       </form>
     </Form>
   );

@@ -55,6 +55,56 @@ const createMockHelpers = (encounter: any) => {
   };
 };
 
+// Local helper functions to reduce duplication
+const renderEncounterEditAndWait = async (encounterId = 'test-id', expectedField = 'Dragon Lair Assault') => {
+  render(<EncounterEditClient encounterId={encounterId} />);
+  await formHelpers.waitForFormField(expectedField);
+};
+
+const testToggleSetting = async (user: ReturnType<typeof userEvent.setup>, labelText: string, initialState: 'checked' | 'unchecked', finalState: 'checked' | 'unchecked') => {
+  await waitFor(() => {
+    expect(screen.getByLabelText(labelText)).toBeInTheDocument();
+  });
+
+  const toggle = screen.getByLabelText(labelText);
+  expect(toggle).toHaveAttribute('data-state', initialState);
+
+  await user.click(toggle);
+  expect(toggle).toHaveAttribute('data-state', finalState);
+};
+
+const expectParticipantsDisplay = async (participantNames: string[]) => {
+  await waitFor(() => {
+    participantNames.forEach(name => {
+      expect(screen.getByText(name)).toBeInTheDocument();
+    });
+
+    // Check for HP and AC information in the participant display
+    const participantElements = screen.getAllByText(/HP: \d+\/\d+/);
+    expect(participantElements.length).toBeGreaterThan(0);
+
+    const acElements = screen.getAllByText(/AC: \d+/);
+    expect(acElements.length).toBeGreaterThan(0);
+  });
+};
+
+const expectFormSections = async (sections: string[]) => {
+  await waitFor(() => {
+    sections.forEach(section => {
+      expect(screen.getByText(section)).toBeInTheDocument();
+    });
+  });
+};
+
+const expectToggleStates = async (toggleConfigs: Array<{label: string, state: 'checked' | 'unchecked'}>) => {
+  await waitFor(() => {
+    toggleConfigs.forEach(({label, state}) => {
+      const toggle = screen.getByLabelText(label);
+      expect(toggle).toHaveAttribute('data-state', state);
+    });
+  });
+};
+
 describe('EncounterEditClient', () => {
   const mockEncounter = createTestEncounter({
     name: 'Dragon Lair Assault',
@@ -162,7 +212,7 @@ describe('EncounterEditClient', () => {
     });
 
     it('should pre-populate basic encounter information', async () => {
-      render(<EncounterEditClient encounterId="test-id" />);
+      await renderEncounterEditAndWait();
 
       await waitFor(() => {
         assertions.expectFormField('Dragon Lair Assault');
@@ -174,7 +224,7 @@ describe('EncounterEditClient', () => {
     });
 
     it('should pre-populate encounter tags', async () => {
-      render(<EncounterEditClient encounterId="test-id" />);
+      await renderEncounterEditAndWait();
 
       await waitFor(() => {
         expect(screen.getByText('dragon')).toBeInTheDocument();
@@ -184,35 +234,19 @@ describe('EncounterEditClient', () => {
     });
 
     it('should pre-populate encounter settings', async () => {
-      render(<EncounterEditClient encounterId="test-id" />);
+      await renderEncounterEditAndWait();
 
-      await waitFor(() => {
-        const autoRollToggle = screen.getByLabelText('Auto-roll Initiative');
-        const trackResourcesToggle = screen.getByLabelText('Track Resources');
-        const lairActionsToggle = screen.getByLabelText('Enable Lair Actions');
-        const gridMovementToggle = screen.getByLabelText('Enable Grid Movement');
-
-        expect(autoRollToggle).toHaveAttribute('data-state', 'unchecked');
-        expect(trackResourcesToggle).toHaveAttribute('data-state', 'checked');
-        expect(lairActionsToggle).toHaveAttribute('data-state', 'checked');
-        expect(gridMovementToggle).toHaveAttribute('data-state', 'checked');
-      });
+      await expectToggleStates([
+        { label: 'Auto-roll Initiative', state: 'unchecked' },
+        { label: 'Track Resources', state: 'checked' },
+        { label: 'Enable Lair Actions', state: 'checked' },
+        { label: 'Enable Grid Movement', state: 'checked' }
+      ]);
     });
 
     it('should pre-populate participants list', async () => {
-      render(<EncounterEditClient encounterId="test-id" />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Gandalf')).toBeInTheDocument();
-        expect(screen.getByText('Ancient Red Dragon')).toBeInTheDocument();
-
-        // Check for HP and AC information in the participant display
-        const participantElements = screen.getAllByText(/HP: \d+\/\d+/);
-        expect(participantElements.length).toBeGreaterThan(0);
-
-        const acElements = screen.getAllByText(/AC: \d+/);
-        expect(acElements.length).toBeGreaterThan(0);
-      });
+      await renderEncounterEditAndWait();
+      await expectParticipantsDisplay(['Gandalf', 'Ancient Red Dragon']);
     });
   });
 
@@ -241,7 +275,7 @@ describe('EncounterEditClient', () => {
 
     it('should validate lair action initiative when lair actions enabled', async () => {
       const user = userEvent.setup();
-      render(<EncounterEditClient encounterId="test-id" />);
+      await renderEncounterEditAndWait();
 
       await waitFor(() => {
         expect(screen.getByLabelText('Enable Lair Actions')).toHaveAttribute('data-state', 'checked');
@@ -265,7 +299,7 @@ describe('EncounterEditClient', () => {
     });
 
     it('should display coming soon message for participant management', async () => {
-      render(<EncounterEditClient encounterId="test-id" />);
+      await renderEncounterEditAndWait();
 
       await waitFor(() => {
         expect(screen.getByText('Participant management for encounter editing is coming soon.')).toBeInTheDocument();
@@ -274,12 +308,10 @@ describe('EncounterEditClient', () => {
     });
 
     it('should display participant summary when participants exist', async () => {
-      render(<EncounterEditClient encounterId="test-id" />);
+      await renderEncounterEditAndWait();
+      await expectParticipantsDisplay(['Gandalf', 'Ancient Red Dragon']);
 
       await waitFor(() => {
-        expect(screen.getByText('Gandalf')).toBeInTheDocument();
-        expect(screen.getByText('Ancient Red Dragon')).toBeInTheDocument();
-
         // Check for participant summary labels and counts
         expect(screen.getByText('Total Participants')).toBeInTheDocument();
         expect(screen.getByText('Player Characters')).toBeInTheDocument();
@@ -312,21 +344,12 @@ describe('EncounterEditClient', () => {
 
     it('should allow toggling combat settings', async () => {
       const user = userEvent.setup();
-      render(<EncounterEditClient encounterId="test-id" />);
-
-      await waitFor(() => {
-        expect(screen.getByLabelText('Auto-roll Initiative')).toBeInTheDocument();
-      });
-
-      const autoRollToggle = screen.getByLabelText('Auto-roll Initiative');
-      expect(autoRollToggle).toHaveAttribute('data-state', 'unchecked');
-
-      await user.click(autoRollToggle);
-      expect(autoRollToggle).toHaveAttribute('data-state', 'checked');
+      await renderEncounterEditAndWait();
+      await testToggleSetting(user, 'Auto-roll Initiative', 'unchecked', 'checked');
     });
 
     it('should show lair action settings when enabled', async () => {
-      render(<EncounterEditClient encounterId="test-id" />);
+      await renderEncounterEditAndWait();
 
       await waitFor(() => {
         expect(screen.getByLabelText('Enable Lair Actions')).toHaveAttribute('data-state', 'checked');
@@ -353,7 +376,7 @@ describe('EncounterEditClient', () => {
     });
 
     it('should show grid settings when grid movement enabled', async () => {
-      render(<EncounterEditClient encounterId="test-id" />);
+      await renderEncounterEditAndWait();
 
       await waitFor(() => {
         expect(screen.getByLabelText('Enable Grid Movement')).toHaveAttribute('data-state', 'checked');
@@ -420,7 +443,7 @@ describe('EncounterEditClient', () => {
 
     it('should allow canceling edit and return to detail page', async () => {
       const user = userEvent.setup();
-      render(<EncounterEditClient encounterId="test-id" />);
+      await renderEncounterEditAndWait();
 
       await waitFor(() => {
         expect(screen.getByText('Cancel')).toBeInTheDocument();
@@ -433,11 +456,7 @@ describe('EncounterEditClient', () => {
 
     it('should prompt for confirmation when there are unsaved changes', async () => {
       const user = userEvent.setup();
-      render(<EncounterEditClient encounterId="test-id" />);
-
-      await waitFor(() => {
-        expect(screen.getByDisplayValue('Dragon Lair Assault')).toBeInTheDocument();
-      });
+      await renderEncounterEditAndWait();
 
       // Make a change
       const nameInput = screen.getByDisplayValue('Dragon Lair Assault');
@@ -455,11 +474,7 @@ describe('EncounterEditClient', () => {
 
     it('should allow resetting form to original values', async () => {
       const user = userEvent.setup();
-      render(<EncounterEditClient encounterId="test-id" />);
-
-      await waitFor(() => {
-        expect(screen.getByDisplayValue('Dragon Lair Assault')).toBeInTheDocument();
-      });
+      await renderEncounterEditAndWait();
 
       // Make changes
       const nameInput = screen.getByDisplayValue('Dragon Lair Assault');
@@ -482,18 +497,12 @@ describe('EncounterEditClient', () => {
     });
 
     it('should render form sections in proper responsive layout', async () => {
-      render(<EncounterEditClient encounterId="test-id" />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Basic Information')).toBeInTheDocument();
-        expect(screen.getByText('Participants')).toBeInTheDocument();
-        expect(screen.getByText('Combat Settings')).toBeInTheDocument();
-        expect(screen.getByText('Form Actions')).toBeInTheDocument();
-      });
+      await renderEncounterEditAndWait();
+      await expectFormSections(['Basic Information', 'Participants', 'Combat Settings', 'Form Actions']);
     });
 
     it('should display proper spacing and layout for form elements', async () => {
-      render(<EncounterEditClient encounterId="test-id" />);
+      await renderEncounterEditAndWait();
 
       await waitFor(() => {
         const form = screen.getByRole('form');
