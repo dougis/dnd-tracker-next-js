@@ -58,7 +58,7 @@ describe('/api/encounters/[id] route', () => {
       );
 
       const request = new NextRequest('http://localhost:3000/api/encounters/test-id');
-      const response = await GET(request, { params: { id: 'test-id' } });
+      const response = await GET(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -73,7 +73,7 @@ describe('/api/encounters/[id] route', () => {
       );
 
       const request = new NextRequest('http://localhost:3000/api/encounters/invalid-id');
-      const response = await GET(request, { params: { id: 'invalid-id' } });
+      const response = await GET(request, { params: Promise.resolve({ id: 'invalid-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(404);
@@ -85,7 +85,7 @@ describe('/api/encounters/[id] route', () => {
       mockAuth.mockResolvedValue(null);
 
       const request = new NextRequest('http://localhost:3000/api/encounters/test-id');
-      const response = await GET(request, { params: { id: 'test-id' } });
+      const response = await GET(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -99,7 +99,7 @@ describe('/api/encounters/[id] route', () => {
       );
 
       const request = new NextRequest('http://localhost:3000/api/encounters/test-id');
-      const response = await GET(request, { params: { id: 'test-id' } });
+      const response = await GET(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -158,7 +158,7 @@ describe('/api/encounters/[id] route', () => {
         headers: { 'Content-Type': 'application/json' },
       });
 
-      const response = await PUT(request, { params: { id: 'test-id' } });
+      const response = await PUT(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -179,7 +179,7 @@ describe('/api/encounters/[id] route', () => {
         headers: { 'Content-Type': 'application/json' },
       });
 
-      const response = await PUT(request, { params: { id: 'test-id' } });
+      const response = await PUT(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -204,7 +204,7 @@ describe('/api/encounters/[id] route', () => {
         headers: { 'Content-Type': 'application/json' },
       });
 
-      const response = await PUT(request, { params: { id: 'test-id' } });
+      const response = await PUT(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -228,7 +228,7 @@ describe('/api/encounters/[id] route', () => {
         headers: { 'Content-Type': 'application/json' },
       });
 
-      const response = await PUT(request, { params: { id: 'test-id' } });
+      const response = await PUT(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -245,7 +245,7 @@ describe('/api/encounters/[id] route', () => {
         headers: { 'Content-Type': 'application/json' },
       });
 
-      const response = await PUT(request, { params: { id: 'test-id' } });
+      const response = await PUT(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -264,7 +264,7 @@ describe('/api/encounters/[id] route', () => {
         headers: { 'Content-Type': 'application/json' },
       });
 
-      const response = await PUT(request, { params: { id: 'invalid-id' } });
+      const response = await PUT(request, { params: Promise.resolve({ id: 'invalid-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(404);
@@ -279,7 +279,7 @@ describe('/api/encounters/[id] route', () => {
         headers: { 'Content-Type': 'application/json' },
       });
 
-      const response = await PUT(request, { params: { id: 'test-id' } });
+      const response = await PUT(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -298,7 +298,7 @@ describe('/api/encounters/[id] route', () => {
         headers: { 'Content-Type': 'application/json' },
       });
 
-      const response = await PUT(request, { params: { id: 'test-id' } });
+      const response = await PUT(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -317,7 +317,7 @@ describe('/api/encounters/[id] route', () => {
         method: 'DELETE',
       });
 
-      const response = await DELETE(request, { params: { id: 'test-id' } });
+      const response = await DELETE(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -332,7 +332,7 @@ describe('/api/encounters/[id] route', () => {
         method: 'DELETE',
       });
 
-      const response = await DELETE(request, { params: { id: 'test-id' } });
+      const response = await DELETE(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -349,7 +349,7 @@ describe('/api/encounters/[id] route', () => {
         method: 'DELETE',
       });
 
-      const response = await DELETE(request, { params: { id: 'test-id' } });
+      const response = await DELETE(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(404);
@@ -366,7 +366,7 @@ describe('/api/encounters/[id] route', () => {
         method: 'DELETE',
       });
 
-      const response = await DELETE(request, { params: { id: 'test-id' } });
+      const response = await DELETE(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -382,7 +382,7 @@ describe('/api/encounters/[id] route', () => {
       );
 
       const request = new NextRequest('http://localhost:3000/api/encounters/test-id');
-      const response = await GET(request, { params: { id: 'test-id' } });
+      const response = await GET(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -392,7 +392,7 @@ describe('/api/encounters/[id] route', () => {
 
     it('should handle missing encounter ID parameter', async () => {
       const request = new NextRequest('http://localhost:3000/api/encounters/');
-      const response = await GET(request, { params: { id: '' } });
+      const response = await GET(request, { params: Promise.resolve({ id: '' }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -417,7 +417,7 @@ describe('/api/encounters/[id] route', () => {
         headers: { 'Content-Type': 'application/json' },
       });
 
-      const response = await PUT(request, { params: { id: 'test-id' } });
+      const response = await PUT(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(403);
@@ -438,7 +438,7 @@ describe('/api/encounters/[id] route', () => {
         method: 'DELETE',
       });
 
-      const response = await DELETE(request, { params: { id: 'test-id' } });
+      const response = await DELETE(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(403);
@@ -457,7 +457,7 @@ describe('/api/encounters/[id] route', () => {
       );
 
       const request = new NextRequest('http://localhost:3000/api/encounters/test-id');
-      const response = await GET(request, { params: { id: 'test-id' } });
+      const response = await GET(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
 
       expect(response.status).toBe(200);

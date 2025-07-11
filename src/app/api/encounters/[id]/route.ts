@@ -27,6 +27,25 @@ async function validateEncounterId(params: Promise<{ id: string }>) {
   return encounterId;
 }
 
+// Helper function to parse and validate request body for PUT
+async function parseUpdateData(request: NextRequest) {
+  try {
+    const body = await request.json();
+    return { data: updateEncounterSchema.parse(body), error: null };
+  } catch (error) {
+    return {
+      data: null,
+      error: NextResponse.json(
+        {
+          success: false,
+          error: error instanceof Error ? error.message : 'Invalid JSON or validation failed'
+        },
+        { status: 400 }
+      )
+    };
+  }
+}
+
 // Helper function to check encounter existence and ownership
 async function validateEncounterAccess(encounterId: string, userId: string) {
   const existingResult = await EncounterService.getEncounterById(encounterId);
@@ -84,26 +103,13 @@ export async function PUT(
     const encounterId = await validateEncounterId(params);
     if (encounterId instanceof NextResponse) return encounterId;
 
-    // Parse and validate request body
-    let updateData;
-    try {
-      const body = await request.json();
-      updateData = updateEncounterSchema.parse(body);
-    } catch (error) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: error instanceof Error ? error.message : 'Invalid JSON or validation failed'
-        },
-        { status: 400 }
-      );
-    }
+    const parseResult = await parseUpdateData(request);
+    if (parseResult.error) return parseResult.error;
+    const updateData = parseResult.data!;
 
-    // Validate access
     const accessResult = await validateEncounterAccess(encounterId, userId);
     if (accessResult instanceof NextResponse) return accessResult;
 
-    // Update encounter
     const result = await EncounterService.updateEncounter(encounterId, updateData);
     if (!result.success) {
       const status = result.error?.message === 'Encounter not found' ? 404 : 500;
