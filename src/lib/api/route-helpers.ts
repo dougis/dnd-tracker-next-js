@@ -94,3 +94,54 @@ export function handleZodValidationError(error: any) {
     { status: 400 }
   );
 }
+
+/**
+ * Validates and extracts encounter ID from route parameters
+ */
+export async function validateEncounterId(params: Promise<{ id: string }>) {
+  const { id } = await params;
+
+  if (!id || typeof id !== 'string') {
+    throw new Error('Invalid encounter ID');
+  }
+
+  return id;
+}
+
+/**
+ * Validates that a user has access to an encounter
+ */
+export async function validateEncounterAccess(encounterId: string, userId: string, encounterService: any) {
+  const result = await encounterService.getEncounterById(encounterId);
+
+  if (!result.success || !result.data) {
+    throw new Error('Encounter not found');
+  }
+
+  if (result.data.createdBy !== userId) {
+    throw new Error('Access denied');
+  }
+
+  return result.data;
+}
+
+/**
+ * Validates request body and ensures required fields
+ */
+export async function validateRequestBody(request: Request, requiredFields: string[] = []) {
+  let body;
+
+  try {
+    body = await request.json();
+  } catch {
+    throw new Error('Invalid JSON in request body');
+  }
+
+  for (const field of requiredFields) {
+    if (!(field in body)) {
+      throw new Error(`Missing required field: ${field}`);
+    }
+  }
+
+  return body;
+}

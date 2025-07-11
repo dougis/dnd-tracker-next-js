@@ -4,7 +4,6 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useRouter } from 'next/navigation';
 import { EncounterEditClient } from '../EncounterEditClient';
 import { EncounterService } from '@/lib/services/EncounterService';
 import {
@@ -12,6 +11,9 @@ import {
   createTestParticipant,
   mockApiResponses,
 } from '../../__tests__/test-helpers';
+// Import shared test utilities
+import { createRouterMocks, createServiceMocks, setupGlobalMocks } from '@/__tests__/shared-utilities/test-setup';
+import { assertions, formHelpers, createValidationTest } from '@/__tests__/shared-utilities/test-helpers';
 
 // Mock dependencies
 jest.mock('next/navigation', () => ({
@@ -37,96 +39,11 @@ Object.defineProperty(window, 'confirm', {
 global.fetch = jest.fn();
 
 const mockEncounterService = EncounterService as jest.Mocked<typeof EncounterService>;
-const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
-
-// Test utilities organized by concern
-const testHelpers = {
-  // Mock factories
-  createRouterMocks: () => {
-    const mockRouterPush = jest.fn();
-    const mockRouterBack = jest.fn();
-
-    const setupMocks = () => {
-      mockUseRouter.mockReturnValue({
-        push: mockRouterPush,
-        back: mockRouterBack,
-      } as any);
-    };
-
-    return { mockRouterPush, mockRouterBack, setupMocks };
-  },
-
-  // Service mock helpers
-  createServiceMocks: (encounter: any) => ({
-    setupSuccessfulMocks: () => {
-      mockEncounterService.getEncounterById.mockResolvedValue(
-        mockApiResponses.success(encounter)
-      );
-      mockEncounterService.updateEncounter.mockResolvedValue(
-        mockApiResponses.success(encounter)
-      );
-    },
-
-    setupUpdateSuccess: () => {
-      mockEncounterService.updateEncounter.mockResolvedValue(
-        mockApiResponses.success(encounter)
-      );
-    },
-
-    setupUpdateError: (errorMessage: string = 'Failed to update encounter') => {
-      mockEncounterService.updateEncounter.mockResolvedValue(
-        mockApiResponses.error(errorMessage)
-      );
-    },
-
-    setupControlledUpdate: () => {
-      let resolvePromise: (_value: any) => void;
-      const delayedPromise = new Promise((resolve) => {
-        resolvePromise = resolve;
-      });
-      mockEncounterService.updateEncounter.mockReturnValue(delayedPromise);
-      return () => resolvePromise!(mockApiResponses.success({}));
-    },
-  }),
-
-  // Common test assertions
-  assertions: {
-    expectFormField: (fieldValue: string, shouldExist: boolean = true) => {
-      const assertion = expect(screen.getByDisplayValue(fieldValue));
-      return shouldExist ? assertion.toBeInTheDocument() : assertion.not.toBeInTheDocument();
-    },
-
-    expectLoadingState: () => {
-      expect(screen.getByText('Loading encounter...')).toBeInTheDocument();
-    },
-
-    expectErrorState: (errorText: string) => {
-      expect(screen.getByText('Error loading encounter')).toBeInTheDocument();
-      expect(screen.getByText(errorText)).toBeInTheDocument();
-    },
-  },
-
-  // Form interaction utilities
-  form: {
-    clearAndType: async (user: any, input: HTMLElement, value: string) => {
-      await user.clear(input);
-      if (value.trim() !== '') {
-        await user.type(input, value);
-      }
-    },
-
-    waitForFormField: async (fieldValue: string) => {
-      await waitFor(() => {
-        expect(screen.getByDisplayValue(fieldValue)).toBeInTheDocument();
-      });
-    },
-  },
-};
 
 // Main mock setup factory
 const createMockHelpers = (encounter: any) => {
-  const routerMocks = testHelpers.createRouterMocks();
-  const serviceMocks = testHelpers.createServiceMocks(encounter);
+  const routerMocks = createRouterMocks();
+  const serviceMocks = createServiceMocks(encounter);
 
   return {
     ...routerMocks,
@@ -181,16 +98,8 @@ describe('EncounterEditClient', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    setupGlobalMocks();
     mockHelpers.setupAll();
-
-    // Reset window.confirm mock
-    (window.confirm as jest.Mock).mockReturnValue(true);
-
-    // Reset fetch mock
-    (global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: async () => ({ success: true }),
-    });
   });
 
   describe('Loading and Error States', () => {
@@ -201,7 +110,7 @@ describe('EncounterEditClient', () => {
 
       render(<EncounterEditClient encounterId="test-id" />);
 
-      testHelpers.assertions.expectLoadingState();
+      assertions.expectLoadingState();
     });
 
     it('should display error state when encounter not found', async () => {
@@ -224,7 +133,7 @@ describe('EncounterEditClient', () => {
       render(<EncounterEditClient encounterId="test-id" />);
 
       await waitFor(() => {
-        testHelpers.assertions.expectErrorState('Database connection failed');
+        assertions.expectErrorState('Database connection failed');
       });
     });
 
@@ -243,7 +152,7 @@ describe('EncounterEditClient', () => {
 
       await user.click(screen.getByText('Retry'));
 
-      await testHelpers.form.waitForFormField('Dragon Lair Assault');
+      await formHelpers.waitForFormField('Dragon Lair Assault');
     });
   });
 
@@ -256,11 +165,11 @@ describe('EncounterEditClient', () => {
       render(<EncounterEditClient encounterId="test-id" />);
 
       await waitFor(() => {
-        testHelpers.assertions.expectFormField('Dragon Lair Assault');
-        testHelpers.assertions.expectFormField('A dangerous encounter in an ancient dragon\'s lair');
+        assertions.expectFormField('Dragon Lair Assault');
+        assertions.expectFormField('A dangerous encounter in an ancient dragon\'s lair');
         expect(screen.getByRole('combobox')).toHaveTextContent('Deadly');
-        testHelpers.assertions.expectFormField('90');
-        testHelpers.assertions.expectFormField('8');
+        assertions.expectFormField('90');
+        assertions.expectFormField('8');
       });
     });
 
@@ -308,36 +217,27 @@ describe('EncounterEditClient', () => {
   });
 
   describe('Form Validation', () => {
-    const testValidationDisablesSaveButton = async (fieldValue: string, invalidValue: string) => {
-      const user = userEvent.setup();
-      render(<EncounterEditClient encounterId="test-id" />);
-
-      await testHelpers.form.waitForFormField(fieldValue);
-
-      const input = screen.getByDisplayValue(fieldValue);
-      await testHelpers.form.clearAndType(user, input, invalidValue);
-
-      await waitFor(() => {
-        const saveButton = screen.getByRole('button', { name: /save encounter/i });
-        expect(saveButton).toBeDisabled();
-      });
-    };
-
     beforeEach(() => {
       mockHelpers.setupSuccessfulMocks();
     });
 
-    it('should require encounter name', async () => {
-      await testValidationDisablesSaveButton('Dragon Lair Assault', '');
-    });
+    it('should require encounter name',
+      createValidationTest('Dragon Lair Assault', '', () =>
+        render(<EncounterEditClient encounterId="test-id" />)
+      )
+    );
 
-    it('should validate estimated duration is positive', async () => {
-      await testValidationDisablesSaveButton('90', '-30');
-    });
+    it('should validate estimated duration is positive',
+      createValidationTest('90', '-30', () =>
+        render(<EncounterEditClient encounterId="test-id" />)
+      )
+    );
 
-    it('should validate target level is within valid range', async () => {
-      await testValidationDisablesSaveButton('8', '25');
-    });
+    it('should validate target level is within valid range',
+      createValidationTest('8', '25', () =>
+        render(<EncounterEditClient encounterId="test-id" />)
+      )
+    );
 
     it('should validate lair action initiative when lair actions enabled', async () => {
       const user = userEvent.setup();
@@ -465,7 +365,7 @@ describe('EncounterEditClient', () => {
   describe('Form Submission', () => {
     const renderFormAndWaitForLoad = async () => {
       render(<EncounterEditClient encounterId="test-id" />);
-      await testHelpers.form.waitForFormField('Dragon Lair Assault');
+      await formHelpers.waitForFormField('Dragon Lair Assault');
     };
 
     beforeEach(() => {
