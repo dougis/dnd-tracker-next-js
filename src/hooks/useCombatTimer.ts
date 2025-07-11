@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
+// Round timer warning thresholds in milliseconds
+const WARNING_THRESHOLD = 15000; // 15 seconds
+const CRITICAL_THRESHOLD = 5000; // 5 seconds
+
 function formatTime(milliseconds: number): string {
   if (milliseconds === 0) return '0:00';
   const totalSeconds = Math.floor(milliseconds / 1000);
@@ -27,13 +31,11 @@ function calculateThresholdStates(hasRoundTimer: boolean, roundTimeLimit?: numbe
     return { isRoundWarning: false, isRoundCritical: false, isRoundExpired: false };
   }
 
-  const warningThreshold = roundTimeLimit * 0.25;
-  const criticalThreshold = roundTimeLimit * 0.1;
   const remaining = roundTimeRemaining || 0;
 
   return {
-    isRoundWarning: remaining <= warningThreshold && remaining > criticalThreshold,
-    isRoundCritical: remaining <= criticalThreshold && remaining > 0,
+    isRoundWarning: remaining <= WARNING_THRESHOLD && remaining > CRITICAL_THRESHOLD,
+    isRoundCritical: remaining <= CRITICAL_THRESHOLD && remaining > 0,
     isRoundExpired: remaining === 0
   };
 }

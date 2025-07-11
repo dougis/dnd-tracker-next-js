@@ -251,6 +251,90 @@ describe('useCombatTimer', () => {
     });
   });
 
+  describe('Fixed Threshold Warning System (15s/5s)', () => {
+    it('shows warning state when exactly 15 seconds remaining', () => {
+      const { result } = createTestTimer({
+        startedAtOffset: 45000, // 45 seconds ago
+        roundTimeLimit: 60000 // 1 minute limit, 15 seconds remaining
+      });
+
+      expect(result.current.roundTimeRemaining).toBe(15000);
+      expect(result.current.isRoundWarning).toBe(true);
+      expect(result.current.isRoundCritical).toBe(false);
+      expect(result.current.isRoundExpired).toBe(false);
+    });
+
+    it('shows warning state when 10 seconds remaining (between 15s and 5s)', () => {
+      const { result } = createTestTimer({
+        startedAtOffset: 50000, // 50 seconds ago
+        roundTimeLimit: 60000 // 1 minute limit, 10 seconds remaining
+      });
+
+      expect(result.current.roundTimeRemaining).toBe(10000);
+      expect(result.current.isRoundWarning).toBe(true);
+      expect(result.current.isRoundCritical).toBe(false);
+      expect(result.current.isRoundExpired).toBe(false);
+    });
+
+    it('shows critical state when exactly 5 seconds remaining', () => {
+      const { result } = createTestTimer({
+        startedAtOffset: 55000, // 55 seconds ago
+        roundTimeLimit: 60000 // 1 minute limit, 5 seconds remaining
+      });
+
+      expect(result.current.roundTimeRemaining).toBe(5000);
+      expect(result.current.isRoundWarning).toBe(false);
+      expect(result.current.isRoundCritical).toBe(true);
+      expect(result.current.isRoundExpired).toBe(false);
+    });
+
+    it('shows critical state when 3 seconds remaining (less than 5s)', () => {
+      const { result } = createTestTimer({
+        startedAtOffset: 57000, // 57 seconds ago
+        roundTimeLimit: 60000 // 1 minute limit, 3 seconds remaining
+      });
+
+      expect(result.current.roundTimeRemaining).toBe(3000);
+      expect(result.current.isRoundWarning).toBe(false);
+      expect(result.current.isRoundCritical).toBe(true);
+      expect(result.current.isRoundExpired).toBe(false);
+    });
+
+    it('shows no warning when more than 15 seconds remaining', () => {
+      const { result } = createTestTimer({
+        startedAtOffset: 40000, // 40 seconds ago
+        roundTimeLimit: 60000 // 1 minute limit, 20 seconds remaining
+      });
+
+      expect(result.current.roundTimeRemaining).toBe(20000);
+      expect(result.current.isRoundWarning).toBe(false);
+      expect(result.current.isRoundCritical).toBe(false);
+      expect(result.current.isRoundExpired).toBe(false);
+    });
+
+    it('works correctly with different round time limits', () => {
+      // Test with 2 minute limit
+      const { result: result120 } = createTestTimer({
+        startedAtOffset: 105000, // 105 seconds ago
+        roundTimeLimit: 120000 // 2 minute limit, 15 seconds remaining
+      });
+
+      expect(result120.current.roundTimeRemaining).toBe(15000);
+      expect(result120.current.isRoundWarning).toBe(true);
+      expect(result120.current.isRoundCritical).toBe(false);
+
+      // Test with 30 second limit
+      const { result: result30 } = createTestTimer({
+        startedAtOffset: 15000, // 15 seconds ago
+        roundTimeLimit: 30000 // 30 second limit, 15 seconds remaining
+      });
+
+      expect(result30.current.roundTimeRemaining).toBe(15000);
+      expect(result30.current.isRoundWarning).toBe(true);
+      expect(result30.current.isRoundCritical).toBe(false);
+    });
+  });
+
   describe('Timer Events', () => {
     it('triggers callback on round timer warning', () => {
       const onWarning = jest.fn();
