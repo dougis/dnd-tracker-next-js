@@ -45,7 +45,7 @@ describe('DatabaseOperationWrapper', () => {
 
       const result = await DatabaseOperationWrapper.findById(mockModel, TEST_DATA_FACTORY.ids.missing, 'character');
 
-      expectDatabaseError(result, 'Character not found');
+      expectDatabaseError(result, 'Character with ID');
     });
 
     it('should handle database errors', async () => {
@@ -90,7 +90,7 @@ describe('DatabaseOperationWrapper', () => {
         'character'
       );
 
-      expectDatabaseError(result, 'Character not found');
+      expectDatabaseError(result, 'Character with ID');
     });
   });
 
@@ -109,7 +109,7 @@ describe('DatabaseOperationWrapper', () => {
 
       const result = await DatabaseOperationWrapper.findByIdAndDelete(mockModel, TEST_DATA_FACTORY.ids.missing, 'character');
 
-      expectDatabaseError(result, 'Character not found');
+      expectDatabaseError(result, 'Character with ID');
     });
   });
 

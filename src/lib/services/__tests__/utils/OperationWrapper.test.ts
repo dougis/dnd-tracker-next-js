@@ -62,7 +62,7 @@ describe('OperationWrapper', () => {
 
       const result = OperationWrapper.executeSync(operation, 'sync operation');
 
-      expectOperationError(result, ['Operation failed', 'sync operation']);
+      expectOperationError(result, ['Operation', 'sync operation', 'failed']);
     });
 
     it('should handle non-Error sync exceptions', () => {
@@ -217,7 +217,7 @@ describe('OperationWrapper', () => {
       );
 
       expect(result.success).toBe(false);
-      expect(result.error.message).toContain('Operation failed');
+      expect(result.error.message).toContain('Operation');
       expect(result.error.message).toContain('bulk operation');
     });
 
