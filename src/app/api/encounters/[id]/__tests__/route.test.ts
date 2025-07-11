@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { GET, PUT, DELETE } from '../route';
 import { EncounterService } from '@/lib/services/EncounterService';
-import { getServerSession } from 'next-auth';
+import { auth } from '@/lib/auth';
 import {
   createTestEncounter,
   createTestParticipant,
@@ -10,12 +10,12 @@ import {
 
 // Mock dependencies
 jest.mock('@/lib/services/EncounterService');
-jest.mock('next-auth', () => ({
-  getServerSession: jest.fn(),
+jest.mock('@/lib/auth', () => ({
+  auth: jest.fn(),
 }));
 
 const mockEncounterService = EncounterService as jest.Mocked<typeof EncounterService>;
-const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>;
+const mockAuth = auth as jest.MockedFunction<typeof auth>;
 
 describe('/api/encounters/[id] route', () => {
   const mockEncounter = createTestEncounter({
@@ -48,7 +48,7 @@ describe('/api/encounters/[id] route', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetServerSession.mockResolvedValue(mockSession);
+    mockAuth.mockResolvedValue(mockSession);
   });
 
   describe('GET /api/encounters/[id]', () => {
@@ -82,7 +82,7 @@ describe('/api/encounters/[id] route', () => {
     });
 
     it('should return 401 when user not authenticated', async () => {
-      mockGetServerSession.mockResolvedValue(null);
+      mockAuth.mockResolvedValue(null);
 
       const request = new NextRequest('http://localhost:3000/api/encounters/test-id');
       const response = await GET(request, { params: { id: 'test-id' } });
@@ -237,7 +237,7 @@ describe('/api/encounters/[id] route', () => {
     });
 
     it('should return 401 when user not authenticated', async () => {
-      mockGetServerSession.mockResolvedValue(null);
+      mockAuth.mockResolvedValue(null);
 
       const request = new NextRequest('http://localhost:3000/api/encounters/test-id', {
         method: 'PUT',
@@ -326,7 +326,7 @@ describe('/api/encounters/[id] route', () => {
     });
 
     it('should return 401 when user not authenticated', async () => {
-      mockGetServerSession.mockResolvedValue(null);
+      mockAuth.mockResolvedValue(null);
 
       const request = new NextRequest('http://localhost:3000/api/encounters/test-id', {
         method: 'DELETE',

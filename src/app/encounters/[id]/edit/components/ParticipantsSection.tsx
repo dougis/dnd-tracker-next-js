@@ -3,7 +3,7 @@
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { UpdateEncounter } from '@/lib/validations/encounter';
-import { EncounterParticipantManager } from '@/app/encounters/[id]/components/EncounterParticipantManager';
+import { EncounterParticipantManager } from '@/components/encounter/EncounterParticipantManager';
 import {
   FormField,
   FormItem,

@@ -10,7 +10,7 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw } from 'lucide-react';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 interface EncounterEditClientProps {
   encounterId: string;
@@ -18,9 +18,10 @@ interface EncounterEditClientProps {
 
 export function EncounterEditClient({ encounterId }: EncounterEditClientProps) {
   const router = useRouter();
-  const { encounter, loading, error, refetch } = useEncounterData(encounterId);
+  const { encounter, loading, error, handleRetry } = useEncounterData(encounterId);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = useCallback(async (formData: UpdateEncounter) => {
     if (!encounter) return;
@@ -30,15 +31,26 @@ export function EncounterEditClient({ encounterId }: EncounterEditClientProps) {
       const result = await EncounterService.updateEncounter(encounterId, formData);
       
       if (result.success) {
-        toast.success('Encounter updated successfully');
+        toast({
+          title: 'Success',
+          description: 'Encounter updated successfully',
+        });
         setHasUnsavedChanges(false);
         router.push(`/encounters/${encounterId}`);
       } else {
-        toast.error(result.error || 'Failed to update encounter');
+        toast({
+          title: 'Error',
+          description: result.error || 'Failed to update encounter',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
       console.error('Error updating encounter:', error);
-      toast.error('An unexpected error occurred');
+      toast({
+        title: 'Error',
+        description: 'An unexpected error occurred',
+        variant: 'destructive',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -58,9 +70,9 @@ export function EncounterEditClient({ encounterId }: EncounterEditClientProps) {
     if (window.confirm('Are you sure you want to reset all changes?')) {
       setHasUnsavedChanges(false);
       // The form will reset itself by re-rendering with original encounter data
-      refetch();
+      handleRetry();
     }
-  }, [refetch]);
+  }, [handleRetry]);
 
   const handleFormChange = useCallback(() => {
     setHasUnsavedChanges(true);
@@ -91,7 +103,7 @@ export function EncounterEditClient({ encounterId }: EncounterEditClientProps) {
           <div className="flex space-x-2">
             <Button 
               variant="outline" 
-              onClick={() => refetch()}
+              onClick={() => handleRetry()}
               className="flex items-center space-x-2"
             >
               <RefreshCw className="h-4 w-4" />
