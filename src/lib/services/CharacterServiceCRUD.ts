@@ -13,9 +13,7 @@ import type {
 } from '../validations/character';
 import {
   ServiceResult,
-  createSuccessResult,
   createErrorResult,
-  CharacterServiceErrors,
 } from './CharacterServiceErrors';
 import { CharacterValidationUtils } from './utils/CharacterValidationUtils';
 import { CharacterAccessUtils } from './utils/CharacterAccessUtils';
@@ -43,6 +41,9 @@ export class CharacterServiceCRUD {
       async () => {
         // Get validated data
         const dataValidation = CharacterValidationUtils.validateCharacterData(characterData);
+        if (!dataValidation.success) {
+          throw new Error(dataValidation.error.message);
+        }
         const validatedData = dataValidation.data;
 
         // Check character limit
@@ -53,7 +54,7 @@ export class CharacterServiceCRUD {
 
         const maxCharacters = await this.getCharacterLimitForUser(ownerId);
         const limitValidation = CharacterValidationUtils.validateCharacterLimit(
-          countResult.data, 
+          countResult.data,
           maxCharacters
         );
         if (!limitValidation.success) {
@@ -118,7 +119,10 @@ export class CharacterServiceCRUD {
 
         // Get validated data
         const dataValidation = CharacterValidationUtils.validateUpdateData(updateData);
-        
+        if (!dataValidation.success) {
+          throw new Error(dataValidation.error.message);
+        }
+
         // Update using wrapper
         const updateResult = await DatabaseOperationWrapper.findByIdAndUpdate(
           Character,

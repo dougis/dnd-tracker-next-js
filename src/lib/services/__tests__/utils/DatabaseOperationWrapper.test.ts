@@ -1,12 +1,11 @@
 /**
  * DatabaseOperationWrapper Tests
- * 
+ *
  * Tests for the DatabaseOperationWrapper utility to ensure proper database
  * operation standardization and error handling.
  */
 
 import { DatabaseOperationWrapper } from '../../utils/DatabaseOperationWrapper';
-import { CharacterServiceErrors } from '../../CharacterServiceErrors';
 
 // Mock Mongoose model
 const mockModel = {

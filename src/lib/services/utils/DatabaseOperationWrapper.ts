@@ -14,6 +14,7 @@ import {
 } from '../CharacterServiceErrors';
 
 export class DatabaseOperationWrapper {
+
   /**
    * Find document by ID with standardized error handling
    */
@@ -29,7 +30,7 @@ export class DatabaseOperationWrapper {
           CharacterServiceErrors.characterNotFound(id)
         );
       }
-      return createSuccessResult(document);
+      return createSuccessResult(document as T);
     } catch (error) {
       return createErrorResult(
         CharacterServiceErrors.databaseError(`find ${entityName}`, error)
@@ -54,7 +55,7 @@ export class DatabaseOperationWrapper {
           CharacterServiceErrors.characterNotFound(id)
         );
       }
-      return createSuccessResult(document);
+      return createSuccessResult(document as T);
     } catch (error) {
       return createErrorResult(
         CharacterServiceErrors.databaseError(`update ${entityName}`, error)
@@ -77,7 +78,7 @@ export class DatabaseOperationWrapper {
           CharacterServiceErrors.characterNotFound(id)
         );
       }
-      return createSuccessResult(document);
+      return createSuccessResult(document as T);
     } catch (error) {
       return createErrorResult(
         CharacterServiceErrors.databaseError(`delete ${entityName}`, error)
@@ -96,7 +97,7 @@ export class DatabaseOperationWrapper {
     try {
       const document = new model(data);
       const savedDocument = await document.save();
-      return createSuccessResult(savedDocument);
+      return createSuccessResult(savedDocument as T);
     } catch (error) {
       return createErrorResult(
         CharacterServiceErrors.databaseError(`create ${entityName}`, error)
@@ -133,7 +134,7 @@ export class DatabaseOperationWrapper {
   ): Promise<ServiceResult<T[]>> {
     try {
       const documents = await model.find(filter, null, options);
-      return createSuccessResult(documents);
+      return createSuccessResult(documents as T[]);
     } catch (error) {
       return createErrorResult(
         CharacterServiceErrors.databaseError(`find ${entityName}`, error)
@@ -151,7 +152,7 @@ export class DatabaseOperationWrapper {
   ): Promise<ServiceResult<T | null>> {
     try {
       const document = await model.findOne(filter);
-      return createSuccessResult(document);
+      return createSuccessResult(document as T);
     } catch (error) {
       return createErrorResult(
         CharacterServiceErrors.databaseError(`find ${entityName}`, error)
@@ -169,7 +170,7 @@ export class DatabaseOperationWrapper {
   ): Promise<ServiceResult<T[]>> {
     try {
       const results = await model.aggregate(pipeline);
-      return createSuccessResult(results);
+      return createSuccessResult(results as T[]);
     } catch (error) {
       return createErrorResult(
         CharacterServiceErrors.databaseError(`aggregate ${entityName}`, error)

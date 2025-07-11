@@ -10,8 +10,6 @@ import type { ICharacter } from '../models/Character';
 import {
   ServiceResult,
   createSuccessResult,
-  createErrorResult,
-  CharacterServiceErrors,
 } from './CharacterServiceErrors';
 import { CharacterServiceCRUD } from './CharacterServiceCRUD';
 import { OperationWrapper } from './utils/OperationWrapper';
@@ -75,7 +73,7 @@ export class CharacterServiceStats {
         }
 
         const character = characterResult.data;
-        
+
         const stats: CharacterStats = {
           abilityModifiers: this.calculateAbilityModifiers(character),
           savingThrows: this.calculateSavingThrows(character),
@@ -198,7 +196,7 @@ export class CharacterServiceStats {
 
   private static calculateSavingThrows(character: ICharacter): Record<string, number> {
     const abilityModifiers = this.calculateAbilityModifiers(character);
-    
+
     return {
       strength: abilityModifiers.strength + (character.savingThrows.strength ? character.proficiencyBonus : 0),
       dexterity: abilityModifiers.dexterity + (character.savingThrows.dexterity ? character.proficiencyBonus : 0),
@@ -212,12 +210,12 @@ export class CharacterServiceStats {
   private static calculateSkills(character: ICharacter): Record<string, number> {
     const abilityModifiers = this.calculateAbilityModifiers(character);
     const skills: Record<string, number> = {};
-    
+
     for (const [skill, isProficient] of Array.from(character.skills.entries())) {
       const abilityMod = this.getSkillAbilityModifier(skill, abilityModifiers);
       skills[skill] = abilityMod + (isProficient ? character.proficiencyBonus : 0);
     }
-    
+
     return skills;
   }
 

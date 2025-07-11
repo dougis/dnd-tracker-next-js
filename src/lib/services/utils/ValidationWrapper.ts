@@ -14,6 +14,7 @@ import {
 export type ValidationFunction = () => ServiceResult<any>;
 
 export class ValidationWrapper {
+
   /**
    * Execute multiple validations and proceed with operation if all pass
    */

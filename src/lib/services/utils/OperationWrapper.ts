@@ -13,6 +13,7 @@ import {
 } from '../CharacterServiceErrors';
 
 export class OperationWrapper {
+
   /**
    * Execute async operation with standardized error handling
    */
@@ -42,7 +43,7 @@ export class OperationWrapper {
       return createSuccessResult(result);
     } catch (error) {
       return createErrorResult(
-        CharacterServiceErrors.operationFailed(operationName, 
+        CharacterServiceErrors.operationFailed(operationName,
           error instanceof Error ? error.message : 'Unknown error'
         )
       );
@@ -54,7 +55,7 @@ export class OperationWrapper {
    */
   static async executeWithCustomError<T>(
     operation: () => Promise<T>,
-    errorHandler: (error: any) => any
+    errorHandler: (_error: any) => any
   ): Promise<ServiceResult<T>> {
     try {
       const result = await operation();
@@ -84,9 +85,9 @@ export class OperationWrapper {
       // If all operations succeed, execute final operation
       const finalResult = await finalOperation();
       return createSuccessResult(finalResult);
-    } catch (error) {
+    } catch (_error) {
       return createErrorResult(
-        CharacterServiceErrors.databaseError(operationName, error)
+        CharacterServiceErrors.databaseError(operationName, _error)
       );
     }
   }
@@ -123,7 +124,7 @@ export class OperationWrapper {
    */
   static async executeBulk<TInput, TOutput>(
     items: TInput[],
-    operation: (item: TInput) => Promise<ServiceResult<TOutput>>,
+    operation: (_item: TInput) => Promise<ServiceResult<TOutput>>,
     operationName: string
   ): Promise<ServiceResult<{
     successful: TOutput[];

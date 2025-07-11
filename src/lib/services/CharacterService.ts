@@ -43,10 +43,8 @@ import {
   CharacterServiceTemplates,
   type BulkOperationResult,
 } from './CharacterServiceTemplates';
-import { ValidationWrapper } from './utils/ValidationWrapper';
 import { DatabaseOperationWrapper } from './utils/DatabaseOperationWrapper';
 import { OperationWrapper } from './utils/OperationWrapper';
-import { CharacterValidationUtils } from './utils/CharacterValidationUtils';
 import { CharacterAccessUtils } from './utils/CharacterAccessUtils';
 
 export interface CharacterPermissions {
@@ -265,14 +263,32 @@ export class CharacterService {
     characterId: string,
     userId: string
   ): Promise<ServiceResult<void>> {
-    return CharacterAccessUtils.checkOwnership(characterId, userId);
+    return OperationWrapper.execute(
+      async () => {
+        const result = await CharacterAccessUtils.checkOwnership(characterId, userId);
+        if (!result.success) {
+          throw new Error(result.error.message);
+        }
+        return void 0;
+      },
+      'check character ownership'
+    );
   }
 
   static async checkCharacterAccess(
     characterId: string,
     userId: string
   ): Promise<ServiceResult<void>> {
-    return CharacterAccessUtils.checkAccess(characterId, userId);
+    return OperationWrapper.execute(
+      async () => {
+        const result = await CharacterAccessUtils.checkAccess(characterId, userId);
+        if (!result.success) {
+          throw new Error(result.error.message);
+        }
+        return void 0;
+      },
+      'check character access'
+    );
   }
 
   static async getCharacterPermissions(
@@ -286,7 +302,7 @@ export class CharacterService {
           characterId,
           'character'
         );
-        
+
         if (!characterResult.success) {
           throw new Error(characterResult.error.message);
         }

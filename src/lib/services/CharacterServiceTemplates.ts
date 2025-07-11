@@ -72,12 +72,12 @@ export class CharacterServiceTemplates {
 
         const originalCharacter = characterResult.data;
         const cloneData = this.createCloneDataFromCharacter(originalCharacter, newName);
-        
+
         const createResult = await CharacterServiceCRUD.createCharacter(userId, cloneData);
         if (!createResult.success) {
           throw new Error(createResult.error.message);
         }
-        
+
         return createResult.data;
       },
       (error) => CharacterServiceErrors.operationFailed(
@@ -146,9 +146,25 @@ export class CharacterServiceTemplates {
     ownerId: string,
     charactersData: CharacterCreation[]
   ): Promise<ServiceResult<BulkOperationResult<ICharacter>>> {
-    return OperationWrapper.executeBulk(
-      charactersData,
-      (characterData) => CharacterServiceCRUD.createCharacter(ownerId, characterData),
+    return OperationWrapper.execute(
+      async () => {
+        const successful: ICharacter[] = [];
+        const failed: Array<{ data: any; error: string }> = [];
+
+        for (const characterData of charactersData) {
+          const result = await CharacterServiceCRUD.createCharacter(ownerId, characterData);
+          if (result.success) {
+            successful.push(result.data);
+          } else {
+            failed.push({
+              data: characterData,
+              error: result.error.message,
+            });
+          }
+        }
+
+        return { successful, failed };
+      },
       'create multiple characters'
     );
   }

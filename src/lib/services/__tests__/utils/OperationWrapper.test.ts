@@ -1,6 +1,6 @@
 /**
  * OperationWrapper Tests
- * 
+ *
  * Tests for the OperationWrapper utility to ensure proper error handling
  * consolidation and operation execution patterns.
  */
