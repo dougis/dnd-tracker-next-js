@@ -3,32 +3,60 @@ import { auth } from '@/lib/auth';
 import { EncounterService } from '@/lib/services/EncounterService';
 import { updateEncounterSchema } from '@/lib/validations/encounter';
 
+// Helper function to validate authentication
+async function validateAuth() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { success: false, error: 'Authentication required' },
+      { status: 401 }
+    );
+  }
+  return { session, userId: session.user.id };
+}
+
+// Helper function to validate encounter ID
+async function validateEncounterId(params: Promise<{ id: string }>) {
+  const { id: encounterId } = await params;
+  if (!encounterId || encounterId.trim() === '') {
+    return NextResponse.json(
+      { success: false, error: 'Encounter ID is required' },
+      { status: 400 }
+    );
+  }
+  return encounterId;
+}
+
+// Helper function to check encounter existence and ownership
+async function validateEncounterAccess(encounterId: string, userId: string) {
+  const existingResult = await EncounterService.getEncounterById(encounterId);
+  if (!existingResult.success) {
+    const status = existingResult.error?.message === 'Encounter not found' ? 404 : 500;
+    return NextResponse.json(existingResult, { status });
+  }
+
+  if (existingResult.data?.ownerId.toString() !== userId) {
+    return NextResponse.json(
+      { success: false, error: 'Insufficient permissions' },
+      { status: 403 }
+    );
+  }
+
+  return existingResult;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Validate authentication
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    const authResult = await validateAuth();
+    if (authResult instanceof NextResponse) return authResult;
 
-    // Validate encounter ID
-    const { id: encounterId } = await params;
-    if (!encounterId || encounterId.trim() === '') {
-      return NextResponse.json(
-        { success: false, error: 'Encounter ID is required' },
-        { status: 400 }
-      );
-    }
+    const encounterId = await validateEncounterId(params);
+    if (encounterId instanceof NextResponse) return encounterId;
 
-    // Get encounter
     const result = await EncounterService.getEncounterById(encounterId);
-
     if (!result.success) {
       const status = result.error?.message === 'Encounter not found' ? 404 : 500;
       return NextResponse.json(result, { status });
@@ -49,23 +77,12 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Validate authentication
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    const authResult = await validateAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { userId } = authResult;
 
-    // Validate encounter ID
-    const { id: encounterId } = await params;
-    if (!encounterId || encounterId.trim() === '') {
-      return NextResponse.json(
-        { success: false, error: 'Encounter ID is required' },
-        { status: 400 }
-      );
-    }
+    const encounterId = await validateEncounterId(params);
+    if (encounterId instanceof NextResponse) return encounterId;
 
     // Parse and validate request body
     let updateData;
@@ -82,24 +99,12 @@ export async function PUT(
       );
     }
 
-    // Check if encounter exists and user has permission
-    const existingResult = await EncounterService.getEncounterById(encounterId);
-    if (!existingResult.success) {
-      const status = existingResult.error?.message === 'Encounter not found' ? 404 : 500;
-      return NextResponse.json(existingResult, { status });
-    }
-
-    // Check ownership
-    if (existingResult.data?.ownerId.toString() !== session.user.id) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
+    // Validate access
+    const accessResult = await validateEncounterAccess(encounterId, userId);
+    if (accessResult instanceof NextResponse) return accessResult;
 
     // Update encounter
     const result = await EncounterService.updateEncounter(encounterId, updateData);
-
     if (!result.success) {
       const status = result.error?.message === 'Encounter not found' ? 404 : 500;
       return NextResponse.json(result, { status });
@@ -120,42 +125,19 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Validate authentication
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    const authResult = await validateAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { userId } = authResult;
 
-    // Validate encounter ID
-    const { id: encounterId } = await params;
-    if (!encounterId || encounterId.trim() === '') {
-      return NextResponse.json(
-        { success: false, error: 'Encounter ID is required' },
-        { status: 400 }
-      );
-    }
+    const encounterId = await validateEncounterId(params);
+    if (encounterId instanceof NextResponse) return encounterId;
 
-    // Check if encounter exists and user has permission
-    const existingResult = await EncounterService.getEncounterById(encounterId);
-    if (!existingResult.success) {
-      const status = existingResult.error?.message === 'Encounter not found' ? 404 : 500;
-      return NextResponse.json(existingResult, { status });
-    }
-
-    // Check ownership
-    if (existingResult.data?.ownerId.toString() !== session.user.id) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
+    // Validate access
+    const accessResult = await validateEncounterAccess(encounterId, userId);
+    if (accessResult instanceof NextResponse) return accessResult;
 
     // Delete encounter
     const result = await EncounterService.deleteEncounter(encounterId);
-
     if (!result.success) {
       const status = result.error?.message === 'Encounter not found' ? 404 : 500;
       return NextResponse.json(result, { status });
