@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { LegalSection, ContactSection } from './LegalComponents';
 
 function TermsHeader() {
@@ -52,7 +53,7 @@ function UserContentAndPrivacySections() {
 
       <LegalSection title="Privacy Policy">
         <p>
-          Your privacy is important to us. Please review our Privacy Policy, which also governs your use of the Service, to understand our practices regarding the collection and use of your information.
+          Your privacy is important to us. Please review our <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link>, which also governs your use of the Service, to understand our practices regarding the collection and use of your information.
         </p>
       </LegalSection>
 

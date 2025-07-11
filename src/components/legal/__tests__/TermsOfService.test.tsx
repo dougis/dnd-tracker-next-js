@@ -41,4 +41,11 @@ describe('TermsOfService', () => {
     render(<TermsOfService />);
     expect(screen.getByRole('heading', { name: /contact information/i })).toBeInTheDocument();
   });
+
+  it('renders Privacy Policy as a clickable link', () => {
+    render(<TermsOfService />);
+    const privacyPolicyLink = screen.getByRole('link', { name: /privacy policy/i });
+    expect(privacyPolicyLink).toBeInTheDocument();
+    expect(privacyPolicyLink).toHaveAttribute('href', '/privacy');
+  });
 });
