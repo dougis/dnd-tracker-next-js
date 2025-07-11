@@ -1,7 +1,6 @@
 'use client';
 
 import { IEncounter, IInitiativeEntry, IParticipantReference } from '@/lib/models/encounter/interfaces';
-import { findParticipantById } from './participantUtils';
 
 /**
  * Transforms an initiative entry for export
@@ -22,12 +21,17 @@ function transformInitiativeEntry(entry: IInitiativeEntry, participant: IPartici
  * Helper function to build export data
  */
 export function buildExportData(encounter: IEncounter) {
+  // Create a Map for O(1) participant lookups instead of O(n) array.find()
+  const participantMap = new Map(
+    encounter.participants.map(p => [p.characterId.toString(), p])
+  );
+
   return {
     encounterName: encounter.name,
     round: encounter.combatState.currentRound,
     turn: encounter.combatState.currentTurn,
     initiativeOrder: encounter.combatState.initiativeOrder.map(entry => {
-      const participant = findParticipantById(encounter.participants, entry.participantId.toString());
+      const participant = participantMap.get(entry.participantId.toString());
       return transformInitiativeEntry(entry, participant);
     }),
     exportedAt: new Date().toISOString()
