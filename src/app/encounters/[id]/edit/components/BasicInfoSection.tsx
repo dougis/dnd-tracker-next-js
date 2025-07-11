@@ -117,7 +117,7 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
             <FormLabel htmlFor="encounter-difficulty">Difficulty</FormLabel>
             <Select
               onValueChange={field.onChange}
-              defaultValue={field.value}
+              value={field.value}
               aria-describedby="encounter-difficulty-error"
             >
               <FormControl>

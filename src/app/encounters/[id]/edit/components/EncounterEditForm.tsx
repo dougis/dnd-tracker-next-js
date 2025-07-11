@@ -4,24 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UpdateEncounter } from '@/lib/validations/encounter';
-import { z } from 'zod';
-import {
-  encounterDifficultySchema,
-  encounterSettingsSchema,
-  participantReferenceSchema,
-} from '@/lib/validations/encounter';
-
-// Create a form-friendly schema that matches UpdateEncounter exactly
-const formEncounterSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
-  description: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  difficulty: encounterDifficultySchema.optional(),
-  estimatedDuration: z.number().min(1, 'Duration must be positive').optional(),
-  targetLevel: z.number().min(1, 'Level must be between 1 and 20').max(20, 'Level must be between 1 and 20').optional(),
-  participants: z.array(participantReferenceSchema).optional(),
-  settings: encounterSettingsSchema.optional(),
-});
+import { formEncounterSchema } from '../schemas/encounterEditSchema';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
