@@ -110,7 +110,9 @@ const testHelpers = {
   form: {
     clearAndType: async (user: any, input: HTMLElement, value: string) => {
       await user.clear(input);
-      await user.type(input, value);
+      if (value.trim() !== '') {
+        await user.type(input, value);
+      }
     },
 
     waitForFormField: async (fieldValue: string) => {
