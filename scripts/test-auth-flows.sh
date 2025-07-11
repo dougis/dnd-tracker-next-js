@@ -70,7 +70,7 @@ echo "🔐 Testing Authentication Pages..."
 test_http_status "/auth/signin" 200 "Sign in page"
 test_http_status "/auth/signup" 200 "Sign up page"
 test_http_status "/auth/error" 200 "Auth error page"
-test_http_status "/auth/reset-password" 200 "Password reset page"
+test_http_status "/reset-password" 200 "Password reset page"
 
 echo ""
 echo "🚫 Testing Protected Routes (should require auth)..."

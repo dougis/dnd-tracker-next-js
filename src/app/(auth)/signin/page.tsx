@@ -166,7 +166,7 @@ export default function SignInPage() {
             </Label>
           </div>
           <Link
-            href={'/auth/reset-password' as any}
+            href={'/reset-password' as any}
             className="text-sm text-primary hover:underline"
           >
             Forgot password?

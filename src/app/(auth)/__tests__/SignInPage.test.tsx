@@ -53,6 +53,13 @@ describe('SignInPage Component', () => {
     expect(screen.getByText(/Don't have an account/i)).toBeInTheDocument();
   });
 
+  it('has correct reset password link', () => {
+    render(<SignInPage />);
+
+    const resetPasswordLink = screen.getByRole('link', { name: /Forgot password/i });
+    expect(resetPasswordLink).toHaveAttribute('href', '/reset-password');
+  });
+
   it('submits the form with valid credentials', async () => {
     render(<SignInPage />);
 
