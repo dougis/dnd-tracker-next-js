@@ -37,34 +37,47 @@ function ErrorAlert({ error }: { error: FormError }) {
   );
 }
 
-function LoadingState() {
+// Common layout wrapper to eliminate duplication
+function PageLayout({ children, showBackButton = false, onBack }: {
+  children: React.ReactNode;
+  showBackButton?: boolean;
+  onBack?: () => void;
+}) {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading...</div>
-        </div>
+        {showBackButton && onBack && (
+          <Button variant="ghost" onClick={onBack} className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+        )}
+        {children}
       </div>
     </div>
   );
 }
 
+function LoadingState() {
+  return (
+    <PageLayout>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading...</div>
+      </div>
+    </PageLayout>
+  );
+}
+
 function ErrorState({ error, onBack }: { error: string; onBack: () => void }) {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto p-6">
-        <Button variant="ghost" onClick={onBack} className="mb-4">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="text-lg text-destructive mb-2">{error}</div>
-            <Button onClick={onBack}>Go Back</Button>
-          </div>
+    <PageLayout showBackButton onBack={onBack}>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-lg text-destructive mb-2">{error}</div>
+          <Button onClick={onBack}>Go Back</Button>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 }
 
@@ -233,11 +246,8 @@ export default function CharacterEditPage() {
     fetchCharacter();
   }, [characterId, session?.user?.id, form]);
 
-  const handleCancel = () => {
-    router.push(`/characters/${characterId}`);
-  };
-
-  const handleBack = () => {
+  // Unified navigation handler to eliminate duplication
+  const navigateToCharacterDetail = () => {
     router.push(`/characters/${characterId}`);
   };
 
@@ -288,48 +298,46 @@ export default function CharacterEditPage() {
   };
 
   if (loading) return <LoadingState />;
-  if (error) return <ErrorState error={error} onBack={handleBack} />;
-  if (!character) return <ErrorState error="Character not found" onBack={handleBack} />;
+  if (error) return <ErrorState error={error} onBack={navigateToCharacterDetail} />;
+  if (!character) return <ErrorState error="Character not found" onBack={navigateToCharacterDetail} />;
 
   const isFormValid = form.formState.isValid;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto p-6">
-        <Button variant="ghost" onClick={handleBack} className="mb-6">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Character
-        </Button>
+    <PageLayout>
+      <Button variant="ghost" onClick={navigateToCharacterDetail} className="mb-6">
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back to Character
+      </Button>
 
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Edit Character</h1>
-            <p className="text-muted-foreground">
-              Update your character&apos;s information
-            </p>
-          </div>
-
-          <Form {...form}>
-            <div className="space-y-6">
-              {submitError && <ErrorAlert error={submitError} />}
-
-              <div className="space-y-6">
-                <BasicInfoValidationSection form={form} />
-                <AbilityScoresValidationSection form={form} />
-                <ClassesValidationSection form={form} />
-                <CombatStatsValidationSection form={form} />
-              </div>
-            </div>
-          </Form>
-
-          <FormActions
-            onCancel={handleCancel}
-            onSubmit={handleFormSubmit}
-            isSubmitting={isSubmitting}
-            isValid={isFormValid}
-          />
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Edit Character</h1>
+          <p className="text-muted-foreground">
+            Update your character&apos;s information
+          </p>
         </div>
+
+        <Form {...form}>
+          <div className="space-y-6">
+            {submitError && <ErrorAlert error={submitError} />}
+
+            <div className="space-y-6">
+              <BasicInfoValidationSection form={form} />
+              <AbilityScoresValidationSection form={form} />
+              <ClassesValidationSection form={form} />
+              <CombatStatsValidationSection form={form} />
+            </div>
+          </div>
+        </Form>
+
+        <FormActions
+          onCancel={navigateToCharacterDetail}
+          onSubmit={handleFormSubmit}
+          isSubmitting={isSubmitting}
+          isValid={isFormValid}
+        />
       </div>
-    </div>
+    </PageLayout>
   );
 }

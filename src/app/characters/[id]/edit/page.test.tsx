@@ -80,7 +80,7 @@ describe('CharacterEditPage', () => {
     });
   };
 
-  // Helper to render component and wait for character to load
+  // Common test helpers to reduce duplication
   const renderAndWaitForCharacter = async (character: any) => {
     mockSuccessfulCharacterFetch(character);
     render(<CharacterEditPage />);
@@ -88,6 +88,18 @@ describe('CharacterEditPage', () => {
       expect(screen.getByDisplayValue(character.name)).toBeInTheDocument();
     });
     return character;
+  };
+
+  const updateCharacterName = (currentName: string, newName: string) => {
+    const nameField = screen.getByDisplayValue(currentName);
+    fireEvent.change(nameField, { target: { value: newName } });
+    return nameField;
+  };
+
+  const submitForm = () => {
+    const submitButton = screen.getByText('Update Character');
+    fireEvent.click(submitButton);
+    return submitButton;
   };
 
   it('should render loading state while fetching character', () => {
@@ -132,17 +144,9 @@ describe('CharacterEditPage', () => {
     const updatedCharacter = { ...testCharacter, name: 'Updated Name' };
 
     await renderAndWaitForCharacter(testCharacter);
-
-    // Now mock the character update for form submission
     mockCharacterUpdate(updatedCharacter);
-
-    // Update the name field
-    const nameField = screen.getByDisplayValue(testCharacter.name);
-    fireEvent.change(nameField, { target: { value: 'Updated Name' } });
-
-    // Submit the form
-    const submitButton = screen.getByText('Update Character');
-    fireEvent.click(submitButton);
+    updateCharacterName(testCharacter.name, 'Updated Name');
+    submitForm();
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
@@ -161,10 +165,7 @@ describe('CharacterEditPage', () => {
   it('should show validation errors for invalid input', async () => {
     const testCharacter = createMockCharacter();
     await renderAndWaitForCharacter(testCharacter);
-
-    // Clear required field
-    const nameField = screen.getByDisplayValue(testCharacter.name);
-    fireEvent.change(nameField, { target: { value: '' } });
+    updateCharacterName(testCharacter.name, '');
 
     await waitFor(() => {
       expect(screen.getByText('Name is required')).toBeInTheDocument();
@@ -198,11 +199,8 @@ describe('CharacterEditPage', () => {
     mockCharacterUpdate(updatedCharacter);
 
     // Update and submit
-    const nameField = screen.getByDisplayValue(testCharacter.name);
-    fireEvent.change(nameField, { target: { value: 'Updated Name' } });
-
-    const submitButton = screen.getByText('Update Character');
-    fireEvent.click(submitButton);
+    updateCharacterName(testCharacter.name, 'Updated Name');
+    submitForm();
 
     await waitFor(() => {
       expect(mockRouterPush).toHaveBeenCalledWith(`/characters/${testCharacterId}`);
@@ -233,8 +231,7 @@ describe('CharacterEditPage', () => {
       expect(screen.getByDisplayValue(testCharacter.name)).toBeInTheDocument();
     });
 
-    const submitButton = screen.getByText('Update Character');
-    fireEvent.click(submitButton);
+    submitForm();
 
     await waitFor(() => {
       expect(screen.getByText('Update failed')).toBeInTheDocument();
@@ -262,47 +259,31 @@ describe('CharacterEditPage', () => {
     });
     await renderAndWaitForCharacter(testCharacter);
 
-    // Simplified test: verify character with equipment loads
+    // Simplified test: verify character loads correctly
     expect(screen.getByDisplayValue(testCharacter.name)).toBeInTheDocument();
-
-    // Full equipment editing UI will be implemented in follow-up issues
-    // This test ensures basic compatibility with equipment data
   });
 
   it('should handle spells editing', async () => {
-    const testCharacter = createMockCharacter({
-      spells: [
-        {
-          name: 'Fireball',
-          level: 3,
-          school: 'evocation',
-          castingTime: '1 action',
-          range: '150 feet',
-          components: 'V, S, M',
-          duration: 'Instantaneous',
-          description: 'A bright streak flashes from your pointing finger.',
-          isPrepared: true
-        },
-        {
-          name: 'Magic Missile',
-          level: 1,
-          school: 'evocation',
-          castingTime: '1 action',
-          range: '120 feet',
-          components: 'V, S',
-          duration: 'Instantaneous',
-          description: 'You create three glowing darts of magical force.',
-          isPrepared: true
-        }
-      ]
-    });
+    const spellsTestData = [
+      {
+        name: 'Fireball', level: 3, school: 'evocation', castingTime: '1 action',
+        range: '150 feet', components: 'V, S, M', duration: 'Instantaneous',
+        description: 'A bright streak flashes from your pointing finger.',
+        isPrepared: true
+      },
+      {
+        name: 'Magic Missile', level: 1, school: 'evocation', castingTime: '1 action',
+        range: '120 feet', components: 'V, S', duration: 'Instantaneous',
+        description: 'You create three glowing darts of magical force.',
+        isPrepared: true
+      }
+    ];
+    
+    const testCharacter = createMockCharacter({ spells: spellsTestData });
     await renderAndWaitForCharacter(testCharacter);
 
-    // Simplified test: verify character with spells loads
+    // Simplified test: verify character loads correctly
     expect(screen.getByDisplayValue(testCharacter.name)).toBeInTheDocument();
-
-    // Full spell editing UI will be implemented in follow-up issues
-    // This test ensures basic compatibility with spell data
   });
 
   it('should disable submit button while form is submitting', async () => {
@@ -333,8 +314,7 @@ describe('CharacterEditPage', () => {
       expect(screen.getByDisplayValue(testCharacter.name)).toBeInTheDocument();
     });
 
-    const submitButton = screen.getByText('Update Character');
-    fireEvent.click(submitButton);
+    submitForm();
 
     // Button should show updating state
     await waitFor(() => {
