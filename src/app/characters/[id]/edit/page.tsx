@@ -4,8 +4,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { characterCreationSchema, CharacterCreation, characterRaceSchema, characterClassSchema, spellSchema } from '@/lib/validations/character';
-import { z } from 'zod';
+import { characterCreationSchema, CharacterCreation } from '@/lib/validations/character';
 import { useFormValidation } from '@/lib/validations/form-integration';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
@@ -102,72 +101,33 @@ function FormActions({
   );
 }
 
+// Generic mapping function to reduce code duplication
+function createValueMapper<T extends string>(
+  validValues: readonly T[],
+  defaultValue: T
+): (_input: string) => T {
+  const mappingSet = new Set(validValues);
+  return (_input: string): T => {
+    const normalized = _input.toLowerCase() as T;
+    return mappingSet.has(normalized) ? normalized : defaultValue;
+  };
+}
+
 // Helper functions to reduce complexity
-function mapCharacterRace(race: string): z.infer<typeof characterRaceSchema> {
-  // Map database race values to validation schema values
-  const raceMap: Record<string, z.infer<typeof characterRaceSchema>> = {
-    'dragonborn': 'dragonborn',
-    'dwarf': 'dwarf',
-    'elf': 'elf',
-    'gnome': 'gnome',
-    'half-elf': 'half-elf',
-    'halfling': 'halfling',
-    'half-orc': 'half-orc',
-    'human': 'human',
-    'tiefling': 'tiefling',
-    'aarakocra': 'aarakocra',
-    'genasi': 'genasi',
-    'goliath': 'goliath',
-    'aasimar': 'aasimar',
-    'bugbear': 'bugbear',
-    'firbolg': 'firbolg',
-    'goblin': 'goblin',
-    'hobgoblin': 'hobgoblin',
-    'kenku': 'kenku',
-    'kobold': 'kobold',
-    'lizardfolk': 'lizardfolk',
-    'orc': 'orc',
-    'tabaxi': 'tabaxi',
-    'triton': 'triton',
-    'yuan-ti': 'yuan-ti',
-  };
-  return raceMap[race.toLowerCase()] || 'custom';
-}
+const mapCharacterRace = createValueMapper(
+  ['dragonborn', 'dwarf', 'elf', 'gnome', 'half-elf', 'halfling', 'half-orc', 'human', 'tiefling', 'aarakocra', 'genasi', 'goliath', 'aasimar', 'bugbear', 'firbolg', 'goblin', 'hobgoblin', 'kenku', 'kobold', 'lizardfolk', 'orc', 'tabaxi', 'triton', 'yuan-ti', 'custom'] as const,
+  'custom'
+);
 
-function mapCharacterClass(charClass: string): z.infer<typeof characterClassSchema> {
-  // Map database class values to validation schema values
-  const classMap: Record<string, z.infer<typeof characterClassSchema>> = {
-    'artificer': 'artificer',
-    'barbarian': 'barbarian',
-    'bard': 'bard',
-    'cleric': 'cleric',
-    'druid': 'druid',
-    'fighter': 'fighter',
-    'monk': 'monk',
-    'paladin': 'paladin',
-    'ranger': 'ranger',
-    'rogue': 'rogue',
-    'sorcerer': 'sorcerer',
-    'warlock': 'warlock',
-    'wizard': 'wizard',
-  };
-  return classMap[charClass.toLowerCase()] || 'fighter';
-}
+const mapCharacterClass = createValueMapper(
+  ['artificer', 'barbarian', 'bard', 'cleric', 'druid', 'fighter', 'monk', 'paladin', 'ranger', 'rogue', 'sorcerer', 'warlock', 'wizard'] as const,
+  'fighter'
+);
 
-function mapSpellSchool(school: string): z.infer<typeof spellSchema>['school'] {
-  // Map database spell school values to validation schema values
-  const schoolMap: Record<string, z.infer<typeof spellSchema>['school']> = {
-    'abjuration': 'abjuration',
-    'conjuration': 'conjuration',
-    'divination': 'divination',
-    'enchantment': 'enchantment',
-    'evocation': 'evocation',
-    'illusion': 'illusion',
-    'necromancy': 'necromancy',
-    'transmutation': 'transmutation',
-  };
-  return schoolMap[school.toLowerCase()] || 'evocation';
-}
+const mapSpellSchool = createValueMapper(
+  ['abjuration', 'conjuration', 'divination', 'enchantment', 'evocation', 'illusion', 'necromancy', 'transmutation'] as const,
+  'evocation'
+);
 
 function transformSpellComponents(components: string): {
   verbal: boolean;
