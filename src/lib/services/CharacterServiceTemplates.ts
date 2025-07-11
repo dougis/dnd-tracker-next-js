@@ -31,6 +31,21 @@ export interface BulkOperationResult<T> {
 
 export class CharacterServiceTemplates {
 
+  // ================================
+  // Private Helper Methods (moved to top for shared use)
+  // ================================
+
+  /**
+   * Shared helper to get validated character - eliminates duplication
+   */
+  private static async getValidatedCharacter(characterId: string, userId: string): Promise<ICharacter> {
+    const characterResult = await CharacterServiceCRUD.getCharacterById(characterId, userId);
+    if (!characterResult.success) {
+      throw new Error(characterResult.error.message);
+    }
+    return characterResult.data;
+  }
+
   /**
    * Create character template
    */
@@ -41,12 +56,7 @@ export class CharacterServiceTemplates {
   ): Promise<ServiceResult<CharacterPreset>> {
     return OperationWrapper.executeWithCustomError(
       async () => {
-        const characterResult = await CharacterServiceCRUD.getCharacterById(characterId, userId);
-        if (!characterResult.success) {
-          throw new Error(characterResult.error.message);
-        }
-
-        const character = characterResult.data;
+        const character = await this.getValidatedCharacter(characterId, userId);
         return this.createTemplateFromCharacter(character, templateName);
       },
       (error) => CharacterServiceErrors.templateCreationFailed(
@@ -65,12 +75,7 @@ export class CharacterServiceTemplates {
   ): Promise<ServiceResult<ICharacter>> {
     return OperationWrapper.executeWithCustomError(
       async () => {
-        const characterResult = await CharacterServiceCRUD.getCharacterById(characterId, userId);
-        if (!characterResult.success) {
-          throw new Error(characterResult.error.message);
-        }
-
-        const originalCharacter = characterResult.data;
+        const originalCharacter = await this.getValidatedCharacter(characterId, userId);
         const cloneData = this.createCloneDataFromCharacter(originalCharacter, newName);
 
         const createResult = await CharacterServiceCRUD.createCharacter(userId, cloneData);
@@ -140,6 +145,32 @@ export class CharacterServiceTemplates {
   }
 
   /**
+   * Generic bulk operation processor - eliminates duplication
+   */
+  private static async processBulkOperation<T, R>(
+    items: T[],
+    operation: (_item: T) => Promise<ServiceResult<R>>,
+    _operationName: string
+  ): Promise<BulkOperationResult<R>> {
+    const successful: R[] = [];
+    const failed: Array<{ data: T; error: string }> = [];
+
+    for (const item of items) {
+      const result = await operation(item);
+      if (result.success) {
+        successful.push(result.data);
+      } else {
+        failed.push({
+          data: item,
+          error: result.error.message,
+        });
+      }
+    }
+
+    return { successful, failed };
+  }
+
+  /**
    * Create multiple characters
    */
   static async createMultipleCharacters(
@@ -147,24 +178,11 @@ export class CharacterServiceTemplates {
     charactersData: CharacterCreation[]
   ): Promise<ServiceResult<BulkOperationResult<ICharacter>>> {
     return OperationWrapper.execute(
-      async () => {
-        const successful: ICharacter[] = [];
-        const failed: Array<{ data: any; error: string }> = [];
-
-        for (const characterData of charactersData) {
-          const result = await CharacterServiceCRUD.createCharacter(ownerId, characterData);
-          if (result.success) {
-            successful.push(result.data);
-          } else {
-            failed.push({
-              data: characterData,
-              error: result.error.message,
-            });
-          }
-        }
-
-        return { successful, failed };
-      },
+      () => this.processBulkOperation(
+        charactersData,
+        (data) => CharacterServiceCRUD.createCharacter(ownerId, data),
+        'create multiple characters'
+      ),
       'create multiple characters'
     );
   }

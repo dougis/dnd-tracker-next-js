@@ -58,6 +58,39 @@ export interface ExperienceInfo {
 
 export class CharacterServiceStats {
 
+  // ================================
+  // Private Helper Methods (moved to top for shared use)
+  // ================================
+
+  /**
+   * Shared helper to get validated character - eliminates duplication
+   */
+  private static async getValidatedCharacter(characterId: string, userId: string): Promise<ICharacter> {
+    const characterResult = await CharacterServiceCRUD.getCharacterById(characterId, userId);
+    if (!characterResult.success) {
+      throw new Error(characterResult.error.message);
+    }
+    return characterResult.data;
+  }
+
+  /**
+   * Generic character operation wrapper - eliminates OperationWrapper duplication
+   */
+  private static async executeWithCharacter<T>(
+    characterId: string,
+    userId: string,
+    operation: (_character: ICharacter) => T,
+    operationName: string
+  ): Promise<ServiceResult<T>> {
+    return OperationWrapper.execute(
+      async () => {
+        const character = await this.getValidatedCharacter(characterId, userId);
+        return operation(character);
+      },
+      operationName
+    );
+  }
+
   /**
    * Calculate character statistics
    */
@@ -65,32 +98,23 @@ export class CharacterServiceStats {
     characterId: string,
     userId: string
   ): Promise<ServiceResult<CharacterStats>> {
-    return OperationWrapper.execute(
-      async () => {
-        const characterResult = await CharacterServiceCRUD.getCharacterById(characterId, userId);
-        if (!characterResult.success) {
-          throw new Error(characterResult.error.message);
-        }
-
-        const character = characterResult.data;
-
-        const stats: CharacterStats = {
-          abilityModifiers: this.calculateAbilityModifiers(character),
-          savingThrows: this.calculateSavingThrows(character),
-          skills: this.calculateSkills(character),
-          totalLevel: character.level,
-          classLevels: this.calculateClassLevels(character),
-          proficiencyBonus: character.proficiencyBonus,
-          initiativeModifier: character.getInitiativeModifier(),
-          armorClass: character.armorClass,
-          effectiveHitPoints: character.getEffectiveHP(),
-          status: this.getCharacterStatus(character),
-          isAlive: character.isAlive(),
-          isUnconscious: character.isUnconscious(),
-        };
-
-        return stats;
-      },
+    return this.executeWithCharacter(
+      characterId,
+      userId,
+      (character) => ({
+        abilityModifiers: this.calculateAbilityModifiers(character),
+        savingThrows: this.calculateSavingThrows(character),
+        skills: this.calculateSkills(character),
+        totalLevel: character.level,
+        classLevels: this.calculateClassLevels(character),
+        proficiencyBonus: character.proficiencyBonus,
+        initiativeModifier: character.getInitiativeModifier(),
+        armorClass: character.armorClass,
+        effectiveHitPoints: character.getEffectiveHP(),
+        status: this.getCharacterStatus(character),
+        isAlive: character.isAlive(),
+        isUnconscious: character.isUnconscious(),
+      }),
       'calculate character stats'
     );
   }
@@ -102,18 +126,19 @@ export class CharacterServiceStats {
     characterId: string,
     userId: string
   ): Promise<ServiceResult<CharacterSummary>> {
-    return OperationWrapper.execute(
-      async () => {
-        const characterResult = await CharacterServiceCRUD.getCharacterById(characterId, userId);
-        if (!characterResult.success) {
-          throw new Error(characterResult.error.message);
-        }
-
-        const character = characterResult.data;
-        return character.toSummary();
-      },
+    return this.executeWithCharacter(
+      characterId,
+      userId,
+      (character) => character.toSummary(),
       'get character summary'
     );
+  }
+
+  /**
+   * Shared stub method helper - eliminates stub duplication
+   */
+  private static createStubResult<T>(defaultValue: T): Promise<ServiceResult<T>> {
+    return Promise.resolve(createSuccessResult(defaultValue));
   }
 
   /**
@@ -124,7 +149,7 @@ export class CharacterServiceStats {
     _userId: string
   ): Promise<ServiceResult<SpellcastingStats>> {
     // TODO: Implement spellcasting calculations
-    return createSuccessResult({
+    return this.createStubResult({
       casterLevel: 0,
       spellSlots: {},
       spellAttackBonus: 0,
@@ -140,10 +165,10 @@ export class CharacterServiceStats {
     _userId: string
   ): Promise<ServiceResult<CarryingCapacity>> {
     // TODO: Implement carrying capacity calculations
-    return createSuccessResult({
+    return this.createStubResult({
       maximum: 240,
       current: 55,
-      encumbranceLevel: 'none',
+      encumbranceLevel: 'none' as const,
     });
   }
 
@@ -155,7 +180,7 @@ export class CharacterServiceStats {
     _userId: string
   ): Promise<ServiceResult<EquipmentWeight>> {
     // TODO: Implement equipment weight calculations
-    return createSuccessResult({
+    return this.createStubResult({
       total: 55,
       equipped: 55,
       carried: 0,
@@ -170,7 +195,7 @@ export class CharacterServiceStats {
     _userId: string
   ): Promise<ServiceResult<ExperienceInfo>> {
     // TODO: Implement experience calculations
-    return createSuccessResult({
+    return this.createStubResult({
       currentXP: 0,
       currentLevel: 1,
       nextLevelXP: 300,

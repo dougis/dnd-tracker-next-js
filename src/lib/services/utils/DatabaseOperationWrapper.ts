@@ -15,6 +15,50 @@ import {
 
 export class DatabaseOperationWrapper {
 
+  // ================================
+  // Private Helper Methods (moved to top for shared use)
+  // ================================
+
+  /**
+   * Generic database operation executor - eliminates try-catch duplication
+   */
+  private static async executeDbOperation<T>(
+    operation: () => Promise<T>,
+    operationName: string,
+    entityName: string = 'document'
+  ): Promise<ServiceResult<T>> {
+    try {
+      const result = await operation();
+      return createSuccessResult(result);
+    } catch (error) {
+      return createErrorResult(
+        CharacterServiceErrors.databaseError(`${operationName} ${entityName}`, error)
+      );
+    }
+  }
+
+  /**
+   * Execute operation with null check - handles find operations that can return null
+   */
+  private static async executeWithNullCheck<T>(
+    operation: () => Promise<T | null>,
+    id: string,
+    operationName: string,
+    entityName: string = 'document'
+  ): Promise<ServiceResult<T>> {
+    try {
+      const document = await operation();
+      if (!document) {
+        return createErrorResult(CharacterServiceErrors.characterNotFound(id));
+      }
+      return createSuccessResult(document as T);
+    } catch (error) {
+      return createErrorResult(
+        CharacterServiceErrors.databaseError(`${operationName} ${entityName}`, error)
+      );
+    }
+  }
+
   /**
    * Find document by ID with standardized error handling
    */
@@ -23,19 +67,12 @@ export class DatabaseOperationWrapper {
     id: string,
     entityName: string = 'document'
   ): Promise<ServiceResult<T>> {
-    try {
-      const document = await model.findById(id);
-      if (!document) {
-        return createErrorResult(
-          CharacterServiceErrors.characterNotFound(id)
-        );
-      }
-      return createSuccessResult(document as T);
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError(`find ${entityName}`, error)
-      );
-    }
+    return this.executeWithNullCheck(
+      () => model.findById(id) as Promise<T | null>,
+      id,
+      'find',
+      entityName
+    );
   }
 
   /**
@@ -48,19 +85,12 @@ export class DatabaseOperationWrapper {
     options: any = { new: true, runValidators: true },
     entityName: string = 'document'
   ): Promise<ServiceResult<T>> {
-    try {
-      const document = await model.findByIdAndUpdate(id, updateData, options);
-      if (!document) {
-        return createErrorResult(
-          CharacterServiceErrors.characterNotFound(id)
-        );
-      }
-      return createSuccessResult(document as T);
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError(`update ${entityName}`, error)
-      );
-    }
+    return this.executeWithNullCheck(
+      () => model.findByIdAndUpdate(id, updateData, options) as Promise<T | null>,
+      id,
+      'update',
+      entityName
+    );
   }
 
   /**
@@ -71,19 +101,12 @@ export class DatabaseOperationWrapper {
     id: string,
     entityName: string = 'document'
   ): Promise<ServiceResult<T>> {
-    try {
-      const document = await model.findByIdAndDelete(id);
-      if (!document) {
-        return createErrorResult(
-          CharacterServiceErrors.characterNotFound(id)
-        );
-      }
-      return createSuccessResult(document as T);
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError(`delete ${entityName}`, error)
-      );
-    }
+    return this.executeWithNullCheck(
+      () => model.findByIdAndDelete(id) as Promise<T | null>,
+      id,
+      'delete',
+      entityName
+    );
   }
 
   /**
@@ -94,15 +117,14 @@ export class DatabaseOperationWrapper {
     data: any,
     entityName: string = 'document'
   ): Promise<ServiceResult<T>> {
-    try {
-      const document = new model(data);
-      const savedDocument = await document.save();
-      return createSuccessResult(savedDocument as T);
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError(`create ${entityName}`, error)
-      );
-    }
+    return this.executeDbOperation(
+      async () => {
+        const document = new model(data);
+        return await document.save() as T;
+      },
+      'create',
+      entityName
+    );
   }
 
   /**
@@ -113,14 +135,11 @@ export class DatabaseOperationWrapper {
     filter: any = {},
     entityName: string = 'documents'
   ): Promise<ServiceResult<number>> {
-    try {
-      const count = await model.countDocuments(filter);
-      return createSuccessResult(count);
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError(`count ${entityName}`, error)
-      );
-    }
+    return this.executeDbOperation(
+      () => model.countDocuments(filter),
+      'count',
+      entityName
+    );
   }
 
   /**
@@ -132,14 +151,11 @@ export class DatabaseOperationWrapper {
     options: any = {},
     entityName: string = 'documents'
   ): Promise<ServiceResult<T[]>> {
-    try {
-      const documents = await model.find(filter, null, options);
-      return createSuccessResult(documents as T[]);
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError(`find ${entityName}`, error)
-      );
-    }
+    return this.executeDbOperation(
+      () => model.find(filter, null, options) as Promise<T[]>,
+      'find',
+      entityName
+    );
   }
 
   /**
@@ -150,14 +166,11 @@ export class DatabaseOperationWrapper {
     filter: any,
     entityName: string = 'document'
   ): Promise<ServiceResult<T | null>> {
-    try {
-      const document = await model.findOne(filter);
-      return createSuccessResult(document as T);
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError(`find ${entityName}`, error)
-      );
-    }
+    return this.executeDbOperation(
+      () => model.findOne(filter) as Promise<T | null>,
+      'find',
+      entityName
+    );
   }
 
   /**
@@ -168,13 +181,10 @@ export class DatabaseOperationWrapper {
     pipeline: any[],
     entityName: string = 'documents'
   ): Promise<ServiceResult<T[]>> {
-    try {
-      const results = await model.aggregate(pipeline);
-      return createSuccessResult(results as T[]);
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError(`aggregate ${entityName}`, error)
-      );
-    }
+    return this.executeDbOperation(
+      () => model.aggregate(pipeline) as Promise<T[]>,
+      'aggregate',
+      entityName
+    );
   }
 }
