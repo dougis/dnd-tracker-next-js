@@ -99,12 +99,18 @@ export const createTestContext = () => ({
 export const createAsyncParams = (id: string) => ({ params: Promise.resolve({ id }) });
 
 // JSON parsing error mock
-export const createJsonParseErrorRequest = (): NextRequest => ({
-  json: jest.fn().mockRejectedValue(new Error('Invalid JSON')),
-  method: 'PUT',
-  headers: new Headers({ 'Content-Type': 'application/json' }),
-  url: 'http://localhost:3000/api/encounters/test-id',
-} as unknown as NextRequest);
+export const createJsonParseErrorRequest = (): NextRequest => {
+  const request = new NextRequest('http://localhost:3000/api/encounters/test-id', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{"invalid": json}', // Malformed JSON
+  });
+
+  // Override the json method to throw an error
+  request.json = jest.fn().mockRejectedValue(new Error('Invalid JSON'));
+
+  return request;
+};
 
 // Validation test helpers
 export const expectValidationError = (response: Response, data: any, field: string) => {
@@ -220,7 +226,7 @@ export const testUnauthorizedAccess = async (
   requestData: any = {},
   method: 'PUT' | 'DELETE' = 'PUT'
 ) => {
-  const unauthorizedEncounter = createTestEncounter(createUnauthorizedEncounter());
+  const unauthorizedEncounter = createUnauthorizedEncounter();
   mockEncounterService.getEncounterById.mockResolvedValue(
     mockApiResponses.success(unauthorizedEncounter)
   );

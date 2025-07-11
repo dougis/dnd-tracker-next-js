@@ -156,6 +156,9 @@ describe('/api/encounters/[id] route', () => {
     });
 
     it('should handle malformed JSON', async () => {
+      // Ensure auth passes but access validation also passes to reach JSON parsing
+      mockSuccessfulAccessValidation(mockEncounterService, mockApiResponses, mockEncounter, mockUser.id);
+
       const request = createJsonParseErrorRequest();
       const response = await PUT(request, createTestContext());
       const data = await response.json();
