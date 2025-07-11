@@ -20,6 +20,45 @@ interface SettingsSectionProps {
   form: UseFormReturn<UpdateEncounter>;
 }
 
+// Helper component to reduce FormField duplication
+interface SwitchFormFieldProps {
+  control: UseFormReturn<UpdateEncounter>['control'];
+  name: string;
+  id: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  description: string;
+}
+
+function SwitchFormField({ control, name, id, icon: Icon, label, description }: SwitchFormFieldProps) {
+  return (
+    <FormField
+      control={control}
+      name={name as any}
+      render={({ field }) => (
+        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+          <div className="space-y-0.5">
+            <FormLabel htmlFor={id} className="flex items-center space-x-2">
+              <Icon className="h-4 w-4" />
+              <span>{label}</span>
+            </FormLabel>
+            <FormDescription>{description}</FormDescription>
+          </div>
+          <FormControl>
+            <Switch
+              id={id}
+              checked={field.value}
+              onCheckedChange={field.onChange}
+              aria-describedby={`${id}-error`}
+            />
+          </FormControl>
+          <FormMessage id={`${id}-error`} />
+        </FormItem>
+      )}
+    />
+  );
+}
+
 export function SettingsSection({ form }: SettingsSectionProps) {
   const { control, watch } = form;
   const settings = watch('settings');
@@ -45,88 +84,31 @@ export function SettingsSection({ form }: SettingsSectionProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Player Visibility */}
-            <FormField
+            <SwitchFormField
               control={control}
               name="settings.allowPlayerVisibility"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                  <div className="space-y-0.5">
-                    <FormLabel htmlFor="allow-player-visibility" className="flex items-center space-x-2">
-                      <Eye className="h-4 w-4" />
-                      <span>Allow Player Visibility</span>
-                    </FormLabel>
-                    <FormDescription>
-                      Players can see encounter information and participant status
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      id="allow-player-visibility"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      aria-describedby="allow-player-visibility-error"
-                    />
-                  </FormControl>
-                  <FormMessage id="allow-player-visibility-error" />
-                </FormItem>
-              )}
+              id="allow-player-visibility"
+              icon={Eye}
+              label="Allow Player Visibility"
+              description="Players can see encounter information and participant status"
             />
-
-            {/* Auto-roll Initiative */}
-            <FormField
+            
+            <SwitchFormField
               control={control}
               name="settings.autoRollInitiative"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                  <div className="space-y-0.5">
-                    <FormLabel htmlFor="auto-roll-initiative" className="flex items-center space-x-2">
-                      <Zap className="h-4 w-4" />
-                      <span>Auto-roll Initiative</span>
-                    </FormLabel>
-                    <FormDescription>
-                      Automatically roll initiative for all participants when combat starts
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      id="auto-roll-initiative"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      aria-describedby="auto-roll-initiative-error"
-                    />
-                  </FormControl>
-                  <FormMessage id="auto-roll-initiative-error" />
-                </FormItem>
-              )}
+              id="auto-roll-initiative"
+              icon={Zap}
+              label="Auto-roll Initiative"
+              description="Automatically roll initiative for all participants when combat starts"
             />
-
-            {/* Track Resources */}
-            <FormField
+            
+            <SwitchFormField
               control={control}
               name="settings.trackResources"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                  <div className="space-y-0.5">
-                    <FormLabel htmlFor="track-resources" className="flex items-center space-x-2">
-                      <Trophy className="h-4 w-4" />
-                      <span>Track Resources</span>
-                    </FormLabel>
-                    <FormDescription>
-                      Monitor spell slots, abilities, and other limited resources
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      id="track-resources"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      aria-describedby="track-resources-error"
-                    />
-                  </FormControl>
-                  <FormMessage id="track-resources-error" />
-                </FormItem>
-              )}
+              id="track-resources"
+              icon={Trophy}
+              label="Track Resources"
+              description="Monitor spell slots, abilities, and other limited resources"
             />
           </CardContent>
         </Card>
@@ -140,32 +122,13 @@ export function SettingsSection({ form }: SettingsSectionProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Lair Actions */}
-            <FormField
+            <SwitchFormField
               control={control}
               name="settings.enableLairActions"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                  <div className="space-y-0.5">
-                    <FormLabel htmlFor="enable-lair-actions" className="flex items-center space-x-2">
-                      <Shield className="h-4 w-4" />
-                      <span>Enable Lair Actions</span>
-                    </FormLabel>
-                    <FormDescription>
-                      Add lair actions that occur at specific initiative counts
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      id="enable-lair-actions"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      aria-describedby="enable-lair-actions-error"
-                    />
-                  </FormControl>
-                  <FormMessage id="enable-lair-actions-error" />
-                </FormItem>
-              )}
+              id="enable-lair-actions"
+              icon={Shield}
+              label="Enable Lair Actions"
+              description="Add lair actions that occur at specific initiative counts"
             />
 
             {/* Lair Action Initiative */}
@@ -197,32 +160,13 @@ export function SettingsSection({ form }: SettingsSectionProps) {
               />
             )}
 
-            {/* Grid Movement */}
-            <FormField
+            <SwitchFormField
               control={control}
               name="settings.enableGridMovement"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                  <div className="space-y-0.5">
-                    <FormLabel htmlFor="enable-grid-movement" className="flex items-center space-x-2">
-                      <MapPin className="h-4 w-4" />
-                      <span>Enable Grid Movement</span>
-                    </FormLabel>
-                    <FormDescription>
-                      Track participant positions on a battle grid
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      id="enable-grid-movement"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      aria-describedby="enable-grid-movement-error"
-                    />
-                  </FormControl>
-                  <FormMessage id="enable-grid-movement-error" />
-                </FormItem>
-              )}
+              id="enable-grid-movement"
+              icon={MapPin}
+              label="Enable Grid Movement"
+              description="Track participant positions on a battle grid"
             />
 
             {/* Grid Size */}

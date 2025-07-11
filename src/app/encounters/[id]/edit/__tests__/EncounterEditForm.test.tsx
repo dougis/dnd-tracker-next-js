@@ -43,21 +43,26 @@ describe('EncounterEditForm', () => {
     },
   });
 
+  // Helper to render form with default props
+  const renderForm = (overrides = {}) => {
+    const defaultProps = {
+      encounter: mockEncounter,
+      onSubmit: mockOnSubmit,
+      onCancel: mockOnCancel,
+      onReset: mockOnReset,
+      isSubmitting: false,
+      ...overrides,
+    };
+    return render(<EncounterEditForm {...defaultProps} />);
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('Form Rendering', () => {
     it('should render all form sections', () => {
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       expect(screen.getByText('Basic Information')).toBeInTheDocument();
       expect(screen.getByText('Participants')).toBeInTheDocument();
@@ -68,15 +73,7 @@ describe('EncounterEditForm', () => {
     });
 
     it('should display form with proper accessibility attributes', () => {
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       const form = screen.getByRole('form');
       expect(form).toBeInTheDocument();
@@ -86,15 +83,7 @@ describe('EncounterEditForm', () => {
 
   describe('Basic Information Section', () => {
     it('should render basic info fields with correct values', () => {
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       expect(screen.getByDisplayValue('Test Encounter')).toBeInTheDocument();
       expect(screen.getByDisplayValue('A test encounter description')).toBeInTheDocument();
@@ -107,15 +96,7 @@ describe('EncounterEditForm', () => {
     it.skip('should validate required fields', async () => {
       // TODO: Fix validation timing issues - see Issue #290
       const user = userEvent.setup();
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       const nameInput = screen.getByDisplayValue('Test Encounter');
       await user.clear(nameInput);
@@ -134,15 +115,7 @@ describe('EncounterEditForm', () => {
     it.skip('should validate numeric fields', async () => {
       // TODO: Fix validation timing issues - see Issue #290
       const user = userEvent.setup();
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       const durationInput = screen.getByDisplayValue('60');
       await user.clear(durationInput);
@@ -186,15 +159,7 @@ describe('EncounterEditForm', () => {
 
   describe('Tags Management', () => {
     it('should display existing tags', () => {
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       expect(screen.getByText('test')).toBeInTheDocument();
       expect(screen.getByText('combat')).toBeInTheDocument();
@@ -202,15 +167,7 @@ describe('EncounterEditForm', () => {
 
     it('should allow adding new tags', async () => {
       const user = userEvent.setup();
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       const tagInput = screen.getByPlaceholderText('Add tag...');
       await user.type(tagInput, 'new-tag{enter}');
@@ -220,15 +177,7 @@ describe('EncounterEditForm', () => {
 
     it('should allow removing tags', async () => {
       const user = userEvent.setup();
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       const removeButtons = screen.getAllByLabelText(/Remove tag/);
       expect(removeButtons.length).toBeGreaterThan(0);
@@ -246,30 +195,14 @@ describe('EncounterEditForm', () => {
   describe('Participants Section', () => {
     it.skip('should display participant list', () => {
       // TODO: Fix participant display text format - see Issue #290
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       expect(screen.getByText('Test Player')).toBeInTheDocument();
       expect(screen.getByText(/PC • HP: 50\/50 • AC: 16/)).toBeInTheDocument();
     });
 
     it('should show participant management section', () => {
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       // Since participant editing is simplified for MVP, check for the coming soon message
       expect(screen.getByText(/Participant management for encounter editing is coming soon/)).toBeInTheDocument();
@@ -278,15 +211,7 @@ describe('EncounterEditForm', () => {
     it('should show empty state for no participants', () => {
       const emptyEncounter = createTestEncounter({ participants: [] });
 
-      render(
-        <EncounterEditForm
-          encounter={emptyEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm({ encounter: emptyEncounter });
 
       // Check for empty state message since participants are optional in UpdateEncounter
       expect(screen.getByText(/No participants added yet/)).toBeInTheDocument();
@@ -295,15 +220,7 @@ describe('EncounterEditForm', () => {
 
   describe('Settings Section', () => {
     it('should render all setting toggles', () => {
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       expect(screen.getByLabelText('Allow Player Visibility')).toBeInTheDocument();
       expect(screen.getByLabelText('Auto-roll Initiative')).toBeInTheDocument();
@@ -313,15 +230,7 @@ describe('EncounterEditForm', () => {
     });
 
     it('should reflect current setting values', () => {
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       expect(screen.getByLabelText('Allow Player Visibility')).toHaveAttribute('data-state', 'checked');
       expect(screen.getByLabelText('Auto-roll Initiative')).toHaveAttribute('data-state', 'unchecked');
@@ -332,15 +241,7 @@ describe('EncounterEditForm', () => {
 
     it('should show conditional lair action settings', async () => {
       const user = userEvent.setup();
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       const lairToggle = screen.getByLabelText('Enable Lair Actions');
       await user.click(lairToggle);
@@ -350,15 +251,7 @@ describe('EncounterEditForm', () => {
 
     it('should show conditional grid movement settings', async () => {
       const user = userEvent.setup();
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       const gridToggle = screen.getByLabelText('Enable Grid Movement');
       await user.click(gridToggle);
@@ -371,15 +264,7 @@ describe('EncounterEditForm', () => {
     it.skip('should call onSubmit with form data when valid', async () => {
       // TODO: Fix form submission timing - see Issue #290
       const user = userEvent.setup();
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       const submitButton = screen.getByText('Save Encounter');
       await user.click(submitButton);
@@ -399,15 +284,7 @@ describe('EncounterEditForm', () => {
 
     it('should call onCancel when cancel button clicked', async () => {
       const user = userEvent.setup();
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       const cancelButton = screen.getByText('Cancel');
       await user.click(cancelButton);
@@ -417,15 +294,7 @@ describe('EncounterEditForm', () => {
 
     it('should call onReset when reset button clicked', async () => {
       const user = userEvent.setup();
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       // First make a change to enable the reset button
       const nameInput = screen.getByDisplayValue('Test Encounter');
@@ -439,30 +308,14 @@ describe('EncounterEditForm', () => {
     });
 
     it('should disable submit button when submitting', () => {
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={true}
-        />
-      );
+      renderForm({ isSubmitting: true });
 
       const submitButton = screen.getByRole('button', { name: /saving/i });
       expect(submitButton).toBeDisabled();
     });
 
     it('should show loading state when submitting', () => {
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={true}
-        />
-      );
+      renderForm({ isSubmitting: true });
 
       expect(screen.getByText('Saving...')).toBeInTheDocument();
       expect(screen.queryByText('Save Encounter')).not.toBeInTheDocument();
@@ -471,15 +324,7 @@ describe('EncounterEditForm', () => {
 
   describe('Accessibility', () => {
     it('should have proper ARIA labels', () => {
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       expect(screen.getByLabelText('Encounter Name')).toBeInTheDocument();
       expect(screen.getByLabelText('Description')).toBeInTheDocument();
@@ -491,15 +336,7 @@ describe('EncounterEditForm', () => {
     it.skip('should associate error messages with form fields', async () => {
       // TODO: Fix validation error association timing - see Issue #290
       const user = userEvent.setup();
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       const nameInput = screen.getByLabelText('Encounter Name');
       await user.clear(nameInput);
@@ -516,15 +353,7 @@ describe('EncounterEditForm', () => {
 
     it('should support keyboard navigation', async () => {
       const user = userEvent.setup();
-      render(
-        <EncounterEditForm
-          encounter={mockEncounter}
-          onSubmit={mockOnSubmit}
-          onCancel={mockOnCancel}
-          onReset={mockOnReset}
-          isSubmitting={false}
-        />
-      );
+      renderForm();
 
       const nameInput = screen.getByLabelText('Encounter Name');
       const descriptionInput = screen.getByLabelText('Description');
