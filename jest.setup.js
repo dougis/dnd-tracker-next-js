@@ -159,9 +159,24 @@ jest.mock('mongodb', () => ({
 }));
 
 jest.mock('mongoose', () => {
+  // Generate a proper ObjectId-like string (24 character hex)
+  const generateObjectId = () => {
+    const hex = '0123456789abcdef';
+    let result = '';
+    for (let i = 0; i < 24; i++) {
+      result += hex[Math.floor(Math.random() * 16)];
+    }
+    return result;
+  };
+  
   const mockObjectId = jest
     .fn()
-    .mockImplementation(id => ({ toString: () => id || 'mock-object-id' }));
+    .mockImplementation(id => {
+      const objectIdValue = id || generateObjectId();
+      return { 
+        toString: () => objectIdValue
+      };
+    });
 
   const SchemaTypes = {
     ObjectId: mockObjectId,
