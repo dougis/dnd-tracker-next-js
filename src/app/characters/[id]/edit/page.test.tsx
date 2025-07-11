@@ -278,7 +278,7 @@ describe('CharacterEditPage', () => {
         isPrepared: true
       }
     ];
-    
+
     const testCharacter = createMockCharacter({ spells: spellsTestData });
     await renderAndWaitForCharacter(testCharacter);
 
