@@ -1,5 +1,6 @@
 import type { ICharacter } from '@/lib/models/Character';
 import type { ParticipantFormData } from '../hooks/useParticipantForm';
+import type { IParticipantReference } from '@/lib/models/encounter/interfaces';
 
 /**
  * Converts a character document to participant form data
@@ -22,10 +23,38 @@ export function convertCharacterToParticipant(character: ICharacter): Participan
 }
 
 /**
+ * Converts a character to participant data with characterId for service operations
+ */
+export function convertCharacterToParticipantData(character: ICharacter): Omit<IParticipantReference, 'characterId'> & { characterId: string } {
+  return {
+    characterId: character._id.toString(),
+    name: character.name,
+    type: character.type,
+    maxHitPoints: character.hitPoints.maximum,
+    currentHitPoints: character.hitPoints.current,
+    temporaryHitPoints: character.hitPoints.temporary || 0,
+    armorClass: character.armorClass,
+    initiative: undefined, // Will be rolled during encounter
+    isPlayer: character.type === 'pc',
+    isVisible: true,
+    notes: character.notes || '',
+    conditions: [],
+    position: { x: 0, y: 0 }, // Default position
+  };
+}
+
+/**
  * Converts multiple characters to participant form data
  */
 export function convertCharactersToParticipants(characters: ICharacter[]): ParticipantFormData[] {
   return characters.map(convertCharacterToParticipant);
+}
+
+/**
+ * Converts multiple characters to participant data for service operations
+ */
+export function convertCharactersToParticipantData(characters: ICharacter[]): Array<Omit<IParticipantReference, 'characterId'> & { characterId: string }> {
+  return characters.map(convertCharacterToParticipantData);
 }
 
 /**

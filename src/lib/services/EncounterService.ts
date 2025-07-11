@@ -168,6 +168,8 @@ export class EncounterService {
 
   static reorderParticipants = EncounterServiceParticipants.reorderParticipants;
 
+  static addParticipantsBulk = EncounterServiceParticipants.addParticipantsBulk;
+
   // Search and Filtering
   static searchEncounters = EncounterServiceSearch.searchEncounters;
 
