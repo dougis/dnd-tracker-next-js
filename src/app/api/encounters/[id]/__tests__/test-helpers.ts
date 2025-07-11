@@ -9,7 +9,7 @@ import { Types } from 'mongoose';
 // Common test data generators
 export const createValidUpdateData = () => ({
   name: 'Updated Encounter',
-  description: 'Updated description',  
+  description: 'Updated description',
   difficulty: 'hard' as const,
   estimatedDuration: 90,
   targetLevel: 6,

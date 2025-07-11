@@ -1,4 +1,3 @@
-import { NextRequest } from 'next/server';
 import { GET, PUT, DELETE } from '../route';
 import { EncounterService } from '@/lib/services/EncounterService';
 import { auth } from '@/lib/auth';
