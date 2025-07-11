@@ -29,6 +29,19 @@ export class ValidationWrapper {
   }
 
   /**
+   * Process validations for combineValidations - returns boolean for compatibility
+   */
+  private static processValidationsForCombine(validations: ValidationFunction[]): ServiceResult<boolean> {
+    for (const validation of validations) {
+      const result = validation();
+      if (!result.success) {
+        return createErrorResult(result.error);
+      }
+    }
+    return createSuccessResult(true);
+  }
+
+  /**
    * Execute multiple validations and proceed with operation if all pass
    */
   static async validateAndExecute<T>(
@@ -72,7 +85,7 @@ export class ValidationWrapper {
    */
   static combineValidations(
     validations: ValidationFunction[]
-  ): ServiceResult<void> {
-    return this.processValidations(validations);
+  ): ServiceResult<boolean> {
+    return this.processValidationsForCombine(validations);
   }
 }
