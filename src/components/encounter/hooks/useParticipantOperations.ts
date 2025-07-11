@@ -3,6 +3,8 @@ import { Types } from 'mongoose';
 import { EncounterService } from '@/lib/services/EncounterService';
 import type { IEncounter } from '@/lib/models/encounter/interfaces';
 import { handleServiceOperation } from '../utils/serviceOperationUtils';
+import { convertCharactersToParticipantData } from '../utils/characterConversion';
+import type { ICharacter } from '@/lib/models/Character';
 
 interface ParticipantFormData {
   name: string;
@@ -97,11 +99,26 @@ export const useParticipantOperations = (
     );
   }, [encounter._id, executeServiceOperation]);
 
+  const importParticipants = useCallback(async (
+    characters: ICharacter[],
+    onSuccess?: () => void
+  ) => {
+    // Convert characters to participant format
+    const participants = convertCharactersToParticipantData(characters);
+
+    await executeServiceOperation(
+      () => EncounterService.addParticipantsBulk(encounter._id.toString(), participants),
+      `${participants.length} participants imported successfully`,
+      () => onSuccess?.()
+    );
+  }, [encounter._id, executeServiceOperation]);
+
   return {
     isLoading,
     addParticipant,
     updateParticipant,
     removeParticipant,
     reorderParticipants,
+    importParticipants,
   };
 };

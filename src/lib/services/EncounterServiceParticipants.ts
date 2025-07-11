@@ -131,6 +131,60 @@ export class EncounterServiceParticipants {
   }
 
   /**
+   * Add multiple participants to encounter in a single operation
+   */
+  static async addParticipantsBulk(
+    encounterId: string,
+    participantsData: Array<Omit<IParticipantReference, 'characterId'> & { characterId: string }>
+  ): Promise<ServiceResult<IEncounter>> {
+    try {
+      // Validate encounter ID
+      if (!EncounterServiceValidation.isValidObjectId(encounterId)) {
+        throw new EncounterValidationError('encounterId', 'Invalid encounter ID format');
+      }
+
+      // Validate participants array
+      if (!Array.isArray(participantsData) || participantsData.length === 0) {
+        throw new EncounterValidationError('participantsData', 'Participants must be a non-empty array');
+      }
+
+      // Validate all participants before adding any
+      for (let index = 0; index < participantsData.length; index++) {
+        const participantData = participantsData[index];
+        const validation = participantReferenceSchema.safeParse(participantData);
+        if (!validation.success) {
+          const errorMessage = validation.error.errors.map(e => e.message).join(', ');
+          throw new EncounterValidationError('participant', `Invalid participant at index ${index}: ${errorMessage}`);
+        }
+      }
+
+      const encounter = await Encounter.findById(encounterId);
+      if (!encounter) {
+        throw new EncounterNotFoundError(encounterId);
+      }
+
+      // Add all participants
+      for (const participantData of participantsData) {
+        const sanitizedParticipant = EncounterServiceValidation.sanitizeParticipantData(participantData);
+        encounter.addParticipant(sanitizedParticipant);
+      }
+
+      await encounter.save();
+
+      return {
+        success: true,
+        data: encounter,
+      };
+    } catch (error) {
+      return handleEncounterServiceError(
+        error,
+        'Failed to add participants in bulk',
+        'PARTICIPANT_ADD_FAILED'
+      );
+    }
+  }
+
+  /**
    * Reorder participants in encounter
    */
   static async reorderParticipants(

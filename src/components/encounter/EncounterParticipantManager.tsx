@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import { Card, CardContent } from '@/components/ui/card';
 import type { IEncounter, IParticipantReference } from '@/lib/models/encounter/interfaces';
 import { ParticipantList } from './ParticipantList';
@@ -9,6 +10,7 @@ import { EmptyParticipantsState } from './EmptyParticipantsState';
 import { AddParticipantDialog, EditParticipantDialog, ImportParticipantDialog } from './ParticipantDialogs';
 import { useParticipantOperations } from './hooks/useParticipantOperations';
 import { useParticipantForm } from './hooks/useParticipantForm';
+import type { ICharacter } from '@/lib/models/Character';
 
 interface EncounterParticipantManagerProps {
   encounter: IEncounter;
@@ -29,7 +31,8 @@ export function EncounterParticipantManager({
   });
 
   // Hooks
-  const { isLoading, addParticipant, updateParticipant, removeParticipant, reorderParticipants } = useParticipantOperations(encounter, onUpdate);
+  const { data: session } = useSession();
+  const { isLoading, addParticipant, updateParticipant, removeParticipant, reorderParticipants, importParticipants } = useParticipantOperations(encounter, onUpdate);
   const { formData, setFormData, formErrors, resetForm, loadParticipantData, isFormValid } = useParticipantForm();
 
   // Selection handlers
@@ -103,6 +106,12 @@ export function EncounterParticipantManager({
     await reorderParticipants(participantIds);
   }, [reorderParticipants]);
 
+  const handleImportCharacters = useCallback(async (characters: ICharacter[]) => {
+    await importParticipants(characters, () => {
+      setDialogState(prev => ({ ...prev, isImportOpen: false }));
+    });
+  }, [importParticipants]);
+
   // Render helpers
   const renderActionButtons = useCallback(() => (
     <>
@@ -121,8 +130,8 @@ export function EncounterParticipantManager({
         onImportDialogOpenChange={(open) =>
           setDialogState(prev => ({ ...prev, isImportOpen: open }))
         }
-        onImportCharacters={() => {}}
-        userId="placeholder-user-id"
+        onImportCharacters={handleImportCharacters}
+        userId={session?.user?.id || ''}
       />
     </>
   ), [
@@ -131,11 +140,13 @@ export function EncounterParticipantManager({
     openAddDialog,
     closeAddDialog,
     handleAddParticipant,
+    handleImportCharacters,
     isLoading,
     formData,
     formErrors,
     setFormData,
     resetForm,
+    session?.user?.id,
   ]);
 
   // Empty state
@@ -160,8 +171,8 @@ export function EncounterParticipantManager({
             onImportDialogOpenChange={(open) =>
               setDialogState(prev => ({ ...prev, isImportOpen: open }))
             }
-            onImportCharacters={() => {}}
-            userId="placeholder-user-id"
+            onImportCharacters={handleImportCharacters}
+            userId={session?.user?.id || ''}
           />
         )}
       />

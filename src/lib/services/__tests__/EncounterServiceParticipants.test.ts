@@ -286,4 +286,92 @@ describe('EncounterServiceParticipants', () => {
       expectError(result, 'PARTICIPANT_REORDER_FAILED');
     });
   });
+
+  describe('addParticipantsBulk', () => {
+    const validEncounterId = ADDITIONAL_TEST_CONSTANTS.VALID_ENCOUNTER_ID;
+    const createBulkParticipantsData = () => [
+      createValidParticipantData({
+        characterId: ADDITIONAL_TEST_CONSTANTS.VALID_CHARACTER_ID,
+        name: 'Character 1'
+      }),
+      createValidParticipantData({
+        characterId: ADDITIONAL_TEST_CONSTANTS.VALID_CHARACTER_ID_2,
+        name: 'Character 2'
+      }),
+      createValidParticipantData({
+        characterId: ADDITIONAL_TEST_CONSTANTS.VALID_CHARACTER_ID_3,
+        name: 'Character 3'
+      }),
+    ];
+
+    const testBulkAddOperation = async (encounterId: string, participantsData: any[]) => {
+      return await EncounterServiceParticipants.addParticipantsBulk(encounterId, participantsData);
+    };
+
+    it('should successfully add multiple participants', async () => {
+      const mockEncounter = createTestEncounter({
+        _id: new Types.ObjectId(validEncounterId),
+        participants: []
+      });
+      const addParticipantSpy = jest.spyOn(mockEncounter, 'addParticipant');
+      setupBasicMockWithSave(mockEncounter);
+
+      const participantsData = createBulkParticipantsData();
+      const result = await testBulkAddOperation(validEncounterId, participantsData);
+
+      expectSuccess(result);
+      expect(addParticipantSpy).toHaveBeenCalledTimes(3);
+      expect(mockEncounter.save).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle encounter not found', async () => {
+      setupBasicMock('findById', null);
+      const participantsData = createBulkParticipantsData();
+
+      const result = await testBulkAddOperation(validEncounterId, participantsData);
+      expectError(result, 'ENCOUNTER_NOT_FOUND');
+    });
+
+    it('should handle empty participants array', async () => {
+      const result = await testBulkAddOperation(validEncounterId, []);
+      expectError(result, 'ENCOUNTER_VALIDATION_ERROR');
+    });
+
+    it('should validate all participants and reject invalid ones', async () => {
+      const mockEncounter = createTestEncounter({
+        _id: new Types.ObjectId(validEncounterId),
+        participants: []
+      });
+      setupBasicMockWithSave(mockEncounter);
+
+      const mixedParticipantsData = [
+        createValidParticipantData({ name: 'Valid Character 1' }),
+        createInvalidParticipantData(), // Invalid participant
+        createValidParticipantData({ name: 'Valid Character 2' }),
+      ];
+
+      const result = await testBulkAddOperation(validEncounterId, mixedParticipantsData);
+      expectError(result, 'ENCOUNTER_VALIDATION_ERROR');
+    });
+
+    it('should handle invalid encounter ID format', async () => {
+      const participantsData = createBulkParticipantsData();
+      const result = await testBulkAddOperation('invalid-id', participantsData);
+      expectError(result, 'ENCOUNTER_VALIDATION_ERROR');
+    });
+
+    it('should handle database errors during save', async () => {
+      const mockEncounter = createTestEncounter({
+        _id: new Types.ObjectId(validEncounterId),
+        participants: []
+      });
+      const mockSave = jest.fn().mockRejectedValue(new Error('Database error'));
+      mockEncounter.save = mockSave;
+      setupBasicMock('findById', mockEncounter);
+
+      const participantsData = createBulkParticipantsData();
+      const result = await testBulkAddOperation(validEncounterId, participantsData);
+      expectError(result, 'PARTICIPANT_ADD_FAILED');
+    });
+  });
 });
