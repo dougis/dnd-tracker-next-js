@@ -346,3 +346,82 @@ export function generateApiTestCases() {
     }
   ];
 }
+
+/**
+ * Creates test encounter with specified number of participants for performance testing
+ */
+export function createEncounterWithManyParticipants(participantCount: number): IEncounter {
+  const encounter = createActiveEncounter(1, 0);
+  
+  // Create many participants
+  encounter.participants = Array.from({ length: participantCount }, (_, i) => ({
+    characterId: `participant-${i}`,
+    name: `Character ${i}`,
+    type: 'Player',
+    maxHitPoints: 20,
+    currentHitPoints: 15,
+    temporaryHitPoints: 0,
+    armorClass: 15,
+    initiative: 20 - i,
+    isPlayer: true,
+    isVisible: true,
+    notes: '',
+    conditions: []
+  }));
+
+  // Create many initiative entries
+  encounter.combatState.initiativeOrder = Array.from({ length: participantCount }, (_, i) => ({
+    participantId: `participant-${i}`,
+    initiative: 20 - i,
+    dexterity: 15,
+    hasActed: false
+  }));
+
+  return encounter;
+}
+
+/**
+ * Runs performance test with timing assertions
+ */
+export function runPerformanceTest<T>(
+  testFunction: () => T,
+  maxExecutionTime: number = 100
+): { result: T; executionTime: number } {
+  const startTime = performance.now();
+  const result = testFunction();
+  const endTime = performance.now();
+  const executionTime = endTime - startTime;
+
+  // Should complete in reasonable time
+  expect(executionTime).toBeLessThan(maxExecutionTime);
+
+  return { result, executionTime };
+}
+
+/**
+ * Runs comparative performance test between small and large datasets
+ */
+export function runComparativePerformanceTest<T>(
+  testFunction: (encounter: IEncounter) => T,
+  smallSize: number = 10,
+  largeSize: number = 100
+): void {
+  const smallEncounter = createEncounterWithManyParticipants(smallSize);
+  const largeEncounter = createEncounterWithManyParticipants(largeSize);
+
+  // Test with small dataset
+  const smallStartTime = performance.now();
+  testFunction(smallEncounter);
+  const smallEndTime = performance.now();
+  const smallTime = smallEndTime - smallStartTime;
+
+  // Test with large dataset
+  const largeStartTime = performance.now();
+  testFunction(largeEncounter);
+  const largeEndTime = performance.now();
+  const largeTime = largeEndTime - largeStartTime;
+
+  // With O(1) Map lookups, the large dataset should not be significantly slower
+  // Allow for some variance but it shouldn't be 10x slower
+  expect(largeTime).toBeLessThan(smallTime * 10);
+}
