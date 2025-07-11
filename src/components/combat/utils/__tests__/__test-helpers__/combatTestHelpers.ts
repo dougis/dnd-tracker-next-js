@@ -352,7 +352,7 @@ export function generateApiTestCases() {
  */
 export function createEncounterWithManyParticipants(participantCount: number): IEncounter {
   const encounter = createActiveEncounter(1, 0);
-  
+
   // Create many participants
   encounter.participants = Array.from({ length: participantCount }, (_, i) => ({
     characterId: `participant-${i}`,
@@ -402,7 +402,7 @@ export function runPerformanceTest<T>(
  * Runs comparative performance test between small and large datasets
  */
 export function runComparativePerformanceTest<T>(
-  testFunction: (encounter: IEncounter) => T,
+  testFunction: (_encounter: IEncounter) => T,
   smallSize: number = 10,
   largeSize: number = 100
 ): void {

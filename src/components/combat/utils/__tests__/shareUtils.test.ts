@@ -65,7 +65,7 @@ describe('shareUtils', () => {
       // Verify all participants are included in output
       expect(result).toContain('Character 0');
       expect(result).toContain(`Character ${participantCount - 1}`);
-      
+
       // Count the number of lines - should have header + participantCount entries
       const lines = result.split('\n').filter(line => line.trim() !== '');
       expect(lines.length).toBe(participantCount + 1); // +1 for header
