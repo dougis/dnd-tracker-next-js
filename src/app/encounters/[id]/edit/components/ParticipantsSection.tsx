@@ -50,7 +50,7 @@ export function ParticipantsSection({ form }: ParticipantsSectionProps) {
                   Participant management for encounter editing is coming soon.
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  For now, you can view the current participants below, but editing 
+                  For now, you can view the current participants below, but editing
                   participants should be done from the main encounter detail page.
                 </p>
               </div>

@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UpdateEncounter } from '@/lib/validations/encounter';
 import { z } from 'zod';
-import { 
+import {
   encounterDifficultySchema,
   encounterSettingsSchema,
   participantReferenceSchema,
@@ -13,7 +13,7 @@ import {
 
 // Create a form-friendly schema that matches UpdateEncounter exactly
 const formEncounterSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100, 'Name too long').optional(),
+  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
   description: z.string().optional(),
   tags: z.array(z.string()).optional(),
   difficulty: encounterDifficultySchema.optional(),
@@ -21,13 +21,11 @@ const formEncounterSchema = z.object({
   targetLevel: z.number().min(1, 'Level must be between 1 and 20').max(20, 'Level must be between 1 and 20').optional(),
   participants: z.array(participantReferenceSchema).optional(),
   settings: encounterSettingsSchema.optional(),
-}).refine(data => data.name && data.name.trim().length > 0, {
-  message: 'Name is required',
-  path: ['name'],
 });
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { Form } from '@/components/ui/form';
 import { BasicInfoSection } from './BasicInfoSection';
 import { ParticipantsSection } from './ParticipantsSection';
 import { SettingsSection } from './SettingsSection';
@@ -35,7 +33,7 @@ import { Save, RotateCcw, X } from 'lucide-react';
 
 interface EncounterEditFormProps {
   encounter: UpdateEncounter;
-  onSubmit: (data: UpdateEncounter) => Promise<void>;
+  onSubmit: (_data: UpdateEncounter) => Promise<void>;
   onCancel: () => void;
   onReset: () => void;
   onChange?: () => void;
@@ -102,12 +100,13 @@ export function EncounterEditForm({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(handleFormSubmit)}
-      className="space-y-6"
-      role="form"
-      aria-label="Edit encounter form"
-    >
+    <Form {...form}>
+      <form
+        onSubmit={handleSubmit(handleFormSubmit)}
+        className="space-y-6"
+        role="form"
+        aria-label="Edit encounter form"
+      >
       {/* Basic Information Section */}
       <Card>
         <CardHeader>
@@ -209,6 +208,7 @@ export function EncounterEditForm({
           )}
         </CardContent>
       </Card>
-    </form>
+      </form>
+    </Form>
   );
 }
