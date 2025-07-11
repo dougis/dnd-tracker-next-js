@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
+import { validateAuth } from '@/lib/api/route-helpers';
 import { z } from 'zod';
 
 const restoreBodySchema = z.object({
@@ -15,11 +16,14 @@ const restoreBodySchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate authentication first
+    const { error: authError, userId } = await validateAuth();
+    if (authError) {
+      return authError;
+    }
+
     const body = await request.json();
     const validatedBody = restoreBodySchema.parse(body);
-
-    // TODO: Get user ID from authentication
-    const userId = 'temp-user-id'; // Replace with actual user ID from auth
 
     const backupData = parseBackupData(validatedBody);
     const validationError = validateBackupStructure(backupData);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
+import { validateAuth } from '@/lib/api/route-helpers';
 import { z } from 'zod';
 
 const shareBodySchema = z.object({
@@ -11,14 +12,17 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Validate authentication first
+    const { error: authError, userId } = await validateAuth();
+    if (authError) {
+      return authError;
+    }
+
     const body = await request.json();
     const validatedBody = shareBodySchema.parse(body);
 
     const resolvedParams = await params;
     const encounterId = resolvedParams.id;
-
-    // TODO: Get user ID from authentication
-    const userId = 'temp-user-id'; // Replace with actual user ID from auth
 
     const result = await EncounterServiceImportExport.generateShareableLink(
       encounterId,

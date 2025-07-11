@@ -10,13 +10,14 @@ export async function validateAuth() {
   if (!session?.user?.id) {
     return {
       error: NextResponse.json(
-        { success: false, message: 'Authentication required' },
+        { success: false, error: 'Authentication required' },
         { status: 401 }
       ),
-      session: null
+      session: null,
+      userId: null
     };
   }
-  return { error: null, session };
+  return { error: null, session, userId: session.user.id };
 }
 
 export async function validateUserAccess(requestedUserId: string, sessionUserId: string) {

@@ -1,18 +1,46 @@
 import { NextRequest } from 'next/server';
 import { GET } from '../route';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
+import { validateAuth } from '@/lib/api/route-helpers';
 
-// Mock the service
+// Mock the service and auth
 jest.mock('@/lib/services/EncounterServiceImportExport');
+jest.mock('@/lib/api/route-helpers');
 
 const mockService = EncounterServiceImportExport as jest.Mocked<typeof EncounterServiceImportExport>;
+const mockValidateAuth = validateAuth as jest.MockedFunction<typeof validateAuth>;
 
 describe('/api/encounters/[id]/export', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Mock successful authentication by default
+    mockValidateAuth.mockResolvedValue({
+      error: null,
+      session: { user: { id: 'user123' } },
+      userId: 'user123',
+    } as any);
   });
 
   describe('GET', () => {
+    it('should require authentication', async () => {
+      // Mock authentication failure
+      mockValidateAuth.mockResolvedValue({
+        error: { json: () => ({ error: 'Authentication required' }), status: 401 },
+        session: null,
+        userId: null,
+      } as any);
+
+      const request = new NextRequest('http://localhost:3000/api/encounters/123/export');
+      const params = Promise.resolve({ id: '123' });
+
+      // Act
+      const response = await GET(request, { params });
+
+      // Assert
+      expect(response).toBe(mockValidateAuth.mock.results[0].value.error);
+      expect(mockService.exportToJson).not.toHaveBeenCalled();
+    });
+
     it('should export encounter to JSON successfully', async () => {
       // Arrange
       const mockExportData = '{"metadata":{"format":"json"},"encounter":{"name":"Test"}}';
@@ -83,7 +111,7 @@ describe('/api/encounters/[id]/export', () => {
       // Assert
       expect(mockService.exportToJson).toHaveBeenCalledWith(
         '123',
-        'temp-user-id',
+        'user123',
         {
           includeCharacterSheets: true,
           includePrivateNotes: true,
@@ -111,7 +139,7 @@ describe('/api/encounters/[id]/export', () => {
       // Assert
       expect(mockService.exportToJson).toHaveBeenCalledWith(
         '123',
-        'temp-user-id',
+        'user123',
         {
           includeCharacterSheets: false,
           includePrivateNotes: false,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import { EncounterService } from '@/lib/services/EncounterService';
+import { validateAuth } from '@/lib/api/route-helpers';
 import { z } from 'zod';
 
 const backupQuerySchema = z.object({
@@ -11,12 +12,15 @@ const backupQuerySchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
+    // Validate authentication first
+    const { error: authError, userId } = await validateAuth();
+    if (authError) {
+      return authError;
+    }
+
     const { searchParams } = new URL(request.url);
     const query = Object.fromEntries(searchParams.entries());
     const validatedQuery = backupQuerySchema.parse(query);
-
-    // TODO: Get user ID from authentication
-    const userId = 'temp-user-id'; // Replace with actual user ID from auth
 
     const encounters = await getUserEncounters(userId);
     const backupData = await createBackupData(encounters, userId, validatedQuery);
