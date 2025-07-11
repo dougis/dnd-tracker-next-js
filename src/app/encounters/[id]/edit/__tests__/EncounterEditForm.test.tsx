@@ -117,7 +117,7 @@ describe('EncounterEditForm', () => {
 
       const nameInput = screen.getByDisplayValue('Test Encounter');
       await user.clear(nameInput);
-      
+
       const submitButton = screen.getByText('Save Encounter');
       await user.click(submitButton);
 
@@ -143,7 +143,7 @@ describe('EncounterEditForm', () => {
       const durationInput = screen.getByDisplayValue('60');
       await user.clear(durationInput);
       await user.type(durationInput, '-10');
-      
+
       const submitButton = screen.getByText('Save Encounter');
       await user.click(submitButton);
 
@@ -167,7 +167,7 @@ describe('EncounterEditForm', () => {
       const levelInput = screen.getByDisplayValue('5');
       await user.clear(levelInput);
       await user.type(levelInput, '25');
-      
+
       const submitButton = screen.getByText('Save Encounter');
       await user.click(submitButton);
 
@@ -264,7 +264,7 @@ describe('EncounterEditForm', () => {
     it('should validate minimum participant requirement', async () => {
       const user = userEvent.setup();
       const emptyEncounter = createTestEncounter({ participants: [] });
-      
+
       render(
         <EncounterEditForm
           encounter={emptyEncounter}

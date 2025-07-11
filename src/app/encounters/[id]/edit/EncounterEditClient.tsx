@@ -29,7 +29,7 @@ export function EncounterEditClient({ encounterId }: EncounterEditClientProps) {
     setIsSubmitting(true);
     try {
       const result = await EncounterService.updateEncounter(encounterId, formData);
-      
+
       if (result.success) {
         toast({
           title: 'Success',
@@ -40,7 +40,7 @@ export function EncounterEditClient({ encounterId }: EncounterEditClientProps) {
       } else {
         toast({
           title: 'Error',
-          description: result.error || 'Failed to update encounter',
+          description: typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to update encounter',
           variant: 'destructive',
         });
       }
@@ -54,7 +54,7 @@ export function EncounterEditClient({ encounterId }: EncounterEditClientProps) {
     } finally {
       setIsSubmitting(false);
     }
-  }, [encounterId, encounter, router]);
+  }, [encounterId, encounter, router, toast]);
 
   const handleCancel = useCallback(() => {
     if (hasUnsavedChanges) {
@@ -101,16 +101,16 @@ export function EncounterEditClient({ encounterId }: EncounterEditClientProps) {
             {error || 'Encounter not found'}
           </p>
           <div className="flex space-x-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => handleRetry()}
               className="flex items-center space-x-2"
             >
               <RefreshCw className="h-4 w-4" />
               <span>Retry</span>
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => router.push('/encounters')}
             >
               Back to Encounters
@@ -141,7 +141,19 @@ export function EncounterEditClient({ encounterId }: EncounterEditClientProps) {
 
       {/* Edit Form */}
       <EncounterEditForm
-        encounter={encounter}
+        encounter={{
+          name: encounter.name,
+          description: encounter.description,
+          tags: encounter.tags,
+          difficulty: encounter.difficulty,
+          estimatedDuration: encounter.estimatedDuration,
+          targetLevel: encounter.targetLevel,
+          participants: encounter.participants.map(p => ({
+            ...p,
+            characterId: p.characterId.toString(),
+          })),
+          settings: encounter.settings,
+        }}
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         onReset={handleReset}

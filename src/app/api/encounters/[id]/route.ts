@@ -30,7 +30,7 @@ export async function GET(
     const result = await EncounterService.getEncounterById(encounterId);
 
     if (!result.success) {
-      const status = result.error === 'Encounter not found' ? 404 : 500;
+      const status = result.error?.message === 'Encounter not found' ? 404 : 500;
       return NextResponse.json(result, { status });
     }
 
@@ -74,9 +74,9 @@ export async function PUT(
       updateData = updateEncounterSchema.parse(body);
     } catch (error) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: error instanceof Error ? error.message : 'Invalid JSON or validation failed' 
+        {
+          success: false,
+          error: error instanceof Error ? error.message : 'Invalid JSON or validation failed'
         },
         { status: 400 }
       );
@@ -90,7 +90,7 @@ export async function PUT(
     }
 
     // Check ownership
-    if (existingResult.data.ownerId !== session.user.id) {
+    if (existingResult.data?.ownerId.toString() !== session.user.id) {
       return NextResponse.json(
         { success: false, error: 'Insufficient permissions' },
         { status: 403 }
@@ -101,7 +101,7 @@ export async function PUT(
     const result = await EncounterService.updateEncounter(encounterId, updateData);
 
     if (!result.success) {
-      const status = result.error === 'Encounter not found' ? 404 : 500;
+      const status = result.error?.message === 'Encounter not found' ? 404 : 500;
       return NextResponse.json(result, { status });
     }
 
@@ -146,7 +146,7 @@ export async function DELETE(
     }
 
     // Check ownership
-    if (existingResult.data.ownerId !== session.user.id) {
+    if (existingResult.data?.ownerId.toString() !== session.user.id) {
       return NextResponse.json(
         { success: false, error: 'Insufficient permissions' },
         { status: 403 }
@@ -157,7 +157,7 @@ export async function DELETE(
     const result = await EncounterService.deleteEncounter(encounterId);
 
     if (!result.success) {
-      const status = result.error === 'Encounter not found' ? 404 : 500;
+      const status = result.error?.message === 'Encounter not found' ? 404 : 500;
       return NextResponse.json(result, { status });
     }
 

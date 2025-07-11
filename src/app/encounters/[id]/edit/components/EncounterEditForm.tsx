@@ -3,19 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Encounter, UpdateEncounter, updateEncounterSchema } from '@/lib/validations/encounter';
+import { UpdateEncounter, updateEncounterSchema } from '@/lib/validations/encounter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { BasicInfoSection } from './BasicInfoSection';
 import { ParticipantsSection } from './ParticipantsSection';
 import { SettingsSection } from './SettingsSection';
-import { FormActions } from './FormActions';
 import { Save, RotateCcw, X } from 'lucide-react';
 
 interface EncounterEditFormProps {
-  encounter: Encounter;
+  encounter: UpdateEncounter;
   onSubmit: (data: UpdateEncounter) => Promise<void>;
   onCancel: () => void;
   onReset: () => void;
@@ -47,16 +45,15 @@ export function EncounterEditForm({
     },
   });
 
-  const { 
-    handleSubmit, 
+  const {
+    handleSubmit,
     formState: { errors, isValid },
     watch,
     reset,
   } = form;
 
   // Watch for form changes
-  const watchedFields = watch();
-  
+
   useEffect(() => {
     const subscription = watch(() => {
       if (!isDirty) {
@@ -78,22 +75,13 @@ export function EncounterEditForm({
   };
 
   const handleReset = () => {
-    reset({
-      name: encounter.name,
-      description: encounter.description,
-      tags: encounter.tags,
-      difficulty: encounter.difficulty,
-      estimatedDuration: encounter.estimatedDuration,
-      targetLevel: encounter.targetLevel,
-      participants: encounter.participants,
-      settings: encounter.settings,
-    });
+    reset(encounter);
     setIsDirty(false);
     onReset();
   };
 
   return (
-    <form 
+    <form
       onSubmit={handleSubmit(handleFormSubmit)}
       className="space-y-6"
       role="form"
@@ -152,7 +140,7 @@ export function EncounterEditForm({
               <X className="h-4 w-4" />
               <span>Cancel</span>
             </Button>
-            
+
             <Button
               type="button"
               variant="outline"
@@ -163,7 +151,7 @@ export function EncounterEditForm({
               <RotateCcw className="h-4 w-4" />
               <span>Reset</span>
             </Button>
-            
+
             <Button
               type="submit"
               disabled={isSubmitting || !isValid}
@@ -182,7 +170,7 @@ export function EncounterEditForm({
               )}
             </Button>
           </div>
-          
+
           {/* Form Validation Summary */}
           {Object.keys(errors).length > 0 && (
             <div className="mt-4 p-3 bg-destructive/10 rounded-md">

@@ -41,7 +41,7 @@ export function FormActions({
           <X className="h-4 w-4" />
           <span>Cancel</span>
         </Button>
-        
+
         <Button
           type="button"
           variant="outline"
@@ -52,7 +52,7 @@ export function FormActions({
           <RotateCcw className="h-4 w-4" />
           <span>Reset</span>
         </Button>
-        
+
         <Button
           type="submit"
           onClick={onSubmit}
@@ -93,8 +93,8 @@ export function FormActions({
               <ul className="list-disc list-inside text-sm space-y-1">
                 {Object.entries(errors).map(([field, error]) => (
                   <li key={field}>
-                    {typeof error === 'object' && error?.message 
-                      ? error.message 
+                    {typeof error === 'object' && error?.message
+                      ? error.message
                       : `${field}: ${String(error)}`}
                   </li>
                 ))}

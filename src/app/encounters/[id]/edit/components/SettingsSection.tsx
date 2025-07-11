@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings, Eye, Zap, Shield, MapPin, Clock, Trophy } from 'lucide-react';
 
@@ -24,7 +23,7 @@ interface SettingsSectionProps {
 export function SettingsSection({ form }: SettingsSectionProps) {
   const { control, watch } = form;
   const settings = watch('settings');
-  
+
   const enableLairActions = settings?.enableLairActions || false;
   const enableGridMovement = settings?.enableGridMovement || false;
 

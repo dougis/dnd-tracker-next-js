@@ -3,7 +3,7 @@
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { UpdateEncounter } from '@/lib/validations/encounter';
-import { EncounterParticipantManager } from '@/components/encounter/EncounterParticipantManager';
+// Note: We'll implement a simplified participant manager for the edit form
 import {
   FormField,
   FormItem,
@@ -17,15 +17,8 @@ interface ParticipantsSectionProps {
 }
 
 export function ParticipantsSection({ form }: ParticipantsSectionProps) {
-  const { control, watch, setValue, formState: { errors } } = form;
+  const { control, watch, formState: { errors } } = form;
   const participants = watch('participants') || [];
-
-  const handleParticipantsChange = (newParticipants: any[]) => {
-    setValue('participants', newParticipants, { 
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-  };
 
   return (
     <div className="space-y-4">
@@ -45,19 +38,34 @@ export function ParticipantsSection({ form }: ParticipantsSectionProps) {
         </Alert>
       )}
 
-      {/* Participant Manager */}
+      {/* Simplified Participant Display for MVP */}
       <FormField
         control={control}
         name="participants"
         render={() => (
           <FormItem>
-            <div className="rounded-lg border">
-              <EncounterParticipantManager
-                participants={participants}
-                onParticipantsChange={handleParticipantsChange}
-                isEditMode={true}
-                className="border-0 shadow-none"
-              />
+            <div className="rounded-lg border p-4">
+              <div className="text-center">
+                <p className="text-muted-foreground mb-4">
+                  Participant management for encounter editing is coming soon.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  For now, you can view the current participants below, but editing 
+                  participants should be done from the main encounter detail page.
+                </p>
+              </div>
+              {participants.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {participants.map((participant, index) => (
+                    <div key={index} className="flex justify-between items-center p-2 bg-muted rounded">
+                      <span className="font-medium">{participant.name}</span>
+                      <div className="text-sm text-muted-foreground">
+                        {participant.type.toUpperCase()} • HP: {participant.currentHitPoints}/{participant.maxHitPoints} • AC: {participant.armorClass}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <FormMessage />
           </FormItem>
@@ -75,7 +83,7 @@ export function ParticipantsSection({ form }: ParticipantsSectionProps) {
               Total Participants
             </div>
           </div>
-          
+
           <div className="text-center p-3 bg-muted/50 rounded-lg">
             <div className="text-2xl font-bold text-blue-600">
               {participants.filter(p => p.isPlayer).length}
@@ -84,7 +92,7 @@ export function ParticipantsSection({ form }: ParticipantsSectionProps) {
               Player Characters
             </div>
           </div>
-          
+
           <div className="text-center p-3 bg-muted/50 rounded-lg">
             <div className="text-2xl font-bold text-green-600">
               {participants.filter(p => p.type === 'npc').length}
@@ -93,7 +101,7 @@ export function ParticipantsSection({ form }: ParticipantsSectionProps) {
               NPCs
             </div>
           </div>
-          
+
           <div className="text-center p-3 bg-muted/50 rounded-lg">
             <div className="text-2xl font-bold text-red-600">
               {participants.filter(p => p.type === 'monster').length}
@@ -110,7 +118,7 @@ export function ParticipantsSection({ form }: ParticipantsSectionProps) {
         <Alert>
           <Users className="h-4 w-4" />
           <AlertDescription>
-            No participants added yet. Use the "Add Participant" button above to add characters, NPCs, or monsters to this encounter.
+            No participants added yet. Use the &quot;Add Participant&quot; button above to add characters, NPCs, or monsters to this encounter.
           </AlertDescription>
         </Alert>
       )}
