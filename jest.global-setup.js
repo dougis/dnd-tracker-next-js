@@ -22,7 +22,7 @@ module.exports = async () => {
   process.env.MONGODB_DB_NAME = global.__MONGO_DB_NAME__;
 
   console.log(
-    `MongoDB configured: ${global.__MONGO_URI__}, DB: ${global.__MONGO_DB_NAME__}`
+    "MongoDB configured: "+global.__MONGO_URI__+", DB: "+global.__MONGO_DB_NAME__
   );
   console.log('=== JEST GLOBAL SETUP COMPLETE ===');
 };

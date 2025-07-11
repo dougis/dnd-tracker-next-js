@@ -2,7 +2,7 @@
 const { ObjectId } = require('./bson');
 
 module.exports = {
-  ObjectId,
+  ObjectId: ObjectId,
   MongoClient: jest.fn(() => ({
     connect: jest.fn(),
     close: jest.fn(),

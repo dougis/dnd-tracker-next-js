@@ -15,11 +15,11 @@ const requiredEnvVars = [
 ];
 
 console.log('🔍 Validating environment configuration...');
-const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+const missingVars = requiredEnvVars.filter(function(varName) { return !process.env[varName] });
 
 if (missingVars.length > 0) {
   console.error('❌ Missing required environment variables:');
-  missingVars.forEach(varName => console.error(`   - ${varName}`));
+  missingVars.forEach(varName => console.error("   - "+varName));
   console.error('\nPlease ensure all required environment variables are set.');
   process.exit(1);
 }
@@ -57,13 +57,13 @@ if (process.env.NODE_ENV === 'production') {
 
 // Log startup information
 console.log('📋 Container Configuration:');
-console.log(`   - Node.js Version: ${process.version}`);
-console.log(`   - Environment: ${process.env.NODE_ENV || 'development'}`);
-console.log(`   - NextAuth URL: ${process.env.NEXTAUTH_URL}`);
-console.log(`   - Database: ${process.env.MONGODB_DB_NAME}`);
-console.log(`   - Email Configured: ${process.env.EMAIL_SERVER_HOST ? 'Yes' : 'No'}`);
-console.log(`   - GitHub OAuth: ${process.env.GITHUB_ID ? 'Yes' : 'No'}`);
-console.log(`   - Google OAuth: ${process.env.GOOGLE_ID ? 'Yes' : 'No'}`);
+console.log("   - Node.js Version: "+process.version);
+console.log("   - Environment: "+(process.env.NODE_ENV || 'development'));
+console.log("   - NextAuth URL: "+process.env.NEXTAUTH_URL);
+console.log("   - Database: "+process.env.MONGODB_DB_NAME);
+console.log("   - Email Configured: "+(process.env.EMAIL_SERVER_HOST ? 'Yes' : 'No'));
+console.log("   - GitHub OAuth: "+(process.env.GITHUB_ID ? 'Yes' : 'No'));
+console.log("   - Google OAuth: "+(process.env.GOOGLE_ID ? 'Yes' : 'No'));
 
 console.log('🚀 Starting Next.js application...');
 
@@ -78,7 +78,7 @@ const appProcess = spawn(command, args, {
 });
 
 appProcess.on('close', (code) => {
-  console.log(`Next.js application exited with code ${code}`);
+  console.log("Next.js application exited with code "+code);
   process.exit(code);
 });
 

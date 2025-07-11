@@ -50,7 +50,7 @@ export class NextResponse extends Response {
 
   // Add json method to parse response body
   json() {
-    return this.text().then(text => {
+    return this.text().then(function(text) {
       try {
         return JSON.parse(text);
       } catch {

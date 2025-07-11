@@ -25,7 +25,7 @@ if (!process.env.MONGODB_DB_NAME) {
 // Log the MongoDB connection details for debugging
 if (debug_logs) {
   console.log(
-    `Using MongoDB: ${process.env.MONGODB_URI}, DB: ${process.env.MONGODB_DB_NAME}`
+    "Using MongoDB: "+process.env.MONGODB_URI+", DB: "+process.env.MONGODB_DB_NAME
   );
 }
 // Set up missing browser APIs
