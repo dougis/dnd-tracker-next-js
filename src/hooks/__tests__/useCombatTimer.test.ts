@@ -29,6 +29,20 @@ const createTestTimer = (props: TestTimerProps = {}) => {
   );
 };
 
+// Helper function to test round timer warning states
+const expectRoundTimerState = (
+  result: any,
+  expectedRemaining: number,
+  expectedWarning: boolean,
+  expectedCritical: boolean,
+  expectedExpired: boolean = false
+) => {
+  expect(result.current.roundTimeRemaining).toBe(expectedRemaining);
+  expect(result.current.isRoundWarning).toBe(expectedWarning);
+  expect(result.current.isRoundCritical).toBe(expectedCritical);
+  expect(result.current.isRoundExpired).toBe(expectedExpired);
+};
+
 describe('useCombatTimer', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -258,10 +272,7 @@ describe('useCombatTimer', () => {
         roundTimeLimit: 60000 // 1 minute limit, 15 seconds remaining
       });
 
-      expect(result.current.roundTimeRemaining).toBe(15000);
-      expect(result.current.isRoundWarning).toBe(true);
-      expect(result.current.isRoundCritical).toBe(false);
-      expect(result.current.isRoundExpired).toBe(false);
+      expectRoundTimerState(result, 15000, true, false, false);
     });
 
     it('shows warning state when 10 seconds remaining (between 15s and 5s)', () => {
@@ -270,10 +281,7 @@ describe('useCombatTimer', () => {
         roundTimeLimit: 60000 // 1 minute limit, 10 seconds remaining
       });
 
-      expect(result.current.roundTimeRemaining).toBe(10000);
-      expect(result.current.isRoundWarning).toBe(true);
-      expect(result.current.isRoundCritical).toBe(false);
-      expect(result.current.isRoundExpired).toBe(false);
+      expectRoundTimerState(result, 10000, true, false, false);
     });
 
     it('shows critical state when exactly 5 seconds remaining', () => {
@@ -282,10 +290,7 @@ describe('useCombatTimer', () => {
         roundTimeLimit: 60000 // 1 minute limit, 5 seconds remaining
       });
 
-      expect(result.current.roundTimeRemaining).toBe(5000);
-      expect(result.current.isRoundWarning).toBe(false);
-      expect(result.current.isRoundCritical).toBe(true);
-      expect(result.current.isRoundExpired).toBe(false);
+      expectRoundTimerState(result, 5000, false, true, false);
     });
 
     it('shows critical state when 3 seconds remaining (less than 5s)', () => {
@@ -294,10 +299,7 @@ describe('useCombatTimer', () => {
         roundTimeLimit: 60000 // 1 minute limit, 3 seconds remaining
       });
 
-      expect(result.current.roundTimeRemaining).toBe(3000);
-      expect(result.current.isRoundWarning).toBe(false);
-      expect(result.current.isRoundCritical).toBe(true);
-      expect(result.current.isRoundExpired).toBe(false);
+      expectRoundTimerState(result, 3000, false, true, false);
     });
 
     it('shows no warning when more than 15 seconds remaining', () => {
@@ -306,10 +308,7 @@ describe('useCombatTimer', () => {
         roundTimeLimit: 60000 // 1 minute limit, 20 seconds remaining
       });
 
-      expect(result.current.roundTimeRemaining).toBe(20000);
-      expect(result.current.isRoundWarning).toBe(false);
-      expect(result.current.isRoundCritical).toBe(false);
-      expect(result.current.isRoundExpired).toBe(false);
+      expectRoundTimerState(result, 20000, false, false, false);
     });
 
     it('works correctly with different round time limits', () => {
@@ -319,9 +318,7 @@ describe('useCombatTimer', () => {
         roundTimeLimit: 120000 // 2 minute limit, 15 seconds remaining
       });
 
-      expect(result120.current.roundTimeRemaining).toBe(15000);
-      expect(result120.current.isRoundWarning).toBe(true);
-      expect(result120.current.isRoundCritical).toBe(false);
+      expectRoundTimerState(result120, 15000, true, false);
 
       // Test with 30 second limit
       const { result: result30 } = createTestTimer({
@@ -329,9 +326,7 @@ describe('useCombatTimer', () => {
         roundTimeLimit: 30000 // 30 second limit, 15 seconds remaining
       });
 
-      expect(result30.current.roundTimeRemaining).toBe(15000);
-      expect(result30.current.isRoundWarning).toBe(true);
-      expect(result30.current.isRoundCritical).toBe(false);
+      expectRoundTimerState(result30, 15000, true, false);
     });
   });
 
