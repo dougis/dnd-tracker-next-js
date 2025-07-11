@@ -158,14 +158,14 @@ describe('/api/encounters/[id] route', () => {
           },
         ],
       };
-      
+
       const updatedEncounter = { ...mockEncounter, ...testValidUpdateData };
-      
+
       // Mock the getEncounterById call for access validation
       mockEncounterService.getEncounterById.mockResolvedValue(
         mockApiResponses.success({ ...mockEncounter, ownerId: mockUser.id })
       );
-      
+
       mockEncounterService.updateEncounter.mockResolvedValue(
         mockApiResponses.success(updatedEncounter)
       );
@@ -317,7 +317,7 @@ describe('/api/encounters/[id] route', () => {
       mockEncounterService.getEncounterById.mockResolvedValue(
         mockApiResponses.success({ ...mockEncounter, ownerId: mockUser.id })
       );
-      
+
       mockEncounterService.updateEncounter.mockResolvedValue(
         mockApiResponses.error('Database write failed')
       );
@@ -344,7 +344,7 @@ describe('/api/encounters/[id] route', () => {
       mockEncounterService.getEncounterById.mockResolvedValue(
         mockApiResponses.success({ ...mockEncounter, ownerId: mockUser.id })
       );
-      
+
       mockEncounterService.deleteEncounter.mockResolvedValue(
         mockApiResponses.success({ deleted: true })
       );
@@ -398,7 +398,7 @@ describe('/api/encounters/[id] route', () => {
       mockEncounterService.getEncounterById.mockResolvedValue(
         mockApiResponses.success({ ...mockEncounter, ownerId: mockUser.id })
       );
-      
+
       mockEncounterService.deleteEncounter.mockResolvedValue(
         mockApiResponses.error('Database delete failed')
       );
