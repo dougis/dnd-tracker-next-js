@@ -128,13 +128,18 @@ describe('CharacterEditPage', () => {
   it('should handle form submission successfully', async () => {
     const testCharacter = createMockCharacter();
     const updatedCharacter = { ...testCharacter, name: 'Updated Name' };
-    mockCharacterUpdate(updatedCharacter);
-
+    
+    // First mock the initial character fetch
+    mockSuccessfulCharacterFetch(testCharacter);
+    
     render(<CharacterEditPage />);
 
     await waitFor(() => {
       expect(screen.getByDisplayValue(testCharacter.name)).toBeInTheDocument();
     });
+
+    // Now mock the character update for form submission
+    mockCharacterUpdate(updatedCharacter);
 
     // Update the name field
     const nameField = screen.getByDisplayValue(testCharacter.name);
@@ -196,13 +201,18 @@ describe('CharacterEditPage', () => {
   it('should redirect to character detail page after successful update', async () => {
     const testCharacter = createMockCharacter();
     const updatedCharacter = { ...testCharacter, name: 'Updated Name' };
-    mockCharacterUpdate(updatedCharacter);
+    
+    // First mock the initial character fetch
+    mockSuccessfulCharacterFetch(testCharacter);
 
     render(<CharacterEditPage />);
 
     await waitFor(() => {
       expect(screen.getByDisplayValue(testCharacter.name)).toBeInTheDocument();
     });
+
+    // Now mock the character update for form submission
+    mockCharacterUpdate(updatedCharacter);
 
     // Update and submit
     const nameField = screen.getByDisplayValue(testCharacter.name);
