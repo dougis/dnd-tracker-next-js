@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { GET, PUT, DELETE } from '../route';
 import { EncounterService } from '@/lib/services/EncounterService';
 import { auth } from '@/lib/auth';
+import { Types } from 'mongoose';
 import {
   createTestEncounter,
   createTestParticipant,
@@ -117,7 +118,7 @@ describe('/api/encounters/[id] route', () => {
       targetLevel: 6,
       participants: [
         {
-          characterId: 'char123',
+          characterId: new Types.ObjectId().toString(),
           name: 'Updated Player',
           type: 'pc',
           maxHitPoints: 60,
@@ -147,16 +148,34 @@ describe('/api/encounters/[id] route', () => {
     };
 
     it('should update encounter successfully', async () => {
-      const updatedEncounter = { ...mockEncounter, ...validUpdateData };
+      // Create data with valid ObjectId inside the test
+      const testValidUpdateData = {
+        ...validUpdateData,
+        participants: [
+          {
+            ...validUpdateData.participants[0],
+            characterId: new Types.ObjectId().toString(),
+          },
+        ],
+      };
+      
+      const updatedEncounter = { ...mockEncounter, ...testValidUpdateData };
+      
+      // Mock the getEncounterById call for access validation
+      mockEncounterService.getEncounterById.mockResolvedValue(
+        mockApiResponses.success({ ...mockEncounter, ownerId: mockUser.id })
+      );
+      
       mockEncounterService.updateEncounter.mockResolvedValue(
         mockApiResponses.success(updatedEncounter)
       );
 
-      const request = new NextRequest('http://localhost:3000/api/encounters/test-id', {
+      const request = {
+        json: jest.fn().mockResolvedValue(testValidUpdateData),
         method: 'PUT',
-        body: JSON.stringify(validUpdateData),
-        headers: { 'Content-Type': 'application/json' },
-      });
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        url: 'http://localhost:3000/api/encounters/test-id',
+      } as unknown as NextRequest;
 
       const response = await PUT(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
@@ -166,18 +185,19 @@ describe('/api/encounters/[id] route', () => {
       expect(data.data.name).toBe('Updated Encounter');
       expect(mockEncounterService.updateEncounter).toHaveBeenCalledWith(
         'test-id',
-        validUpdateData
+        testValidUpdateData
       );
     });
 
     it('should validate required fields', async () => {
       const invalidData = { ...validUpdateData, name: '' };
 
-      const request = new NextRequest('http://localhost:3000/api/encounters/test-id', {
+      const request = {
+        json: jest.fn().mockResolvedValue(invalidData),
         method: 'PUT',
-        body: JSON.stringify(invalidData),
-        headers: { 'Content-Type': 'application/json' },
-      });
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        url: 'http://localhost:3000/api/encounters/test-id',
+      } as unknown as NextRequest;
 
       const response = await PUT(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
@@ -198,11 +218,12 @@ describe('/api/encounters/[id] route', () => {
         ],
       };
 
-      const request = new NextRequest('http://localhost:3000/api/encounters/test-id', {
+      const request = {
+        json: jest.fn().mockResolvedValue(invalidData),
         method: 'PUT',
-        body: JSON.stringify(invalidData),
-        headers: { 'Content-Type': 'application/json' },
-      });
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        url: 'http://localhost:3000/api/encounters/test-id',
+      } as unknown as NextRequest;
 
       const response = await PUT(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
@@ -222,11 +243,12 @@ describe('/api/encounters/[id] route', () => {
         },
       };
 
-      const request = new NextRequest('http://localhost:3000/api/encounters/test-id', {
+      const request = {
+        json: jest.fn().mockResolvedValue(invalidData),
         method: 'PUT',
-        body: JSON.stringify(invalidData),
-        headers: { 'Content-Type': 'application/json' },
-      });
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        url: 'http://localhost:3000/api/encounters/test-id',
+      } as unknown as NextRequest;
 
       const response = await PUT(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
@@ -239,11 +261,12 @@ describe('/api/encounters/[id] route', () => {
     it('should return 401 when user not authenticated', async () => {
       mockAuth.mockResolvedValue(null);
 
-      const request = new NextRequest('http://localhost:3000/api/encounters/test-id', {
+      const request = {
+        json: jest.fn().mockResolvedValue(validUpdateData),
         method: 'PUT',
-        body: JSON.stringify(validUpdateData),
-        headers: { 'Content-Type': 'application/json' },
-      });
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        url: 'http://localhost:3000/api/encounters/test-id',
+      } as unknown as NextRequest;
 
       const response = await PUT(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
@@ -254,15 +277,16 @@ describe('/api/encounters/[id] route', () => {
     });
 
     it('should return 404 when encounter not found', async () => {
-      mockEncounterService.updateEncounter.mockResolvedValue(
+      mockEncounterService.getEncounterById.mockResolvedValue(
         mockApiResponses.notFound()
       );
 
-      const request = new NextRequest('http://localhost:3000/api/encounters/invalid-id', {
+      const request = {
+        json: jest.fn().mockResolvedValue(validUpdateData),
         method: 'PUT',
-        body: JSON.stringify(validUpdateData),
-        headers: { 'Content-Type': 'application/json' },
-      });
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        url: 'http://localhost:3000/api/encounters/invalid-id',
+      } as unknown as NextRequest;
 
       const response = await PUT(request, { params: Promise.resolve({ id: 'invalid-id' }) });
       const data = await response.json();
@@ -273,11 +297,12 @@ describe('/api/encounters/[id] route', () => {
     });
 
     it('should handle malformed JSON', async () => {
-      const request = new NextRequest('http://localhost:3000/api/encounters/test-id', {
+      const request = {
+        json: jest.fn().mockRejectedValue(new Error('Invalid JSON')),
         method: 'PUT',
-        body: 'invalid json',
-        headers: { 'Content-Type': 'application/json' },
-      });
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        url: 'http://localhost:3000/api/encounters/test-id',
+      } as unknown as NextRequest;
 
       const response = await PUT(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
@@ -288,15 +313,21 @@ describe('/api/encounters/[id] route', () => {
     });
 
     it('should handle service errors gracefully', async () => {
+      // Mock access validation to succeed
+      mockEncounterService.getEncounterById.mockResolvedValue(
+        mockApiResponses.success({ ...mockEncounter, ownerId: mockUser.id })
+      );
+      
       mockEncounterService.updateEncounter.mockResolvedValue(
         mockApiResponses.error('Database write failed')
       );
 
-      const request = new NextRequest('http://localhost:3000/api/encounters/test-id', {
+      const request = {
+        json: jest.fn().mockResolvedValue(validUpdateData),
         method: 'PUT',
-        body: JSON.stringify(validUpdateData),
-        headers: { 'Content-Type': 'application/json' },
-      });
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        url: 'http://localhost:3000/api/encounters/test-id',
+      } as unknown as NextRequest;
 
       const response = await PUT(request, { params: Promise.resolve({ id: 'test-id' }) });
       const data = await response.json();
@@ -309,6 +340,11 @@ describe('/api/encounters/[id] route', () => {
 
   describe('DELETE /api/encounters/[id]', () => {
     it('should delete encounter successfully', async () => {
+      // Mock access validation to succeed
+      mockEncounterService.getEncounterById.mockResolvedValue(
+        mockApiResponses.success({ ...mockEncounter, ownerId: mockUser.id })
+      );
+      
       mockEncounterService.deleteEncounter.mockResolvedValue(
         mockApiResponses.success({ deleted: true })
       );
@@ -341,7 +377,7 @@ describe('/api/encounters/[id] route', () => {
     });
 
     it('should return 404 when encounter not found', async () => {
-      mockEncounterService.deleteEncounter.mockResolvedValue(
+      mockEncounterService.getEncounterById.mockResolvedValue(
         mockApiResponses.notFound()
       );
 
@@ -358,6 +394,11 @@ describe('/api/encounters/[id] route', () => {
     });
 
     it('should handle service errors gracefully', async () => {
+      // Mock access validation to succeed
+      mockEncounterService.getEncounterById.mockResolvedValue(
+        mockApiResponses.success({ ...mockEncounter, ownerId: mockUser.id })
+      );
+      
       mockEncounterService.deleteEncounter.mockResolvedValue(
         mockApiResponses.error('Database delete failed')
       );
