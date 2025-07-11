@@ -13,6 +13,11 @@ import {
   expectOperationSuccess,
   expectOperationError,
   expectValidationError,
+  createSequenceOperations,
+  expectSequenceSuccess,
+  expectSequenceFailure,
+  createBulkOperation,
+  expectBulkSuccess,
   TEST_DATA_FACTORY,
 } from './shared-utils-test-helpers';
 
@@ -93,10 +98,7 @@ describe('OperationWrapper', () => {
 
   describe('executeSequence', () => {
     it('should execute all operations in sequence and return final result', async () => {
-      const operations = [
-        createMockOperation(createSuccessResult(TEST_DATA_FACTORY.operations.step1)),
-        createMockOperation(createSuccessResult(TEST_DATA_FACTORY.operations.step2))
-      ];
+      const operations = createSequenceOperations();
       const finalOperation = createMockOperation(TEST_DATA_FACTORY.operations.finalResult);
 
       const result = await OperationWrapper.executeSequence(
@@ -105,16 +107,11 @@ describe('OperationWrapper', () => {
         'sequence operation'
       );
 
-      expectOperationSuccess(result, TEST_DATA_FACTORY.operations.finalResult, finalOperation);
-      operations.forEach(op => expect(op).toHaveBeenCalled());
+      expectSequenceSuccess(result, finalOperation, operations);
     });
 
     it('should stop sequence on first operation failure', async () => {
-      const operations = [
-        createMockOperation(createSuccessResult(TEST_DATA_FACTORY.operations.step1)),
-        createMockOperation(createErrorResult(CharacterServiceErrors.invalidCharacterId('fail'))),
-        createMockOperation(createSuccessResult('step3'))
-      ];
+      const operations = createSequenceOperations(1); // Fail at index 1
       const finalOperation = jest.fn();
 
       const result = await OperationWrapper.executeSequence(
@@ -123,10 +120,7 @@ describe('OperationWrapper', () => {
         'sequence operation'
       );
 
-      expectValidationError(result, 'Invalid character ID', finalOperation);
-      expect(operations[0]).toHaveBeenCalled();
-      expect(operations[1]).toHaveBeenCalled();
-      expect(operations[2]).not.toHaveBeenCalled();
+      expectSequenceFailure(result, finalOperation, operations, 1);
     });
 
     it('should handle final operation errors', async () => {
@@ -201,10 +195,7 @@ describe('OperationWrapper', () => {
   describe('executeBulk', () => {
     it('should process all items and return successful and failed results', async () => {
       const items = ['item1', 'item2', 'item3'];
-      const operation = jest.fn()
-        .mockResolvedValueOnce(createSuccessResult('result1'))
-        .mockResolvedValueOnce(createErrorResult(CharacterServiceErrors.invalidCharacterId('item2')))
-        .mockResolvedValueOnce(createSuccessResult('result3'));
+      const operation = createBulkOperation();
 
       const result = await OperationWrapper.executeBulk(
         items,
@@ -212,12 +203,7 @@ describe('OperationWrapper', () => {
         'bulk operation'
       );
 
-      expect(result.success).toBe(true);
-      expect(result.data.successful).toEqual(['result1', 'result3']);
-      expect(result.data.failed).toHaveLength(1);
-      expect(result.data.failed[0].item).toBe('item2');
-      expect(result.data.failed[0].error).toContain('Invalid character ID');
-      expect(operation).toHaveBeenCalledTimes(3);
+      expectBulkSuccess(result, operation, items);
     });
 
     it('should handle bulk operation errors', async () => {

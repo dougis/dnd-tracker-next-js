@@ -47,6 +47,27 @@ export class CharacterServiceTemplates {
   }
 
   /**
+   * Execute character operation with standard error handling - eliminates duplication
+   */
+  private static async executeCharacterOperation<T>(
+    characterId: string,
+    userId: string,
+    operation: (_character: ICharacter) => Promise<T>,
+    errorType: string
+  ): Promise<ServiceResult<T>> {
+    return OperationWrapper.executeWithCustomError(
+      async () => {
+        const character = await this.getValidatedCharacter(characterId, userId);
+        return await operation(character);
+      },
+      (error) => CharacterServiceErrors.operationFailed(
+        errorType,
+        error instanceof Error ? error.message : 'Unknown error'
+      )
+    );
+  }
+
+  /**
    * Create character template
    */
   static async createCharacterTemplate(
@@ -73,9 +94,10 @@ export class CharacterServiceTemplates {
     userId: string,
     newName: string
   ): Promise<ServiceResult<ICharacter>> {
-    return OperationWrapper.executeWithCustomError(
-      async () => {
-        const originalCharacter = await this.getValidatedCharacter(characterId, userId);
+    return this.executeCharacterOperation(
+      characterId,
+      userId,
+      async (originalCharacter) => {
         const cloneData = this.createCloneDataFromCharacter(originalCharacter, newName);
 
         const createResult = await CharacterServiceCRUD.createCharacter(userId, cloneData);
@@ -85,10 +107,7 @@ export class CharacterServiceTemplates {
 
         return createResult.data;
       },
-      (error) => CharacterServiceErrors.operationFailed(
-        'clone character',
-        error instanceof Error ? error.message : 'Unknown error'
-      )
+      'clone character'
     );
   }
 

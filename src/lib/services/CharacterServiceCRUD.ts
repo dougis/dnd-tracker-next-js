@@ -25,6 +25,28 @@ import { OperationWrapper } from './utils/OperationWrapper';
 export class CharacterServiceCRUD {
 
   /**
+   * Helper to get validated character data - eliminates duplication
+   */
+  private static getValidatedCharacterData(characterData: CharacterCreation) {
+    const dataValidation = CharacterValidationUtils.validateCharacterData(characterData);
+    if (!dataValidation.success) {
+      throw new Error(dataValidation.error.message);
+    }
+    return dataValidation.data;
+  }
+
+  /**
+   * Helper to get validated update data - eliminates duplication
+   */
+  private static getValidatedUpdateData(updateData: CharacterUpdate) {
+    const dataValidation = CharacterValidationUtils.validateUpdateData(updateData);
+    if (!dataValidation.success) {
+      throw new Error(dataValidation.error.message);
+    }
+    return dataValidation.data;
+  }
+
+  /**
    * Create a new character
    */
   static async createCharacter(
@@ -40,11 +62,7 @@ export class CharacterServiceCRUD {
       validations,
       async () => {
         // Get validated data
-        const dataValidation = CharacterValidationUtils.validateCharacterData(characterData);
-        if (!dataValidation.success) {
-          throw new Error(dataValidation.error.message);
-        }
-        const validatedData = dataValidation.data;
+        const validatedData = this.getValidatedCharacterData(characterData);
 
         // Check character limit
         const countResult = await CharacterQueryUtils.countByOwner(ownerId);
@@ -118,16 +136,13 @@ export class CharacterServiceCRUD {
         }
 
         // Get validated data
-        const dataValidation = CharacterValidationUtils.validateUpdateData(updateData);
-        if (!dataValidation.success) {
-          throw new Error(dataValidation.error.message);
-        }
+        const validatedData = this.getValidatedUpdateData(updateData);
 
         // Update using wrapper
         const updateResult = await DatabaseOperationWrapper.findByIdAndUpdate(
           Character,
           characterId,
-          { ...dataValidation.data, updatedAt: new Date() },
+          { ...validatedData, updatedAt: new Date() },
           { new: true, runValidators: true },
           'character'
         );

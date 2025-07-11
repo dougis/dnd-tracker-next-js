@@ -16,21 +16,30 @@ export type ValidationFunction = () => ServiceResult<any>;
 export class ValidationWrapper {
 
   /**
-   * Execute multiple validations and proceed with operation if all pass
+   * Common validation processor - eliminates duplication
    */
-  static async validateAndExecute<T>(
-    validations: ValidationFunction[],
-    operation: () => Promise<ServiceResult<T>>
-  ): Promise<ServiceResult<T>> {
-    // Run all validations first
+  private static processValidations(validations: ValidationFunction[]): ServiceResult<void> {
     for (const validation of validations) {
       const result = validation();
       if (!result.success) {
         return createErrorResult(result.error);
       }
     }
+    return createSuccessResult(void 0);
+  }
 
-    // If all validations pass, execute the operation
+  /**
+   * Execute multiple validations and proceed with operation if all pass
+   */
+  static async validateAndExecute<T>(
+    validations: ValidationFunction[],
+    operation: () => Promise<ServiceResult<T>>
+  ): Promise<ServiceResult<T>> {
+    const validationResult = this.processValidations(validations);
+    if (!validationResult.success) {
+      return createErrorResult(validationResult.error);
+    }
+
     return operation();
   }
 
@@ -41,15 +50,11 @@ export class ValidationWrapper {
     validations: ValidationFunction[],
     operation: () => ServiceResult<T>
   ): ServiceResult<T> {
-    // Run all validations first
-    for (const validation of validations) {
-      const result = validation();
-      if (!result.success) {
-        return createErrorResult(result.error);
-      }
+    const validationResult = this.processValidations(validations);
+    if (!validationResult.success) {
+      return createErrorResult(validationResult.error);
     }
 
-    // If all validations pass, execute the operation
     return operation();
   }
 
@@ -68,12 +73,6 @@ export class ValidationWrapper {
   static combineValidations(
     validations: ValidationFunction[]
   ): ServiceResult<void> {
-    for (const validation of validations) {
-      const result = validation();
-      if (!result.success) {
-        return createErrorResult(result.error);
-      }
-    }
-    return createSuccessResult(void 0);
+    return this.processValidations(validations);
   }
 }

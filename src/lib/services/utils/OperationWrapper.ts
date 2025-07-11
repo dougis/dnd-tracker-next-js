@@ -100,23 +100,21 @@ export class OperationWrapper {
     operation: () => Promise<T>,
     operationName: string
   ): Promise<ServiceResult<T>> {
-    try {
-      // Run all validations first
-      for (const validation of validations) {
-        const result = validation();
-        if (!result.success) {
-          return createErrorResult(result.error);
+    return this.execute(
+      async () => {
+        // Run all validations first
+        for (const validation of validations) {
+          const result = validation();
+          if (!result.success) {
+            throw new Error(result.error.message);
+          }
         }
-      }
 
-      // Execute the main operation
-      const result = await operation();
-      return createSuccessResult(result);
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError(operationName, error)
-      );
-    }
+        // Execute the main operation
+        return await operation();
+      },
+      operationName
+    );
   }
 
   /**

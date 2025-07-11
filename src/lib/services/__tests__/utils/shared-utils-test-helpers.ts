@@ -182,3 +182,46 @@ export const createMixedValidationArray = (successCount: number, errorIndex: num
   }
   return validations;
 };
+
+// Specialized helpers for sequence operations
+export const createSequenceOperations = (failAtIndex?: number) => {
+  const operations = [
+    createMockOperation(createSuccessResult(TEST_DATA_FACTORY.operations.step1)),
+    createMockOperation(createSuccessResult(TEST_DATA_FACTORY.operations.step2))
+  ];
+
+  if (failAtIndex !== undefined) {
+    operations[failAtIndex] = createMockOperation(createErrorResult(CharacterServiceErrors.invalidCharacterId('fail')));
+    // Add a third operation that shouldn't be called
+    operations.push(createMockOperation(createSuccessResult('step3')));
+  }
+
+  return operations;
+};
+
+export const expectSequenceSuccess = (result: any, finalOperation: jest.Mock, operations: jest.Mock[]) => {
+  expectOperationSuccess(result, TEST_DATA_FACTORY.operations.finalResult, finalOperation);
+  operations.forEach(op => expect(op).toHaveBeenCalled());
+};
+
+export const expectSequenceFailure = (result: any, finalOperation: jest.Mock, operations: jest.Mock[], stoppedAt: number) => {
+  expectValidationError(result, 'Invalid character ID', finalOperation);
+  operations.slice(0, stoppedAt + 1).forEach(op => expect(op).toHaveBeenCalled());
+  operations.slice(stoppedAt + 1).forEach(op => expect(op).not.toHaveBeenCalled());
+};
+
+// Specialized helpers for bulk operations
+export const createBulkOperation = () =>
+  jest.fn()
+    .mockResolvedValueOnce(createSuccessResult('result1'))
+    .mockResolvedValueOnce(createErrorResult(CharacterServiceErrors.invalidCharacterId('item2')))
+    .mockResolvedValueOnce(createSuccessResult('result3'));
+
+export const expectBulkSuccess = (result: any, operation: jest.Mock, items: any[]) => {
+  expect(result.success).toBe(true);
+  expect(result.data.successful).toEqual(['result1', 'result3']);
+  expect(result.data.failed).toHaveLength(1);
+  expect(result.data.failed[0].item).toBe('item2');
+  expect(result.data.failed[0].error).toContain('Invalid character ID');
+  expect(operation).toHaveBeenCalledTimes(items.length);
+};
