@@ -282,7 +282,7 @@ After deployment, verify these authentication flows work:
    - Verify redirect to dashboard
 
 3. **Password Reset**:
-   - Visit `/auth/reset-password`
+   - Visit `/reset-password`
    - Enter email
    - Check email for reset link
    - Complete password reset
