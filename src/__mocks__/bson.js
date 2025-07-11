@@ -14,7 +14,7 @@ const ObjectId = class {
 };
 
 module.exports = {
-  ObjectId,
+  ObjectId: ObjectId,
   BSON: {},
   BSONError: Error,
   BSONType: {},

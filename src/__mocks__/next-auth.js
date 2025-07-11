@@ -10,6 +10,6 @@ const mockNextAuth = jest.fn(config => {
   };
 });
 
-mockNextAuth.getCapturedConfig = () => capturedConfig;
+mockNextAuth.getCapturedConfig = function() { return capturedConfig };
 
 module.exports = mockNextAuth;

@@ -4,7 +4,7 @@ const mockUseSession = jest.fn(() => ({
   update: jest.fn(),
 }));
 
-const mockSessionProvider = ({ children }) => children;
+const mockSessionProvider = function({ children }) { return children };
 
 const mockSignIn = jest.fn();
 const mockSignOut = jest.fn();

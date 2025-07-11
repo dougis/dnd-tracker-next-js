@@ -55,7 +55,7 @@ function setupWebAPIGlobals() {
       }
 
       json() {
-        return this.text().then(text => JSON.parse(text));
+        return this.text().then(function(text) { return JSON.parse(text) });
       }
     };
   }
@@ -65,4 +65,4 @@ function setupWebAPIGlobals() {
 setupWebAPIGlobals();
 
 // Export the setup function for reuse
-module.exports = { setupWebAPIGlobals };
+module.exports = { setupWebAPIGlobals: setupWebAPIGlobals };
