@@ -112,7 +112,7 @@ describe('CharacterEditPage', () => {
     const testCharacter = createMockCharacter({
       skills: new Map([['athletics', true], ['intimidation', true]])
     });
-    
+
     await renderAndWaitForCharacter(testCharacter);
     expect(screen.getByText('Edit Character')).toBeInTheDocument();
   });
@@ -130,7 +130,7 @@ describe('CharacterEditPage', () => {
   it('should handle form submission successfully', async () => {
     const testCharacter = createMockCharacter();
     const updatedCharacter = { ...testCharacter, name: 'Updated Name' };
-    
+
     await renderAndWaitForCharacter(testCharacter);
 
     // Now mock the character update for form submission
@@ -184,7 +184,7 @@ describe('CharacterEditPage', () => {
   it('should redirect to character detail page after successful update', async () => {
     const testCharacter = createMockCharacter();
     const updatedCharacter = { ...testCharacter, name: 'Updated Name' };
-    
+
     // First mock the initial character fetch
     mockSuccessfulCharacterFetch(testCharacter);
 
@@ -248,7 +248,7 @@ describe('CharacterEditPage', () => {
     // Verify multiclass character loads successfully
     expect(screen.getByDisplayValue(testCharacter.name)).toBeInTheDocument();
     expect(screen.getByText('Character Classes')).toBeInTheDocument();
-    
+
     // Simplified test: just verify the form loads with multiclass data
     // Full class selection testing will be addressed in follow-up issues
   });
@@ -264,7 +264,7 @@ describe('CharacterEditPage', () => {
 
     // Simplified test: verify character with equipment loads
     expect(screen.getByDisplayValue(testCharacter.name)).toBeInTheDocument();
-    
+
     // Full equipment editing UI will be implemented in follow-up issues
     // This test ensures basic compatibility with equipment data
   });
@@ -300,7 +300,7 @@ describe('CharacterEditPage', () => {
 
     // Simplified test: verify character with spells loads
     expect(screen.getByDisplayValue(testCharacter.name)).toBeInTheDocument();
-    
+
     // Full spell editing UI will be implemented in follow-up issues
     // This test ensures basic compatibility with spell data
   });
