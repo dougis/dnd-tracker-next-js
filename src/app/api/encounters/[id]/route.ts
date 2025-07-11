@@ -5,7 +5,7 @@ import { updateEncounterSchema } from '@/lib/validations/encounter';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Validate authentication
@@ -18,7 +18,7 @@ export async function GET(
     }
 
     // Validate encounter ID
-    const encounterId = params.id;
+    const { id: encounterId } = await params;
     if (!encounterId || encounterId.trim() === '') {
       return NextResponse.json(
         { success: false, error: 'Encounter ID is required' },
@@ -46,7 +46,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Validate authentication
@@ -59,7 +59,7 @@ export async function PUT(
     }
 
     // Validate encounter ID
-    const encounterId = params.id;
+    const { id: encounterId } = await params;
     if (!encounterId || encounterId.trim() === '') {
       return NextResponse.json(
         { success: false, error: 'Encounter ID is required' },
@@ -85,7 +85,7 @@ export async function PUT(
     // Check if encounter exists and user has permission
     const existingResult = await EncounterService.getEncounterById(encounterId);
     if (!existingResult.success) {
-      const status = existingResult.error === 'Encounter not found' ? 404 : 500;
+      const status = existingResult.error?.message === 'Encounter not found' ? 404 : 500;
       return NextResponse.json(existingResult, { status });
     }
 
@@ -117,7 +117,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Validate authentication
@@ -130,7 +130,7 @@ export async function DELETE(
     }
 
     // Validate encounter ID
-    const encounterId = params.id;
+    const { id: encounterId } = await params;
     if (!encounterId || encounterId.trim() === '') {
       return NextResponse.json(
         { success: false, error: 'Encounter ID is required' },
@@ -141,7 +141,7 @@ export async function DELETE(
     // Check if encounter exists and user has permission
     const existingResult = await EncounterService.getEncounterById(encounterId);
     if (!existingResult.success) {
-      const status = existingResult.error === 'Encounter not found' ? 404 : 500;
+      const status = existingResult.error?.message === 'Encounter not found' ? 404 : 500;
       return NextResponse.json(existingResult, { status });
     }
 

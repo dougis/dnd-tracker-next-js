@@ -4,9 +4,9 @@ import { EncounterEditClient } from './EncounterEditClient';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 interface EncounterEditPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export const metadata: Metadata = {
@@ -14,7 +14,8 @@ export const metadata: Metadata = {
   description: 'Edit encounter details, participants, and settings for your D&D campaign.',
 };
 
-export default function EncounterEditPage({ params }: EncounterEditPageProps) {
+export default async function EncounterEditPage({ params }: EncounterEditPageProps) {
+  const { id } = await params;
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl">
       <div className="mb-6">
@@ -30,7 +31,7 @@ export default function EncounterEditPage({ params }: EncounterEditPageProps) {
           <span className="ml-3 text-muted-foreground">Loading encounter...</span>
         </div>
       }>
-        <EncounterEditClient encounterId={params.id} />
+        <EncounterEditClient encounterId={id} />
       </Suspense>
     </div>
   );
