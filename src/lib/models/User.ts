@@ -335,9 +335,25 @@ userSchema.pre('save', async function (next) {
   if (!this.isModified('passwordHash')) return next();
 
   try {
-    // Generate a salt and hash the password
-    const salt = await bcrypt.genSalt(12);
-    this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
+    // SECURITY CHECK: Ensure password is not already hashed
+    const isAlreadyHashed = this.passwordHash.match(/^\$2[aby]\$\d+\$/);
+
+    if (!isAlreadyHashed) {
+      // SECURITY REQUIREMENT: Never store plaintext passwords
+      if (this.passwordHash.length < 8) {
+        return next(new Error('Password must be at least 8 characters long'));
+      }
+
+      // Generate a salt and hash the password
+      const salt = await bcrypt.genSalt(12);
+      this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
+
+      // SECURITY VALIDATION: Verify the password was actually hashed
+      if (!this.passwordHash.match(/^\$2[aby]\$\d+\$/)) {
+        return next(new Error('CRITICAL SECURITY ERROR: Password hashing failed'));
+      }
+    }
+
     return next();
   } catch (error) {
     return next(error as Error);

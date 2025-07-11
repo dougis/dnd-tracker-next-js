@@ -19,6 +19,10 @@ import { UserServiceValidation } from './UserServiceValidation';
 import { UserServiceResponseHelpers } from './UserServiceResponseHelpers';
 import { UserServiceDatabase } from './UserServiceDatabase';
 import { UserServiceLookup } from './UserServiceLookup';
+import {
+  validatePasswordStrength,
+  isPasswordHashed
+} from '../utils/password-security';
 
 /**
  * Authentication operations for UserService
@@ -36,6 +40,31 @@ export class UserServiceAuth {
       // Validate input data
       const validatedData =
         UserServiceValidation.validateAndParseRegistration(userData);
+
+      // SECURITY: Validate password strength
+      const passwordValidation = validatePasswordStrength(validatedData.password);
+      if (!passwordValidation.isValid) {
+        return {
+          success: false,
+          error: {
+            message: `Password does not meet security requirements: ${passwordValidation.errors.join(', ')}`,
+            code: 'INVALID_PASSWORD',
+            statusCode: 400,
+          },
+        };
+      }
+
+      // SECURITY: Ensure password is not already hashed (should be plaintext for new users)
+      if (isPasswordHashed(validatedData.password)) {
+        return {
+          success: false,
+          error: {
+            message: 'Invalid password format',
+            code: 'INVALID_PASSWORD_FORMAT',
+            statusCode: 400,
+          },
+        };
+      }
 
       // Check if user already exists
       await checkUserExists(validatedData.email, validatedData.username);
@@ -146,6 +175,25 @@ export class UserServiceAuth {
       const validatedData =
         UserServiceValidation.validateAndParsePasswordChange(passwordData);
 
+      // SECURITY: Validate new password strength
+      const passwordValidation = validatePasswordStrength(validatedData.newPassword);
+      if (!passwordValidation.isValid) {
+        throw new UserServiceError(
+          `New password does not meet security requirements: ${passwordValidation.errors.join(', ')}`,
+          'INVALID_PASSWORD',
+          400
+        );
+      }
+
+      // SECURITY: Ensure new password is not already hashed
+      if (isPasswordHashed(validatedData.newPassword)) {
+        throw new UserServiceError(
+          'Invalid password format',
+          'INVALID_PASSWORD_FORMAT',
+          400
+        );
+      }
+
       // Find user
       const user = await UserServiceLookup.findUserByIdOrThrow(userId);
 
@@ -225,6 +273,25 @@ export class UserServiceAuth {
       // Validate input data
       const validatedData =
         UserServiceValidation.validateAndParsePasswordReset(resetData);
+
+      // SECURITY: Validate new password strength
+      const passwordValidation = validatePasswordStrength(validatedData.password);
+      if (!passwordValidation.isValid) {
+        throw new UserServiceError(
+          `Password does not meet security requirements: ${passwordValidation.errors.join(', ')}`,
+          'INVALID_PASSWORD',
+          400
+        );
+      }
+
+      // SECURITY: Ensure password is not already hashed
+      if (isPasswordHashed(validatedData.password)) {
+        throw new UserServiceError(
+          'Invalid password format',
+          'INVALID_PASSWORD_FORMAT',
+          400
+        );
+      }
 
       // Find user by reset token
       const user = await UserServiceLookup.findUserByResetTokenOrThrow(
