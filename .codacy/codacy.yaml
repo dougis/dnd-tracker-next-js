@@ -33,8 +33,8 @@ exclude_paths:
     - '**/*.test.tsx'
     - '**/*.test.js'
     - '**/*.test.jsx'
-    - "**/__tests__/**/*"
-    - "**/__mocks__/**/*"
+    - '**/__tests__/**/*'
+    - '**/__mocks__/**/*'
 runtimes:
     - dart@3.7.2
     - go@1.22.3
