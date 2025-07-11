@@ -13,15 +13,58 @@ import type {
 } from '../validations/character';
 import {
   ServiceResult,
-  createSuccessResult,
   createErrorResult,
-  CharacterServiceErrors,
 } from './CharacterServiceErrors';
 import { CharacterValidationUtils } from './utils/CharacterValidationUtils';
 import { CharacterAccessUtils } from './utils/CharacterAccessUtils';
 import { CharacterQueryUtils } from './utils/CharacterQueryUtils';
+import { ValidationWrapper } from './utils/ValidationWrapper';
+import { DatabaseOperationWrapper } from './utils/DatabaseOperationWrapper';
+import { OperationWrapper } from './utils/OperationWrapper';
 
 export class CharacterServiceCRUD {
+
+  /**
+   * Helper to get validated character data - eliminates duplication
+   */
+  private static getValidatedCharacterData(characterData: CharacterCreation) {
+    const dataValidation = CharacterValidationUtils.validateCharacterData(characterData);
+    if (!dataValidation.success) {
+      throw new Error(dataValidation.error.message);
+    }
+    return dataValidation.data;
+  }
+
+  /**
+   * Helper to get validated update data - eliminates duplication
+   */
+  private static getValidatedUpdateData(updateData: CharacterUpdate) {
+    const dataValidation = CharacterValidationUtils.validateUpdateData(updateData);
+    if (!dataValidation.success) {
+      throw new Error(dataValidation.error.message);
+    }
+    return dataValidation.data;
+  }
+
+  /**
+   * Helper to check ownership with error throwing - eliminates duplication
+   */
+  private static async checkOwnershipWithThrow(characterId: string, userId: string): Promise<void> {
+    const ownershipCheck = await CharacterAccessUtils.checkOwnership(characterId, userId);
+    if (!ownershipCheck.success) {
+      throw new Error(ownershipCheck.error.message);
+    }
+  }
+
+  /**
+   * Helper to validate database result with error throwing - eliminates duplication
+   */
+  private static validateResultWithThrow<T>(result: ServiceResult<T>, _operation: string): T {
+    if (!result.success) {
+      throw new Error(result.error.message);
+    }
+    return result.data;
+  }
 
   /**
    * Create a new character
@@ -30,47 +73,44 @@ export class CharacterServiceCRUD {
     ownerId: string,
     characterData: CharacterCreation
   ): Promise<ServiceResult<ICharacter>> {
-    try {
-      // Validate owner ID
-      const ownerValidation = CharacterValidationUtils.validateObjectId(ownerId, 'owner');
-      if (!ownerValidation.success) {
-        return createErrorResult(ownerValidation.error);
+    const validations = [
+      () => CharacterValidationUtils.validateObjectId(ownerId, 'owner'),
+      () => CharacterValidationUtils.validateCharacterData(characterData),
+    ];
+
+    return ValidationWrapper.validateAndExecute(
+      validations,
+      async () => {
+        // Get validated data
+        const validatedData = this.getValidatedCharacterData(characterData);
+
+        // Check character limit
+        const countResult = await CharacterQueryUtils.countByOwner(ownerId);
+        if (!countResult.success) {
+          return createErrorResult(countResult.error);
+        }
+
+        const maxCharacters = await this.getCharacterLimitForUser(ownerId);
+        const limitValidation = CharacterValidationUtils.validateCharacterLimit(
+          countResult.data,
+          maxCharacters
+        );
+        if (!limitValidation.success) {
+          return createErrorResult(limitValidation.error);
+        }
+
+        // Create character using wrapper
+        const ownershipFilter = CharacterAccessUtils.createOwnershipFilter(ownerId) as { ownerId: any };
+        return DatabaseOperationWrapper.createAndSave(
+          Character,
+          {
+            ...validatedData,
+            ownerId: ownershipFilter.ownerId,
+          },
+          'character'
+        );
       }
-
-      // Validate character data
-      const dataValidation = CharacterValidationUtils.validateCharacterData(characterData);
-      if (!dataValidation.success) {
-        return createErrorResult(dataValidation.error);
-      }
-      const validatedData = dataValidation.data;
-
-      // Check character limit
-      const countResult = await CharacterQueryUtils.countByOwner(ownerId);
-      if (!countResult.success) {
-        return createErrorResult(countResult.error);
-      }
-
-      const maxCharacters = await this.getCharacterLimitForUser(ownerId);
-      const limitValidation = CharacterValidationUtils.validateCharacterLimit(countResult.data, maxCharacters);
-      if (!limitValidation.success) {
-        return createErrorResult(limitValidation.error);
-      }
-
-      // Create character using utility
-      const ownershipFilter = CharacterAccessUtils.createOwnershipFilter(ownerId) as { ownerId: any };
-      const character = new Character({
-        ...validatedData,
-        ownerId: ownershipFilter.ownerId,
-      });
-
-      const savedCharacter = await character.save();
-      return createSuccessResult(savedCharacter);
-
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError('create character', error)
-      );
-    }
+    );
   }
 
   /**
@@ -80,17 +120,17 @@ export class CharacterServiceCRUD {
     characterId: string,
     userId: string
   ): Promise<ServiceResult<ICharacter>> {
-    // Validate IDs and check access using utility
-    const idsValidation = CharacterValidationUtils.validateMultipleObjectIds([
-      { id: characterId, type: 'character' },
-      { id: userId, type: 'owner' }
-    ]);
-    if (!idsValidation.success) {
-      return createErrorResult(idsValidation.error);
-    }
+    const validations = [
+      () => CharacterValidationUtils.validateMultipleObjectIds([
+        { id: characterId, type: 'character' },
+        { id: userId, type: 'owner' }
+      ])
+    ];
 
-    // Check access and get character in one operation
-    return CharacterAccessUtils.checkAccess(characterId, userId);
+    return ValidationWrapper.validateAndExecute(
+      validations,
+      () => CharacterAccessUtils.checkAccess(characterId, userId)
+    );
   }
 
   /**
@@ -101,43 +141,33 @@ export class CharacterServiceCRUD {
     userId: string,
     updateData: CharacterUpdate
   ): Promise<ServiceResult<ICharacter>> {
-    try {
-      // Validate character ID
-      const idValidation = CharacterValidationUtils.validateObjectId(characterId, 'character');
-      if (!idValidation.success) {
-        return createErrorResult(idValidation.error);
-      }
+    const validations = [
+      () => CharacterValidationUtils.validateObjectId(characterId, 'character'),
+      () => CharacterValidationUtils.validateUpdateData(updateData),
+    ];
 
-      // Validate update data
-      const dataValidation = CharacterValidationUtils.validateUpdateData(updateData);
-      if (!dataValidation.success) {
-        return createErrorResult(dataValidation.error);
-      }
+    return OperationWrapper.executeWithChecks(
+      validations,
+      async () => {
+        // Check ownership
+        await this.checkOwnershipWithThrow(characterId, userId);
 
-      // Check ownership
-      const ownershipCheck = await CharacterAccessUtils.checkOwnership(characterId, userId);
-      if (!ownershipCheck.success) {
-        return createErrorResult(ownershipCheck.error);
-      }
+        // Get validated data
+        const validatedData = this.getValidatedUpdateData(updateData);
 
-      // Update character
-      const character = await Character.findByIdAndUpdate(
-        characterId,
-        { ...dataValidation.data, updatedAt: new Date() },
-        { new: true, runValidators: true }
-      );
+        // Update using wrapper
+        const updateResult = await DatabaseOperationWrapper.findByIdAndUpdate(
+          Character,
+          characterId,
+          { ...validatedData, updatedAt: new Date() },
+          { new: true, runValidators: true },
+          'character'
+        );
 
-      if (!character) {
-        return createErrorResult(CharacterServiceErrors.characterNotFound(characterId));
-      }
-
-      return createSuccessResult(character);
-
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError('update character', error)
-      );
-    }
+        return this.validateResultWithThrow(updateResult, 'update character');
+      },
+      'update character'
+    );
   }
 
   /**
@@ -147,44 +177,38 @@ export class CharacterServiceCRUD {
     characterId: string,
     userId: string
   ): Promise<ServiceResult<void>> {
-    try {
-      // Validate character ID
-      const idValidation = CharacterValidationUtils.validateObjectId(characterId, 'character');
-      if (!idValidation.success) {
-        return createErrorResult(idValidation.error);
-      }
+    const validations = [
+      () => CharacterValidationUtils.validateObjectId(characterId, 'character'),
+    ];
 
-      // Check ownership
-      const ownershipCheck = await CharacterAccessUtils.checkOwnership(characterId, userId);
-      if (!ownershipCheck.success) {
-        return createErrorResult(ownershipCheck.error);
-      }
+    return OperationWrapper.executeWithChecks(
+      validations,
+      async () => {
+        // Check ownership
+        await this.checkOwnershipWithThrow(characterId, userId);
 
-      // Check if character is in use
-      const inUseCheck = await CharacterAccessUtils.checkCharacterInUse(characterId);
-      if (!inUseCheck.success) {
-        return createErrorResult(inUseCheck.error);
-      }
+        // Check if character is in use
+        const inUseCheck = await CharacterAccessUtils.checkCharacterInUse(characterId);
+        const inUseData = this.validateResultWithThrow(inUseCheck, 'check character in use');
 
-      if (inUseCheck.data.inUse) {
-        return createErrorResult(
-          CharacterServiceErrors.characterInUse(characterId, inUseCheck.data.usage || 'Unknown')
+        if (inUseData.inUse) {
+          throw new Error(
+            `Character ${characterId} is in use: ${inUseData.usage || 'Unknown'}`
+          );
+        }
+
+        // Delete using wrapper
+        const deleteResult = await DatabaseOperationWrapper.findByIdAndDelete(
+          Character,
+          characterId,
+          'character'
         );
-      }
 
-      // Delete character
-      const character = await Character.findByIdAndDelete(characterId);
-      if (!character) {
-        return createErrorResult(CharacterServiceErrors.characterNotFound(characterId));
-      }
-
-      return createSuccessResult(void 0);
-
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError('delete character', error)
-      );
-    }
+        this.validateResultWithThrow(deleteResult, 'delete character');
+        return void 0;
+      },
+      'delete character'
+    );
   }
 
   // ================================

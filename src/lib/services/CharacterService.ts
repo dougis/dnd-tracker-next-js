@@ -43,6 +43,9 @@ import {
   CharacterServiceTemplates,
   type BulkOperationResult,
 } from './CharacterServiceTemplates';
+import { DatabaseOperationWrapper } from './utils/DatabaseOperationWrapper';
+import { OperationWrapper } from './utils/OperationWrapper';
+import { CharacterAccessUtils } from './utils/CharacterAccessUtils';
 
 export interface CharacterPermissions {
   canView: boolean;
@@ -234,38 +237,22 @@ export class CharacterService {
   static async validateCharacterData(
     characterData: any
   ): Promise<ServiceResult<CharacterCreation>> {
-    try {
-      const validationResult = characterCreationSchema.safeParse(characterData);
+    return OperationWrapper.executeSync(
+      () => {
+        const validationResult = characterCreationSchema.safeParse(characterData);
 
-      if (!validationResult.success) {
-        return createErrorResult(
-          CharacterServiceErrors.invalidCharacterData(validationResult.error.errors)
-        );
-      }
+        if (!validationResult.success) {
+          throw new Error(`Invalid character data: ${validationResult.error.errors.map(e => e.message).join(', ')}`);
+        }
 
-      // Additional business logic validation
-      const totalLevel = validationResult.data.classes.reduce((sum, cls) => sum + cls.level, 0);
-      if (totalLevel > 20) {
-        return createErrorResult(
-          CharacterServiceErrors.invalidCharacterLevel(totalLevel)
-        );
-      }
+        // Validate business rules
+        this.validateBusinessRules(validationResult.data);
 
-      // Sanitize data
-      const sanitizedData = {
-        ...validationResult.data,
-        name: validationResult.data.name.trim(),
-        backstory: this.sanitizeText(validationResult.data.backstory || ''),
-        notes: this.sanitizeText(validationResult.data.notes || ''),
-      };
-
-      return createSuccessResult(sanitizedData);
-
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.operationFailed('validate character data', error instanceof Error ? error.message : 'Unknown error')
-      );
-    }
+        // Sanitize and return data
+        return this.sanitizeCharacterData(validationResult.data);
+      },
+      'validate character data'
+    );
   }
 
   // ================================
@@ -276,86 +263,55 @@ export class CharacterService {
     characterId: string,
     userId: string
   ): Promise<ServiceResult<void>> {
-    try {
-      if (!Types.ObjectId.isValid(characterId) || !Types.ObjectId.isValid(userId)) {
-        return createErrorResult(
-          CharacterServiceErrors.invalidCharacterId(characterId)
-        );
-      }
-
-      const character = await Character.findById(characterId);
-      if (!character) {
-        return createErrorResult(CharacterServiceErrors.characterNotFound(characterId));
-      }
-
-      if (character.ownerId.toString() !== userId) {
-        return createErrorResult(
-          CharacterServiceErrors.unauthorizedAccess(characterId, userId)
-        );
-      }
-
-      return createSuccessResult(void 0);
-
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError('check character ownership', error)
-      );
-    }
+    return OperationWrapper.execute(
+      async () => {
+        const result = await CharacterAccessUtils.checkOwnership(characterId, userId);
+        if (!result.success) {
+          throw new Error(result.error.message);
+        }
+        return void 0;
+      },
+      'check character ownership'
+    );
   }
 
   static async checkCharacterAccess(
     characterId: string,
     userId: string
   ): Promise<ServiceResult<void>> {
-    try {
-      const character = await Character.findById(characterId);
-      if (!character) {
-        return createErrorResult(CharacterServiceErrors.characterNotFound(characterId));
-      }
-
-      // Allow access if user owns the character or character is public
-      if (character.ownerId.toString() === userId || character.isPublic) {
-        return createSuccessResult(void 0);
-      }
-
-      return createErrorResult(
-        CharacterServiceErrors.unauthorizedAccess(characterId, userId)
-      );
-
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError('check character access', error)
-      );
-    }
+    return OperationWrapper.execute(
+      async () => {
+        const result = await CharacterAccessUtils.checkAccess(characterId, userId);
+        if (!result.success) {
+          throw new Error(result.error.message);
+        }
+        return void 0;
+      },
+      'check character access'
+    );
   }
 
   static async getCharacterPermissions(
     characterId: string,
     userId: string
   ): Promise<ServiceResult<CharacterPermissions>> {
-    try {
-      const character = await Character.findById(characterId);
-      if (!character) {
-        return createErrorResult(CharacterServiceErrors.characterNotFound(characterId));
-      }
+    return OperationWrapper.execute(
+      async () => {
+        const characterResult = await DatabaseOperationWrapper.findById(
+          Character,
+          characterId,
+          'character'
+        );
 
-      const isOwner = character.ownerId.toString() === userId;
-      const canView = isOwner || character.isPublic;
+        if (!characterResult.success) {
+          throw new Error(characterResult.error.message);
+        }
 
-      const permissions: CharacterPermissions = {
-        canView,
-        canEdit: isOwner,
-        canDelete: isOwner,
-        canShare: isOwner,
-      };
-
-      return createSuccessResult(permissions);
-
-    } catch (error) {
-      return createErrorResult(
-        CharacterServiceErrors.databaseError('get character permissions', error)
-      );
-    }
+        const character = characterResult.data;
+        return this.calculatePermissions(character, userId);
+      },
+      'get character permissions'
+    );
   }
 
   // ================================
@@ -600,6 +556,34 @@ export class CharacterService {
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       .replace(/<[^>]*>/g, '')
       .trim();
+  }
+
+  private static validateBusinessRules(data: CharacterCreation): void {
+    const totalLevel = data.classes.reduce((sum, cls) => sum + cls.level, 0);
+    if (totalLevel > 20) {
+      throw new Error(`Character level ${totalLevel} exceeds maximum of 20`);
+    }
+  }
+
+  private static sanitizeCharacterData(data: CharacterCreation): CharacterCreation {
+    return {
+      ...data,
+      name: data.name.trim(),
+      backstory: this.sanitizeText(data.backstory || ''),
+      notes: this.sanitizeText(data.notes || ''),
+    };
+  }
+
+  private static calculatePermissions(character: any, userId: string): CharacterPermissions {
+    const isOwner = character.ownerId.toString() === userId;
+    const canView = isOwner || character.isPublic;
+
+    return {
+      canView,
+      canEdit: isOwner,
+      canDelete: isOwner,
+      canShare: isOwner,
+    };
   }
 }
 

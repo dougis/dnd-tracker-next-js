@@ -81,7 +81,7 @@ jest.mock('../utils/CharacterValidationUtils', () => ({
 
 jest.mock('../utils/CharacterAccessUtils', () => ({
   CharacterAccessUtils: {
-    checkCharacterOwnership: jest.fn(),
+    checkOwnership: jest.fn(),
     checkAccess: jest.fn(),
     getPermissions: jest.fn(),
   },
@@ -378,10 +378,13 @@ describe('CharacterService Facade', () => {
     });
 
     it('should check character ownership with direct implementation', async () => {
-      const { Character } = require('../../models/Character');
-      Character.findById.mockResolvedValue({
-        _id: validCharacterId,
-        ownerId: { toString: () => validUserId },
+      const { CharacterAccessUtils } = require('../utils/CharacterAccessUtils');
+      CharacterAccessUtils.checkOwnership.mockResolvedValue({
+        success: true,
+        data: {
+          _id: validCharacterId,
+          ownerId: { toString: () => validUserId },
+        },
       });
 
       const result = await CharacterService.checkCharacterOwnership(validCharacterId, validUserId);
@@ -389,11 +392,14 @@ describe('CharacterService Facade', () => {
     });
 
     it('should check character access with direct implementation', async () => {
-      const { Character } = require('../../models/Character');
-      Character.findById.mockResolvedValue({
-        _id: validCharacterId,
-        ownerId: { toString: () => validUserId },
-        isPublic: false,
+      const { CharacterAccessUtils } = require('../utils/CharacterAccessUtils');
+      CharacterAccessUtils.checkAccess.mockResolvedValue({
+        success: true,
+        data: {
+          _id: validCharacterId,
+          ownerId: { toString: () => validUserId },
+          isPublic: false,
+        },
       });
 
       const result = await CharacterService.checkCharacterAccess(validCharacterId, validUserId);
