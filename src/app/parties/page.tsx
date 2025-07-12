@@ -1,4 +1,6 @@
 import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { auth } from '@/lib/auth';
 import { PartyListView } from '@/components/party/PartyListView';
 
 export const metadata: Metadata = {
@@ -6,7 +8,13 @@ export const metadata: Metadata = {
   description: 'Manage and organize your D&D parties',
 };
 
-export default function PartiesPage() {
+export default async function PartiesPage() {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    redirect('/signin?callbackUrl=/parties');
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -15,7 +23,7 @@ export default function PartiesPage() {
           Manage and organize your D&D parties
         </p>
       </div>
-      <PartyListView />
+      <PartyListView userId={session.user.id} />
     </div>
   );
 }

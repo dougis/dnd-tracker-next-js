@@ -11,6 +11,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/characters') ||
     pathname.startsWith('/encounters') ||
+    pathname.startsWith('/parties') ||
     pathname.startsWith('/combat') ||
     pathname.startsWith('/settings');
 
@@ -53,6 +54,7 @@ export const config = {
     '/dashboard/:path*',
     '/characters/:path*',
     '/encounters/:path*',
+    '/parties/:path*',
     '/combat/:path*',
     '/settings/:path*',
     '/api/users/:path*',
