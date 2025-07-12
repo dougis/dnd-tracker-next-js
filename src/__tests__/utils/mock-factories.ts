@@ -11,7 +11,7 @@ export function createMockRequest(pathname: string, options?: {
   let url = `http://localhost:3000${pathname}`;
   if (options?.queryParams) url += `?${options.queryParams}`;
   if (options?.hash) url += `#${options.hash}`;
-  
+
   return {
     nextUrl: { pathname },
     url,

@@ -9,8 +9,8 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import PartiesPage from '../page';
-import { createMockSession, createMockUser } from '@/__tests__/utils/mock-factories';
-import { setupAuthenticatedMocks, setupUnauthenticatedMocks, expectRedirectToSignin } from '@/__tests__/utils/auth-mocks';
+import { createMockUser } from '@/__tests__/utils/mock-factories';
+import { setupAuthenticatedMocks, expectRedirectToSignin } from '@/__tests__/utils/auth-mocks';
 
 // Mock the auth function from Next Auth
 jest.mock('@/lib/auth', () => ({

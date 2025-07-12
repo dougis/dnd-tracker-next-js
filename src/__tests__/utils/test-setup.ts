@@ -7,7 +7,7 @@ export function createTestMocks() {
   const mockNext = jest.fn();
   const mockJson = jest.fn();
   const mockGetToken = jest.fn();
-  
+
   return { mockRedirect, mockNext, mockJson, mockGetToken };
 }
 
