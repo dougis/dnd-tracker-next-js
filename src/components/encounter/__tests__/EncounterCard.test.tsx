@@ -21,14 +21,6 @@ const renderCard = (overrides?: any) => {
 const expectText = (text: string) => expect(screen.getByText(text)).toBeInTheDocument();
 const expectTexts = (texts: string[]) => texts.forEach(expectText);
 
-const withConsoleSpy = (callback: (_spy: jest.SpyInstance) => void) => {
-  const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-  try {
-    callback(consoleSpy);
-  } finally {
-    consoleSpy.mockRestore();
-  }
-};
 
 const clickCheckbox = (_props: any) => {
   const checkbox = screen.getByRole('checkbox');
