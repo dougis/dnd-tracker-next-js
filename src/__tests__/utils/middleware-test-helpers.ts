@@ -129,6 +129,7 @@ export async function expectMiddlewareMatcherConfiguration() {
     '/encounters/:path*',
     '/parties/:path*',  // This should be added
     '/combat/:path*',
+    '/settings/:path*',
     '/api/users/:path*',
     '/api/characters/:path*',
     '/api/encounters/:path*',
