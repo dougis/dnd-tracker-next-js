@@ -14,7 +14,7 @@ export function useCollaborators() {
     }
   };
 
-  const handleAddCollaborator = async () => {
+  const handleAddCollaborator = async (): Promise<boolean> => {
     if (newCollaboratorEmail.trim()) {
       try {
         const response = await fetch('/api/collaborators', {
@@ -33,13 +33,16 @@ export function useCollaborators() {
 
         setNewCollaboratorEmail('');
         setShowAddCollaborator(false);
+        return true;
       } catch (error) {
         console.error('Failed to add collaborator:', error);
+        return false;
       }
     }
+    return false;
   };
 
-  const handleRemoveCollaborator = async (collaboratorId: string) => {
+  const handleRemoveCollaborator = async (collaboratorId: string): Promise<boolean> => {
     try {
       const response = await fetch(`/api/collaborators/${collaboratorId}`, {
         method: 'DELETE',
@@ -48,8 +51,10 @@ export function useCollaborators() {
       if (!response.ok) {
         throw new Error(`Failed to remove collaborator: ${response.status}`);
       }
+      return true;
     } catch (error) {
       console.error('Failed to remove collaborator:', error);
+      return false;
     }
   };
 

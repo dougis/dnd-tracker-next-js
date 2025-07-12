@@ -26,6 +26,7 @@ export function useEditableContent(initialValue: string, onSave?: (_value: strin
         }
       } catch (error) {
         console.error('Failed to save content:', error);
+        throw error;
       } finally {
         setIsSaving(false);
       }
@@ -37,6 +38,7 @@ export function useEditableContent(initialValue: string, onSave?: (_value: strin
       await onSave(editedValue);
     } catch (error) {
       console.error('Failed to save content:', error);
+      throw error;
     } finally {
       setIsSaving(false);
     }
