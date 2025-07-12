@@ -43,6 +43,21 @@ const expectToastCall = (mockFn: jest.Mock, title: string, options?: any) => {
   }
 };
 
+// Consolidated test runner for standard test patterns
+const runStandardToastTest = (props: any, expectedMock: jest.Mock, expectedTitle: string, expectedOptions?: any) => {
+  const { result } = setupToastHook();
+  actWithToast(result, props);
+  expectToastCall(expectedMock, expectedTitle, expectedOptions);
+};
+
+// Utility to check that other toast methods weren't called
+const expectOtherToastMethodsNotCalled = (calledMock: jest.Mock) => {
+  const allMocks = [mockToastBase, mockToastSuccess, mockToastError];
+  allMocks.filter(mock => mock !== calledMock).forEach(mock => {
+    expect(mock).not.toHaveBeenCalled();
+  });
+};
+
 // Data-driven test cases to reduce duplication
 const basicToastCases = [
   { description: 'shows default toast with title only', props: { title: 'Test message' }, expectedMock: mockToastBase, expectedTitle: 'Test message' },
@@ -81,82 +96,61 @@ describe('useToast', () => {
   describe('Basic Toast Functionality', () => {
     basicToastCases.forEach(({ description, props, expectedMock, expectedTitle, expectedOptions }) => {
       it(description, () => {
-        const { result } = setupToastHook();
-        actWithToast(result, props);
-        expectToastCall(expectedMock, expectedTitle, expectedOptions);
+        runStandardToastTest(props, expectedMock, expectedTitle, expectedOptions);
       });
     });
 
     it('handles undefined title', () => {
-      const { result } = setupToastHook();
-      actWithToast(result, { title: undefined as any });
-      expectToastCall(mockToastBase, undefined);
+      runStandardToastTest({ title: undefined as any }, mockToastBase, undefined);
     });
   });
 
   describe('Toast Variants', () => {
     variantCases.forEach(({ description, props, expectedMock, expectedTitle, expectedOptions }) => {
       it(description, () => {
-        const { result } = setupToastHook();
-        actWithToast(result, props);
-        expectToastCall(expectedMock, expectedTitle, expectedOptions);
+        runStandardToastTest(props, expectedMock, expectedTitle, expectedOptions);
       });
     });
 
     it('defaults to base toast when variant is undefined', () => {
-      const { result } = setupToastHook();
-      actWithToast(result, { title: 'Default' });
-      expectToastCall(mockToastBase, 'Default');
+      runStandardToastTest({ title: 'Default' }, mockToastBase, 'Default');
     });
   });
 
   describe('Toast Duration', () => {
     durationCases.forEach(({ description, props, expectedMock, expectedTitle, expectedOptions }) => {
       it(description, () => {
-        const { result } = setupToastHook();
-        actWithToast(result, props);
-        expectToastCall(expectedMock, expectedTitle, expectedOptions);
+        runStandardToastTest(props, expectedMock, expectedTitle, expectedOptions);
       });
     });
 
     it('applies duration with variant', () => {
-      const { result } = setupToastHook();
-      actWithToast(result, { title: 'Error', variant: 'destructive', duration: 10000 });
-      expectToastCall(mockToastError, 'Error', { duration: 10000 });
+      runStandardToastTest({ title: 'Error', variant: 'destructive', duration: 10000 }, mockToastError, 'Error', { duration: 10000 });
     });
   });
 
   describe('Toast Actions', () => {
-    it('applies action configuration', () => {
-      const actionFn = jest.fn();
-      const { result } = setupToastHook();
+    const actionTestCases = [
+      {
+        description: 'applies action configuration',
+        props: (actionFn: jest.Mock) => ({ title: 'Action message', action: { label: 'Undo', onClick: actionFn } }),
+        expectedMock: mockToastBase,
+        expectedTitle: 'Action message',
+        expectedOptions: (actionFn: jest.Mock) => ({ action: { label: 'Undo', onClick: actionFn } })
+      },
+      {
+        description: 'applies action with other properties',
+        props: (actionFn: jest.Mock) => ({ title: 'Complex', description: 'With action', variant: 'default', duration: 5000, action: { label: 'Retry', onClick: actionFn } }),
+        expectedMock: mockToastSuccess,
+        expectedTitle: 'Complex',
+        expectedOptions: (actionFn: jest.Mock) => ({ description: 'With action', duration: 5000, action: { label: 'Retry', onClick: actionFn } })
+      }
+    ];
 
-      actWithToast(result, {
-        title: 'Action message',
-        action: { label: 'Undo', onClick: actionFn }
-      });
-
-      expectToastCall(mockToastBase, 'Action message', {
-        action: { label: 'Undo', onClick: actionFn }
-      });
-    });
-
-    it('applies action with other properties', () => {
-      const actionFn = jest.fn();
-      const { result } = setupToastHook();
-
-      actWithToast(result, {
-        title: 'Complex',
-        description: 'With action',
-        variant: 'default',
-        duration: 5000,
-        action: { label: 'Retry', onClick: actionFn }
-      });
-
-      expectToastCall(mockToastSuccess, 'Complex', {
-        description: 'With action',
-        duration: 5000,
-        action: { label: 'Retry', onClick: actionFn }
+    actionTestCases.forEach(({ description, props, expectedMock, expectedTitle, expectedOptions }) => {
+      it(description, () => {
+        const actionFn = jest.fn();
+        runStandardToastTest(props(actionFn), expectedMock, expectedTitle, expectedOptions(actionFn));
       });
     });
   });
@@ -185,20 +179,16 @@ describe('useToast', () => {
 
   describe('Edge Cases', () => {
     it('handles missing toast properties gracefully', () => {
-      const { result } = setupToastHook();
-      actWithToast(result, {} as any);
-      expectToastCall(mockToastBase, undefined);
+      runStandardToastTest({} as any, mockToastBase, undefined);
     });
 
     it('handles null values in toast properties', () => {
-      const { result } = setupToastHook();
-      actWithToast(result, {
+      runStandardToastTest({
         title: 'Test',
         description: null as any,
         variant: null as any,
         duration: null as any
-      });
-      expectToastCall(mockToastBase, 'Test');
+      }, mockToastBase, 'Test');
     });
 
     it('handles multiple rapid toast calls', () => {
@@ -218,59 +208,45 @@ describe('useToast', () => {
   });
 
   describe('Sonner Integration', () => {
-    it('properly maps to Sonner API for success variant', () => {
-      const { result } = setupToastHook();
+    const integrationTestCases = [
+      {
+        description: 'properly maps to Sonner API for success variant',
+        props: { title: 'Success', description: 'All good', variant: 'default' as const },
+        expectedMock: mockToastSuccess,
+        expectedTitle: 'Success',
+        expectedOptions: { description: 'All good' }
+      },
+      {
+        description: 'properly maps to Sonner API for error variant',
+        props: { title: 'Error', description: 'Something failed', variant: 'destructive' as const },
+        expectedMock: mockToastError,
+        expectedTitle: 'Error',
+        expectedOptions: { description: 'Something failed' }
+      },
+      {
+        description: 'uses base toast function for unknown variants',
+        props: { title: 'Unknown variant', variant: 'unknown' as any },
+        expectedMock: mockToastBase,
+        expectedTitle: 'Unknown variant',
+        expectedOptions: undefined
+      }
+    ];
 
-      actWithToast(result, {
-        title: 'Success',
-        description: 'All good',
-        variant: 'default'
+    integrationTestCases.forEach(({ description, props, expectedMock, expectedTitle, expectedOptions }) => {
+      it(description, () => {
+        runStandardToastTest(props, expectedMock, expectedTitle, expectedOptions);
+        expectOtherToastMethodsNotCalled(expectedMock);
       });
-
-      expectToastCall(mockToastSuccess, 'Success', { description: 'All good' });
-      expect(mockToastBase).not.toHaveBeenCalled();
-      expect(mockToastError).not.toHaveBeenCalled();
-    });
-
-    it('properly maps to Sonner API for error variant', () => {
-      const { result } = setupToastHook();
-
-      actWithToast(result, {
-        title: 'Error',
-        description: 'Something failed',
-        variant: 'destructive'
-      });
-
-      expectToastCall(mockToastError, 'Error', { description: 'Something failed' });
-      expect(mockToastBase).not.toHaveBeenCalled();
-      expect(mockToastSuccess).not.toHaveBeenCalled();
-    });
-
-    it('uses base toast function for unknown variants', () => {
-      const { result } = setupToastHook();
-
-      actWithToast(result, {
-        title: 'Unknown variant',
-        variant: 'unknown' as any
-      });
-
-      expectToastCall(mockToastBase, 'Unknown variant');
-      expect(mockToastSuccess).not.toHaveBeenCalled();
-      expect(mockToastError).not.toHaveBeenCalled();
     });
   });
 
   describe('Backwards Compatibility', () => {
     it('maintains API compatibility with old implementation', () => {
-      const { result } = setupToastHook();
-
-      actWithToast(result, {
+      runStandardToastTest({
         title: 'Test message',
         description: 'Test description',
         variant: 'destructive'
-      });
-
-      expectToastCall(mockToastError, 'Test message', {
+      }, mockToastError, 'Test message', {
         description: 'Test description'
       });
     });
