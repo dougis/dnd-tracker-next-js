@@ -3,7 +3,6 @@
  * Eliminates ALL code duplication across BatchActions test files
  */
 
-import { screen, waitFor } from '@testing-library/react';
 import { createMockToast } from './mockSetup';
 import { COMMON_TEST_ENCOUNTERS } from './batchActionsSharedMocks';
 import { expectCallbacksInvoked, expectErrorToast } from './testSetup';
@@ -146,7 +145,7 @@ export const expectEmptyError = (mockToast: jest.Mock, operation: string) => {
 
 export const clickOperation = async (
   operation: string,
-  clickButtonFn: (selector: string | RegExp) => Promise<void>,
+  clickButtonFn: (_selector: string | RegExp) => Promise<void>,
   isDelete = false
 ) => {
   if (isDelete) {
@@ -161,8 +160,8 @@ export const runBatchTest = async (
   operation: string,
   setupFn: () => void,
   renderFn: () => any,
-  clickButtonFn: (selector: string | RegExp) => Promise<void>,
-  waitForFn: (callback: () => void) => Promise<void>,
+  clickButtonFn: (_selector: string | RegExp) => Promise<void>,
+  waitForFn: (_callback: () => void) => Promise<void>,
   verifyFn: () => void,
   isDelete = false
 ) => {
@@ -176,8 +175,8 @@ export const runSuccessTest = async (
   operation: string,
   setupFn: () => void,
   renderFn: () => any,
-  clickButtonFn: (selector: string | RegExp) => Promise<void>,
-  waitForFn: (callback: () => void) => Promise<void>,
+  clickButtonFn: (_selector: string | RegExp) => Promise<void>,
+  waitForFn: (_callback: () => void) => Promise<void>,
   mockToast: jest.Mock,
   onClearSelection: jest.Mock,
   onRefetch: jest.Mock,
@@ -200,8 +199,8 @@ export const runErrorTest = async (
   errorMessage: string,
   setupFn: () => void,
   renderFn: () => any,
-  clickButtonFn: (selector: string | RegExp) => Promise<void>,
-  waitForFn: (callback: () => void) => Promise<void>,
+  clickButtonFn: (_selector: string | RegExp) => Promise<void>,
+  waitForFn: (_callback: () => void) => Promise<void>,
   mockToast: jest.Mock,
   isDelete = false
 ) => {
