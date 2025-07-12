@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import { EncounterService } from '@/lib/services/EncounterService';
 import { withAuth } from '@/lib/api/route-helpers';
-import { handleApiError } from '../shared-route-helpers';
+import { handleApiError, processBatchItems, createBatchResponse, performExportOperation, validateEncounterOwnership } from '../shared-route-helpers';
 import { z } from 'zod';
 
 const batchOperationSchema = z.object({
-  operation: z.enum(['export', 'template', 'delete', 'archive', 'publish']),
+  operation: z.enum(['export', 'template', 'delete', 'archive', 'publish', 'duplicate']),
   encounterIds: z.array(z.string()).min(1, 'At least one encounter ID is required').max(50, 'Maximum 50 encounters allowed'),
   options: z.object({
     // Export options
@@ -23,6 +23,9 @@ const batchOperationSchema = z.object({
 
     // Publish options
     makePublic: z.boolean().default(true),
+
+    // Duplicate options
+    namePrefix: z.string().max(50).default('Copy of'),
   }).default({}),
 });
 
@@ -33,9 +36,12 @@ export async function POST(request: NextRequest) {
       const validatedBody = batchOperationSchema.parse(body);
 
       const { operation, encounterIds, options } = validatedBody;
-      const { results, errors } = await processBatchOperation(operation, encounterIds, userId, options);
+      const { results, errors } = await processBatchItems(
+        encounterIds,
+        async (encounterId: string) => await executeBatchOperation(operation, encounterId, userId, options)
+      );
 
-      const response = buildBatchResponse(operation, results, errors, encounterIds.length);
+      const response = createBatchResponse(operation, results, errors, encounterIds.length);
       return NextResponse.json(response);
     } catch (error) {
       return handleApiError(error);
@@ -43,21 +49,6 @@ export async function POST(request: NextRequest) {
   });
 }
 
-async function processBatchOperation(operation: string, encounterIds: string[], userId: string, options: any) {
-  const results: any[] = [];
-  const errors: any[] = [];
-
-  for (const encounterId of encounterIds) {
-    try {
-      const result = await executeBatchOperation(operation, encounterId, userId, options);
-      processBatchResult(result, encounterId, results, errors);
-    } catch (error) {
-      addBatchError(error, encounterId, errors);
-    }
-  }
-
-  return { results, errors };
-}
 
 async function executeBatchOperation(operation: string, encounterId: string, userId: string, options: any) {
   const handlers = {
@@ -66,6 +57,7 @@ async function executeBatchOperation(operation: string, encounterId: string, use
     delete: () => handleBatchDelete(encounterId, userId),
     archive: () => handleBatchArchive(encounterId, userId, options),
     publish: () => handleBatchPublish(encounterId, userId, options),
+    duplicate: () => handleBatchDuplicate(encounterId, userId, options),
   };
 
   const handler = handlers[operation as keyof typeof handlers];
@@ -76,45 +68,6 @@ async function executeBatchOperation(operation: string, encounterId: string, use
   return await handler();
 }
 
-function processBatchResult(result: any, encounterId: string, results: any[], errors: any[]) {
-  if (result.success) {
-    results.push({
-      encounterId,
-      status: 'success',
-      data: result.data || null,
-    });
-  } else {
-    errors.push({
-      encounterId,
-      status: 'error',
-      error: result.error?.message || 'Operation failed',
-    });
-  }
-}
-
-function addBatchError(error: any, encounterId: string, errors: any[]) {
-  errors.push({
-    encounterId,
-    status: 'error',
-    error: error instanceof Error ? error.message : 'Unknown error',
-  });
-}
-
-function buildBatchResponse(operation: string, results: any[], errors: any[], total: number) {
-  return {
-    success: true,
-    operation,
-    results,
-    errors: errors.length > 0 ? errors : undefined,
-    summary: {
-      totalProcessed: total,
-      successful: results.length,
-      failed: errors.length,
-    },
-  };
-}
-
-
 async function handleBatchExport(encounterId: string, userId: string, options: any) {
   const exportOptions = {
     includeCharacterSheets: options.includeCharacterSheets,
@@ -123,11 +76,7 @@ async function handleBatchExport(encounterId: string, userId: string, options: a
     stripPersonalData: options.stripPersonalData,
   };
 
-  if (options.format === 'json') {
-    return await EncounterServiceImportExport.exportToJson(encounterId, userId, exportOptions);
-  } else {
-    return await EncounterServiceImportExport.exportToXml(encounterId, userId, exportOptions);
-  }
+  return await performExportOperation(encounterId, userId, options.format, exportOptions);
 }
 
 async function handleBatchTemplate(encounterId: string, userId: string, options: any) {
@@ -143,28 +92,9 @@ async function handleBatchTemplate(encounterId: string, userId: string, options:
   return await EncounterServiceImportExport.createTemplate(encounterId, userId, templateName);
 }
 
-async function checkEncounterOwnership(encounterId: string, userId: string, operation: string) {
-  const encounterResult = await EncounterService.getEncounterById(encounterId);
-  if (!encounterResult.success) {
-    return encounterResult;
-  }
-
-  const encounter = encounterResult.data!;
-  if (encounter.ownerId.toString() !== userId) {
-    return {
-      success: false,
-      error: {
-        message: `You do not have permission to ${operation} this encounter`,
-        code: 'INSUFFICIENT_PERMISSIONS',
-      },
-    };
-  }
-
-  return { success: true, data: encounter };
-}
 
 async function handleBatchDelete(encounterId: string, userId: string) {
-  const ownershipCheck = await checkEncounterOwnership(encounterId, userId, 'delete');
+  const ownershipCheck = await validateEncounterOwnership(encounterId, userId, 'delete');
   if (!ownershipCheck.success) {
     return ownershipCheck;
   }
@@ -173,7 +103,7 @@ async function handleBatchDelete(encounterId: string, userId: string) {
 }
 
 async function handleBatchArchive(encounterId: string, userId: string, options: any) {
-  const ownershipCheck = await checkEncounterOwnership(encounterId, userId, 'archive');
+  const ownershipCheck = await validateEncounterOwnership(encounterId, userId, 'archive');
   if (!ownershipCheck.success) {
     return ownershipCheck;
   }
@@ -190,7 +120,7 @@ async function handleBatchArchive(encounterId: string, userId: string, options: 
 }
 
 async function handleBatchPublish(encounterId: string, userId: string, options: any) {
-  const ownershipCheck = await checkEncounterOwnership(encounterId, userId, 'publish');
+  const ownershipCheck = await validateEncounterOwnership(encounterId, userId, 'publish');
   if (!ownershipCheck.success) {
     return ownershipCheck;
   }
@@ -200,4 +130,16 @@ async function handleBatchPublish(encounterId: string, userId: string, options: 
   };
 
   return await EncounterService.updateEncounter(encounterId, updateData);
+}
+
+async function handleBatchDuplicate(encounterId: string, userId: string, options: any) {
+  const ownershipCheck = await validateEncounterOwnership(encounterId, userId, 'duplicate');
+  if (!ownershipCheck.success) {
+    return ownershipCheck;
+  }
+
+  const encounter = (ownershipCheck as any).data!;
+  const newName = `${options.namePrefix} ${encounter.name}`;
+
+  return await EncounterService.cloneEncounter(encounterId, newName);
 }

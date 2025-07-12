@@ -85,6 +85,7 @@ export function EncounterListView() {
       {hasSelection && (
         <BatchActions
           selectedCount={selectedEncounters.length}
+          selectedEncounters={selectedEncounters}
           onClearSelection={clearSelection}
           onRefetch={refetch}
         />

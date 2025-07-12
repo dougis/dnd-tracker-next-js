@@ -197,37 +197,71 @@ export function createBatchResponse(
 // VALIDATION UTILITIES
 // ============================================================================
 
+// ============================================================================
+// SHARED VALIDATION SCHEMAS
+// ============================================================================
+
+/**
+ * Common format enum for reuse across schemas
+ */
+const formatEnum = z.enum(['json', 'xml']);
+
+/**
+ * Base boolean transform for query parameters
+ */
+const booleanTransform = (defaultValue: string) =>
+  z.string().transform(v => v === 'true').default(defaultValue);
+
+/**
+ * Shared options schema for import/restore operations
+ */
+const baseOptionsSchema = z.object({
+  preserveIds: z.boolean().default(false),
+  createMissingCharacters: z.boolean().default(true),
+  overwriteExisting: z.boolean().default(false),
+});
+
+/**
+ * Extended options schema for restore operations
+ */
+const restoreOptionsSchema = baseOptionsSchema.extend({
+  selectiveRestore: z.array(z.string()).optional(),
+});
+
+/**
+ * Shared query fields for backup/export operations
+ */
+const sharedQueryFields = {
+  includeCharacterSheets: booleanTransform('false'),
+  includePrivateNotes: booleanTransform('false'),
+};
+
 /**
  * Standard import body validation schema
  */
 export const importBodySchema = z.object({
   data: z.string().min(1, 'Import data is required'),
-  format: z.enum(['json', 'xml']),
-  options: z.object({
-    preserveIds: z.boolean().default(false),
-    createMissingCharacters: z.boolean().default(true),
-    overwriteExisting: z.boolean().default(false),
-  }).default({}),
+  format: formatEnum,
+  options: baseOptionsSchema.default({}),
 });
 
 /**
  * Standard export query validation schema
  */
 export const exportQuerySchema = z.object({
-  format: z.enum(['json', 'xml']).default('json'),
-  includeCharacterSheets: z.string().transform(v => v === 'true').default('false'),
-  includePrivateNotes: z.string().transform(v => v === 'true').default('false'),
-  includeIds: z.string().transform(v => v === 'true').default('false'),
-  stripPersonalData: z.string().transform(v => v === 'true').default('false'),
+  format: formatEnum.default('json'),
+  ...sharedQueryFields,
+  includeIds: booleanTransform('false'),
+  stripPersonalData: booleanTransform('false'),
 });
 
 /**
  * Standard backup query validation schema
  */
 export const backupQuerySchema = z.object({
-  includeCharacterSheets: z.string().transform(v => v === 'true').default('true'),
-  includePrivateNotes: z.string().transform(v => v === 'true').default('true'),
-  format: z.enum(['json', 'xml']).default('json'),
+  includeCharacterSheets: booleanTransform('true'),
+  includePrivateNotes: booleanTransform('true'),
+  format: formatEnum.default('json'),
 });
 
 /**
@@ -235,13 +269,8 @@ export const backupQuerySchema = z.object({
  */
 export const restoreBodySchema = z.object({
   backupData: z.string().min(1, 'Backup data is required'),
-  format: z.enum(['json', 'xml']),
-  options: z.object({
-    preserveIds: z.boolean().default(false),
-    createMissingCharacters: z.boolean().default(true),
-    overwriteExisting: z.boolean().default(false),
-    selectiveRestore: z.array(z.string()).optional(),
-  }).default({}),
+  format: formatEnum,
+  options: restoreOptionsSchema.default({}),
 });
 
 // ============================================================================
@@ -314,17 +343,21 @@ export function parseXmlBackup(xmlData: string): any {
 }
 
 /**
+ * Escape XML special characters
+ */
+export function escapeXml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
  * Convert backup data to XML
  */
 export function convertBackupToXml(backupData: any): string {
-  const escapeXml = (text: string): string => {
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  };
 
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += '<encounterBackup>\n';
@@ -406,4 +439,40 @@ export function createRestoreResponse(
       backupDate: backupData.metadata.backupDate,
     },
   };
+}
+
+// ============================================================================
+// ENCOUNTER ACCESS UTILITIES
+// ============================================================================
+
+/**
+ * Validate that a user has access to an encounter
+ */
+export async function validateEncounterOwnership(
+  encounterId: string,
+  userId: string,
+  operation?: string
+) {
+  // Import here to avoid circular dependency
+  const { EncounterService } = await import('@/lib/services/EncounterService');
+
+  const encounterResult = await EncounterService.getEncounterById(encounterId);
+  if (!encounterResult.success) {
+    return encounterResult;
+  }
+
+  const encounter = encounterResult.data!;
+  if (encounter.ownerId.toString() !== userId) {
+    return {
+      success: false,
+      error: {
+        message: operation
+          ? `You do not have permission to ${operation} this encounter`
+          : 'You do not have permission to access this encounter',
+        code: 'INSUFFICIENT_PERMISSIONS',
+      },
+    };
+  }
+
+  return { success: true, data: encounter };
 }

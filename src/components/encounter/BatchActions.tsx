@@ -14,17 +14,19 @@ import {
 } from '@/components/ui/alert-dialog';
 import { X, Trash2, Copy, Archive } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { createSuccessHandler, createErrorHandler } from './actions/errorUtils';
+import { createSuccessHandler } from './actions/errorUtils';
 import { getEncounterText } from './BatchActions/utils';
 
 interface BatchActionsProps {
   selectedCount: number;
+  selectedEncounters?: string[];
   onClearSelection: () => void;
   onRefetch: () => void;
 }
 
 export function BatchActions({
   selectedCount,
+  selectedEncounters = [],
   onClearSelection,
   onRefetch,
 }: BatchActionsProps) {
@@ -33,7 +35,31 @@ export function BatchActions({
   const { toast } = useToast();
 
   const handleSuccess = createSuccessHandler(toast);
-  const handleError = createErrorHandler(toast);
+
+  const callBatchApi = async (operation: string, options: Record<string, any> = {}) => {
+    if (!selectedEncounters || selectedEncounters.length === 0) {
+      throw new Error(`No encounters selected for ${operation}.`);
+    }
+
+    const response = await fetch('/api/encounters/batch', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        operation,
+        encounterIds: selectedEncounters,
+        options,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || `Failed to ${operation} encounters`);
+    }
+
+    return await response.json();
+  };
 
   const executeAction = async (action: string, operation: () => Promise<void> | void) => {
     try {
@@ -41,27 +67,53 @@ export function BatchActions({
       handleSuccess(action, `${selectedCount} encounters`);
       onClearSelection();
       onRefetch();
-    } catch {
-      handleError(action, `${selectedCount} encounters`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : `Failed to ${action} encounters. Please try again.`;
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     }
   };
 
-  const handleBulkDuplicate = () => executeAction('duplicate', () => {
-    // TODO: Implement bulk duplicate functionality
-    console.log('Bulk duplicate encounters');
+  const handleApiResponse = (response: any, action: string) => {
+    const { results = [], errors = [], summary } = response;
+
+    if (errors.length === 0) {
+      // Complete success
+      toast({
+        title: `Encounters ${action}d`,
+        description: `${summary.successful} encounters have been ${action}d successfully.`,
+      });
+    } else if (results.length > 0) {
+      // Partial success
+      toast({
+        title: 'Partial Success',
+        description: `${summary.successful} encounters ${action}d successfully, ${summary.failed} failed.`,
+      });
+    } else {
+      // Complete failure
+      throw new Error(`Failed to ${action} encounters.`);
+    }
+  };
+
+  const handleBulkDuplicate = () => executeAction('duplicate', async () => {
+    const response = await callBatchApi('duplicate');
+    handleApiResponse(response, 'duplicate');
   });
 
-  const handleBulkArchive = () => executeAction('archive', () => {
-    // TODO: Implement bulk archive functionality
-    console.log('Bulk archive encounters');
+  const handleBulkArchive = () => executeAction('archive', async () => {
+    const response = await callBatchApi('archive');
+    handleApiResponse(response, 'archive');
   });
 
   const handleBulkDelete = async () => {
     setIsDeleting(true);
     try {
-      await executeAction('delete', () => {
-        // TODO: Implement bulk delete functionality
-        console.log('Bulk delete encounters');
+      await executeAction('delete', async () => {
+        const response = await callBatchApi('delete');
+        handleApiResponse(response, 'delete');
       });
     } finally {
       setIsDeleting(false);
