@@ -4,6 +4,13 @@ import userEvent from '@testing-library/user-event';
 import { TableRow } from '../TableRow';
 import { createMockEncounter } from '../../__tests__/test-utils/mockFactories';
 
+// Mock next/navigation
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+  }),
+}));
+
 // Mock table cell components
 jest.mock('../TableCells', () => ({
   SelectionCell: ({ encounter, isSelected, onSelect }: any) => (
