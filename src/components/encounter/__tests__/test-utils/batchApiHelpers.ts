@@ -33,10 +33,17 @@ const createBatchApiResponse = (operation: string, successful: number, failed: n
 });
 
 /**
+ * Generic mock response helper
+ */
+const mockBatchApiResponse = (response: any) => {
+  (global.fetch as jest.Mock).mockResolvedValueOnce(response);
+};
+
+/**
  * Mock successful batch API response
  */
 export const mockSuccessfulBatchApi = ({ operation = 'duplicate', successful = 3, failed = 0 }: MockBatchOptions = {}) => {
-  (global.fetch as jest.Mock).mockResolvedValueOnce({
+  mockBatchApiResponse({
     ok: true,
     json: async () => createBatchApiResponse(operation, successful, failed),
   });
@@ -46,7 +53,7 @@ export const mockSuccessfulBatchApi = ({ operation = 'duplicate', successful = 3
  * Mock partial failure batch API response
  */
 export const mockPartialFailureBatchApi = ({ operation = 'duplicate', successful = 2, failed = 1 }: MockBatchOptions = {}) => {
-  (global.fetch as jest.Mock).mockResolvedValueOnce({
+  mockBatchApiResponse({
     ok: true,
     json: async () => createBatchApiResponse(operation, successful, failed),
   });
@@ -56,7 +63,7 @@ export const mockPartialFailureBatchApi = ({ operation = 'duplicate', successful
  * Mock error batch API response
  */
 export const mockErrorBatchApi = ({ statusCode = 500, errorMessage = 'Server error' }: MockBatchOptions = {}) => {
-  (global.fetch as jest.Mock).mockResolvedValueOnce({
+  mockBatchApiResponse({
     ok: false,
     status: statusCode,
     json: async () => ({ error: errorMessage }),
@@ -133,6 +140,22 @@ export const expectEmptySelectionError = (mockToast: jest.Mock, operation: strin
 };
 
 /**
+ * Common button click logic for operations
+ */
+const executeOperationClick = async (
+  operation: string,
+  clickButtonFn: (_selector: string | RegExp) => Promise<void>,
+  isDeleteOperation = false
+) => {
+  if (isDeleteOperation) {
+    await clickButtonFn(/delete/i);
+    await clickButtonFn('Delete');
+  } else {
+    await clickButtonFn(new RegExp(operation, 'i'));
+  }
+};
+
+/**
  * Execute a complete batch operation test with API verification
  */
 export const executeBatchOperationTest = async (
@@ -149,12 +172,7 @@ export const executeBatchOperationTest = async (
   mockSetupFn();
   renderFn();
 
-  if (isDeleteOperation) {
-    await clickButtonFn(/delete/i);
-    await clickButtonFn('Delete');
-  } else {
-    await clickButtonFn(new RegExp(operation, 'i'));
-  }
+  await executeOperationClick(operation, clickButtonFn, isDeleteOperation);
 
   await waitForFn(() => {
     expectBatchApiCall(operation);
@@ -181,12 +199,7 @@ export const executeBatchErrorTest = async (
   mockSetupFn();
   renderFn();
 
-  if (isDeleteOperation) {
-    await clickButtonFn(/delete/i);
-    await clickButtonFn('Delete');
-  } else {
-    await clickButtonFn(new RegExp(operation, 'i'));
-  }
+  await executeOperationClick(operation, clickButtonFn, isDeleteOperation);
 
   await waitForFn(() => {
     expectErrorToast(mockToast, errorMessage);

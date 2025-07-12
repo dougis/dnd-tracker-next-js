@@ -17,11 +17,12 @@ import {
 } from './test-utils/batchApiHelpers';
 import { createMockToast } from './test-utils/mockSetup';
 
-// Mock fetch globally
-global.fetch = jest.fn();
+// Create mocks
+const mockToast = createMockToast();
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
 
 // Mock the toast hook
-const mockToast = createMockToast();
 jest.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
     toast: mockToast,
@@ -34,8 +35,6 @@ jest.mock('../BatchActions/utils', () => ({
     `${count} encounter${count !== 1 ? 's' : ''}`
   ),
 }));
-
-const mockFetch = global.fetch as jest.Mock;
 
 describe('BatchActions API Integration', () => {
   const defaultProps = createDefaultBatchActionsProps();

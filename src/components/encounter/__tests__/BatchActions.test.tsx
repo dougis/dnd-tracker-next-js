@@ -8,8 +8,12 @@ import {
 } from './test-utils/testSetup';
 import { createMockToast } from './test-utils/mockSetup';
 
-// Mock the toast hook
+// Create mocks
 const mockToast = createMockToast();
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
+
+// Mock the toast hook
 jest.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
     toast: mockToast,
@@ -39,10 +43,6 @@ jest.mock('../actions/errorUtils', () => ({
     });
   })),
 }));
-
-// Mock fetch globally
-const mockFetch = jest.fn();
-global.fetch = mockFetch;
 
 describe('BatchActions', () => {
   const defaultProps = createDefaultBatchActionsProps();
