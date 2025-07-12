@@ -353,6 +353,7 @@ describe('Middleware Route Protection', () => {
         '/dashboard/:path*',
         '/characters/:path*',
         '/encounters/:path*',
+        '/parties/:path*',
         '/combat/:path*',
         '/settings/:path*',
         '/api/users/:path*',
