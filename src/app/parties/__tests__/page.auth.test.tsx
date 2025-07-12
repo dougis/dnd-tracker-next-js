@@ -11,6 +11,8 @@ import { auth } from '@/lib/auth';
 import PartiesPage from '../page';
 import { createMockUser } from '@/__tests__/utils/mock-factories';
 import { setupAuthenticatedMocks, expectRedirectToSignin } from '@/__tests__/utils/auth-mocks';
+import { createUnauthenticatedScenarios, createUserTestCases, createPageStructureExpectation } from '@/__tests__/utils/page-auth-helpers';
+import { createParameterizedTest } from '@/__tests__/utils/test-runners';
 
 // Mock the auth function from Next Auth
 jest.mock('@/lib/auth', () => ({
@@ -41,19 +43,17 @@ describe('PartiesPage Authentication', () => {
   });
 
   describe('Authentication Protection', () => {
-    const unauthenticatedScenarios = [
-      { description: 'user is not authenticated', session: null },
-      { description: 'session exists but no user', session: {} },
-      { description: 'user object is null', session: { user: null } },
-      { description: 'user object is undefined', session: { user: undefined } }
-    ];
-
-    unauthenticatedScenarios.forEach(({ description, session }) => {
-      it(`should redirect to signin when ${description}`, async () => {
+    createParameterizedTest(
+      'should redirect to signin when',
+      createUnauthenticatedScenarios().map(scenario => ({
+        description: scenario.description,
+        data: scenario.session
+      })),
+      async (session) => {
         mockAuth.mockResolvedValue(session as any);
         await expectRedirectToSignin(PartiesPage, mockAuth);
-      });
-    });
+      }
+    );
   });
 
   // Helper function for authenticated tests
@@ -103,28 +103,7 @@ describe('PartiesPage Authentication', () => {
     });
 
     it('should handle various user object formats', async () => {
-      const testCases = [
-        {
-          description: 'user with only id',
-          session: { user: { id: 'test-id' } },
-          shouldRedirect: false,
-        },
-        {
-          description: 'user with id and email',
-          session: { user: { id: 'test-id', email: 'test@example.com' } },
-          shouldRedirect: false,
-        },
-        {
-          description: 'user with empty id',
-          session: { user: { id: '' } },
-          shouldRedirect: true,
-        },
-        {
-          description: 'user without id property',
-          session: { user: { email: 'test@example.com' } },
-          shouldRedirect: true,
-        },
-      ];
+      const testCases = createUserTestCases();
 
       for (const testCase of testCases) {
         jest.clearAllMocks();
@@ -148,30 +127,7 @@ describe('PartiesPage Authentication', () => {
       expect(typeof result).toBe('object');
 
       // The page should return a JSX element with the expected structure
-      expect(result).toEqual(
-        expect.objectContaining({
-          type: 'div',
-          props: expect.objectContaining({
-            className: 'space-y-6',
-            children: expect.arrayContaining([
-              expect.objectContaining({
-                type: 'div',
-                props: expect.objectContaining({
-                  children: expect.arrayContaining([
-                    expect.objectContaining({
-                      type: 'h1',
-                      props: expect.objectContaining({
-                        children: 'Parties',
-                      }),
-                    }),
-                  ]),
-                }),
-              }),
-              expect.any(Object), // PartyListView component
-            ]),
-          }),
-        })
-      );
+      expect(result).toEqual(createPageStructureExpectation());
     });
   });
 });

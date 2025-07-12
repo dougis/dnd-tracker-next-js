@@ -7,8 +7,15 @@
 
 import { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { createMockRequest, createMockURLForRedirect } from './utils/mock-factories';
 import { setupEnvironment, resetAllMocks } from './utils/test-setup';
+import { createIterativeTestRunner } from './utils/test-runners';
+import {
+  executeMiddlewareTest,
+  testRedirectFlow,
+  expectStandardAPIResponse,
+  expectAuthenticationCheck,
+  expectRedirectWithCallback
+} from './utils/middleware-test-helpers';
 
 // Mock NextAuth JWT module
 jest.mock('next-auth/jwt', () => ({
@@ -53,21 +60,10 @@ function setupAPIUnauthenticatedMocks() {
   mockJson.mockReturnValue({ json: { error: 'Authentication required' }, status: 401 });
 }
 
-function expectAuthenticationCall(request: NextRequest) {
-  expect(mockGetToken).toHaveBeenCalledWith({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
-}
 
 async function testProtectedRoute(pathname: string) {
-  const { middleware } = await import('../middleware');
-  const request = createMockRequest(pathname);
-  setupUnauthenticatedMocks();
-
-  await middleware(request);
-
-  expectAuthenticationCall(request);
+  const { request } = await executeMiddlewareTest(pathname, setupUnauthenticatedMocks);
+  expectAuthenticationCheck(request, mockGetToken);
 }
 
 describe('Middleware Parties Route Protection', () => {
@@ -92,28 +88,16 @@ describe('Middleware Parties Route Protection', () => {
         '/parties/abc/encounters/active',
       ];
 
-      for (const pathname of nestedRoutes) {
-        await testProtectedRoute(pathname);
-
-        // Reset for next iteration
-        resetAllMocks(mockRedirect, mockGetToken);
-      }
+      const runTest = createIterativeTestRunner([mockRedirect, mockGetToken]);
+      await runTest(nestedRoutes, testProtectedRoute);
     });
   });
 
   describe('Parties API Route Protection', () => {
     async function testProtectedAPIRoute(pathname: string) {
-      const { middleware } = await import('../middleware');
-      const request = createMockRequest(pathname);
-      setupAPIUnauthenticatedMocks();
-
-      await middleware(request);
-
-      expectAuthenticationCall(request);
-      expect(mockJson).toHaveBeenCalledWith(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      const { request } = await executeMiddlewareTest(pathname, setupAPIUnauthenticatedMocks);
+      expectAuthenticationCheck(request, mockGetToken);
+      expectStandardAPIResponse(mockJson);
     }
 
     it('should protect /api/parties routes', async () => {
@@ -128,33 +112,17 @@ describe('Middleware Parties Route Protection', () => {
         '/api/parties/789/characters',
       ];
 
-      for (const pathname of apiRoutes) {
-        await testProtectedAPIRoute(pathname);
-
-        // Reset for next iteration
-        resetAllMocks(mockGetToken, mockJson);
-      }
+      const runTest = createIterativeTestRunner([mockGetToken, mockJson]);
+      await runTest(apiRoutes, testProtectedAPIRoute);
     });
   });
 
   describe('Authentication Flow for Parties Routes', () => {
 
     it('should redirect unauthenticated users from /parties to signin with callback', async () => {
-      const { middleware } = await import('../middleware');
-      const request = createMockRequest('/parties');
-      const { mockUrl, originalURL } = createMockURLForRedirect('/parties');
+      const { mockUrl, originalURL } = await testRedirectFlow('/parties', mockGetToken, mockRedirect);
 
-      mockGetToken.mockResolvedValue(null);
-
-
-      mockRedirect.mockReturnValue({ type: 'redirect' });
-
-      await middleware(request);
-
-      expect(mockUrl.searchParams.set).toHaveBeenCalledWith(
-        'callbackUrl',
-        encodeURI('http://localhost:3000/parties')
-      );
+      expectRedirectWithCallback(mockUrl, '/parties');
       expect(mockRedirect).toHaveBeenCalledWith(mockUrl);
 
       // Restore original URL
@@ -190,21 +158,10 @@ describe('Middleware Parties Route Protection', () => {
     });
 
     it('should redirect from nested parties routes with correct callback URL', async () => {
-      const { middleware } = await import('../middleware');
       const pathname = '/parties/123/edit';
-      const request = createMockRequest(pathname);
-      const { mockUrl, originalURL } = createMockURLForRedirect(pathname);
+      const { mockUrl, originalURL } = await testRedirectFlow(pathname, mockGetToken, mockRedirect);
 
-      mockGetToken.mockResolvedValue(null);
-
-      mockRedirect.mockReturnValue({ type: 'redirect' });
-
-      await middleware(request);
-
-      expect(mockUrl.searchParams.set).toHaveBeenCalledWith(
-        'callbackUrl',
-        encodeURI(`http://localhost:3000${pathname}`)
-      );
+      expectRedirectWithCallback(mockUrl, pathname);
       expect(mockRedirect).toHaveBeenCalledWith(mockUrl);
 
       // Restore original URL
