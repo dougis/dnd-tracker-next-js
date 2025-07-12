@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { BatchActions } from './BatchActions';
 import { Pagination } from '@/components/shared/Pagination';
 import { useEncounterData } from './hooks/useEncounterData';
@@ -18,6 +19,7 @@ import {
 
 export function EncounterListView() {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const router = useRouter();
 
   const {
     filters,
@@ -54,8 +56,7 @@ export function EncounterListView() {
   } = useEncounterSelection(encounters);
 
   const handleCreateEncounter = () => {
-    // TODO: Navigate to encounter creation
-    console.log('Create new encounter');
+    router.push('/encounters/create');
   };
 
   if (error) {

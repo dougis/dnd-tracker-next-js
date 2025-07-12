@@ -1,3 +1,4 @@
+import { useRouter } from 'next/navigation';
 import { shouldPreventRowClick } from './tableUtils';
 import {
   SelectionCell,
@@ -24,12 +25,13 @@ export function TableRow({
   onSelect,
   onRefetch,
 }: TableRowProps) {
+  const router = useRouter();
+
   const handleRowClick = (e: React.MouseEvent) => {
     if (shouldPreventRowClick(e.target)) {
       return;
     }
-    // TODO: Navigate to encounter detail view
-    console.log('View encounter:', encounter.id);
+    router.push(`/encounters/${encounter.id}`);
   };
 
   return (

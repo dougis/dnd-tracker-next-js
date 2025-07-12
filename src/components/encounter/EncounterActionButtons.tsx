@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -30,8 +31,9 @@ export function EncounterActionButtons({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
-  const navigationHandlers = createNavigationHandlers(encounter);
+  const navigationHandlers = createNavigationHandlers(encounter, router);
   const { handleDuplicate, handleDelete: deleteService } = createServiceHandlers(encounter, onRefetch, toast);
 
   const handleDelete = async () => {
