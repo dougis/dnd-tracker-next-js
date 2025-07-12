@@ -52,6 +52,32 @@ export const createMockRequest = (data: any, method: 'PATCH' | 'GET' | 'POST' | 
   }),
 }) as unknown as NextRequest;
 
+/**
+ * Creates a mock user object for testing
+ */
+export const createMockUser = (overrides: Partial<any> = {}) => ({
+  id: SHARED_API_TEST_CONSTANTS.TEST_USER_ID,
+  email: SHARED_API_TEST_CONSTANTS.TEST_EMAIL,
+  displayName: 'John Doe',
+  timezone: 'America/New_York',
+  dndEdition: 'Pathfinder 2e',
+  experienceLevel: 'experienced' as const,
+  primaryRole: 'dm' as const,
+  ...overrides,
+});
+
+/**
+ * Creates a standard request body for profile updates
+ */
+export const createRequestBody = (overrides: Partial<any> = {}) => ({
+  displayName: 'John Doe',
+  timezone: 'America/New_York',
+  dndEdition: 'Pathfinder 2e',
+  experienceLevel: 'experienced',
+  primaryRole: 'dm',
+  ...overrides,
+});
+
 // ============================================================================
 // RESPONSE ASSERTION UTILITIES
 // ============================================================================
@@ -131,6 +157,21 @@ export const setupAPITest = () => {
 };
 
 /**
+ * Standard beforeEach setup for API route tests with authentication
+ */
+export const setupAPITestWithAuth = (
+  mockAuth: jest.MockedFunction<any>,
+  mockUserService: jest.Mocked<any>,
+  userId: string = SHARED_API_TEST_CONSTANTS.TEST_USER_ID
+) => {
+  setupAPITest();
+  mockAuth.mockResolvedValue({
+    ...createMockSession(userId),
+    expires: '2024-12-31',
+  });
+};
+
+/**
  * Execute a test request and return both response and parsed data
  */
 export const executeTestRequest = async (
@@ -141,4 +182,38 @@ export const executeTestRequest = async (
   const response = await handler(request, params);
   const data = await response.json();
   return { response, data };
+};
+
+// ============================================================================
+// API ROUTE EXECUTION HELPERS
+// ============================================================================
+
+/**
+ * Standard factory for API route test execution functions
+ */
+export const createRouteTestExecutor = (
+  handler: Function,
+  baseUrl: string = '/api/users'
+) => {
+  return async (
+    userId: string = SHARED_API_TEST_CONSTANTS.TEST_USER_ID,
+    requestData?: any,
+    method: 'GET' | 'PATCH' | 'POST' | 'DELETE' = 'GET'
+  ) => {
+    const mockRequest = new NextRequest(`http://localhost:3000${baseUrl}/${userId}/profile`, {
+      method,
+      body: requestData ? JSON.stringify(requestData) : undefined,
+      headers: {
+        'content-type': 'application/json',
+      },
+    });
+
+    // Mock the json() method for requests with body data
+    if (requestData) {
+      (mockRequest as any).json = jest.fn().mockResolvedValue(requestData);
+    }
+
+    const params = createMockParams(userId);
+    return handler(mockRequest, { params });
+  };
 };

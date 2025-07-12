@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
+import { ZodError } from 'zod';
 import { auth } from '@/lib/auth';
 
 /**
@@ -185,4 +186,72 @@ export async function validateRequestBody(request: Request, requiredFields: stri
   }
 
   return body;
+}
+
+/**
+ * Generic handler for API routes that need validation and service calls
+ * Eliminates duplication across PATCH routes with validation
+ */
+export function createValidatedRouteHandler<T>(
+  schema: any,
+  serviceCall: (_userId: string, _data: T) => Promise<any>,
+  successMessage: string,
+  errorOptions?: {
+    defaultErrorMessage?: string;
+    defaultErrorStatus?: number;
+  }
+) {
+  return async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+    return withAuthAndAccess(params, async (userId) => {
+      try {
+        const body = await request.json();
+        const validatedData = schema.parse(body);
+
+        const result = await serviceCall(userId, validatedData);
+        return handleUserServiceResult(result, successMessage, errorOptions);
+      } catch (error) {
+        if (error instanceof ZodError) {
+          return handleZodValidationError(error);
+        }
+        throw error; // Let withAuthAndAccess handle unexpected errors
+      }
+    });
+  };
+}
+
+/**
+ * Generic handler for simple GET routes
+ */
+export function createGetRouteHandler(
+  serviceCall: (_userId: string) => Promise<any>,
+  errorOptions?: {
+    defaultErrorMessage?: string;
+    defaultErrorStatus?: number;
+  }
+) {
+  return async (_request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+    return withAuthAndAccess(params, async (userId) => {
+      const result = await serviceCall(userId);
+      return handleUserServiceResult(result, undefined, errorOptions);
+    });
+  };
+}
+
+/**
+ * Generic handler for DELETE routes
+ */
+export function createDeleteRouteHandler(
+  serviceCall: (_userId: string) => Promise<any>,
+  successMessage: string,
+  errorOptions?: {
+    defaultErrorMessage?: string;
+    defaultErrorStatus?: number;
+  }
+) {
+  return async (_request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+    return withAuthAndAccess(params, async (userId) => {
+      const result = await serviceCall(userId);
+      return handleUserServiceResult(result, successMessage, errorOptions);
+    });
+  };
 }

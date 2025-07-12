@@ -1,16 +1,14 @@
-import { NextRequest } from 'next/server';
 import { DELETE } from '../route';
 import { UserService } from '@/lib/services/UserService';
 import { auth } from '@/lib/auth';
 import {
   SHARED_API_TEST_CONSTANTS,
-  createMockParams,
-  createMockSession,
   expectSuccessResponse,
   expectErrorResponse,
   expectAuthenticationError,
   expectAuthorizationError,
-  setupAPITest
+  setupAPITestWithAuth,
+  createRouteTestExecutor
 } from '@/lib/test-utils/shared-api-test-helpers';
 
 // Mock dependencies
@@ -22,19 +20,10 @@ const mockAuth = auth as jest.MockedFunction<typeof auth>;
 
 describe('DELETE /api/users/[id]/profile', () => {
   const TEST_USER_ID = SHARED_API_TEST_CONSTANTS.TEST_USER_ID;
-  const mockRequest = new NextRequest(`http://localhost:3000/api/users/${TEST_USER_ID}/profile`);
-
-  const executeDeleteRequest = async (userId: string = TEST_USER_ID) => {
-    const params = createMockParams(userId);
-    return DELETE(mockRequest, { params });
-  };
+  const executeDeleteRequest = createRouteTestExecutor(DELETE, '/api/users');
 
   beforeEach(() => {
-    setupAPITest();
-    mockAuth.mockResolvedValue({
-      ...createMockSession(),
-      expires: '2024-12-31',
-    });
+    setupAPITestWithAuth(mockAuth, mockUserService);
   });
 
   describe('Successful deletion', () => {
@@ -65,10 +54,7 @@ describe('DELETE /api/users/[id]/profile', () => {
 
     it('should return 403 when user tries to delete different account', async () => {
       const differentUserId = '507f1f77bcf86cd799439012';
-      mockAuth.mockResolvedValue({
-        ...createMockSession(differentUserId),
-        expires: '2024-12-31',
-      });
+      setupAPITestWithAuth(mockAuth, mockUserService, differentUserId);
 
       const response = await executeDeleteRequest();
 

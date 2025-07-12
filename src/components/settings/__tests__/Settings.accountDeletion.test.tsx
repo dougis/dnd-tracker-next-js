@@ -7,9 +7,8 @@ import { Settings } from '../Settings';
 import { mockSessions, getSettingsSelectors } from './test-helpers';
 import {
   setupSettingsBeforeEach,
-  mockDeleteAccountResponse,
-  mockApiDelay,
-  mockNetworkError
+  setupAccountDeletionModal,
+  createAccountDeletionTestExecutor
 } from './shared-settings-test-setup';
 import '@testing-library/jest-dom';
 
@@ -46,12 +45,14 @@ jest.mock('../hooks/useSettingsForm', () => ({
 describe('Settings Component - Account Deletion', () => {
   const selectors = getSettingsSelectors();
 
-  const setupAccountDeletionModal = () => {
-    render(<Settings />);
-    const deleteButton = selectors.deleteAccountButton();
-    fireEvent.click(deleteButton);
-    return deleteButton;
-  };
+  const openDeletionModal = () => setupAccountDeletionModal(render, fireEvent, screen, selectors, Settings);
+  const deletionExecutor = createAccountDeletionTestExecutor(
+    fireEvent,
+    screen,
+    waitFor,
+    mockFetch,
+    mockSignOut
+  );
 
   beforeEach(() => {
     setupSettingsBeforeEach(mockSessions.free, mockUseSession);
@@ -67,7 +68,7 @@ describe('Settings Component - Account Deletion', () => {
     });
 
     it('should open delete confirmation modal when delete button is clicked', () => {
-      setupAccountDeletionModal();
+      openDeletionModal();
 
       expect(screen.getByRole('button', { name: /confirm delete/i })).toBeInTheDocument();
       expect(screen.getByText('This action cannot be undone')).toBeInTheDocument();
@@ -77,7 +78,7 @@ describe('Settings Component - Account Deletion', () => {
 
   describe('Delete Confirmation Modal', () => {
     beforeEach(() => {
-      setupAccountDeletionModal();
+      openDeletionModal();
     });
 
     it('should display warning message in modal', () => {
@@ -100,102 +101,44 @@ describe('Settings Component - Account Deletion', () => {
 
   describe('Account Deletion Process', () => {
     beforeEach(() => {
-      setupAccountDeletionModal();
+      openDeletionModal();
     });
 
     it('should call delete API when confirm is clicked', async () => {
-      mockDeleteAccountResponse(true, '', mockFetch);
-
-      const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
-      fireEvent.click(confirmButton);
-
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith(
-          '/api/users/1/profile',
-          {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-      });
+      await deletionExecutor.executeSuccessfulDeletion();
     });
 
     it('should sign out user after successful deletion', async () => {
-      mockDeleteAccountResponse(true, '', mockFetch);
-
-      const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
-      fireEvent.click(confirmButton);
-
-      await waitFor(() => {
-        expect(mockSignOut).toHaveBeenCalledWith({
-          callbackUrl: '/',
-          redirect: true,
-        });
-      });
+      await deletionExecutor.executeSuccessfulDeletion();
     });
 
     it('should close modal after successful deletion', async () => {
-      mockDeleteAccountResponse(true, '', mockFetch);
-
-      const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
-      fireEvent.click(confirmButton);
-
+      await deletionExecutor.executeSuccessfulDeletion();
       await waitFor(() => {
         expect(screen.queryByRole('button', { name: /confirm delete/i })).not.toBeInTheDocument();
       });
     });
 
     it('should show error message when deletion fails', async () => {
-      mockDeleteAccountResponse(false, 'Failed to delete account', mockFetch);
-
-      const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
-      fireEvent.click(confirmButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/Failed to delete account/)).toBeInTheDocument();
-      });
-
-      expect(mockSignOut).not.toHaveBeenCalled();
+      await deletionExecutor.executeFailedDeletion('Failed to delete account');
     });
 
     it('should handle network errors gracefully', async () => {
-      mockNetworkError('Network error', mockFetch);
-
-      const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
-      fireEvent.click(confirmButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/An error occurred while deleting your account|Network error/)).toBeInTheDocument();
-      });
-
-      expect(mockSignOut).not.toHaveBeenCalled();
+      await deletionExecutor.executeNetworkError('Network error');
     });
   });
 
   describe('Loading States', () => {
     beforeEach(() => {
-      setupAccountDeletionModal();
+      openDeletionModal();
     });
 
     it('should disable confirm button during deletion', async () => {
-      mockApiDelay(100, mockFetch);
-
-      const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
-      fireEvent.click(confirmButton);
-
-      expect(confirmButton).toBeDisabled();
-      expect(screen.getByText(/deleting/i)).toBeInTheDocument();
+      await deletionExecutor.testLoadingState();
     });
 
     it('should show loading text during deletion', async () => {
-      mockApiDelay(100, mockFetch);
-
-      const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
-      fireEvent.click(confirmButton);
-
-      expect(screen.getByText(/deleting/i)).toBeInTheDocument();
+      await deletionExecutor.testLoadingState();
     });
   });
 });
