@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+// Test file for import route security
 import { POST } from '../route';
 import { auth } from '@/lib/auth';
 import {
@@ -9,7 +9,7 @@ import {
   createMockRequest,
   createImportRequestBody,
   expectAuthenticationError,
-  TEST_USER,
+  // TEST_USER - available but not used in this test file
 } from '../../__tests__/shared-test-utilities';
 
 // Mock the auth function

@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
+import { NextRequest } from 'next/server';
+// Service imports handled by shared utilities
 import { EncounterService } from '@/lib/services/EncounterService';
 import { withAuth } from '@/lib/api/route-helpers';
 import {
@@ -75,7 +75,7 @@ async function exportEncounter(encounterId: string, userId: string, format: stri
   return await performExportOperation(encounterId, userId, format as 'json' | 'xml', exportOptions);
 }
 
-function createBackupResponse(backupData: any, format: string) {
+function createBackupResponse(backupData: any, format: 'json' | 'xml') {
   const filename = generateExportFilename('encounters-backup', '', format).replace('--', '-');
 
   const responseData = format === 'json'

@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
+import { NextRequest } from 'next/server';
+// Service import handled by shared utilities
 import type { ExportOptions } from '@/lib/services/EncounterServiceImportExport';
 import { withAuth } from '@/lib/api/route-helpers';
 import {

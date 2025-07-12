@@ -1,7 +1,7 @@
-import { NextRequest } from 'next/server';
+// Test file for import route
 import { POST } from '../route';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
-import { auth } from '@/lib/auth';
+// Auth utilities available from shared-test-utilities
 import {
   setupEncounterApiTest,
   createMockRequest,
@@ -9,12 +9,12 @@ import {
   createDefaultImportOptions,
   mockImportSuccess,
   mockImportFailure,
-  mockServiceException,
+  // mockServiceException - available but not used in this test
   expectImportSuccess,
   expectErrorResponse,
-  expectValidationError,
+  // expectValidationError - available but not used in this test
   expectServerError,
-  testAuthenticationRequired,
+  // testAuthenticationRequired - available but not used in this test
   testValidationError,
   testServiceException,
   createMockImportData,
@@ -27,7 +27,7 @@ jest.mock('@/lib/services/EncounterServiceImportExport');
 jest.mock('@/lib/auth');
 
 const mockService = EncounterServiceImportExport as jest.Mocked<typeof EncounterServiceImportExport>;
-const mockAuth = auth as jest.MockedFunction<typeof auth>;
+// Auth mocking handled by shared utilities
 
 
 describe('/api/encounters/import', () => {
@@ -40,7 +40,7 @@ describe('/api/encounters/import', () => {
       // Arrange
       const mockImportData = createMockImportData();
       const mockEncounter = createMockEncounter();
-      
+
       mockImportSuccess(mockService, mockEncounter);
 
       const requestBody = createImportRequestBody(
@@ -75,7 +75,7 @@ describe('/api/encounters/import', () => {
       // Arrange
       const mockEncounter = createMockEncounter();
       const xmlData = createMockXmlData();
-      
+
       mockImportSuccess(mockService, mockEncounter);
 
       const requestBody = createImportRequestBody(xmlData, 'xml', {
@@ -100,7 +100,7 @@ describe('/api/encounters/import', () => {
       // Arrange
       const mockImportData = createMockImportData();
       const mockEncounter = createMockEncounter({ name: 'Test', participants: [] });
-      
+
       mockImportSuccess(mockService, mockEncounter);
 
       const requestBody = createImportRequestBody(JSON.stringify(mockImportData));
@@ -119,7 +119,7 @@ describe('/api/encounters/import', () => {
     it('should return error when import fails', async () => {
       // Arrange
       const mockImportData = createMockImportData();
-      
+
       mockImportFailure(mockService, {
         message: 'Import failed',
         code: 'IMPORT_ERROR',
@@ -139,7 +139,7 @@ describe('/api/encounters/import', () => {
     it('should handle service exceptions', async () => {
       // Arrange
       const mockImportData = createMockImportData();
-      
+
       await testServiceException(
         POST,
         createImportRequestBody(JSON.stringify(mockImportData)),
@@ -150,7 +150,7 @@ describe('/api/encounters/import', () => {
     it('should validate request body', async () => {
       // Arrange
       const invalidRequestBody = createImportRequestBody(''); // Empty data
-      
+
       // Act & Assert
       await testValidationError(POST, invalidRequestBody, 'Import data is required');
     });
@@ -158,7 +158,7 @@ describe('/api/encounters/import', () => {
     it('should handle invalid JSON body', async () => {
       // Arrange
       setupEncounterApiTest();
-      
+
       const request = createMockRequest({ body: undefined });
       request.json = jest.fn().mockRejectedValue(new Error('Invalid JSON'));
 

@@ -1,6 +1,6 @@
 /**
  * Mock Data Factories for Encounter API Testing
- * 
+ *
  * This module provides factory functions for creating consistent test data
  * across encounter API route tests to eliminate code duplication.
  */
@@ -195,10 +195,10 @@ export const createMultiParticipantEncounter = (
   overrides: Partial<MockEncounter> = {}
 ): MockEncounter => {
   const participants = [
-    ...Array.from({ length: pcCount }, (_, i) => 
+    ...Array.from({ length: pcCount }, (_, i) =>
       createPCParticipant({ name: `Player ${i + 1}` })
     ),
-    ...Array.from({ length: npcCount }, (_, i) => 
+    ...Array.from({ length: npcCount }, (_, i) =>
       createNPCParticipant({ name: `Enemy ${i + 1}` })
     ),
   ];
@@ -380,7 +380,7 @@ export const createXmlEncounter = (encounter: MockEncounter = createBasicEncount
  */
 export const createXmlBackupData = (encounters: MockEncounter[] = [createBasicEncounter()]): string => {
   const metadata = createBackupMetadata(encounters.length, { format: 'xml' });
-  
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <encounterBackup>
   <metadata>
@@ -406,7 +406,7 @@ export const createXmlBackupData = (encounters: MockEncounter[] = [createBasicEn
  */
 export const createInvalidEncounterData = (type: 'missing_name' | 'invalid_difficulty' | 'negative_hp' = 'missing_name') => {
   const base = createBasicEncounter();
-  
+
   switch (type) {
     case 'missing_name':
       return { ...base, name: '' };
@@ -429,7 +429,7 @@ export const createInvalidEncounterData = (type: 'missing_name' | 'invalid_diffi
  */
 export const createCorruptedImportData = (type: 'missing_metadata' | 'missing_encounter' | 'invalid_structure' = 'missing_metadata') => {
   const base = createImportData();
-  
+
   switch (type) {
     case 'missing_metadata':
       return { encounter: base.encounter };

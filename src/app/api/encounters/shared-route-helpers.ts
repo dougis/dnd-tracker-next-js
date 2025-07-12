@@ -1,6 +1,6 @@
 /**
  * Shared Route Helpers for Encounter API Routes
- * 
+ *
  * This module consolidates common patterns used across encounter API route
  * implementations to eliminate code duplication.
  */
@@ -108,7 +108,7 @@ export function createExportResponse(
   filename: string
 ): NextResponse {
   const contentType = format === 'json' ? 'application/json' : 'application/xml';
-  
+
   return new NextResponse(data, {
     status: 200,
     headers: {
@@ -138,13 +138,14 @@ export function generateExportFilename(
  */
 export async function processBatchItems<T, R>(
   items: T[],
-  processor: (item: T, index: number) => Promise<R>,
+  processor: (_item: T, _index: number) => Promise<R>,
   options: {
     collectErrors?: boolean;
     maxConcurrency?: number;
   } = {}
 ): Promise<{ results: R[]; errors: any[] }> {
-  const { collectErrors = true, maxConcurrency = 1 } = options;
+  const { collectErrors = true } = options;
+  // maxConcurrency may be used for future optimization
   const results: R[] = [];
   const errors: any[] = [];
 

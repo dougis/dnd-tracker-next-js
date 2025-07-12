@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import { withAuth } from '@/lib/api/route-helpers';
-import { handleApiError, createErrorResponse } from '../shared-route-helpers';
+import { handleApiError, createErrorResponse } from '../../shared-route-helpers';
 import { z } from 'zod';
 
 const shareBodySchema = z.object({

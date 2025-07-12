@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
+import { NextRequest } from 'next/server';
+// Service imports handled by shared utilities
 import { withAuth } from '@/lib/api/route-helpers';
 import {
   restoreBodySchema,
@@ -38,7 +38,6 @@ export async function POST(request: NextRequest) {
     }
   });
 }
-
 
 
 async function processEncounters(backupData: any, validatedBody: any, importOptions: any) {
@@ -95,6 +94,5 @@ function addImportError(error: any, encounter: any, index: number, errors: any[]
     error: error instanceof Error ? error.message : 'Unknown error',
   });
 }
-
 
 

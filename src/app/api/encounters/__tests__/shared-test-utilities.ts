@@ -1,6 +1,6 @@
 /**
  * Shared Test Utilities for Encounter API Routes
- * 
+ *
  * This module consolidates common test patterns and utilities used across
  * encounter API route tests to eliminate code duplication.
  */
@@ -117,7 +117,7 @@ export const createMockEncounter = (overrides: any = {}) => ({
 /**
  * Creates standard XML data for testing
  */
-export const createMockXmlData = () => 
+export const createMockXmlData = () =>
   '<encounter><name>Test XML Encounter</name><description>XML import test</description></encounter>';
 
 /**
@@ -130,7 +130,7 @@ export const createMockBackupData = (encounterCount: number = 1) => ({
     encounterCount,
     format: 'json',
   },
-  encounters: Array.from({ length: encounterCount }, (_, index) => 
+  encounters: Array.from({ length: encounterCount }, (_, index) =>
     createMockImportData({
       encounter: {
         name: `Encounter ${index + 1}`,
@@ -207,10 +207,10 @@ export const createInvalidJsonRequest = (): NextRequest => {
     method: 'POST',
     body: undefined, // Will cause JSON parsing to fail
   });
-  
+
   // Override json method to throw error
   request.json = jest.fn().mockRejectedValue(new Error('Invalid JSON'));
-  
+
   return request;
 };
 
@@ -408,17 +408,17 @@ export const expectExportSuccess = async (
   expectedFormat: 'json' | 'xml' = 'json'
 ) => {
   expect(response.status).toBe(200);
-  
+
   const contentType = response.headers.get('Content-Type');
   if (expectedFormat === 'json') {
     expect(contentType).toBe('application/json');
   } else {
     expect(contentType).toBe('application/xml');
   }
-  
+
   expect(response.headers.get('Content-Disposition')).toContain('attachment');
   expect(response.headers.get('Content-Disposition')).toContain(`.${expectedFormat}`);
-  
+
   const responseData = await response.text();
   expect(responseData).toBeTruthy();
   return responseData;
@@ -447,14 +447,14 @@ export const expectRestoreSuccess = async (
  */
 export const setupEncounterApiTest = () => {
   jest.clearAllMocks();
-  
+
   // Return mock functions for common use
   const mockAuth = auth as jest.MockedFunction<typeof auth>;
   const mockService = EncounterServiceImportExport as jest.Mocked<typeof EncounterServiceImportExport>;
-  
+
   // Default to successful authentication
   mockAuthSuccess(mockAuth);
-  
+
   return {
     mockAuth,
     mockService,
@@ -471,10 +471,10 @@ export const testAuthenticationRequired = async (
 ) => {
   const { mockAuth } = setupEncounterApiTest();
   mockAuthFailure(mockAuth);
-  
+
   const request = createMockRequest({ body: requestBody, method });
   const response = await handler(request);
-  
+
   await expectAuthenticationError(response);
   return response;
 };
@@ -488,10 +488,10 @@ export const testValidationError = async (
   expectedField?: string
 ) => {
   setupEncounterApiTest();
-  
+
   const request = createMockRequest({ body: invalidBody });
   const response = await handler(request);
-  
+
   await expectValidationError(response, expectedField);
   return response;
 };
@@ -506,10 +506,10 @@ export const testServiceException = async (
 ) => {
   const { mockService } = setupEncounterApiTest();
   mockServiceException(mockService, errorMessage);
-  
+
   const request = createMockRequest({ body: requestBody });
   const response = await handler(request);
-  
+
   await expectServerError(response);
   return response;
 };

@@ -1,7 +1,7 @@
-import { NextRequest } from 'next/server';
+// Test file for export route
 import { GET } from '../route';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
-import { auth } from '@/lib/auth';
+// Auth utilities available from shared-test-utilities
 import {
   setupEncounterApiTest,
   createMockRequest,
@@ -18,7 +18,7 @@ jest.mock('@/lib/services/EncounterServiceImportExport');
 jest.mock('@/lib/auth');
 
 const mockService = EncounterServiceImportExport as jest.Mocked<typeof EncounterServiceImportExport>;
-const mockAuth = auth as jest.MockedFunction<typeof auth>;
+// Auth mocking handled by shared utilities
 
 describe('/api/encounters/[id]/export', () => {
   beforeEach(() => {
