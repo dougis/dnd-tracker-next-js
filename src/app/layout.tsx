@@ -4,6 +4,7 @@ import './globals.css';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ThemeProvider } from '@/components/theme-provider';
 import { SessionProvider } from '@/components/providers/SessionProvider';
+import { Toaster } from 'sonner';
 import { auth } from '@/lib/auth';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -26,6 +27,7 @@ export default async function RootLayout({
         <SessionProvider session={session}>
           <ThemeProvider defaultTheme="system" storageKey="dnd-tracker-theme">
             <AppLayout>{children}</AppLayout>
+            <Toaster />
           </ThemeProvider>
         </SessionProvider>
       </body>

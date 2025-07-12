@@ -1,38 +1,62 @@
 'use client';
 
-// TODO: Replace with proper toast implementation (e.g., react-hot-toast or shadcn/ui toast)
-interface ToastProps {
+import { toast } from 'sonner';
+
+export interface ToastProps {
   title: string;
   description?: string;
   variant?: 'default' | 'destructive';
+  duration?: number;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
-const formatMessage = (title: string, description?: string): string => {
-  return `${title}${description ? ': ' + description : ''}`;
+// Helper function to build options object
+const buildToastOptions = (description?: string, duration?: number, action?: ToastProps['action']) => {
+  const options: any = {};
+
+  if (description !== undefined && description !== null) {
+    options.description = description;
+  }
+
+  if (duration !== undefined && duration !== null) {
+    options.duration = duration;
+  }
+
+  if (action) {
+    options.action = action;
+  }
+
+  return Object.keys(options).length > 0 ? options : undefined;
 };
 
-const logMessage = (message: string, isError: boolean): void => {
-  if (isError) {
-    console.error('[Toast Error]', message);
-  } else {
-    console.log('[Toast]', message);
-  }
-};
+// Helper function to call appropriate toast method
+const callToastMethod = (variant: ToastProps['variant'], title: string, options?: any) => {
+  const toastMethod = variant === 'destructive' ? toast.error :
+                     variant === 'default' ? toast.success :
+                     toast;
 
-const showAlert = (message: string, isError: boolean): void => {
-  if (isError) {
-    alert(`Error: ${message}`);
-  }
+  return options ? toastMethod(title, options) : toastMethod(title);
 };
 
 export function useToast() {
-  const toast = ({ title, description, variant = 'default' }: ToastProps) => {
-    const message = formatMessage(title, description);
-    const isError = variant === 'destructive';
-
-    logMessage(message, isError);
-    showAlert(message, isError);
+  const showToast = ({ title, description, variant, duration, action }: ToastProps) => {
+    const options = buildToastOptions(description, duration, action);
+    callToastMethod(variant, title, options);
   };
 
-  return { toast };
+  const dismiss = (id?: string) => {
+    if (id !== undefined) {
+      toast.dismiss(id);
+    } else {
+      toast.dismiss();
+    }
+  };
+
+  return {
+    toast: showToast,
+    dismiss
+  };
 }
