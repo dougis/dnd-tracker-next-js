@@ -1,4 +1,5 @@
 import { UserServiceDatabase } from '../UserServiceDatabase';
+import { TestPasswordConstants } from '../../test-utils/password-constants';
 
 describe('UserServiceDatabase - Comprehensive Tests', () => {
   let mockUser: any;
@@ -446,7 +447,7 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
 
   describe('updatePasswordAndClearTokens', () => {
     it('should update password hash and clear reset tokens', async () => {
-      const newPassword = 'NewPassword123!';
+      const newPassword = TestPasswordConstants.NEW_PASSWORD;
 
       await UserServiceDatabase.updatePasswordAndClearTokens(
         mockUser,

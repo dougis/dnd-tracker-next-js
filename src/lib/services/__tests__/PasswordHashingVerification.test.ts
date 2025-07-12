@@ -1,4 +1,5 @@
 import { hashPassword, comparePassword, isPasswordHashed, validatePasswordStrength } from '../../utils/password-security';
+import { TestPasswordConstants } from '../../test-utils/password-constants';
 
 /**
  * Critical Security Test: Password Hashing Verification
@@ -11,7 +12,7 @@ describe('Password Hashing Security Verification', () => {
 
   describe('Password Security Utilities', () => {
     it('should hash password correctly', async () => {
-      const plainPassword = 'TestPassword123!';
+      const plainPassword = TestPasswordConstants.VALID_PASSWORD;
 
       // Before hashing, password should not be considered hashed
       expect(isPasswordHashed(plainPassword)).toBe(false);
@@ -34,7 +35,7 @@ describe('Password Hashing Security Verification', () => {
     });
 
     it('should not rehash already hashed passwords', async () => {
-      const plainPassword = 'TestPassword123!';
+      const plainPassword = TestPasswordConstants.VALID_PASSWORD;
       const hashedPassword = await hashPassword(plainPassword);
 
       // Attempting to hash an already hashed password should throw an error
@@ -42,8 +43,8 @@ describe('Password Hashing Security Verification', () => {
     });
 
     it('should validate password strength requirements', async () => {
-      const strongPassword = 'StrongPassword123!';
-      const weakPassword = 'weak';
+      const strongPassword = TestPasswordConstants.STRONG_PASSWORD;
+      const weakPassword = TestPasswordConstants.WEAK_PASSWORD;
 
       // Strong password should pass validation
       const strongValidation = validatePasswordStrength(strongPassword);
@@ -59,7 +60,7 @@ describe('Password Hashing Security Verification', () => {
     });
 
     it('should authenticate user with hashed password comparison', async () => {
-      const plainPassword = 'AuthTestPassword123!';
+      const plainPassword = TestPasswordConstants.AUTH_TEST_PASSWORD;
 
       // Hash the password
       const hashedPassword = await hashPassword(plainPassword);
@@ -74,8 +75,8 @@ describe('Password Hashing Security Verification', () => {
     });
 
     it('should handle password changes securely', async () => {
-      const originalPassword = 'OriginalPassword123!';
-      const newPassword = 'NewPassword123!';
+      const originalPassword = TestPasswordConstants.ORIGINAL_PASSWORD;
+      const newPassword = TestPasswordConstants.NEW_PASSWORD;
 
       // Hash both passwords
       const originalHash = await hashPassword(originalPassword);
@@ -124,7 +125,7 @@ describe('Password Hashing Security Verification', () => {
     });
 
     it('should use proper bcrypt salt rounds', async () => {
-      const password = 'SaltTestPassword123!';
+      const password = TestPasswordConstants.SALT_TEST_PASSWORD;
 
       // Hash the password
       const hashedPassword = await hashPassword(password);

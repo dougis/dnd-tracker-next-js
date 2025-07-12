@@ -8,6 +8,7 @@
 // Import real modules without mocks
 import bcrypt from 'bcryptjs';
 import { validatePasswordStrength, isPasswordHashed } from '../../utils/password-security';
+import { TestPasswordConstants } from '../../test-utils/password-constants';
 
 // Mock only the database connection, not the models
 jest.mock('../../db', () => ({
@@ -65,7 +66,7 @@ function createTestUser(data: Partial<TestUser>): TestUser {
 describe('Password Hashing Integration Tests', () => {
   describe('User Model Password Hashing Simulation', () => {
     it('should hash password on user creation', async () => {
-      const plainPassword = 'TestPassword123!';
+      const plainPassword = TestPasswordConstants.VALID_PASSWORD;
 
       const user = createTestUser({
         passwordHash: plainPassword,
@@ -94,7 +95,7 @@ describe('Password Hashing Integration Tests', () => {
     });
 
     it('should not rehash already hashed passwords', async () => {
-      const plainPassword = 'TestPassword123!';
+      const plainPassword = TestPasswordConstants.VALID_PASSWORD;
       const preHashedPassword = await bcrypt.hash(plainPassword, 12);
 
       const user = createTestUser({
@@ -114,7 +115,7 @@ describe('Password Hashing Integration Tests', () => {
     });
 
     it('should enforce minimum password length', async () => {
-      const shortPassword = 'short';
+      const shortPassword = TestPasswordConstants.SHORT_PASSWORD;
 
       const user = createTestUser({
         passwordHash: shortPassword,
@@ -220,7 +221,7 @@ describe('Password Hashing Integration Tests', () => {
     });
 
     it('should use secure bcrypt salt rounds', async () => {
-      const password = 'TestSaltRounds123!';
+      const password = TestPasswordConstants.SALT_TEST_PASSWORD;
 
       const user = createTestUser({
         passwordHash: password,
@@ -271,7 +272,7 @@ describe('Password Hashing Integration Tests', () => {
       };
 
       // Test each security requirement
-      const password = 'SecurityCompliantPassword123!';
+      const password = TestPasswordConstants.SECURITY_COMPLIANT_PASSWORD;
       const user = createTestUser({ passwordHash: password });
 
       // Test bcrypt usage and salt rounds
