@@ -1,0 +1,64 @@
+# fly.toml production configuration for dnd-tracker-next-js
+#
+# Production deployment configuration with enhanced safety measures
+#
+
+app = 'dnd-tracker-next-js-prod'
+primary_region = 'sea'
+
+[build]
+
+[deploy]
+  release_command = "npm run deploy:migrate:production"
+  strategy = "canary"
+  wait_timeout = "10m"
+
+[env]
+  NODE_ENV = "production"
+  MIGRATION_TIMEOUT = "600000"
+  MIGRATION_BACKUP_ENABLED = "true"
+  MIGRATION_DRY_RUN = "false"
+  MIGRATION_REQUIRE_CONFIRMATION = "false"
+  MIGRATION_VALIDATE_ONLY = "false"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ['app']
+
+  [[http_service.checks]]
+    grace_period = "45s"
+    interval = "30s"
+    method = "get"
+    path = "/api/health"
+    timeout = "10s"
+    restart_limit = 6
+
+  [[http_service.checks]]
+    grace_period = "90s"
+    interval = "60s"
+    method = "get"
+    path = "/api/health/migrations"
+    timeout = "20s"
+    restart_limit = 3
+
+  [[http_service.checks]]
+    grace_period = "30s"
+    interval = "60s"
+    method = "get"
+    path = "/api/health/database"
+    timeout = "15s"
+    restart_limit = 3
+
+[[vm]]
+  memory = '2gb'
+  cpu_kind = 'shared'
+  cpus = 2
+  memory_mb = 2048
+
+[metrics]
+  port = 9091
+  path = "/metrics"
