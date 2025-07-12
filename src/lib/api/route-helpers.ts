@@ -24,11 +24,11 @@ export async function validateAuth() {
  * This eliminates code duplication across API routes
  */
 export async function withAuth<T>(
-  callback: (userId: string) => Promise<T>
+  callback: (_userId: string) => Promise<T>
 ): Promise<T | NextResponse> {
   const { error: authError, session } = await validateAuth();
   if (authError) return authError;
-  
+
   return await callback(session!.user.id);
 }
 
