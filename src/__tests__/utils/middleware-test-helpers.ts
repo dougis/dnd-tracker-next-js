@@ -129,6 +129,16 @@ export async function testNonInterfenceRoutes(
   }
 }
 
+export function setupUnauthenticatedMocks(mockGetToken: jest.MockedFunction<any>, mockRedirect: jest.MockedFunction<any>) {
+  mockGetToken.mockResolvedValue(null);
+  mockRedirect.mockReturnValue({ type: 'redirect' });
+}
+
+export function setupAPIUnauthenticatedMocks(mockGetToken: jest.MockedFunction<any>, mockJson: jest.MockedFunction<any>) {
+  mockGetToken.mockResolvedValue(null);
+  mockJson.mockReturnValue({ json: { error: 'Authentication required' }, status: 401 });
+}
+
 export async function expectMiddlewareMatcherConfiguration() {
   const middlewareModule = await import('../../middleware');
 

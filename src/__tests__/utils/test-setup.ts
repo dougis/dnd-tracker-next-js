@@ -41,15 +41,8 @@ export async function executeMiddlewareTest(
   expectations(jest.fn(), request);
 }
 
-/**
- * Reusable authentication expectation pattern
- */
-export function expectAuthenticationCall(mockGetToken: jest.MockedFunction<any>, request: any) {
-  expect(mockGetToken).toHaveBeenCalledWith({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
-}
+// Note: expectAuthenticationCall moved to middleware-test-helpers.ts as expectAuthenticationCheck
+// Import from there to avoid duplication
 
 /**
  * Reusable redirect expectation pattern
@@ -61,25 +54,8 @@ export function expectRedirectCall(mockRedirect: jest.MockedFunction<any>, mockU
   }
 }
 
-/**
- * Consolidated mock setup for unauthenticated scenarios
- */
-export function createUnauthenticatedMockSetup(mockGetToken: jest.MockedFunction<any>, mockRedirect: jest.MockedFunction<any>) {
-  return () => {
-    mockGetToken.mockResolvedValue(null);
-    mockRedirect.mockReturnValue({ type: 'redirect' });
-  };
-}
-
-/**
- * Consolidated mock setup for API unauthenticated scenarios
- */
-export function createAPIUnauthenticatedMockSetup(mockGetToken: jest.MockedFunction<any>, mockJson: jest.MockedFunction<any>) {
-  return () => {
-    mockGetToken.mockResolvedValue(null);
-    mockJson.mockReturnValue({ json: { error: 'Authentication required' }, status: 401 });
-  };
-}
+// Note: Unauthenticated mock setups moved to middleware-test-helpers.ts to avoid duplication
+// Use the functions there instead
 
 /**
  * Shared mock setup for NextAuth JWT and NextResponse

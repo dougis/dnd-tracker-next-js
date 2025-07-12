@@ -2,13 +2,10 @@
  * Page authentication test helpers to reduce duplication
  */
 
+import { unauthenticatedScenarios } from './auth-mocks';
+
 export function createUnauthenticatedScenarios() {
-  return [
-    { description: 'user is not authenticated', session: null },
-    { description: 'session exists but no user', session: {} },
-    { description: 'user object is null', session: { user: null } },
-    { description: 'user object is undefined', session: { user: undefined } }
-  ];
+  return unauthenticatedScenarios;
 }
 
 export function createUserTestCases() {

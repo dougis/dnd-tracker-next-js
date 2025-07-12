@@ -18,7 +18,9 @@ import {
   testAuthenticatedUserAccess,
   testNonInterfenceRoutes,
   expectMiddlewareMatcherConfiguration,
-  createProtectedRouteTestSuite
+  createProtectedRouteTestSuite,
+  setupUnauthenticatedMocks as setupUnauthenticatedMocksUtil,
+  setupAPIUnauthenticatedMocks as setupAPIUnauthenticatedMocksUtil
 } from './utils/middleware-test-helpers';
 
 // Mock NextAuth JWT module
@@ -53,15 +55,13 @@ beforeEach(() => {
   resetAllMocks(mockRedirect, mockNext, mockJson, mockGetToken);
 });
 
-// Helper functions
+// Helper functions using shared mock utilities
 function setupUnauthenticatedMocks() {
-  mockGetToken.mockResolvedValue(null);
-  mockRedirect.mockReturnValue({ type: 'redirect' });
+  setupUnauthenticatedMocksUtil(mockGetToken, mockRedirect);
 }
 
 function setupAPIUnauthenticatedMocks() {
-  mockGetToken.mockResolvedValue(null);
-  mockJson.mockReturnValue({ json: { error: 'Authentication required' }, status: 401 });
+  setupAPIUnauthenticatedMocksUtil(mockGetToken, mockJson);
 }
 
 
