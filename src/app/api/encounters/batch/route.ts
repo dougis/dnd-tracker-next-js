@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import { EncounterService } from '@/lib/services/EncounterService';
+import { withAuth } from '@/lib/api/route-helpers';
+import { handleApiError } from '../shared-route-helpers';
 import { z } from 'zod';
 
 const batchOperationSchema = z.object({
@@ -25,21 +27,20 @@ const batchOperationSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const validatedBody = batchOperationSchema.parse(body);
+  return withAuth(async (userId: string) => {
+    try {
+      const body = await request.json();
+      const validatedBody = batchOperationSchema.parse(body);
 
-    // TODO: Get user ID from authentication
-    const userId = 'temp-user-id'; // Replace with actual user ID from auth
+      const { operation, encounterIds, options } = validatedBody;
+      const { results, errors } = await processBatchOperation(operation, encounterIds, userId, options);
 
-    const { operation, encounterIds, options } = validatedBody;
-    const { results, errors } = await processBatchOperation(operation, encounterIds, userId, options);
-
-    const response = buildBatchResponse(operation, results, errors, encounterIds.length);
-    return NextResponse.json(response);
-  } catch (error) {
-    return handleBatchError(error);
-  }
+      const response = buildBatchResponse(operation, results, errors, encounterIds.length);
+      return NextResponse.json(response);
+    } catch (error) {
+      return handleApiError(error);
+    }
+  });
 }
 
 async function processBatchOperation(operation: string, encounterIds: string[], userId: string, options: any) {
@@ -113,24 +114,6 @@ function buildBatchResponse(operation: string, results: any[], errors: any[], to
   };
 }
 
-function handleBatchError(error: any): NextResponse {
-  console.error('Batch operation error:', error);
-
-  if (error instanceof z.ZodError) {
-    return NextResponse.json(
-      {
-        error: 'Invalid request data',
-        details: error.errors.map(e => e.message).join(', '),
-      },
-      { status: 400 }
-    );
-  }
-
-  return NextResponse.json(
-    { error: 'Internal server error' },
-    { status: 500 }
-  );
-}
 
 async function handleBatchExport(encounterId: string, userId: string, options: any) {
   const exportOptions = {
