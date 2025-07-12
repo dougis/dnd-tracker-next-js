@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 
 /**
  * Shared API Test Helpers
- * 
+ *
  * This module consolidates common test patterns and utilities used across
  * all API route tests to eliminate code duplication.
  */

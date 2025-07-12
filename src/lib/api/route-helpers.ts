@@ -116,8 +116,8 @@ export function handleUserServiceResult(result: any, successMessage?: string, op
   }
 
   return handleServiceError(
-    result, 
-    options?.defaultErrorMessage || 'Operation failed', 
+    result,
+    options?.defaultErrorMessage || 'Operation failed',
     options?.defaultErrorStatus || 500
   );
 }

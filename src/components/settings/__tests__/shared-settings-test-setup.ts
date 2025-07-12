@@ -2,7 +2,7 @@ import { useSession, signOut } from 'next-auth/react';
 
 /**
  * Shared Settings Test Setup
- * 
+ *
  * This module consolidates common mock setups and utilities used across
  * settings component tests to eliminate code duplication.
  */
@@ -25,13 +25,13 @@ export const mockFetch = jest.fn();
 export function setupSettingsTestMocks() {
   // Mock next-auth
   jest.mock('next-auth/react');
-  
+
   // Mock global fetch for API calls
   global.fetch = mockFetch;
 
   // Mock theme components
   jest.mock('@/components/theme-toggle', () => ({
-    ThemeToggle: () => <button data-testid="theme-toggle">Theme Toggle</button>,
+    ThemeToggle: () => 'button',
   }));
 
   // Mock the settings form hook with standard return values
@@ -54,9 +54,9 @@ export function setupSettingsTestMocks() {
 /**
  * Standard beforeEach setup for Settings tests
  */
-export function setupSettingsBeforeEach(sessionData?: any) {
+export function setupSettingsBeforeEach(sessionData?: any, mockUseSessionFn?: any) {
   jest.clearAllMocks();
-  
+
   const defaultSession = {
     user: {
       id: '1',
@@ -67,11 +67,13 @@ export function setupSettingsBeforeEach(sessionData?: any) {
     expires: '2024-12-31',
   };
 
-  mockUseSession.mockReturnValue({
-    data: sessionData || defaultSession,
-    status: 'authenticated',
-    update: jest.fn(),
-  });
+  if (mockUseSessionFn) {
+    mockUseSessionFn.mockReturnValue({
+      data: sessionData || defaultSession,
+      status: 'authenticated',
+      update: jest.fn(),
+    });
+  }
 }
 
 // ============================================================================
@@ -108,15 +110,17 @@ export function mockApiError(message: string = 'API Error', statusCode: number =
 /**
  * Mock a network error
  */
-export function mockNetworkError(errorMessage: string = 'Network error') {
-  mockFetch.mockRejectedValueOnce(new Error(errorMessage));
+export function mockNetworkError(errorMessage: string = 'Network error', mockFetchFn?: any) {
+  const fetchMock = mockFetchFn || mockFetch;
+  fetchMock.mockRejectedValueOnce(new Error(errorMessage));
 }
 
 /**
  * Mock account deletion API response
  */
-export function mockDeleteAccountResponse(success: boolean, message: string = '') {
-  mockFetch.mockResolvedValueOnce({
+export function mockDeleteAccountResponse(success: boolean, message: string = '', mockFetchFn?: any) {
+  const fetchMock = mockFetchFn || mockFetch;
+  fetchMock.mockResolvedValueOnce({
     ok: success,
     json: async () => ({
       success,
@@ -128,8 +132,9 @@ export function mockDeleteAccountResponse(success: boolean, message: string = ''
 /**
  * Mock a delayed API response for testing loading states
  */
-export function mockApiDelay(delay: number = 100) {
-  mockFetch.mockImplementation(() => 
+export function mockApiDelay(delay: number = 100, mockFetchFn?: any) {
+  const fetchMock = mockFetchFn || mockFetch;
+  fetchMock.mockImplementation(() =>
     new Promise(resolve => setTimeout(resolve, delay))
   );
 }

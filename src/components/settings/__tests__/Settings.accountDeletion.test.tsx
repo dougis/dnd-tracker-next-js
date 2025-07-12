@@ -2,22 +2,46 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { useSession, signOut } from 'next-auth/react';
 import { Settings } from '../Settings';
 import { mockSessions, getSettingsSelectors } from './test-helpers';
 import {
-  setupSettingsTestMocks,
   setupSettingsBeforeEach,
   mockDeleteAccountResponse,
   mockApiDelay,
-  mockNetworkError,
-  mockUseSession,
-  mockSignOut,
-  mockFetch
+  mockNetworkError
 } from './shared-settings-test-setup';
 import '@testing-library/jest-dom';
 
-// Setup all mocks
-setupSettingsTestMocks();
+// Mock next-auth
+jest.mock('next-auth/react');
+const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
+const mockSignOut = signOut as jest.MockedFunction<typeof signOut>;
+
+// Mock API calls
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
+
+// Mock theme components
+jest.mock('@/components/theme-toggle', () => ({
+  ThemeToggle: () => <button data-testid="theme-toggle">Theme Toggle</button>,
+}));
+
+// Mock the settings form hook
+jest.mock('../hooks/useSettingsForm', () => ({
+  useSettingsForm: () => ({
+    profileData: { name: 'Test User', email: 'test@example.com' },
+    setProfileData: jest.fn(),
+    notifications: { email: true, combat: true, encounters: true },
+    handleNotificationChange: jest.fn(),
+    formErrors: {},
+    message: null,
+    isLoadingProfile: false,
+    isLoadingNotifications: false,
+    handleProfileSubmit: jest.fn(),
+    handleNotificationsSubmit: jest.fn(),
+  }),
+}));
 
 describe('Settings Component - Account Deletion', () => {
   const selectors = getSettingsSelectors();
@@ -30,7 +54,7 @@ describe('Settings Component - Account Deletion', () => {
   };
 
   beforeEach(() => {
-    setupSettingsBeforeEach(mockSessions.free);
+    setupSettingsBeforeEach(mockSessions.free, mockUseSession);
   });
 
   describe('Delete Account Button', () => {
@@ -80,7 +104,7 @@ describe('Settings Component - Account Deletion', () => {
     });
 
     it('should call delete API when confirm is clicked', async () => {
-      mockDeleteAccountResponse(true);
+      mockDeleteAccountResponse(true, '', mockFetch);
 
       const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
       fireEvent.click(confirmButton);
@@ -99,7 +123,7 @@ describe('Settings Component - Account Deletion', () => {
     });
 
     it('should sign out user after successful deletion', async () => {
-      mockDeleteAccountResponse(true);
+      mockDeleteAccountResponse(true, '', mockFetch);
 
       const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
       fireEvent.click(confirmButton);
@@ -113,7 +137,7 @@ describe('Settings Component - Account Deletion', () => {
     });
 
     it('should close modal after successful deletion', async () => {
-      mockDeleteAccountResponse(true);
+      mockDeleteAccountResponse(true, '', mockFetch);
 
       const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
       fireEvent.click(confirmButton);
@@ -124,7 +148,7 @@ describe('Settings Component - Account Deletion', () => {
     });
 
     it('should show error message when deletion fails', async () => {
-      mockDeleteAccountResponse(false, 'Failed to delete account');
+      mockDeleteAccountResponse(false, 'Failed to delete account', mockFetch);
 
       const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
       fireEvent.click(confirmButton);
@@ -137,7 +161,7 @@ describe('Settings Component - Account Deletion', () => {
     });
 
     it('should handle network errors gracefully', async () => {
-      mockNetworkError('Network error');
+      mockNetworkError('Network error', mockFetch);
 
       const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
       fireEvent.click(confirmButton);
@@ -156,7 +180,7 @@ describe('Settings Component - Account Deletion', () => {
     });
 
     it('should disable confirm button during deletion', async () => {
-      mockApiDelay(100);
+      mockApiDelay(100, mockFetch);
 
       const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
       fireEvent.click(confirmButton);
@@ -166,7 +190,7 @@ describe('Settings Component - Account Deletion', () => {
     });
 
     it('should show loading text during deletion', async () => {
-      mockApiDelay(100);
+      mockApiDelay(100, mockFetch);
 
       const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
       fireEvent.click(confirmButton);
