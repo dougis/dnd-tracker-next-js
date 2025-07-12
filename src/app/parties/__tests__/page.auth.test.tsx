@@ -9,6 +9,8 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import PartiesPage from '../page';
+import { createMockSession, createMockUser } from '@/__tests__/utils/mock-factories';
+import { setupAuthenticatedMocks, setupUnauthenticatedMocks, expectRedirectToSignin } from '@/__tests__/utils/auth-mocks';
 
 // Mock the auth function from Next Auth
 jest.mock('@/lib/auth', () => ({
@@ -33,17 +35,6 @@ jest.mock('@/components/party/PartyListView', () => ({
 
 const mockAuth = auth as jest.MockedFunction<typeof auth>;
 
-// Helper functions to reduce duplication
-function createMockSession(user?: any) {
-  return user ? { user } : null;
-}
-
-async function expectRedirectToSignin(sessionMock: any) {
-  mockAuth.mockResolvedValue(sessionMock);
-  await expect(PartiesPage()).rejects.toThrow('REDIRECT: /signin?callbackUrl=/parties');
-  expect(mockAuth).toHaveBeenCalled();
-}
-
 describe('PartiesPage Authentication', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -59,20 +50,16 @@ describe('PartiesPage Authentication', () => {
 
     unauthenticatedScenarios.forEach(({ description, session }) => {
       it(`should redirect to signin when ${description}`, async () => {
-        await expectRedirectToSignin(session);
+        mockAuth.mockResolvedValue(session as any);
+        await expectRedirectToSignin(PartiesPage, mockAuth);
       });
     });
   });
 
   // Helper function for authenticated tests
   async function testAuthenticatedAccess(userId: string = 'user-123') {
-    const mockSession = createMockSession({
-      id: userId,
-      email: 'test@example.com',
-      name: 'Test User',
-    });
-
-    mockAuth.mockResolvedValue(mockSession as any);
+    const user = createMockUser({ id: userId });
+    setupAuthenticatedMocks(mockAuth, user);
     const result = await PartiesPage();
 
     expect(mockAuth).toHaveBeenCalled();
@@ -144,7 +131,7 @@ describe('PartiesPage Authentication', () => {
         mockAuth.mockResolvedValue(testCase.session as any);
 
         if (testCase.shouldRedirect) {
-          await expect(PartiesPage()).rejects.toThrow('REDIRECT: /signin?callbackUrl=/parties');
+          await expectRedirectToSignin(PartiesPage, mockAuth);
         } else {
           const result = await PartiesPage();
           expect(result).toBeDefined();

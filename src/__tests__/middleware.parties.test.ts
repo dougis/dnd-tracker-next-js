@@ -7,6 +7,8 @@
 
 import { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { createMockRequest, createMockURLForRedirect } from './utils/mock-factories';
+import { setupEnvironment, resetAllMocks } from './utils/test-setup';
 
 // Mock NextAuth JWT module
 jest.mock('next-auth/jwt', () => ({
@@ -30,31 +32,17 @@ jest.mock('next/server', () => ({
 const mockGetToken = getToken as jest.MockedFunction<typeof getToken>;
 
 // Setup environment variables
-const originalEnv = process.env;
-beforeAll(() => {
-  process.env.NEXTAUTH_SECRET = 'test-secret';
-});
+const restoreEnv = setupEnvironment();
 
 afterAll(() => {
-  process.env = originalEnv;
+  restoreEnv();
 });
 
 beforeEach(() => {
-  jest.clearAllMocks();
-  mockRedirect.mockReset();
-  mockNext.mockReset();
-  mockJson.mockReset();
-  mockGetToken.mockReset();
+  resetAllMocks(mockRedirect, mockNext, mockJson, mockGetToken);
 });
 
-// Helper functions to reduce duplication
-function createMockRequest(pathname: string): NextRequest {
-  return {
-    nextUrl: { pathname },
-    url: `http://localhost:3000${pathname}`,
-  } as NextRequest;
-}
-
+// Helper functions
 function setupUnauthenticatedMocks() {
   mockGetToken.mockResolvedValue(null);
   mockRedirect.mockReturnValue({ type: 'redirect' });
@@ -108,9 +96,7 @@ describe('Middleware Parties Route Protection', () => {
         await testProtectedRoute(pathname);
 
         // Reset for next iteration
-        jest.clearAllMocks();
-        mockRedirect.mockReset();
-        mockGetToken.mockReset();
+        resetAllMocks(mockRedirect, mockGetToken);
       }
     });
   });
@@ -146,27 +132,12 @@ describe('Middleware Parties Route Protection', () => {
         await testProtectedAPIRoute(pathname);
 
         // Reset for next iteration
-        jest.clearAllMocks();
-        mockGetToken.mockReset();
-        mockJson.mockReset();
+        resetAllMocks(mockGetToken, mockJson);
       }
     });
   });
 
   describe('Authentication Flow for Parties Routes', () => {
-    function createMockURLForRedirect(pathname: string) {
-      const mockUrl = {
-        href: `http://localhost:3000/signin?callbackUrl=${encodeURIComponent(`http://localhost:3000${pathname}`)}`,
-        searchParams: {
-          set: jest.fn(),
-        },
-      };
-
-      const originalURL = global.URL;
-      global.URL = jest.fn().mockImplementation(() => mockUrl) as any;
-
-      return { mockUrl, originalURL };
-    }
 
     it('should redirect unauthenticated users from /parties to signin with callback', async () => {
       const { middleware } = await import('../middleware');
