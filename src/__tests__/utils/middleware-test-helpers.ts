@@ -5,8 +5,13 @@
 import { NextRequest } from 'next/server';
 import { createMockRequest, createMockURLForRedirect } from './mock-factories';
 
+// Centralized middleware import to reduce duplication
+export async function importMiddleware() {
+  return await import('../../middleware');
+}
+
 export async function executeMiddlewareTest(pathname: string, setup: () => void) {
-  const { middleware } = await import('../../middleware');
+  const { middleware } = await importMiddleware();
   const request = createMockRequest(pathname);
   setup();
 
