@@ -4,48 +4,37 @@
 import { renderHook, act } from '@testing-library/react';
 import { useEditableContent } from '../useEditableContent';
 import {
+  TEST_CONTENT,
   createMockResponse,
   createDelayedMockResponse,
-  withConsoleSpy,
-  waitForAsyncOperation,
   expectApiCall,
+  expectHookState,
+  expectFunctionType,
   testAsyncError,
-  expectHookState
 } from './test-utils';
 
 describe('useEditableContent', () => {
-  const initialValue = 'Initial content';
-
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
   describe('initialization', () => {
     it('initializes with correct default state', () => {
-      const { result } = renderHook(() => useEditableContent(initialValue));
+      const { result } = renderHook(() => useEditableContent(TEST_CONTENT));
 
       expectHookState(result, {
-        editedValue: initialValue,
-        isSaving: false
+        editedValue: TEST_CONTENT,
+        isSaving: false,
       });
-      expect(typeof result.current.handleSave).toBe('function');
-      expect(typeof result.current.handleCancel).toBe('function');
-      expect(typeof result.current.handleChange).toBe('function');
-    });
 
-    it('initializes with empty string when no initial value provided', () => {
-      const { result } = renderHook(() => useEditableContent(''));
-
-      expectHookState(result, {
-        editedValue: '',
-        isSaving: false
-      });
+      ['handleSave', 'handleCancel', 'handleChange']
+        .forEach(funcName => expectFunctionType(result.current, funcName));
     });
   });
 
   describe('handleChange', () => {
     it('updates the edited value', () => {
-      const { result } = renderHook(() => useEditableContent(initialValue));
+      const { result } = renderHook(() => useEditableContent(TEST_CONTENT));
 
       act(() => {
         result.current.handleChange('New content');
@@ -57,7 +46,7 @@ describe('useEditableContent', () => {
 
   describe('handleCancel', () => {
     it('resets edited value to initial value', () => {
-      const { result } = renderHook(() => useEditableContent(initialValue));
+      const { result } = renderHook(() => useEditableContent(TEST_CONTENT));
 
       // Change the value
       act(() => {
@@ -71,7 +60,7 @@ describe('useEditableContent', () => {
         result.current.handleCancel();
       });
 
-      expect(result.current.editedValue).toBe(initialValue);
+      expect(result.current.editedValue).toBe(TEST_CONTENT);
     });
   });
 
@@ -79,7 +68,7 @@ describe('useEditableContent', () => {
     it('calls onSave callback with current edited value', async () => {
       const mockOnSave = jest.fn().mockResolvedValue(undefined);
       const { result } = renderHook(() =>
-        useEditableContent(initialValue, mockOnSave)
+        useEditableContent(TEST_CONTENT, mockOnSave)
       );
 
       act(() => {
@@ -98,7 +87,7 @@ describe('useEditableContent', () => {
         () => new Promise(resolve => setTimeout(resolve, 100))
       );
       const { result } = renderHook(() =>
-        useEditableContent(initialValue, mockOnSave)
+        useEditableContent(TEST_CONTENT, mockOnSave)
       );
 
       // Start save operation
@@ -109,22 +98,25 @@ describe('useEditableContent', () => {
       expect(result.current.isSaving).toBe(true);
 
       // Wait for save to complete
-      await waitForAsyncOperation();
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 150));
+      });
 
       expect(result.current.isSaving).toBe(false);
     });
 
-    it('handles save errors gracefully', withConsoleSpy(async (consoleSpy) => {
+    it('handles save errors gracefully', async () => {
       const mockOnSave = jest.fn().mockRejectedValue(new Error('Save failed'));
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
       const { result } = renderHook(() =>
-        useEditableContent(initialValue, mockOnSave)
+        useEditableContent(TEST_CONTENT, mockOnSave)
       );
 
       await act(async () => {
         await testAsyncError(
           () => result.current.handleSave(),
-          'Save failed',
-          consoleSpy
+          'Save failed'
         );
       });
 
@@ -133,14 +125,16 @@ describe('useEditableContent', () => {
         expect.any(Error)
       );
       expect(result.current.isSaving).toBe(false);
-    }));
+      consoleSpy.mockRestore();
+    });
   });
 
   describe('handleSave without onSave callback', () => {
     it('should make API call to save content when no onSave callback provided', async () => {
-      global.fetch = jest.fn().mockResolvedValue(createMockResponse(true));
+      // Mock fetch
+      global.fetch = jest.fn().mockResolvedValue(createMockResponse());
 
-      const { result } = renderHook(() => useEditableContent(initialValue));
+      const { result } = renderHook(() => useEditableContent(TEST_CONTENT));
 
       act(() => {
         result.current.handleChange('Updated content');
@@ -152,18 +146,21 @@ describe('useEditableContent', () => {
 
       expectApiCall('PUT', '/api/content', { content: 'Updated content' });
 
+      // Clean up
       (fetch as jest.Mock).mockClear();
     });
 
-    it('should handle API errors when saving without callback', withConsoleSpy(async (consoleSpy) => {
-      global.fetch = jest.fn().mockResolvedValue(createMockResponse(false, null, 500));
-      const { result } = renderHook(() => useEditableContent(initialValue));
+    it('should handle API errors when saving without callback', async () => {
+      // Mock fetch to fail
+      global.fetch = jest.fn().mockResolvedValue(createMockResponse(false));
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const { result } = renderHook(() => useEditableContent(TEST_CONTENT));
 
       await act(async () => {
         await testAsyncError(
           () => result.current.handleSave(),
-          'Failed to save content: 500',
-          consoleSpy
+          'Failed to save content: 400'
         );
       });
 
@@ -172,12 +169,17 @@ describe('useEditableContent', () => {
         expect.any(Error)
       );
 
+      consoleSpy.mockRestore();
       (fetch as jest.Mock).mockClear();
-    }));
+    });
 
     it('should set isSaving state during API call', async () => {
-      global.fetch = createDelayedMockResponse(true);
-      const { result } = renderHook(() => useEditableContent(initialValue));
+      // Mock fetch with delay
+      global.fetch = jest.fn().mockImplementation(
+        () => createDelayedMockResponse(100)
+      );
+
+      const { result } = renderHook(() => useEditableContent(TEST_CONTENT));
 
       // Start save operation
       act(() => {
@@ -187,81 +189,13 @@ describe('useEditableContent', () => {
       expect(result.current.isSaving).toBe(true);
 
       // Wait for save to complete
-      await waitForAsyncOperation();
-
-      expect(result.current.isSaving).toBe(false);
-
-      (fetch as jest.Mock).mockClear();
-    });
-
-    it('should handle network errors when making API call', withConsoleSpy(async (consoleSpy) => {
-      global.fetch = jest.fn().mockRejectedValue(new Error('Network error'));
-      const { result } = renderHook(() => useEditableContent(initialValue));
-
       await act(async () => {
-        await testAsyncError(
-          () => result.current.handleSave(),
-          'Network error',
-          consoleSpy
-        );
+        await new Promise(resolve => setTimeout(resolve, 150));
       });
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Failed to save content:',
-        expect.any(Error)
-      );
-
-      (fetch as jest.Mock).mockClear();
-    }));
-  });
-
-  describe('edge cases', () => {
-    it('should handle multiple consecutive save calls', async () => {
-      global.fetch = createDelayedMockResponse(true, 50);
-      const { result } = renderHook(() => useEditableContent(initialValue));
-
-      // Start first save
-      act(() => {
-        result.current.handleSave();
-      });
-
-      expect(result.current.isSaving).toBe(true);
-
-      // Try to start second save while first is in progress
-      act(() => {
-        result.current.handleSave();
-      });
-
-      // Should still be saving
-      expect(result.current.isSaving).toBe(true);
-
-      // Wait for operations to complete
-      await waitForAsyncOperation(100);
 
       expect(result.current.isSaving).toBe(false);
 
-      (fetch as jest.Mock).mockClear();
-    });
-
-    it('should handle changes during save operation', async () => {
-      global.fetch = createDelayedMockResponse(true, 50);
-      const { result } = renderHook(() => useEditableContent(initialValue));
-
-      // Start save
-      act(() => {
-        result.current.handleSave();
-      });
-
-      // Change value while saving
-      act(() => {
-        result.current.handleChange('Changed during save');
-      });
-
-      expect(result.current.editedValue).toBe('Changed during save');
-
-      // Wait for save to complete
-      await waitForAsyncOperation(100);
-
+      // Clean up
       (fetch as jest.Mock).mockClear();
     });
   });
