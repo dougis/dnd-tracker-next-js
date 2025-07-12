@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
+import { ZodError } from 'zod';
 import { auth } from '@/lib/auth';
 
 /**
@@ -94,6 +95,34 @@ export function handleServiceError(result: any, defaultMessage: string, defaultS
   return NextResponse.json(responseBody, { status });
 }
 
+/**
+ * Handles UserService results with specialized error handling for common patterns
+ */
+export function handleUserServiceResult(result: any, successMessage?: string, options?: {
+  notFoundMessage?: string;
+  defaultErrorMessage?: string;
+  defaultErrorStatus?: number;
+}) {
+  if (result.success) {
+    if (result.data === undefined || result.data === null) {
+      // For operations like delete that return undefined data
+      return createSuccessResponse({}, successMessage);
+    }
+    return createSuccessResponse({ user: result.data }, successMessage);
+  }
+
+  // Handle specific error codes
+  if (result.error?.code === 'USER_NOT_FOUND') {
+    return handleServiceError(result, options?.notFoundMessage || 'User not found', 404);
+  }
+
+  return handleServiceError(
+    result,
+    options?.defaultErrorMessage || 'Operation failed',
+    options?.defaultErrorStatus || 500
+  );
+}
+
 export function handleZodValidationError(error: any) {
   return NextResponse.json(
     {
@@ -158,3 +187,76 @@ export async function validateRequestBody(request: Request, requiredFields: stri
 
   return body;
 }
+
+/**
+ * Generic handler for API routes that need validation and service calls
+ * Eliminates duplication across PATCH routes with validation
+ */
+export function createValidatedRouteHandler<T>(
+  schema: any,
+  serviceCall: (_userId: string, _data: T) => Promise<any>,
+  successMessage: string,
+  errorOptions?: {
+    defaultErrorMessage?: string;
+    defaultErrorStatus?: number;
+  }
+) {
+  return async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+    return withAuthAndAccess(params, async (userId) => {
+      try {
+        const body = await request.json();
+        const validatedData = schema.parse(body);
+
+        const result = await serviceCall(userId, validatedData);
+        return handleUserServiceResult(result, successMessage, errorOptions);
+      } catch (error) {
+        if (error instanceof ZodError) {
+          return handleZodValidationError(error);
+        }
+        throw error; // Let withAuthAndAccess handle unexpected errors
+      }
+    });
+  };
+}
+
+/**
+ * Generic handler for simple routes (GET, DELETE, etc.) that don't need request body validation
+ */
+export function createSimpleRouteHandler(
+  serviceCall: (_userId: string) => Promise<any>,
+  successMessage?: string,
+  errorOptions?: {
+    defaultErrorMessage?: string;
+    defaultErrorStatus?: number;
+  }
+) {
+  return async (_request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+    return withAuthAndAccess(params, async (userId) => {
+      const result = await serviceCall(userId);
+      return handleUserServiceResult(result, successMessage, errorOptions);
+    });
+  };
+}
+
+/**
+ * Legacy alias for backward compatibility - use createSimpleRouteHandler instead
+ */
+export const createGetRouteHandler = (
+  serviceCall: (_userId: string) => Promise<any>,
+  errorOptions?: {
+    defaultErrorMessage?: string;
+    defaultErrorStatus?: number;
+  }
+) => createSimpleRouteHandler(serviceCall, undefined, errorOptions);
+
+/**
+ * Legacy alias for backward compatibility - use createSimpleRouteHandler instead
+ */
+export const createDeleteRouteHandler = (
+  serviceCall: (_userId: string) => Promise<any>,
+  successMessage: string,
+  errorOptions?: {
+    defaultErrorMessage?: string;
+    defaultErrorStatus?: number;
+  }
+) => createSimpleRouteHandler(serviceCall, successMessage, errorOptions);
