@@ -33,86 +33,62 @@ jest.mock('@/components/party/PartyListView', () => ({
 
 const mockAuth = auth as jest.MockedFunction<typeof auth>;
 
+// Helper functions to reduce duplication
+function createMockSession(user?: any) {
+  return user ? { user } : null;
+}
+
+async function expectRedirectToSignin(sessionMock: any) {
+  mockAuth.mockResolvedValue(sessionMock);
+  await expect(PartiesPage()).rejects.toThrow('REDIRECT: /signin?callbackUrl=/parties');
+  expect(mockAuth).toHaveBeenCalled();
+}
+
 describe('PartiesPage Authentication', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('Authentication Protection', () => {
-    it('should redirect to signin when user is not authenticated', async () => {
-      // Mock auth to return null (unauthenticated)
-      mockAuth.mockResolvedValue(null);
+    const unauthenticatedScenarios = [
+      { description: 'user is not authenticated', session: null },
+      { description: 'session exists but no user', session: {} },
+      { description: 'user object is null', session: { user: null } },
+      { description: 'user object is undefined', session: { user: undefined } }
+    ];
 
-      // This should trigger redirect before rendering
-      await expect(PartiesPage()).rejects.toThrow('REDIRECT: /signin?callbackUrl=/parties');
-
-      expect(mockAuth).toHaveBeenCalled();
-    });
-
-    it('should redirect to signin when session exists but no user', async () => {
-      // Mock auth to return session without user
-      mockAuth.mockResolvedValue({} as any);
-
-      await expect(PartiesPage()).rejects.toThrow('REDIRECT: /signin?callbackUrl=/parties');
-
-      expect(mockAuth).toHaveBeenCalled();
-    });
-
-    it('should redirect to signin when user object is null', async () => {
-      // Mock auth to return session with null user
-      mockAuth.mockResolvedValue({ user: null } as any);
-
-      await expect(PartiesPage()).rejects.toThrow('REDIRECT: /signin?callbackUrl=/parties');
-
-      expect(mockAuth).toHaveBeenCalled();
-    });
-
-    it('should redirect to signin when user object is undefined', async () => {
-      // Mock auth to return session with undefined user
-      mockAuth.mockResolvedValue({ user: undefined } as any);
-
-      await expect(PartiesPage()).rejects.toThrow('REDIRECT: /signin?callbackUrl=/parties');
-
-      expect(mockAuth).toHaveBeenCalled();
+    unauthenticatedScenarios.forEach(({ description, session }) => {
+      it(`should redirect to signin when ${description}`, async () => {
+        await expectRedirectToSignin(session);
+      });
     });
   });
 
+  // Helper function for authenticated tests
+  async function testAuthenticatedAccess(userId: string = 'user-123') {
+    const mockSession = createMockSession({
+      id: userId,
+      email: 'test@example.com',
+      name: 'Test User',
+    });
+
+    mockAuth.mockResolvedValue(mockSession as any);
+    const result = await PartiesPage();
+
+    expect(mockAuth).toHaveBeenCalled();
+    expect(result).toBeDefined();
+
+    return result;
+  }
+
   describe('Authenticated Access', () => {
     it('should render page content when user is authenticated', async () => {
-      const mockSession = {
-        user: {
-          id: 'user-123',
-          email: 'test@example.com',
-          name: 'Test User',
-        },
-      };
-
-      mockAuth.mockResolvedValue(mockSession as any);
-
-      const result = await PartiesPage();
-
-      expect(mockAuth).toHaveBeenCalled();
-      expect(result).toBeDefined();
+      await testAuthenticatedAccess();
     });
 
     it('should pass user ID to PartyListView component', async () => {
       const userId = 'user-456';
-      const mockSession = {
-        user: {
-          id: userId,
-          email: 'test@example.com',
-          name: 'Test User',
-        },
-      };
-
-      mockAuth.mockResolvedValue(mockSession as any);
-
-      const result = await PartiesPage();
-
-      expect(mockAuth).toHaveBeenCalled();
-
-      // Verify the component structure includes the user ID
-      expect(result).toBeDefined();
+      await testAuthenticatedAccess(userId);
       // Note: Full component rendering verification would require testing-library setup
     });
   });
@@ -179,20 +155,9 @@ describe('PartiesPage Authentication', () => {
 
   describe('Page Structure', () => {
     it('should render correct page structure when authenticated', async () => {
-      const mockSession = {
-        user: {
-          id: 'user-123',
-          email: 'test@example.com',
-          name: 'Test User',
-        },
-      };
-
-      mockAuth.mockResolvedValue(mockSession as any);
-
-      const result = await PartiesPage();
+      const result = await testAuthenticatedAccess();
 
       // Verify the page structure is correct
-      expect(result).toBeDefined();
       expect(typeof result).toBe('object');
 
       // The page should return a JSX element with the expected structure
