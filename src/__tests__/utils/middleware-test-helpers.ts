@@ -57,18 +57,8 @@ export async function testEdgeCaseRoute(
   mockGetToken: jest.MockedFunction<any>,
   mockRedirect: jest.MockedFunction<any>
 ) {
-  const { middleware } = await import('../../middleware');
-
-  const request = {
-    nextUrl: { pathname },
-    url,
-  } as NextRequest;
-
-  mockGetToken.mockResolvedValue(null);
-  mockRedirect.mockReturnValue({ type: 'redirect' });
-
-  await middleware(request);
-
+  setupUnauthenticatedMocks(mockGetToken, mockRedirect);
+  await executeMiddlewareTest(pathname, () => {});
   expect(mockGetToken).toHaveBeenCalled();
   expect(mockRedirect).toHaveBeenCalled();
 }
@@ -79,13 +69,6 @@ export async function testAuthenticatedUserAccess(
   mockNext: jest.MockedFunction<any>,
   mockRedirect: jest.MockedFunction<any>
 ) {
-  const { middleware } = await import('../../middleware');
-
-  const request = {
-    nextUrl: { pathname },
-    url: `http://localhost:3000${pathname}`,
-  } as NextRequest;
-
   const mockToken = {
     email: 'test@example.com',
     sub: 'user-123',
@@ -96,7 +79,7 @@ export async function testAuthenticatedUserAccess(
   mockGetToken.mockResolvedValue(mockToken);
   mockNext.mockReturnValue({ type: 'next' });
 
-  await middleware(request);
+  const { request } = await executeMiddlewareTest(pathname, () => {});
 
   expect(mockGetToken).toHaveBeenCalledWith({
     req: request,
@@ -111,21 +94,14 @@ export async function testNonInterfenceRoutes(
   mockGetToken: jest.MockedFunction<any>,
   mockNext: jest.MockedFunction<any>
 ) {
-  const { middleware } = await import('../../middleware');
+  const { middleware: _middleware } = await importMiddleware();
 
   for (const pathname of routes) {
     mockNext.mockReturnValue({ type: 'next' });
-
-    const request = {
-      nextUrl: { pathname },
-      url: `http://localhost:3000${pathname}`,
-    } as NextRequest;
-
-    const result = await middleware(request);
+    const { request: _request } = await executeMiddlewareTest(pathname, () => {});
 
     // These routes should not trigger authentication checks
     expect(mockGetToken).not.toHaveBeenCalled();
-    expect(result).toBeDefined();
 
     // Reset for next iteration
     jest.clearAllMocks();

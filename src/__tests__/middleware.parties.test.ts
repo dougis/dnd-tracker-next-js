@@ -55,18 +55,8 @@ beforeEach(() => {
   resetAllMocks(mockRedirect, mockNext, mockJson, mockGetToken);
 });
 
-// Helper functions using shared mock utilities
-function setupUnauthenticatedMocks() {
-  setupUnauthenticatedMocksUtil(mockGetToken, mockRedirect);
-}
-
-function setupAPIUnauthenticatedMocks() {
-  setupAPIUnauthenticatedMocksUtil(mockGetToken, mockJson);
-}
-
-
 async function testProtectedRoute(pathname: string) {
-  const { request } = await executeMiddlewareTest(pathname, setupUnauthenticatedMocks);
+  const { request } = await executeMiddlewareTest(pathname, () => setupUnauthenticatedMocksUtil(mockGetToken, mockRedirect));
   expectAuthenticationCheck(request, mockGetToken);
 }
 
@@ -95,7 +85,7 @@ describe('Middleware Parties Route Protection', () => {
 
   describe('Parties API Route Protection', () => {
     async function testProtectedAPIRoute(pathname: string) {
-      const { request } = await executeMiddlewareTest(pathname, setupAPIUnauthenticatedMocks);
+      const { request } = await executeMiddlewareTest(pathname, () => setupAPIUnauthenticatedMocksUtil(mockGetToken, mockJson));
       expectAuthenticationCheck(request, mockGetToken);
       expectStandardAPIResponse(mockJson);
     }

@@ -8,7 +8,7 @@ export const nextAuthJWTMock = () => ({
   getToken: jest.fn(),
 });
 
-// Mock NextResponse configuration  
+// Mock NextResponse configuration
 export const nextResponseMock = () => {
   const mockRedirect = jest.fn();
   const mockNext = jest.fn();
