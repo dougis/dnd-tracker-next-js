@@ -157,38 +157,39 @@ export const createNavigationTestEncounter = (overrides = {}) => ({
   ...overrides,
 });
 
+// Common mock function generator
+const createMockFunctions = (functionNames: string[]) =>
+  functionNames.reduce((acc, name) => ({ ...acc, [name]: jest.fn() }), {});
+
+// Default mock configurations
+const defaultPagination = {
+  currentPage: 1,
+  totalPages: 1,
+  totalItems: 0,
+  itemsPerPage: 20,
+};
+
 // Common mock patterns for list view tests
 export const createListViewMocks = () => ({
   useEncounterData: jest.fn(() => ({
     encounters: [],
     isLoading: false,
     error: null,
-    pagination: {
-      currentPage: 1,
-      totalPages: 1,
-      totalItems: 0,
-      itemsPerPage: 20,
-    },
-    goToPage: jest.fn(),
-    refetch: jest.fn(),
+    pagination: defaultPagination,
+    ...createMockFunctions(['goToPage', 'refetch']),
   })),
   useEncounterFilters: () => ({
     filters: { status: [], difficulty: [], tags: [] },
     searchQuery: '',
     sortBy: 'name',
     sortOrder: 'asc',
-    updateFilters: jest.fn(),
-    updateSearchQuery: jest.fn(),
-    updateSort: jest.fn(),
-    clearFilters: jest.fn(),
+    ...createMockFunctions(['updateFilters', 'updateSearchQuery', 'updateSort', 'clearFilters']),
   }),
   useEncounterSelection: jest.fn(() => ({
     selectedEncounters: [],
-    selectAll: jest.fn(),
-    selectEncounter: jest.fn(),
-    clearSelection: jest.fn(),
     isAllSelected: false,
     hasSelection: false,
+    ...createMockFunctions(['selectAll', 'selectEncounter', 'clearSelection']),
   }))
 });
 
