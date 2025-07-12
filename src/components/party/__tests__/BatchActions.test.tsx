@@ -39,7 +39,7 @@ describe('BatchActions', () => {
 
     it('should render all action buttons', () => {
       renderBatchActions();
-      
+
       expect(screen.getByRole('button', { name: /view/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument();
@@ -107,7 +107,7 @@ describe('BatchActions', () => {
 
     it('should handle delete errors gracefully', async () => {
       const user = userEvent.setup();
-      
+
       // Mock an error by causing onRefetch to throw
       const errorProps = {
         ...defaultProps,
@@ -153,7 +153,7 @@ describe('BatchActions', () => {
 
     it('should handle bulk edit errors gracefully', async () => {
       const user = userEvent.setup();
-      
+
       // Create a spy that throws an error
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {
         throw new Error('Edit failed');
@@ -194,7 +194,7 @@ describe('BatchActions', () => {
 
     it('should handle bulk view errors gracefully', async () => {
       const user = userEvent.setup();
-      
+
       // Create a spy that throws an error
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {
         throw new Error('View failed');
@@ -242,7 +242,7 @@ describe('BatchActions', () => {
 
     it('should disable action buttons when no parties are selected', () => {
       renderBatchActions({ selectedCount: 0 });
-      
+
       expect(screen.getByRole('button', { name: /view/i })).toBeDisabled();
       expect(screen.getByRole('button', { name: /edit/i })).toBeDisabled();
       expect(screen.getByRole('button', { name: /delete/i })).toBeDisabled();

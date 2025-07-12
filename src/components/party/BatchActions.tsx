@@ -30,19 +30,19 @@ export function BatchActions({ selectedCount, onClearSelection, onRefetch }: Bat
     try {
       // Simulate bulk delete operation
       console.log('Bulk delete selected parties');
-      
+
       // Call refetch and clear selection
       onRefetch();
       onClearSelection();
-      
+
       // Show success toast
       toast({
         title: 'Parties deleted',
         description: `${selectedCount} parties have been deleted successfully.`,
       });
-      
+
       setShowDeleteDialog(false);
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to delete parties. Please try again.',
@@ -54,12 +54,12 @@ export function BatchActions({ selectedCount, onClearSelection, onRefetch }: Bat
   const handleBulkEdit = async () => {
     try {
       console.log('Bulk edit selected parties');
-      
+
       toast({
         title: 'Bulk edit started',
         description: `Editing ${selectedCount} parties...`,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to edit parties. Please try again.',
@@ -71,12 +71,12 @@ export function BatchActions({ selectedCount, onClearSelection, onRefetch }: Bat
   const handleBulkView = async () => {
     try {
       console.log('Bulk view selected parties');
-      
+
       toast({
         title: 'Opening party view',
         description: `Viewing ${selectedCount} parties...`,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to view parties. Please try again.',
@@ -95,9 +95,9 @@ export function BatchActions({ selectedCount, onClearSelection, onRefetch }: Bat
                 {selectedCount} {selectedCount === 1 ? 'party' : 'parties'} selected
               </div>
               <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={handleBulkView}
                   disabled={selectedCount === 0}
                   aria-label="View selected parties"
@@ -105,9 +105,9 @@ export function BatchActions({ selectedCount, onClearSelection, onRefetch }: Bat
                   <Eye className="mr-2 h-4 w-4" />
                   View
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={handleBulkEdit}
                   disabled={selectedCount === 0}
                   aria-label="Edit selected parties"
@@ -128,9 +128,9 @@ export function BatchActions({ selectedCount, onClearSelection, onRefetch }: Bat
                 </Button>
               </div>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={onClearSelection}
               aria-label="Clear selection"
             >
@@ -145,7 +145,7 @@ export function BatchActions({ selectedCount, onClearSelection, onRefetch }: Bat
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Parties</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {selectedCount} {selectedCount === 1 ? 'party' : 'parties'}? 
+              Are you sure you want to delete {selectedCount} {selectedCount === 1 ? 'party' : 'parties'}?
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
