@@ -19,6 +19,19 @@ export async function validateAuth() {
   return { error: null, session };
 }
 
+/**
+ * Higher-level wrapper that validates authentication and executes a callback with the user ID
+ * This eliminates code duplication across API routes
+ */
+export async function withAuth<T>(
+  callback: (_userId: string) => Promise<T>
+): Promise<T | NextResponse> {
+  const { error: authError, session } = await validateAuth();
+  if (authError) return authError;
+
+  return await callback(session!.user.id);
+}
+
 export async function validateUserAccess(requestedUserId: string, sessionUserId: string) {
   if (requestedUserId !== sessionUserId) {
     return NextResponse.json(

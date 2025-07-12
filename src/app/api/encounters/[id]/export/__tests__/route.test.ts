@@ -1,89 +1,73 @@
-import { NextRequest } from 'next/server';
+// Test file for export route
 import { GET } from '../route';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
+// Auth utilities available from shared-test-utilities
+import {
+  setupEncounterApiTest,
+  createMockRequest,
+  mockExportSuccess,
+  mockExportFailure,
+  mockServiceException,
+  expectExportSuccess,
+  expectErrorResponse,
+  expectServerError,
+} from '../../../__tests__/shared-test-utilities';
 
-// Mock the service
+// Mock the service and auth
 jest.mock('@/lib/services/EncounterServiceImportExport');
+jest.mock('@/lib/auth');
 
 const mockService = EncounterServiceImportExport as jest.Mocked<typeof EncounterServiceImportExport>;
+// Auth mocking handled by shared utilities
 
 describe('/api/encounters/[id]/export', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    setupEncounterApiTest();
   });
+
+  // Helper function to reduce test duplication
+  const createExportTest = (url: string = 'http://localhost:3000/api/encounters/123/export', encounterId: string = '123') => {
+    const request = createMockRequest({ method: 'GET', url });
+    const params = Promise.resolve({ id: encounterId });
+    return { request, params };
+  };
 
   describe('GET', () => {
     it('should export encounter to JSON successfully', async () => {
-      // Arrange
       const mockExportData = '{"metadata":{"format":"json"},"encounter":{"name":"Test"}}';
-      mockService.exportToJson.mockResolvedValue({
-        success: true,
-        data: mockExportData,
-      });
+      mockExportSuccess(mockService, mockExportData);
 
-      const request = new NextRequest(
-        'http://localhost:3000/api/encounters/123/export?format=json'
-      );
-      const params = { id: '123' };
-
-      // Act
+      const { request, params } = createExportTest('http://localhost:3000/api/encounters/123/export?format=json');
       const response = await GET(request, { params });
 
-      // Assert
-      expect(response.status).toBe(200);
-      expect(response.headers.get('Content-Type')).toBe('application/json');
-      expect(response.headers.get('Content-Disposition')).toContain('attachment');
-      expect(response.headers.get('Content-Disposition')).toContain('.json');
-
-      const responseData = await response.text();
+      const responseData = await expectExportSuccess(response, 'json');
       expect(responseData).toBe(mockExportData);
     });
 
     it('should export encounter to XML successfully', async () => {
-      // Arrange
       const mockExportData = '<?xml version="1.0"?><encounter><name>Test</name></encounter>';
+      mockExportSuccess(mockService, '{}'); // JSON export will be overridden below
       mockService.exportToXml.mockResolvedValue({
         success: true,
         data: mockExportData,
       });
 
-      const request = new NextRequest(
-        'http://localhost:3000/api/encounters/123/export?format=xml'
-      );
-      const params = { id: '123' };
-
-      // Act
+      const { request, params } = createExportTest('http://localhost:3000/api/encounters/123/export?format=xml');
       const response = await GET(request, { params });
 
-      // Assert
-      expect(response.status).toBe(200);
-      expect(response.headers.get('Content-Type')).toBe('application/xml');
-      expect(response.headers.get('Content-Disposition')).toContain('attachment');
-      expect(response.headers.get('Content-Disposition')).toContain('.xml');
-
-      const responseData = await response.text();
+      const responseData = await expectExportSuccess(response, 'xml');
       expect(responseData).toBe(mockExportData);
     });
 
     it('should handle export options correctly', async () => {
-      // Arrange
-      mockService.exportToJson.mockResolvedValue({
-        success: true,
-        data: '{}',
-      });
+      mockExportSuccess(mockService, '{}');
 
-      const request = new NextRequest(
-        'http://localhost:3000/api/encounters/123/export?format=json&includeCharacterSheets=true&includePrivateNotes=true&stripPersonalData=true'
-      );
-      const params = { id: '123' };
-
-      // Act
+      const { request, params } = createExportTest('http://localhost:3000/api/encounters/123/export?format=json&includeCharacterSheets=true&includePrivateNotes=true&stripPersonalData=true');
       await GET(request, { params });
 
-      // Assert
       expect(mockService.exportToJson).toHaveBeenCalledWith(
         '123',
-        'temp-user-id',
+        'test-user-123',
         {
           includeCharacterSheets: true,
           includePrivateNotes: true,
@@ -94,24 +78,14 @@ describe('/api/encounters/[id]/export', () => {
     });
 
     it('should use default options when not provided', async () => {
-      // Arrange
-      mockService.exportToJson.mockResolvedValue({
-        success: true,
-        data: '{}',
-      });
+      mockExportSuccess(mockService, '{}');
 
-      const request = new NextRequest(
-        'http://localhost:3000/api/encounters/123/export'
-      );
-      const params = { id: '123' };
-
-      // Act
+      const { request, params } = createExportTest();
       await GET(request, { params });
 
-      // Assert
       expect(mockService.exportToJson).toHaveBeenCalledWith(
         '123',
-        'temp-user-id',
+        'test-user-123',
         {
           includeCharacterSheets: false,
           includePrivateNotes: false,
@@ -122,58 +96,28 @@ describe('/api/encounters/[id]/export', () => {
     });
 
     it('should return error when export fails', async () => {
-      // Arrange
-      mockService.exportToJson.mockResolvedValue({
-        success: false,
-        error: { message: 'Export failed', code: 'EXPORT_ERROR' },
-      });
+      mockExportFailure(mockService, { message: 'Export failed', code: 'EXPORT_ERROR' });
 
-      const request = new NextRequest(
-        'http://localhost:3000/api/encounters/123/export'
-      );
-      const params = { id: '123' };
-
-      // Act
+      const { request, params } = createExportTest();
       const response = await GET(request, { params });
 
-      // Assert
-      expect(response.status).toBe(400);
-
-      const responseData = await response.json();
-      expect(responseData.error).toBe('Export failed');
+      await expectErrorResponse(response, 400, 'Export failed');
     });
 
     it('should handle service exceptions', async () => {
-      // Arrange
-      mockService.exportToJson.mockRejectedValue(new Error('Service error'));
+      mockServiceException(mockService, 'Service error');
 
-      const request = new NextRequest(
-        'http://localhost:3000/api/encounters/123/export'
-      );
-      const params = { id: '123' };
-
-      // Act
+      const { request, params } = createExportTest();
       const response = await GET(request, { params });
 
-      // Assert
-      expect(response.status).toBe(500);
-
-      const responseData = await response.json();
-      expect(responseData.error).toBe('Internal server error');
+      await expectServerError(response);
     });
 
     it('should handle invalid query parameters', async () => {
-      // Arrange
-      const request = new NextRequest(
-        'http://localhost:3000/api/encounters/123/export?format=invalid'
-      );
-      const params = { id: '123' };
-
-      // Act
+      const { request, params } = createExportTest('http://localhost:3000/api/encounters/123/export?format=invalid');
       const response = await GET(request, { params });
 
-      // Assert
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(400);
     });
   });
 });
