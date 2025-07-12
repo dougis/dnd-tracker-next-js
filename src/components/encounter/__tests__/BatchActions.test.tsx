@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { BatchActions } from '../BatchActions';
 import { createMockToast, commonBeforeEach } from './test-utils/mockSetup';
 import { clickButton, expectFunctionToBeCalled } from './test-utils/interactionHelpers';
-import { COMMON_TEST_ENCOUNTERS, COMMON_TEST_COUNT } from './test-utils/batchActionsSharedMocks';
+import { COMMON_TEST_ENCOUNTERS, COMMON_TEST_COUNT, mockSuccessfulResponse, executeActionTest, executeDeleteDialogTest } from './test-utils/batchActionsSharedMocks';
 
 // Mock the toast hook
 const mockToast = createMockToast();
@@ -56,35 +56,25 @@ describe('BatchActions', () => {
   // Helper function to test action button behavior
   const testActionButton = async (
     buttonName: string | RegExp,
-    expectedToastTitle: string,
-    expectedClearCalls = 1,
-    expectedRefetchCalls = 1
+    expectedToastTitle: string
   ) => {
-    // Mock successful API response
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        results: COMMON_TEST_ENCOUNTERS,
-        errors: [],
-        summary: { successful: 3, failed: 0 }
-      }),
-    });
-
-    renderBatchActions({ selectedEncounters: COMMON_TEST_ENCOUNTERS });
-    await clickButton(buttonName);
-
-    // Determine action type from title for description
-    const actionType = expectedToastTitle.includes('duplicate') ? 'duplicated' :
-                     expectedToastTitle.includes('archive') ? 'archived' : 'deleted';
-
-    await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith({
-        title: expectedToastTitle,
-        description: `3 encounters have been ${actionType} successfully.`,
-      });
-      expectFunctionToBeCalled(defaultProps.onClearSelection, expectedClearCalls);
-      expectFunctionToBeCalled(defaultProps.onRefetch, expectedRefetchCalls);
-    });
+    await executeActionTest(
+      {
+        mockFetch,
+        buttonName,
+        expectedToastTitle
+      },
+      renderBatchActions,
+      clickButton,
+      waitFor,
+      (title: string, description: string) => {
+        expect(mockToast).toHaveBeenCalledWith({ title, description });
+      },
+      () => {
+        expectFunctionToBeCalled(defaultProps.onClearSelection);
+        expectFunctionToBeCalled(defaultProps.onRefetch);
+      }
+    );
   };
 
   // Helper function to test error handling for actions
@@ -127,44 +117,21 @@ describe('BatchActions', () => {
 
   // Helper function to test delete dialog workflow
   const testDeleteDialogWorkflow = async (actionType: 'open' | 'cancel' | 'confirm') => {
-    if (actionType === 'confirm') {
-      // Mock successful API response for delete confirmation
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          results: COMMON_TEST_ENCOUNTERS,
-          errors: [],
-          summary: { successful: 3, failed: 0 }
-        }),
-      });
-    }
-
-    renderBatchActions({ selectedEncounters: COMMON_TEST_ENCOUNTERS });
-
-    // Open dialog
-    await clickButton(/delete/i);
-
-    if (actionType === 'open') {
-      expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-      expect(screen.getByText('Delete Encounters')).toBeInTheDocument();
-      expect(screen.getByText(/Are you sure you want to delete 3 encounters?/)).toBeInTheDocument();
-    } else if (actionType === 'cancel') {
-      await clickButton(/cancel/i);
-      await waitFor(() => {
-        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
-      });
-    } else if (actionType === 'confirm') {
-      await clickButton('Delete');
-
-      await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Encounters deleted',
-          description: '3 encounters have been deleted successfully.',
-        });
+    await executeDeleteDialogTest(
+      actionType,
+      mockFetch,
+      renderBatchActions,
+      clickButton,
+      waitFor,
+      screen,
+      (title: string, description: string) => {
+        expect(mockToast).toHaveBeenCalledWith({ title, description });
+      },
+      () => {
         expectFunctionToBeCalled(defaultProps.onClearSelection);
         expectFunctionToBeCalled(defaultProps.onRefetch);
-      });
-    }
+      }
+    );
   };
 
   beforeEach(() => {
@@ -227,15 +194,7 @@ describe('BatchActions', () => {
     });
 
     it('should show delete button initially and handle click', async () => {
-      // Mock successful API response
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          results: COMMON_TEST_ENCOUNTERS,
-          errors: [],
-          summary: { successful: 3, failed: 0 }
-        }),
-      });
+      mockSuccessfulResponse(mockFetch);
 
       renderBatchActions({ selectedEncounters: COMMON_TEST_ENCOUNTERS });
       await clickButton(/delete/i);

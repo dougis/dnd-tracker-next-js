@@ -20,3 +20,111 @@ export const setupBatchActionsMocks = () => {
  */
 export const COMMON_TEST_ENCOUNTERS = ['enc1', 'enc2', 'enc3'];
 export const COMMON_TEST_COUNT = 3;
+
+/**
+ * Helper to create mock API response for successful batch operations
+ */
+export const createMockApiResponse = (successful = COMMON_TEST_COUNT, failed = 0) => ({
+  ok: true,
+  json: async () => ({
+    results: COMMON_TEST_ENCOUNTERS.slice(0, successful),
+    errors: [],
+    summary: { successful, failed }
+  }),
+});
+
+/**
+ * Helper to mock a successful fetch response
+ */
+export const mockSuccessfulResponse = (mockFetch: jest.Mock, successful = COMMON_TEST_COUNT, failed = 0) => {
+  mockFetch.mockResolvedValueOnce(createMockApiResponse(successful, failed));
+};
+
+/**
+ * Common test execution patterns to eliminate duplication
+ */
+export interface TestActionParams {
+  mockFetch: jest.Mock;
+  buttonName: string | RegExp;
+  expectedToastTitle: string;
+  expectedDescription?: string;
+  renderProps?: any;
+  isDeleteAction?: boolean;
+}
+
+/**
+ * Helper to execute and verify a successful action test
+ */
+export const executeActionTest = async (
+  params: TestActionParams,
+  renderFn: (_props?: any) => void,
+  clickButtonFn: (_buttonName: string | RegExp) => Promise<void>,
+  waitForFn: (_callback: () => void) => Promise<void>,
+  expectToastFn: (_title: string, _description: string) => void,
+  expectCallbacksFn: () => void
+) => {
+  // Mock successful API response
+  mockSuccessfulResponse(params.mockFetch);
+
+  renderFn({ selectedEncounters: COMMON_TEST_ENCOUNTERS, ...params.renderProps });
+
+  if (params.isDeleteAction) {
+    await clickButtonFn(/delete/i);
+    await clickButtonFn('Delete');
+  } else {
+    await clickButtonFn(params.buttonName);
+  }
+
+  // Determine action type from title for description
+  const actionType = params.expectedToastTitle.includes('duplicate') ? 'duplicated' :
+                   params.expectedToastTitle.includes('archive') ? 'archived' : 'deleted';
+
+  const description = params.expectedDescription ||
+    `${COMMON_TEST_COUNT} encounters have been ${actionType} successfully.`;
+
+  await waitForFn(() => {
+    expectToastFn(params.expectedToastTitle, description);
+    expectCallbacksFn();
+  });
+};
+
+/**
+ * Helper to execute and verify delete dialog workflow
+ */
+export const executeDeleteDialogTest = async (
+  actionType: 'open' | 'cancel' | 'confirm',
+  mockFetch: jest.Mock,
+  renderFn: (_props?: any) => void,
+  clickButtonFn: (_buttonName: string | RegExp) => Promise<void>,
+  waitForFn: (_callback: () => void) => Promise<void>,
+  screen: any,
+  expectToastFn?: (_title: string, _description: string) => void,
+  expectCallbacksFn?: () => void
+) => {
+  if (actionType === 'confirm') {
+    mockSuccessfulResponse(mockFetch);
+  }
+
+  renderFn({ selectedEncounters: COMMON_TEST_ENCOUNTERS });
+
+  // Open dialog
+  await clickButtonFn(/delete/i);
+
+  if (actionType === 'open') {
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    expect(screen.getByText('Delete Encounters')).toBeInTheDocument();
+    expect(screen.getByText(/Are you sure you want to delete 3 encounters?/)).toBeInTheDocument();
+  } else if (actionType === 'cancel') {
+    await clickButtonFn(/cancel/i);
+    await waitForFn(() => {
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    });
+  } else if (actionType === 'confirm') {
+    await clickButtonFn('Delete');
+
+    await waitForFn(() => {
+      expectToastFn?.('Encounters deleted', '3 encounters have been deleted successfully.');
+      expectCallbacksFn?.();
+    });
+  }
+};
