@@ -44,19 +44,33 @@ const mockCharacter: ICharacter = {
   updatedAt: new Date(),
 } as ICharacter;
 
+// Test helpers
+const setupAuthenticatedUser = () => {
+  (useSession as jest.Mock).mockReturnValue({
+    data: mockSession,
+    status: 'authenticated',
+  });
+};
+
+const setupUnauthenticatedUser = () => {
+  (useSession as jest.Mock).mockReturnValue({
+    data: null,
+    status: 'unauthenticated',
+  });
+};
+
+const renderHookWithDefaults = () => renderHook(() => useCharacterPageActions());
+
 describe('useCharacterPageActions', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
-    (useSession as jest.Mock).mockReturnValue({
-      data: mockSession,
-      status: 'authenticated',
-    });
+    setupAuthenticatedUser();
   });
 
   describe('navigation actions', () => {
     it('should navigate to character detail page when selectCharacter is called', () => {
-      const { result } = renderHook(() => useCharacterPageActions());
+      const { result } = renderHookWithDefaults();
 
       act(() => {
         result.current.selectCharacter(mockCharacter);
@@ -66,7 +80,7 @@ describe('useCharacterPageActions', () => {
     });
 
     it('should navigate to character edit page when editCharacter is called', () => {
-      const { result } = renderHook(() => useCharacterPageActions());
+      const { result } = renderHookWithDefaults();
 
       act(() => {
         result.current.editCharacter(mockCharacter);
@@ -78,7 +92,7 @@ describe('useCharacterPageActions', () => {
 
   describe('form actions', () => {
     it('should manage creation form open state', () => {
-      const { result } = renderHook(() => useCharacterPageActions());
+      const { result } = renderHookWithDefaults();
 
       expect(result.current.isCreationFormOpen).toBe(false);
 
@@ -96,7 +110,7 @@ describe('useCharacterPageActions', () => {
     });
 
     it('should handle creation success and navigate to new character', () => {
-      const { result } = renderHook(() => useCharacterPageActions());
+      const { result } = renderHookWithDefaults();
 
       act(() => {
         result.current.openCreationForm();
@@ -113,7 +127,7 @@ describe('useCharacterPageActions', () => {
     });
 
     it('should close form when creation success has no character ID', () => {
-      const { result } = renderHook(() => useCharacterPageActions());
+      const { result } = renderHookWithDefaults();
 
       act(() => {
         result.current.openCreationForm();
@@ -137,7 +151,7 @@ describe('useCharacterPageActions', () => {
           success: true,
         });
 
-        const { result } = renderHook(() => useCharacterPageActions());
+        const { result } = renderHookWithDefaults();
 
         await act(async () => {
           await result.current.deleteCharacter(mockCharacter);
@@ -156,7 +170,7 @@ describe('useCharacterPageActions', () => {
         };
         (CharacterService.deleteCharacter as jest.Mock).mockResolvedValue(mockError);
 
-        const { result } = renderHook(() => useCharacterPageActions());
+        const { result } = renderHookWithDefaults();
 
         await act(async () => {
           await result.current.deleteCharacter(mockCharacter);
@@ -169,12 +183,9 @@ describe('useCharacterPageActions', () => {
       });
 
       it('should not delete if user is not authenticated', async () => {
-        (useSession as jest.Mock).mockReturnValue({
-          data: null,
-          status: 'unauthenticated',
-        });
+        setupUnauthenticatedUser();
 
-        const { result } = renderHook(() => useCharacterPageActions());
+        const { result } = renderHookWithDefaults();
 
         await act(async () => {
           await result.current.deleteCharacter(mockCharacter);
@@ -202,7 +213,7 @@ describe('useCharacterPageActions', () => {
           data: mockClonedCharacter,
         });
 
-        const { result } = renderHook(() => useCharacterPageActions());
+        const { result } = renderHookWithDefaults();
 
         await act(async () => {
           await result.current.duplicateCharacter(mockCharacter);
@@ -226,7 +237,7 @@ describe('useCharacterPageActions', () => {
         };
         (CharacterService.cloneCharacter as jest.Mock).mockResolvedValue(mockError);
 
-        const { result } = renderHook(() => useCharacterPageActions());
+        const { result } = renderHookWithDefaults();
 
         await act(async () => {
           await result.current.duplicateCharacter(mockCharacter);
@@ -238,7 +249,7 @@ describe('useCharacterPageActions', () => {
       it('should cancel duplication if user cancels prompt', async () => {
         global.prompt = jest.fn().mockReturnValue(null);
 
-        const { result } = renderHook(() => useCharacterPageActions());
+        const { result } = renderHookWithDefaults();
 
         await act(async () => {
           await result.current.duplicateCharacter(mockCharacter);
@@ -248,12 +259,9 @@ describe('useCharacterPageActions', () => {
       });
 
       it('should not duplicate if user is not authenticated', async () => {
-        (useSession as jest.Mock).mockReturnValue({
-          data: null,
-          status: 'unauthenticated',
-        });
+        setupUnauthenticatedUser();
 
-        const { result } = renderHook(() => useCharacterPageActions());
+        const { result } = renderHookWithDefaults();
 
         await act(async () => {
           await result.current.duplicateCharacter(mockCharacter);

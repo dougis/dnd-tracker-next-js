@@ -19,11 +19,11 @@ export function useCharacterPageActions() {
 
   const navigationActions = {
     selectCharacter: (character: ICharacter) => {
-      router.push(`/characters/${character._id}`);
+      router.push(`/characters/${character._id.toString()}`);
     },
 
     editCharacter: (character: ICharacter) => {
-      router.push(`/characters/${character._id}`);
+      router.push(`/characters/${character._id.toString()}`);
     },
   };
 
@@ -48,7 +48,7 @@ export function useCharacterPageActions() {
           setIsDeleting(true);
           try {
             const result = await CharacterService.deleteCharacter(
-              character._id,
+              character._id.toString(),
               session.user.id
             );
 
@@ -85,7 +85,7 @@ export function useCharacterPageActions() {
       setIsDuplicating(true);
       try {
         const result = await CharacterService.cloneCharacter(
-          character._id,
+          character._id.toString(),
           session.user.id,
           newName
         );
@@ -93,7 +93,7 @@ export function useCharacterPageActions() {
         if (result.success) {
           // TODO: Show success toast notification
           if (result.data?._id) {
-            router.push(`/characters/${result.data._id}`);
+            router.push(`/characters/${result.data._id.toString()}`);
           }
           return true;
         } else {
@@ -118,7 +118,7 @@ export function useCharacterPageActions() {
     handleCreationSuccess: (character: any) => {
       setIsCreationFormOpen(false);
       if (character?._id) {
-        router.push(`/characters/${character._id}`);
+        router.push(`/characters/${character._id.toString()}`);
       }
     },
   };
