@@ -4,6 +4,7 @@
  */
 
 import { ServiceResult } from '../../UserServiceErrors';
+import { TestPasswordConstants } from '../../../test-utils/password-constants';
 
 /**
  * Generic factory function type
@@ -137,7 +138,7 @@ export const testConstants = {
   TEST_USER_ID_2: '507f1f77bcf86cd799439012',
   TEST_EMAIL: 'test@example.com',
   TEST_USERNAME: 'testuser',
-  TEST_PASSWORD: 'Password123!',
+  TEST_PASSWORD: TestPasswordConstants.PASSWORD_123,
 };
 
 /**

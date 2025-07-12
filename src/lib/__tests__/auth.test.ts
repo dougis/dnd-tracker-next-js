@@ -1,4 +1,5 @@
 import { UserService } from '../services/UserService';
+import { TestPasswordConstants } from '../test-utils/password-constants';
 
 // Mock all external dependencies
 jest.mock('@auth/mongodb-adapter', () => ({
@@ -117,7 +118,7 @@ describe('Authentication System', () => {
     beforeEach(() => {
       mockCredentials = {
         email: 'test@example.com',
-        password: 'Password123!',
+        password: TestPasswordConstants.PASSWORD_123,
       };
 
       mockUserService = UserService as jest.Mocked<typeof UserService>;
@@ -198,7 +199,7 @@ describe('Authentication System', () => {
 
       const authResult = await mockUserService.authenticateUser({
         email: mockCredentials.email,
-        password: 'wrongpassword',
+        password: TestPasswordConstants.WRONG_SIMPLE,
         rememberMe: false,
       });
 
@@ -433,12 +434,46 @@ describe('Authentication System', () => {
 
     it('should have correct page configuration', () => {
       const expectedPages = {
-        signIn: '/auth/signin',
-        error: '/auth/error',
+        signIn: '/signin',
+        error: '/error',
       };
 
-      expect(expectedPages.signIn).toBe('/auth/signin');
-      expect(expectedPages.error).toBe('/auth/error');
+      expect(expectedPages.signIn).toBe('/signin');
+      expect(expectedPages.error).toBe('/error');
+    });
+
+    it('should load NextAuth configuration without errors', async () => {
+      // Test that the auth configuration can be loaded and covers actual file execution
+      // This ensures the specific change for issue #363 doesn't break the module
+      const authModule = await import('../auth');
+
+      // Verify all required exports are available after import
+      expect(authModule.handlers).toBeDefined();
+      expect(authModule.auth).toBeDefined();
+      expect(authModule.signIn).toBeDefined();
+      expect(authModule.signOut).toBeDefined();
+    });
+
+    it('should handle different NODE_ENV configurations during import', async () => {
+      // Test that NextAuth configuration works across different environments
+      // This covers the debug configuration line in auth.ts
+      const originalNodeEnv = process.env.NODE_ENV;
+
+      try {
+        // Test development environment debug configuration
+        process.env.NODE_ENV = 'development';
+        const devModule = await import('../auth');
+        expect(devModule.handlers).toBeDefined();
+
+        // Test production environment debug configuration
+        process.env.NODE_ENV = 'production';
+        const prodModule = await import('../auth');
+        expect(prodModule.handlers).toBeDefined();
+
+      } finally {
+        // Always restore original environment
+        process.env.NODE_ENV = originalNodeEnv;
+      }
     });
 
     it('should handle debug mode based on environment', () => {

@@ -15,13 +15,14 @@ import {
   userRoleSchema,
 } from '../user';
 import { safeValidate } from '../base';
+import { TestPasswordConstants } from '../../test-utils/password-constants';
 
 describe('User Validation Schemas', () => {
   describe('userRegistrationSchema', () => {
     const validRegistration = {
       email: 'test@example.com',
-      password: 'Password123!',
-      confirmPassword: 'Password123!',
+      password: TestPasswordConstants.PASSWORD_123,
+      confirmPassword: TestPasswordConstants.PASSWORD_123,
       username: 'testuser',
       firstName: 'John',
       lastName: 'Doe',
@@ -37,7 +38,7 @@ describe('User Validation Schemas', () => {
     it('should reject when passwords do not match', () => {
       const invalidData = {
         ...validRegistration,
-        confirmPassword: 'DifferentPassword123!',
+        confirmPassword: TestPasswordConstants.DIFFERENT_PASSWORD,
       };
 
       const result = safeValidate(userRegistrationSchema, invalidData);
@@ -79,7 +80,7 @@ describe('User Validation Schemas', () => {
   describe('userLoginSchema', () => {
     const validLogin = {
       email: 'test@example.com',
-      password: 'password123',
+      password: TestPasswordConstants.WEAK_123,
       rememberMe: false,
     };
 
@@ -111,7 +112,7 @@ describe('User Validation Schemas', () => {
     it('should default rememberMe to false', () => {
       const dataWithoutRememberMe = {
         email: 'test@example.com',
-        password: 'password123',
+        password: TestPasswordConstants.WEAK_123,
       };
 
       const result = safeValidate(userLoginSchema, dataWithoutRememberMe);
@@ -153,9 +154,9 @@ describe('User Validation Schemas', () => {
 
   describe('changePasswordSchema', () => {
     const validChangePassword = {
-      currentPassword: 'OldPassword123!',
-      newPassword: 'NewPassword123!',
-      confirmNewPassword: 'NewPassword123!',
+      currentPassword: TestPasswordConstants.OLD_PASSWORD,
+      newPassword: TestPasswordConstants.NEW_PASSWORD,
+      confirmNewPassword: TestPasswordConstants.NEW_PASSWORD,
     };
 
     it('should validate correct password change', () => {
@@ -166,7 +167,7 @@ describe('User Validation Schemas', () => {
     it('should reject when new passwords do not match', () => {
       const invalidData = {
         ...validChangePassword,
-        confirmNewPassword: 'DifferentPassword123!',
+        confirmNewPassword: TestPasswordConstants.DIFFERENT_PASSWORD,
       };
 
       const result = safeValidate(changePasswordSchema, invalidData);
@@ -175,9 +176,9 @@ describe('User Validation Schemas', () => {
 
     it('should reject when new password is same as current', () => {
       const invalidData = {
-        currentPassword: 'SamePassword123!',
-        newPassword: 'SamePassword123!',
-        confirmNewPassword: 'SamePassword123!',
+        currentPassword: TestPasswordConstants.SAME_PASSWORD,
+        newPassword: TestPasswordConstants.SAME_PASSWORD,
+        confirmNewPassword: TestPasswordConstants.SAME_PASSWORD,
       };
 
       const result = safeValidate(changePasswordSchema, invalidData);
@@ -199,8 +200,8 @@ describe('User Validation Schemas', () => {
   describe('passwordResetSchema', () => {
     const validReset = {
       token: 'valid-reset-token',
-      password: 'NewPassword123!',
-      confirmPassword: 'NewPassword123!',
+      password: TestPasswordConstants.NEW_PASSWORD,
+      confirmPassword: TestPasswordConstants.NEW_PASSWORD,
     };
 
     it('should validate correct password reset', () => {
@@ -211,7 +212,7 @@ describe('User Validation Schemas', () => {
     it('should reject when passwords do not match', () => {
       const invalidData = {
         ...validReset,
-        confirmPassword: 'DifferentPassword123!',
+        confirmPassword: TestPasswordConstants.DIFFERENT_PASSWORD,
       };
 
       const result = safeValidate(passwordResetSchema, invalidData);

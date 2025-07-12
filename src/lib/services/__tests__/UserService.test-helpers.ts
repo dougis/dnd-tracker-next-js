@@ -27,6 +27,7 @@ import {
   testConstants,
   mockDataTemplates,
 } from './shared/test-factory-utils';
+import { TestPasswordConstants } from '../../test-utils/password-constants';
 
 // ================================
 // Mock Data Factories
@@ -63,9 +64,9 @@ export const createMockUserProfileUpdate = createFactory<UserProfileUpdate>({
 });
 
 export const createMockChangePassword = createFactory<ChangePassword>({
-  currentPassword: 'OldPassword123!',
-  newPassword: 'NewPassword123!',
-  confirmNewPassword: 'NewPassword123!',
+  currentPassword: TestPasswordConstants.OLD_PASSWORD,
+  newPassword: TestPasswordConstants.NEW_PASSWORD,
+  confirmNewPassword: TestPasswordConstants.NEW_PASSWORD,
 });
 
 export const createMockPasswordResetRequest = createFactory<PasswordResetRequest>({
@@ -74,8 +75,8 @@ export const createMockPasswordResetRequest = createFactory<PasswordResetRequest
 
 export const createMockPasswordReset = createFactory<PasswordReset>({
   token: 'reset-token-123',
-  password: 'NewPassword123!',
-  confirmPassword: 'NewPassword123!',
+  password: TestPasswordConstants.NEW_PASSWORD,
+  confirmPassword: TestPasswordConstants.NEW_PASSWORD,
 });
 
 export const createMockEmailVerification = createFactory<EmailVerification>({

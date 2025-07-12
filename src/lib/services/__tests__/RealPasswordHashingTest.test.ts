@@ -5,6 +5,7 @@
 
 import bcrypt from 'bcryptjs';
 import { isPasswordHashed, hashPassword, comparePassword } from '../../utils/password-security';
+import { TestPasswordConstants } from '../../test-utils/password-constants';
 
 describe('Real Password Hashing Security Test', () => {
   beforeEach(() => {
@@ -13,7 +14,7 @@ describe('Real Password Hashing Security Test', () => {
 
   describe('Password Security Utilities', () => {
     it('should automatically hash passwords correctly', async () => {
-      const plainPassword = 'TestPassword123!';
+      const plainPassword = TestPasswordConstants.VALID_PASSWORD;
 
       // Before hashing, check if password is plain text
       expect(isPasswordHashed(plainPassword)).toBe(false);
@@ -42,7 +43,7 @@ describe('Real Password Hashing Security Test', () => {
     });
 
     it('should handle direct bcrypt operations', async () => {
-      const plainPassword = 'DirectBcryptTest123!';
+      const plainPassword = TestPasswordConstants.DIRECT_BCRYPT_PASSWORD;
 
       // Test direct bcrypt hashing
       const salt = await bcrypt.genSalt(12);
@@ -92,7 +93,7 @@ describe('Real Password Hashing Security Test', () => {
 
   describe('Security Implementation Analysis', () => {
     it('should report the current password hashing behavior', async () => {
-      const plainPassword = 'ReportTest123!';
+      const plainPassword = TestPasswordConstants.REPORT_TEST_PASSWORD;
 
       console.log('=== PASSWORD HASHING ANALYSIS ===');
       console.log('Original password:', plainPassword);

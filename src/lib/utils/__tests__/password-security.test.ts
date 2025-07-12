@@ -5,11 +5,12 @@ import {
   validatePasswordStrength,
   auditPasswordSecurity,
 } from '../password-security';
+import { TestPasswordConstants } from '../../test-utils/password-constants';
 
 describe('Password Security Utils', () => {
   describe('hashPassword', () => {
     it('should hash a valid password', async () => {
-      const plainPassword = 'TestPassword123!';
+      const plainPassword = TestPasswordConstants.VALID_PASSWORD;
       const hashedPassword = await hashPassword(plainPassword);
 
       expect(hashedPassword).not.toBe(plainPassword);
@@ -30,7 +31,7 @@ describe('Password Security Utils', () => {
     });
 
     it('should reject already hashed passwords', async () => {
-      const hashedPassword = '$2b$12$W/6WPGC5/e.M2vtQEpusM.0ltMcd1DeZUzqQ5LxJ.W7iRsyp0zZNm';
+      const hashedPassword = TestPasswordConstants.HASHED_PASSWORD_EXAMPLE;
       await expect(hashPassword(hashedPassword)).rejects.toThrow('already hashed');
     });
 
@@ -44,31 +45,31 @@ describe('Password Security Utils', () => {
 
   describe('comparePassword', () => {
     it('should correctly compare passwords', async () => {
-      const plainPassword = 'TestPassword123!';
+      const plainPassword = TestPasswordConstants.VALID_PASSWORD;
       const hashedPassword = await hashPassword(plainPassword);
 
       const isValid = await comparePassword(plainPassword, hashedPassword);
       expect(isValid).toBe(true);
 
-      const isInvalid = await comparePassword('WrongPassword123!', hashedPassword);
+      const isInvalid = await comparePassword(TestPasswordConstants.WRONG_PASSWORD, hashedPassword);
       expect(isInvalid).toBe(false);
     });
 
     it('should reject comparison with unhashed passwords', async () => {
       await expect(
-        comparePassword('password', 'plaintext')
+        comparePassword(TestPasswordConstants.SIMPLE_WEAK, TestPasswordConstants.PLAIN_TEXT)
       ).rejects.toThrow('SECURITY ERROR');
     });
 
     it('should reject invalid inputs', async () => {
-      const hashedPassword = '$2b$12$hashedPasswordExample.hash.here.example';
+      const hashedPassword = TestPasswordConstants.HASHED_PASSWORD_ALT;
 
       await expect(
         comparePassword(null as any, hashedPassword)
       ).rejects.toThrow('must be strings');
 
       await expect(
-        comparePassword('password', null as any)
+        comparePassword(TestPasswordConstants.SIMPLE_WEAK, null as any)
       ).rejects.toThrow('must be strings');
     });
   });
@@ -88,8 +89,8 @@ describe('Password Security Utils', () => {
 
     it('should correctly identify non-hashed passwords', () => {
       const plainPasswords = [
-        'password123',
-        'TestPassword123!',
+        TestPasswordConstants.WEAK_123,
+        TestPasswordConstants.VALID_PASSWORD,
         '$invalid$hash',
         '$2a$hashedPasswordExample', // too short
         'plaintext',
@@ -111,7 +112,7 @@ describe('Password Security Utils', () => {
   describe('validatePasswordStrength', () => {
     it('should validate strong passwords', () => {
       const strongPasswords = [
-        'StrongPassword123!',
+        TestPasswordConstants.STRONG_PASSWORD,
         'MySecureP@ssw0rd',
         'Complex$Pass123',
       ];
@@ -139,7 +140,7 @@ describe('Password Security Utils', () => {
 
     it('should identify weak passwords', () => {
       const weakPasswords = [
-        'password',
+        TestPasswordConstants.SIMPLE_WEAK,
         '12345678',
         'PASSWORD',
         'short',
@@ -190,7 +191,7 @@ describe('Password Security Utils', () => {
 
   describe('integration security tests', () => {
     it('should provide end-to-end password security', async () => {
-      const plainPassword = 'SecureTestPassword123!';
+      const plainPassword = TestPasswordConstants.SECURE_TEST_PASSWORD;
 
       // Validate password strength
       const validation = validatePasswordStrength(plainPassword);

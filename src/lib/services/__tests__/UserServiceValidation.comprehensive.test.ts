@@ -8,6 +8,7 @@ import {
   passwordResetSchema,
   emailVerificationSchema,
 } from '../../validations/user';
+import { TestPasswordConstants } from '../../test-utils/password-constants';
 
 // Mock the validation schemas
 jest.mock('../../validations/user');
@@ -31,8 +32,8 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
       username: 'testuser',
       firstName: 'Test',
       lastName: 'User',
-      password: 'Password123!',
-      confirmPassword: 'Password123!',
+      password: TestPasswordConstants.PASSWORD_123,
+      confirmPassword: TestPasswordConstants.PASSWORD_123,
       agreeToTerms: true,
       subscribeToNewsletter: false,
     };
@@ -86,7 +87,7 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
   describe('validateAndParseLogin', () => {
     const validLoginData = {
       email: 'test@example.com',
-      password: 'Password123!',
+      password: TestPasswordConstants.PASSWORD_123,
       rememberMe: false,
     };
 
@@ -113,7 +114,7 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
     });
 
     it('should throw validation error for invalid email format', () => {
-      const invalidData = { email: 'invalid-email', password: 'Password123!' };
+      const invalidData = { email: 'invalid-email', password: TestPasswordConstants.PASSWORD_123 };
       mockUserLoginSchema.parse.mockImplementation(() => {
         throw new Error('Invalid email format');
       });
@@ -169,9 +170,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
 
   describe('validateAndParsePasswordChange', () => {
     const validPasswordData = {
-      currentPassword: 'OldPassword123!',
-      newPassword: 'NewPassword123!',
-      confirmNewPassword: 'NewPassword123!',
+      currentPassword: TestPasswordConstants.OLD_PASSWORD,
+      newPassword: TestPasswordConstants.NEW_PASSWORD,
+      confirmNewPassword: TestPasswordConstants.NEW_PASSWORD,
     };
 
     it('should successfully validate and parse valid password change data', () => {
@@ -189,9 +190,9 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
 
     it('should throw validation error for mismatched passwords', () => {
       const invalidData = {
-        currentPassword: 'OldPassword123!',
-        newPassword: 'NewPassword123!',
-        confirmNewPassword: 'DifferentPassword123!',
+        currentPassword: TestPasswordConstants.OLD_PASSWORD,
+        newPassword: TestPasswordConstants.NEW_PASSWORD,
+        confirmNewPassword: TestPasswordConstants.DIFFERENT_PASSWORD,
       };
       mockChangePasswordSchema.parse.mockImplementation(() => {
         throw new Error('Passwords do not match');
@@ -204,7 +205,7 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
 
     it('should throw validation error for weak new password', () => {
       const invalidData = {
-        currentPassword: 'OldPassword123!',
+        currentPassword: TestPasswordConstants.OLD_PASSWORD,
         newPassword: '123',
         confirmNewPassword: '123',
       };
@@ -252,8 +253,8 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
   describe('validateAndParsePasswordReset', () => {
     const validResetData = {
       token: 'valid-reset-token',
-      password: 'NewPassword123!',
-      confirmPassword: 'NewPassword123!',
+      password: TestPasswordConstants.NEW_PASSWORD,
+      confirmPassword: TestPasswordConstants.NEW_PASSWORD,
     };
 
     it('should successfully validate and parse valid password reset data', () => {
@@ -272,8 +273,8 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
     it('should throw validation error for invalid token', () => {
       const invalidData = {
         token: '',
-        password: 'NewPassword123!',
-        confirmPassword: 'NewPassword123!',
+        password: TestPasswordConstants.NEW_PASSWORD,
+        confirmPassword: TestPasswordConstants.NEW_PASSWORD,
       };
       mockPasswordResetSchema.parse.mockImplementation(() => {
         throw new Error('Token is required');
@@ -287,8 +288,8 @@ describe('UserServiceValidation - Comprehensive Tests', () => {
     it('should throw validation error for mismatched passwords', () => {
       const invalidData = {
         token: 'valid-token',
-        password: 'NewPassword123!',
-        confirmPassword: 'DifferentPassword123!',
+        password: TestPasswordConstants.NEW_PASSWORD,
+        confirmPassword: TestPasswordConstants.DIFFERENT_PASSWORD,
       };
       mockPasswordResetSchema.parse.mockImplementation(() => {
         throw new Error('Passwords do not match');

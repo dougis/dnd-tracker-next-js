@@ -1,4 +1,5 @@
 import { hashPassword, comparePassword, isPasswordHashed, validatePasswordStrength } from '../../utils/password-security';
+import { TestPasswordConstants } from '../../test-utils/password-constants';
 
 /**
  * Critical Security Test: Password Hashing Verification
@@ -11,7 +12,7 @@ describe('Password Hashing Security Verification', () => {
 
   describe('Password Security Utilities', () => {
     it('should hash password correctly', async () => {
-      const plainPassword = 'TestPassword123!';
+      const plainPassword = TestPasswordConstants.VALID_PASSWORD;
 
       // Before hashing, password should not be considered hashed
       expect(isPasswordHashed(plainPassword)).toBe(false);
@@ -29,12 +30,12 @@ describe('Password Hashing Security Verification', () => {
       expect(isValid).toBe(true);
 
       // Should fail with wrong password
-      const isInvalid = await comparePassword('WrongPassword', hashedPassword);
+      const isInvalid = await comparePassword(TestPasswordConstants.WRONG_SIMPLE, hashedPassword);
       expect(isInvalid).toBe(false);
     });
 
     it('should not rehash already hashed passwords', async () => {
-      const plainPassword = 'TestPassword123!';
+      const plainPassword = TestPasswordConstants.VALID_PASSWORD;
       const hashedPassword = await hashPassword(plainPassword);
 
       // Attempting to hash an already hashed password should throw an error
@@ -42,8 +43,8 @@ describe('Password Hashing Security Verification', () => {
     });
 
     it('should validate password strength requirements', async () => {
-      const strongPassword = 'StrongPassword123!';
-      const weakPassword = 'weak';
+      const strongPassword = TestPasswordConstants.STRONG_PASSWORD;
+      const weakPassword = TestPasswordConstants.WEAK_PASSWORD;
 
       // Strong password should pass validation
       const strongValidation = validatePasswordStrength(strongPassword);
@@ -59,7 +60,7 @@ describe('Password Hashing Security Verification', () => {
     });
 
     it('should authenticate user with hashed password comparison', async () => {
-      const plainPassword = 'AuthTestPassword123!';
+      const plainPassword = TestPasswordConstants.AUTH_TEST_PASSWORD;
 
       // Hash the password
       const hashedPassword = await hashPassword(plainPassword);
@@ -69,13 +70,13 @@ describe('Password Hashing Security Verification', () => {
       expect(isCorrect).toBe(true);
 
       // Should fail with wrong password
-      const isWrong = await comparePassword('WrongPassword123!', hashedPassword);
+      const isWrong = await comparePassword(TestPasswordConstants.WRONG_PASSWORD, hashedPassword);
       expect(isWrong).toBe(false);
     });
 
     it('should handle password changes securely', async () => {
-      const originalPassword = 'OriginalPassword123!';
-      const newPassword = 'NewPassword123!';
+      const originalPassword = TestPasswordConstants.ORIGINAL_PASSWORD;
+      const newPassword = TestPasswordConstants.NEW_PASSWORD;
 
       // Hash both passwords
       const originalHash = await hashPassword(originalPassword);
@@ -102,9 +103,9 @@ describe('Password Hashing Security Verification', () => {
   describe('Security Compliance', () => {
     it('should never store plaintext passwords', async () => {
       const passwords = [
-        'Password123!',
-        'AnotherPassword456!',
-        'ThirdPassword789!',
+        TestPasswordConstants.PASSWORD_123,
+        TestPasswordConstants.ANOTHER_PASSWORD,
+        TestPasswordConstants.THIRD_PASSWORD,
       ];
 
       for (const password of passwords) {
@@ -124,7 +125,7 @@ describe('Password Hashing Security Verification', () => {
     });
 
     it('should use proper bcrypt salt rounds', async () => {
-      const password = 'SaltTestPassword123!';
+      const password = TestPasswordConstants.SALT_TEST_PASSWORD;
 
       // Hash the password
       const hashedPassword = await hashPassword(password);
@@ -140,9 +141,9 @@ describe('Password Hashing Security Verification', () => {
 
     it('should detect plaintext vs hashed passwords', () => {
       const plaintextPasswords = [
-        'password123',
-        'TestPassword123!',
-        'short',
+        TestPasswordConstants.WEAK_123,
+        TestPasswordConstants.VALID_PASSWORD,
+        TestPasswordConstants.SHORT_PASSWORD,
         'verylongpasswordthatisnothashedbutlongenoughtobeconfusing',
       ];
 
@@ -165,7 +166,7 @@ describe('Password Hashing Security Verification', () => {
 
     it('should reject weak passwords', async () => {
       const weakPasswords = [
-        'short',     // too short
+        TestPasswordConstants.SHORT_PASSWORD,     // too short
         '',          // empty
         'a'.repeat(1001), // too long
       ];
@@ -183,9 +184,9 @@ describe('Password Hashing Security Verification', () => {
     it('should enforce password security requirements', async () => {
       // Test password strength validation
       const testCases = [
-        { password: 'StrongPassword123!', shouldPass: true, expectedStrength: 'strong' },
+        { password: TestPasswordConstants.STRONG_PASSWORD, shouldPass: true, expectedStrength: 'strong' },
         { password: 'MediumPass1', shouldPass: false, expectedStrength: 'medium' },
-        { password: 'weak', shouldPass: false, expectedStrength: 'weak' },
+        { password: TestPasswordConstants.WEAK_PASSWORD, shouldPass: false, expectedStrength: 'weak' },
       ];
 
       for (const testCase of testCases) {
