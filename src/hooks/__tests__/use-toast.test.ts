@@ -157,24 +157,19 @@ describe('useToast', () => {
   });
 
   describe('Toast Dismissal', () => {
-    it('dismisses specific toast by id', () => {
-      const { result } = setupToastHook();
+    const dismissalTests = [
+      { desc: 'dismisses specific toast by id', args: ['toast-123'], expected: ['toast-123'] },
+      { desc: 'dismisses all toasts when no id provided', args: [], expected: [] }
+    ];
 
-      act(() => {
-        result.current.dismiss('toast-123');
+    dismissalTests.forEach(({ desc, args, expected }) => {
+      it(desc, () => {
+        const { result } = setupToastHook();
+        act(() => {
+          result.current.dismiss(...args);
+        });
+        expect(mockToastDismiss).toHaveBeenCalledWith(...expected);
       });
-
-      expect(mockToastDismiss).toHaveBeenCalledWith('toast-123');
-    });
-
-    it('dismisses all toasts when no id provided', () => {
-      const { result } = setupToastHook();
-
-      act(() => {
-        result.current.dismiss();
-      });
-
-      expect(mockToastDismiss).toHaveBeenCalledWith();
     });
   });
 
