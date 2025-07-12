@@ -174,32 +174,29 @@ describe('useToast', () => {
   });
 
   describe('Edge Cases', () => {
-    it('handles missing toast properties gracefully', () => {
-      runStandardToastTest({} as any, mockToastBase, undefined);
-    });
+    const edgeCases = [
+      { desc: 'handles missing toast properties gracefully', props: {} as any, mock: mockToastBase, title: undefined },
+      { desc: 'handles null values in toast properties', props: { title: 'Test', description: null as any, variant: null as any, duration: null as any }, mock: mockToastBase, title: 'Test' }
+    ];
 
-    it('handles null values in toast properties', () => {
-      runStandardToastTest({
-        title: 'Test',
-        description: null as any,
-        variant: null as any,
-        duration: null as any
-      }, mockToastBase, 'Test');
+    edgeCases.forEach(({ desc, props, mock, title }) => {
+      it(desc, () => {
+        runStandardToastTest(props, mock, title);
+      });
     });
 
     it('handles multiple rapid toast calls', () => {
       const { result } = setupToastHook();
+      const titles = ['First', 'Second', 'Third'];
 
       act(() => {
-        result.current.toast({ title: 'First' });
-        result.current.toast({ title: 'Second' });
-        result.current.toast({ title: 'Third' });
+        titles.forEach(title => result.current.toast({ title }));
       });
 
-      expect(mockToastBase).toHaveBeenCalledTimes(3);
-      expect(mockToastBase).toHaveBeenNthCalledWith(1, 'First');
-      expect(mockToastBase).toHaveBeenNthCalledWith(2, 'Second');
-      expect(mockToastBase).toHaveBeenNthCalledWith(3, 'Third');
+      expect(mockToastBase).toHaveBeenCalledTimes(titles.length);
+      titles.forEach((title, index) => {
+        expect(mockToastBase).toHaveBeenNthCalledWith(index + 1, title);
+      });
     });
   });
 
@@ -231,7 +228,6 @@ describe('useToast', () => {
 
     it('preserves existing interface structure', () => {
       const { result } = setupToastHook();
-
       expect(result.current).toMatchObject({
         toast: expect.any(Function),
         dismiss: expect.any(Function)
