@@ -54,7 +54,7 @@ describe('useEditableContent', () => {
   describe('handleSave with onSave callback', () => {
     it('calls onSave callback with current edited value', async () => {
       const mockOnSave = jest.fn().mockResolvedValue(undefined);
-      const { result } = renderHook(() => 
+      const { result } = renderHook(() =>
         useEditableContent(initialValue, mockOnSave)
       );
 
@@ -73,7 +73,7 @@ describe('useEditableContent', () => {
       const mockOnSave = jest.fn().mockImplementation(
         () => new Promise(resolve => setTimeout(resolve, 100))
       );
-      const { result } = renderHook(() => 
+      const { result } = renderHook(() =>
         useEditableContent(initialValue, mockOnSave)
       );
 
@@ -96,7 +96,7 @@ describe('useEditableContent', () => {
       const mockOnSave = jest.fn().mockRejectedValue(new Error('Save failed'));
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-      const { result } = renderHook(() => 
+      const { result } = renderHook(() =>
         useEditableContent(initialValue, mockOnSave)
       );
 
@@ -173,7 +173,7 @@ describe('useEditableContent', () => {
     it('should set isSaving state during API call', async () => {
       // Mock fetch with delay
       global.fetch = jest.fn().mockImplementation(
-        () => new Promise(resolve => 
+        () => new Promise(resolve =>
           setTimeout(() => resolve({
             ok: true,
             json: async () => ({ success: true }),
