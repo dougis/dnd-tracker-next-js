@@ -245,6 +245,42 @@ For more information, see the documentation.
 }
 
 /**
+ * Handle down command with validation
+ */
+async function handleDownCommand(cli: MigrationCLI, args: string[]): Promise<void> {
+  const steps = args[0] ? parseInt(args[0], 10) : 1;
+  if (isNaN(steps) || steps < 1) {
+    console.error('❌ Invalid number of steps. Must be a positive integer.');
+    process.exit(1);
+  }
+  await cli.down(steps);
+}
+
+/**
+ * Handle create command
+ */
+async function handleCreateCommand(cli: MigrationCLI, args: string[]): Promise<void> {
+  const description = args.join(' ');
+  await cli.create(description);
+}
+
+/**
+ * Handle help commands
+ */
+function handleHelpCommand(cli: MigrationCLI): void {
+  cli.help();
+}
+
+/**
+ * Handle unknown commands
+ */
+function handleUnknownCommand(command: string | undefined): void {
+  console.error(`❌ Unknown command: ${command || '(none)'}`);
+  console.log('Run "npm run migrate:help" for usage information.');
+  process.exit(1);
+}
+
+/**
  * Main CLI entry point
  */
 async function main(): Promise<void> {
@@ -257,39 +293,25 @@ async function main(): Promise<void> {
       case 'status':
         await cli.status();
         break;
-
       case 'up':
         await cli.up();
         break;
-
       case 'down':
-        const steps = args[0] ? parseInt(args[0], 10) : 1;
-        if (isNaN(steps) || steps < 1) {
-          console.error('❌ Invalid number of steps. Must be a positive integer.');
-          process.exit(1);
-        }
-        await cli.down(steps);
+        await handleDownCommand(cli, args);
         break;
-
       case 'create':
-        const description = args.join(' ');
-        await cli.create(description);
+        await handleCreateCommand(cli, args);
         break;
-
       case 'validate':
         await cli.validate();
         break;
-
       case 'help':
       case '--help':
       case '-h':
-        cli.help();
+        handleHelpCommand(cli);
         break;
-
       default:
-        console.error(`❌ Unknown command: ${command || '(none)'}`);
-        console.log('Run "npm run migrate:help" for usage information.');
-        process.exit(1);
+        handleUnknownCommand(command);
     }
   } catch (error) {
     console.error(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);

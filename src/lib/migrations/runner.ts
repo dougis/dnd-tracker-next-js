@@ -37,10 +37,23 @@ export class MigrationRunner implements IMigrationRunner {
    * Validate constructor parameters
    */
   private validateConstructorParams(client: MongoClient, config: MigrationConfig): void {
+    this.validateClient(client);
+    this.validateConfig(config);
+  }
+
+  /**
+   * Validate MongoDB client
+   */
+  private validateClient(client: MongoClient): void {
     if (!client) {
       throw new Error('MongoDB client is required');
     }
+  }
 
+  /**
+   * Validate migration configuration
+   */
+  private validateConfig(config: MigrationConfig): void {
     if (!config) {
       throw new Error('Migration configuration is required');
     }
