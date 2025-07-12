@@ -2,7 +2,18 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { BatchActions } from '../BatchActions';
 import { createMockToast, commonBeforeEach } from './test-utils/mockSetup';
-import { clickButton, expectFunctionToBeCalled } from './test-utils/interactionHelpers';
+import { clickButton } from './test-utils/interactionHelpers';
+import {
+  mockSuccessfulBatchApi,
+  mockPartialFailureBatchApi,
+  mockErrorBatchApi,
+  mockNetworkErrorBatchApi,
+  expectBatchApiCall,
+  expectSuccessfulOperationResult,
+  expectPartialSuccessResult,
+  expectErrorToast,
+  expectEmptySelectionError,
+} from './test-utils/batchApiHelpers';
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -45,175 +56,93 @@ describe('BatchActions API Integration', () => {
 
   describe('Bulk Duplicate', () => {
     it('should call batch API with duplicate operation', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          operation: 'duplicate',
-          results: [
-            { encounterId: 'enc1', status: 'success' },
-            { encounterId: 'enc2', status: 'success' },
-            { encounterId: 'enc3', status: 'success' },
-          ],
-          summary: { totalProcessed: 3, successful: 3, failed: 0 },
-        }),
-      });
+      mockSuccessfulBatchApi({ operation: 'duplicate' });
 
       renderBatchActions();
       await clickButton(/duplicate/i);
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith('/api/encounters/batch', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            operation: 'duplicate',
-            encounterIds: ['enc1', 'enc2', 'enc3'],
-            options: {},
-          }),
-        });
+        expectBatchApiCall('duplicate');
       });
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Encounters duplicated',
-          description: '3 encounters have been duplicated successfully.',
-        });
-        expectFunctionToBeCalled(defaultProps.onClearSelection);
-        expectFunctionToBeCalled(defaultProps.onRefetch);
+        expectSuccessfulOperationResult(
+          mockToast,
+          'duplicate',
+          3,
+          defaultProps.onClearSelection,
+          defaultProps.onRefetch
+        );
       });
     });
 
     it('should handle duplicate API errors', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        json: async () => ({ error: 'Server error' }),
-      });
+      mockErrorBatchApi({ statusCode: 500, errorMessage: 'Server error' });
 
       renderBatchActions();
       await clickButton(/duplicate/i);
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Error',
-          description: 'Server error',
-          variant: 'destructive',
-        });
+        expectErrorToast(mockToast, 'Server error');
       });
     });
 
     it('should handle partial failures in duplicate operation', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          operation: 'duplicate',
-          results: [
-            { encounterId: 'enc1', status: 'success' },
-            { encounterId: 'enc2', status: 'success' },
-          ],
-          errors: [
-            { encounterId: 'enc3', status: 'error', error: 'Access denied' },
-          ],
-          summary: { totalProcessed: 3, successful: 2, failed: 1 },
-        }),
-      });
+      mockPartialFailureBatchApi({ operation: 'duplicate' });
 
       renderBatchActions();
       await clickButton(/duplicate/i);
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Partial Success',
-          description: '2 encounters duplicated successfully, 1 failed.',
-        });
-        expectFunctionToBeCalled(defaultProps.onClearSelection);
-        expectFunctionToBeCalled(defaultProps.onRefetch);
+        expectPartialSuccessResult(
+          mockToast,
+          'duplicate',
+          2,
+          1,
+          defaultProps.onClearSelection,
+          defaultProps.onRefetch
+        );
       });
     });
   });
 
   describe('Bulk Archive', () => {
     it('should call batch API with archive operation', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          operation: 'archive',
-          results: [
-            { encounterId: 'enc1', status: 'success' },
-            { encounterId: 'enc2', status: 'success' },
-            { encounterId: 'enc3', status: 'success' },
-          ],
-          summary: { totalProcessed: 3, successful: 3, failed: 0 },
-        }),
-      });
+      mockSuccessfulBatchApi({ operation: 'archive' });
 
       renderBatchActions();
       await clickButton(/archive/i);
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith('/api/encounters/batch', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            operation: 'archive',
-            encounterIds: ['enc1', 'enc2', 'enc3'],
-            options: {},
-          }),
-        });
+        expectBatchApiCall('archive');
       });
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Encounters archived',
-          description: '3 encounters have been archived successfully.',
-        });
-        expectFunctionToBeCalled(defaultProps.onClearSelection);
-        expectFunctionToBeCalled(defaultProps.onRefetch);
+        expectSuccessfulOperationResult(
+          mockToast,
+          'archive',
+          3,
+          defaultProps.onClearSelection,
+          defaultProps.onRefetch
+        );
       });
     });
 
     it('should handle archive API errors', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        status: 403,
-        json: async () => ({ error: 'Access denied' }),
-      });
+      mockErrorBatchApi({ statusCode: 403, errorMessage: 'Access denied' });
 
       renderBatchActions();
       await clickButton(/archive/i);
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Error',
-          description: 'Access denied',
-          variant: 'destructive',
-        });
+        expectErrorToast(mockToast, 'Access denied');
       });
     });
   });
 
   describe('Bulk Delete', () => {
     it('should call batch API with delete operation after confirmation', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          operation: 'delete',
-          results: [
-            { encounterId: 'enc1', status: 'success' },
-            { encounterId: 'enc2', status: 'success' },
-            { encounterId: 'enc3', status: 'success' },
-          ],
-          summary: { totalProcessed: 3, successful: 3, failed: 0 },
-        }),
-      });
+      mockSuccessfulBatchApi({ operation: 'delete' });
 
       renderBatchActions();
 
@@ -225,35 +154,22 @@ describe('BatchActions API Integration', () => {
       await clickButton('Delete');
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith('/api/encounters/batch', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            operation: 'delete',
-            encounterIds: ['enc1', 'enc2', 'enc3'],
-            options: {},
-          }),
-        });
+        expectBatchApiCall('delete');
       });
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Encounters deleted',
-          description: '3 encounters have been deleted successfully.',
-        });
-        expectFunctionToBeCalled(defaultProps.onClearSelection);
-        expectFunctionToBeCalled(defaultProps.onRefetch);
+        expectSuccessfulOperationResult(
+          mockToast,
+          'delete',
+          3,
+          defaultProps.onClearSelection,
+          defaultProps.onRefetch
+        );
       });
     });
 
     it('should handle delete API errors', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        json: async () => ({ error: 'Database error' }),
-      });
+      mockErrorBatchApi({ statusCode: 500, errorMessage: 'Database error' });
 
       renderBatchActions();
 
@@ -262,16 +178,12 @@ describe('BatchActions API Integration', () => {
       await clickButton('Delete');
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Error',
-          description: 'Database error',
-          variant: 'destructive',
-        });
+        expectErrorToast(mockToast, 'Database error');
       });
     });
 
     it('should handle network errors', async () => {
-      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+      mockNetworkErrorBatchApi('Network error');
 
       renderBatchActions();
 
@@ -280,35 +192,19 @@ describe('BatchActions API Integration', () => {
       await clickButton('Delete');
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Error',
-          description: 'Network error',
-          variant: 'destructive',
-        });
+        expectErrorToast(mockToast, 'Network error');
       });
     });
 
     it('should close delete dialog after successful operation', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          operation: 'delete',
-          results: [
-            { encounterId: 'enc1', status: 'success' },
-            { encounterId: 'enc2', status: 'success' },
-            { encounterId: 'enc3', status: 'success' },
-          ],
-          summary: { totalProcessed: 3, successful: 3, failed: 0 },
-        }),
-      });
+      mockSuccessfulBatchApi({ operation: 'delete' });
 
       renderBatchActions();
-      
+
       // Open delete dialog and confirm
       await clickButton(/delete/i);
       expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-      
+
       await clickButton('Delete');
 
       // Check that dialog is closed after operation
@@ -323,34 +219,22 @@ describe('BatchActions API Integration', () => {
       renderBatchActions({ selectedEncounters: [], selectedCount: 0 });
       await clickButton(/duplicate/i);
 
-      // Should not make API call for empty selection
-      expect(global.fetch).not.toHaveBeenCalled();
-
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Error',
-          description: 'No encounters selected for duplicate.',
-          variant: 'destructive',
-        });
+        expectEmptySelectionError(mockToast, 'duplicate');
       });
     });
 
     it('should handle missing selectedEncounters prop', async () => {
-      renderBatchActions({ 
-        selectedCount: 0, 
-        onClearSelection: jest.fn(), 
-        onRefetch: jest.fn() 
+      renderBatchActions({
+        selectedCount: 0,
+        onClearSelection: jest.fn(),
+        onRefetch: jest.fn(),
+        selectedEncounters: undefined
       });
       await clickButton(/duplicate/i);
 
-      expect(global.fetch).not.toHaveBeenCalled();
-
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Error',
-          description: 'No encounters selected for duplicate.',
-          variant: 'destructive',
-        });
+        expectEmptySelectionError(mockToast, 'duplicate');
       });
     });
   });
