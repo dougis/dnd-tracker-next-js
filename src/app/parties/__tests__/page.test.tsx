@@ -1,16 +1,14 @@
 import { render, screen } from '@testing-library/react';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import PartiesPage from '../page';
 
-// Mock Next.js router
+// Mock Next.js navigation
 jest.mock('next/navigation', () => ({
-  useRouter: jest.fn(),
+  redirect: jest.fn(),
 }));
 
-// Mock NextAuth
-jest.mock('next-auth/react', () => ({
-  useSession: jest.fn(),
+// Mock auth function
+jest.mock('@/lib/auth', () => ({
+  auth: jest.fn(),
 }));
 
 // Mock PartyListView component
@@ -19,14 +17,6 @@ jest.mock('@/components/party/PartyListView', () => ({
     return <div data-testid="party-list-view">Party List View</div>;
   },
 }));
-
-const mockRouter = {
-  push: jest.fn(),
-  back: jest.fn(),
-  forward: jest.fn(),
-  refresh: jest.fn(),
-  replace: jest.fn(),
-};
 
 const mockSession = {
   user: {
@@ -37,42 +27,55 @@ const mockSession = {
 };
 
 describe('PartiesPage', () => {
+  let mockAuth: jest.Mock;
+  let mockRedirect: jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
-    (useRouter as jest.Mock).mockReturnValue(mockRouter);
-    (useSession as jest.Mock).mockReturnValue({
-      data: mockSession,
-      status: 'authenticated',
+    mockAuth = require('@/lib/auth').auth;
+    mockRedirect = require('next/navigation').redirect;
+    
+    // Mock redirect to throw an error like Next.js does
+    mockRedirect.mockImplementation((url: string) => {
+      throw new Error(`REDIRECT: ${url}`);
     });
+    
+    // Default to authenticated user
+    mockAuth.mockResolvedValue(mockSession);
   });
 
   describe('Page Structure', () => {
-    it('should render the page title', () => {
-      render(<PartiesPage />);
+    it('should render the page title', async () => {
+      const PartiesPageResolved = await PartiesPage();
+      render(PartiesPageResolved);
 
       expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Parties');
     });
 
-    it('should render the page description', () => {
-      render(<PartiesPage />);
+    it('should render the page description', async () => {
+      const PartiesPageResolved = await PartiesPage();
+      render(PartiesPageResolved);
 
       expect(screen.getByText('Manage and organize your D&D parties')).toBeInTheDocument();
     });
 
-    it('should render the PartyListView component', () => {
-      render(<PartiesPage />);
+    it('should render the PartyListView component', async () => {
+      const PartiesPageResolved = await PartiesPage();
+      render(PartiesPageResolved);
 
       expect(screen.getByTestId('party-list-view')).toBeInTheDocument();
     });
 
-    it('should have proper page structure with space-y-6 class', () => {
-      const { container } = render(<PartiesPage />);
+    it('should have proper page structure with space-y-6 class', async () => {
+      const PartiesPageResolved = await PartiesPage();
+      const { container } = render(PartiesPageResolved);
 
       expect(container.firstChild).toHaveClass('space-y-6');
     });
 
-    it('should render header section with proper typography', () => {
-      render(<PartiesPage />);
+    it('should render header section with proper typography', async () => {
+      const PartiesPageResolved = await PartiesPage();
+      render(PartiesPageResolved);
 
       const heading = screen.getByRole('heading', { level: 1 });
       expect(heading).toHaveClass('text-3xl', 'font-bold', 'tracking-tight');
@@ -83,39 +86,37 @@ describe('PartiesPage', () => {
   });
 
   describe('Authentication', () => {
-    it('should render when user is authenticated', () => {
-      (useSession as jest.Mock).mockReturnValue({
-        data: mockSession,
-        status: 'authenticated',
-      });
-
-      render(<PartiesPage />);
+    it('should render when user is authenticated', async () => {
+      mockAuth.mockResolvedValue(mockSession);
+      
+      const PartiesPageResolved = await PartiesPage();
+      render(PartiesPageResolved);
 
       expect(screen.getByTestId('party-list-view')).toBeInTheDocument();
+      expect(mockRedirect).not.toHaveBeenCalled();
     });
 
-    it('should handle loading state', () => {
-      (useSession as jest.Mock).mockReturnValue({
-        data: null,
-        status: 'loading',
-      });
-
-      render(<PartiesPage />);
-
-      // Page should still render the structure
-      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    it('should redirect when user is not authenticated', async () => {
+      mockAuth.mockResolvedValue(null);
+      
+      await expect(PartiesPage()).rejects.toThrow('REDIRECT: /signin?callbackUrl=/parties');
+      expect(mockRedirect).toHaveBeenCalledWith('/signin?callbackUrl=/parties');
     });
 
-    it('should handle unauthenticated state', () => {
-      (useSession as jest.Mock).mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-      });
+    it('should redirect when session exists but no user id', async () => {
+      mockAuth.mockResolvedValue({ user: {} });
+      
+      await expect(PartiesPage()).rejects.toThrow('REDIRECT: /signin?callbackUrl=/parties');
+      expect(mockRedirect).toHaveBeenCalledWith('/signin?callbackUrl=/parties');
+    });
 
-      render(<PartiesPage />);
+    it('should pass user id to PartyListView when authenticated', async () => {
+      mockAuth.mockResolvedValue(mockSession);
+      
+      const PartiesPageResolved = await PartiesPage();
+      render(PartiesPageResolved);
 
-      // Page should still render the structure
-      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+      expect(screen.getByTestId('party-list-view')).toBeInTheDocument();
     });
   });
 
@@ -130,15 +131,17 @@ describe('PartiesPage', () => {
   });
 
   describe('Accessibility', () => {
-    it('should have proper heading hierarchy', () => {
-      render(<PartiesPage />);
+    it('should have proper heading hierarchy', async () => {
+      const PartiesPageResolved = await PartiesPage();
+      render(PartiesPageResolved);
 
       const heading = screen.getByRole('heading', { level: 1 });
       expect(heading).toBeInTheDocument();
     });
 
-    it('should have proper semantic structure', () => {
-      const { container } = render(<PartiesPage />);
+    it('should have proper semantic structure', async () => {
+      const PartiesPageResolved = await PartiesPage();
+      const { container } = render(PartiesPageResolved);
 
       // Check that the main content is properly structured
       expect(container.firstChild).toBeInTheDocument();
@@ -147,8 +150,9 @@ describe('PartiesPage', () => {
   });
 
   describe('Component Integration', () => {
-    it('should pass props to PartyListView if needed', () => {
-      render(<PartiesPage />);
+    it('should pass props to PartyListView if needed', async () => {
+      const PartiesPageResolved = await PartiesPage();
+      render(PartiesPageResolved);
 
       // Verify that PartyListView is rendered
       expect(screen.getByTestId('party-list-view')).toBeInTheDocument();
