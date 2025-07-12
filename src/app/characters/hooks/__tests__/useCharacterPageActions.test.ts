@@ -61,6 +61,32 @@ const setupUnauthenticatedUser = () => {
 
 const renderHookWithDefaults = () => renderHook(() => useCharacterPageActions());
 
+const testServiceCall = async (
+  serviceMethod: jest.Mock,
+  hookMethod: string,
+  character: ICharacter,
+  expectedArgs: any[]
+) => {
+  const { result } = renderHookWithDefaults();
+  await act(async () => {
+    await result.current[hookMethod](character);
+  });
+  expect(serviceMethod).toHaveBeenCalledWith(...expectedArgs);
+};
+
+const testUnauthenticatedAction = async (
+  serviceMethod: jest.Mock,
+  hookMethod: string,
+  character: ICharacter
+) => {
+  setupUnauthenticatedUser();
+  const { result } = renderHookWithDefaults();
+  await act(async () => {
+    await result.current[hookMethod](character);
+  });
+  expect(serviceMethod).not.toHaveBeenCalled();
+};
+
 describe('useCharacterPageActions', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -151,15 +177,11 @@ describe('useCharacterPageActions', () => {
           success: true,
         });
 
-        const { result } = renderHookWithDefaults();
-
-        await act(async () => {
-          await result.current.deleteCharacter(mockCharacter);
-        });
-
-        expect(CharacterService.deleteCharacter).toHaveBeenCalledWith(
-          'char123',
-          'user123'
+        await testServiceCall(
+          CharacterService.deleteCharacter as jest.Mock,
+          'deleteCharacter',
+          mockCharacter,
+          ['char123', 'user123']
         );
       });
 
@@ -170,28 +192,20 @@ describe('useCharacterPageActions', () => {
         };
         (CharacterService.deleteCharacter as jest.Mock).mockResolvedValue(mockError);
 
-        const { result } = renderHookWithDefaults();
-
-        await act(async () => {
-          await result.current.deleteCharacter(mockCharacter);
-        });
-
-        expect(CharacterService.deleteCharacter).toHaveBeenCalledWith(
-          'char123',
-          'user123'
+        await testServiceCall(
+          CharacterService.deleteCharacter as jest.Mock,
+          'deleteCharacter',
+          mockCharacter,
+          ['char123', 'user123']
         );
       });
 
       it('should not delete if user is not authenticated', async () => {
-        setupUnauthenticatedUser();
-
-        const { result } = renderHookWithDefaults();
-
-        await act(async () => {
-          await result.current.deleteCharacter(mockCharacter);
-        });
-
-        expect(CharacterService.deleteCharacter).not.toHaveBeenCalled();
+        await testUnauthenticatedAction(
+          CharacterService.deleteCharacter as jest.Mock,
+          'deleteCharacter',
+          mockCharacter
+        );
       });
     });
 
@@ -213,19 +227,15 @@ describe('useCharacterPageActions', () => {
           data: mockClonedCharacter,
         });
 
-        const { result } = renderHookWithDefaults();
-
-        await act(async () => {
-          await result.current.duplicateCharacter(mockCharacter);
-        });
+        await testServiceCall(
+          CharacterService.cloneCharacter as jest.Mock,
+          'duplicateCharacter',
+          mockCharacter,
+          ['char123', 'user123', 'Test Character (Copy)']
+        );
 
         expect(global.prompt).toHaveBeenCalledWith(
           'Enter name for the duplicate character:',
-          'Test Character (Copy)'
-        );
-        expect(CharacterService.cloneCharacter).toHaveBeenCalledWith(
-          'char123',
-          'user123',
           'Test Character (Copy)'
         );
       });
@@ -259,15 +269,11 @@ describe('useCharacterPageActions', () => {
       });
 
       it('should not duplicate if user is not authenticated', async () => {
-        setupUnauthenticatedUser();
-
-        const { result } = renderHookWithDefaults();
-
-        await act(async () => {
-          await result.current.duplicateCharacter(mockCharacter);
-        });
-
-        expect(CharacterService.cloneCharacter).not.toHaveBeenCalled();
+        await testUnauthenticatedAction(
+          CharacterService.cloneCharacter as jest.Mock,
+          'duplicateCharacter',
+          mockCharacter
+        );
       });
     });
   });
