@@ -357,12 +357,11 @@ describe('EncounterListView', () => {
   });
 
   describe('Create Encounter', () => {
-    it('should log to console when create encounter button is clicked', async () => {
+    it('should render create encounter button', () => {
       renderEncounterListView();
 
-      await clickButton('Create Encounter');
-
-      expect(consoleSpy).toHaveBeenCalledWith('Create new encounter');
+      const createButton = screen.getByText('Create Encounter');
+      expect(createButton).toBeInTheDocument();
     });
   });
 

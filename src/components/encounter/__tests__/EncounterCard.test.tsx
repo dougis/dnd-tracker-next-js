@@ -3,6 +3,13 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { EncounterCard } from '../EncounterCard';
 import { createMockProps, createMockEncounter, setupTestEnvironment } from './test-helpers';
 
+// Mock next/navigation
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+  }),
+}));
+
 // Test helpers
 const renderCard = (overrides?: any) => {
   const props = createMockProps.encounterCard(overrides);
