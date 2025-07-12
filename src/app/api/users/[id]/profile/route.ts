@@ -55,7 +55,7 @@ export async function DELETE(
     const result = await UserService.deleteUser(userId);
 
     if (!result.success) {
-      if (result.error === 'USER_NOT_FOUND') {
+      if (result.error?.code === 'USER_NOT_FOUND') {
         return handleServiceError(result, 'User not found', 404);
       }
       return handleServiceError(result, 'Account deletion failed', 500);
