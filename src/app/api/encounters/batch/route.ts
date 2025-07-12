@@ -6,7 +6,7 @@ import { handleApiError } from '../shared-route-helpers';
 import { z } from 'zod';
 
 const batchOperationSchema = z.object({
-  operation: z.enum(['export', 'template', 'delete', 'archive', 'publish']),
+  operation: z.enum(['export', 'template', 'delete', 'archive', 'publish', 'duplicate']),
   encounterIds: z.array(z.string()).min(1, 'At least one encounter ID is required').max(50, 'Maximum 50 encounters allowed'),
   options: z.object({
     // Export options
@@ -23,6 +23,9 @@ const batchOperationSchema = z.object({
 
     // Publish options
     makePublic: z.boolean().default(true),
+
+    // Duplicate options
+    namePrefix: z.string().max(50).default('Copy of'),
   }).default({}),
 });
 
@@ -66,6 +69,7 @@ async function executeBatchOperation(operation: string, encounterId: string, use
     delete: () => handleBatchDelete(encounterId, userId),
     archive: () => handleBatchArchive(encounterId, userId, options),
     publish: () => handleBatchPublish(encounterId, userId, options),
+    duplicate: () => handleBatchDuplicate(encounterId, userId, options),
   };
 
   const handler = handlers[operation as keyof typeof handlers];
@@ -200,4 +204,16 @@ async function handleBatchPublish(encounterId: string, userId: string, options: 
   };
 
   return await EncounterService.updateEncounter(encounterId, updateData);
+}
+
+async function handleBatchDuplicate(encounterId: string, userId: string, options: any) {
+  const ownershipCheck = await checkEncounterOwnership(encounterId, userId, 'duplicate');
+  if (!ownershipCheck.success) {
+    return ownershipCheck;
+  }
+
+  const encounter = (ownershipCheck as any).data!;
+  const newName = `${options.namePrefix} ${encounter.name}`;
+
+  return await EncounterService.cloneEncounter(encounterId, newName);
 }
