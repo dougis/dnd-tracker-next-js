@@ -97,8 +97,6 @@ describe('Middleware Parties Route Protection', () => {
     });
 
     it('should identify deeply nested parties routes as protected', async () => {
-      const { middleware } = await import('../middleware');
-
       const nestedRoutes = [
         '/parties/123/characters/add',
         '/parties/456/settings/permissions',
@@ -137,8 +135,6 @@ describe('Middleware Parties Route Protection', () => {
     });
 
     it('should protect nested /api/parties routes', async () => {
-      const { middleware } = await import('../middleware');
-
       const apiRoutes = [
         '/api/parties/123',
         '/api/parties/create',
