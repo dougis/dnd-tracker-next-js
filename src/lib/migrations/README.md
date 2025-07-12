@@ -56,27 +56,21 @@ npm run migrate:down 1
 ## CLI Commands
 
 ### `npm run migrate:status`
-
 Shows the status of all migrations (pending/executed).
 
 ### `npm run migrate:up`
-
 Executes all pending migrations in order.
 
 ### `npm run migrate:down [steps]`
-
 Rolls back the last N migrations (default: 1).
 
 ### `npm run migrate:create <description>`
-
 Creates a new migration file with the given description.
 
 ### `npm run migrate:validate`
-
 Validates all migration files for syntax and structure errors.
 
 ### `npm run migrate:help`
-
 Shows detailed help information.
 
 ## Configuration
@@ -120,28 +114,23 @@ module.exports = {
 ### Migration Naming Convention
 
 Migration files should follow this naming pattern:
-
 - `001_description.js` - Version number (zero-padded) + underscore + description + `.js`
 - Example: `001_create_user_indexes.js`
 
 ## Best Practices
 
 ### 1. Always provide rollback logic
-
 Every migration should have a corresponding `down` method that can safely undo the changes.
 
 ### 2. Test migrations thoroughly
-
 - Use `MIGRATION_DRY_RUN=true` to test without applying changes
 - Test both `up` and `down` operations
 - Validate on a copy of production data
 
 ### 3. Keep migrations atomic
-
 Each migration should represent a single logical change that can be applied or rolled back as a unit.
 
 ### 4. Handle errors gracefully
-
 ```javascript
 async up(db) {
   try {
@@ -155,7 +144,6 @@ async up(db) {
 ```
 
 ### 5. Use transactions for complex changes
-
 ```javascript
 async up(db) {
   const session = db.client.startSession();
@@ -237,7 +225,10 @@ The migration system includes comprehensive tests covering:
 - CLI functionality
 
 Run tests with:
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1c99913 (feat: Implement comprehensive MongoDB migration system)
 ```bash
 npm test src/lib/migrations
 ```
@@ -246,18 +237,27 @@ npm test src/lib/migrations
 
 ### Common Issues
 
+<<<<<<< HEAD
 #### Migration stuck in "pending" state
 
+=======
+**Migration stuck in "pending" state**
+>>>>>>> 1c99913 (feat: Implement comprehensive MongoDB migration system)
 - Check database connectivity
 - Verify migration file syntax
 - Check for locked collections
 
+<<<<<<< HEAD
 #### "Cannot read properties of undefined" error
 
+=======
+**"Cannot read properties of undefined" error**
+>>>>>>> 1c99913 (feat: Implement comprehensive MongoDB migration system)
 - Ensure all required environment variables are set
 - Verify MongoDB connection string
 - Check migration file structure
 
+<<<<<<< HEAD
 #### Duplicate version numbers
 
 - Run `npm run migrate:validate` to check for conflicts
@@ -265,6 +265,13 @@ npm test src/lib/migrations
 
 #### Rollback fails
 
+=======
+**Duplicate version numbers**
+- Run `npm run migrate:validate` to check for conflicts
+- Ensure each migration has a unique version number
+
+**Rollback fails**
+>>>>>>> 1c99913 (feat: Implement comprehensive MongoDB migration system)
 - Verify the `down` method is properly implemented
 - Check for data dependencies that prevent rollback
 - Use transactions for complex rollbacks

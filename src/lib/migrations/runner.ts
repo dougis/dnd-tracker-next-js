@@ -37,55 +37,23 @@ export class MigrationRunner implements IMigrationRunner {
    * Validate constructor parameters
    */
   private validateConstructorParams(client: MongoClient, config: MigrationConfig): void {
-    this.validateClient(client);
-    this.validateConfig(config);
-  }
-
-  /**
-   * Validate MongoDB client
-   */
-  private validateClient(client: MongoClient): void {
     if (!client) {
       throw new Error('MongoDB client is required');
     }
-  }
 
-  /**
-   * Validate migration configuration
-   */
-  private validateConfig(config: MigrationConfig): void {
     if (!config) {
       throw new Error('Migration configuration is required');
     }
 
-    this.validateMigrationsPath(config.migrationsPath);
-    this.validateCollectionName(config.collectionName);
-    this.validateTimeout(config.timeout);
-  }
-
-  /**
-   * Validate migrations path
-   */
-  private validateMigrationsPath(migrationsPath: string): void {
-    if (!migrationsPath || migrationsPath.trim() === '') {
+    if (!config.migrationsPath || config.migrationsPath.trim() === '') {
       throw new Error('Migrations path is required');
     }
-  }
 
-  /**
-   * Validate collection name
-   */
-  private validateCollectionName(collectionName: string): void {
-    if (!collectionName || collectionName.trim() === '') {
+    if (!config.collectionName || config.collectionName.trim() === '') {
       throw new Error('Collection name cannot be empty');
     }
-  }
 
-  /**
-   * Validate timeout value
-   */
-  private validateTimeout(timeout: number | undefined): void {
-    if (timeout !== undefined && (timeout <= 0 || !Number.isFinite(timeout))) {
+    if (config.timeout !== undefined && (config.timeout <= 0 || !Number.isFinite(config.timeout))) {
       throw new Error('Timeout must be a positive number');
     }
   }
@@ -114,23 +82,21 @@ export class MigrationRunner implements IMigrationRunner {
         this.getExecutedMigrations(),
       ]);
 
-      // Ensure we have valid arrays
-      const files = migrationFiles || [];
-      const executed = executedMigrations || [];
+      // Note: executedVersions removed as it was unused
 
-      return files
+      return migrationFiles
         .map(filename => this.parseMigrationFilename(filename))
         .filter((parsed): parsed is NonNullable<typeof parsed> => parsed !== null)
         .sort((a, b) => a.version.localeCompare(b.version))
         .map(parsed => {
-          const executedRecord = executed.find(m => m.version === parsed.version);
+          const executed = executedMigrations.find(m => m.version === parsed.version);
           return {
             version: parsed.version,
             description: parsed.description,
             filename: parsed.filename,
-            status: executedRecord ? 'executed' : 'pending',
-            executedAt: executedRecord?.executedAt,
-            executionTime: executedRecord?.executionTime,
+            status: executed ? 'executed' : 'pending',
+            executedAt: executed?.executedAt,
+            executionTime: executed?.executionTime,
           } as MigrationStatus;
         });
     } catch (error) {

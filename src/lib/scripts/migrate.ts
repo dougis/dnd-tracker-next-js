@@ -90,72 +90,72 @@ class MigrationCLI {
   }
 
   /**
-   * Execute migration operation with common error handling and reporting
+   * Run pending migrations
    */
-  private async executeOperation<T>(
-    operation: () => Promise<T[]>,
-    startMessage: string,
-    emptyMessage: string,
-    successMessageTemplate: string,
-    summaryTemplate: string
-  ): Promise<void> {
+  async up(): Promise<void> {
     await this.initialize();
 
     try {
-      console.log(startMessage);
+      console.log('🚀 Running migrations...\n');
 
-      const results = await operation();
+      const results = await this.runner!.migrate();
 
       if (results.length === 0) {
-        console.log(emptyMessage);
+        console.log('✅ No pending migrations to run.');
         return;
       }
 
-      for (const result of results as any[]) {
+      for (const result of results) {
         if (result.success) {
-          console.log(`✅ ${successMessageTemplate.replace('{result}', `${result.version}: ${result.description} (${result.executionTime}ms)`)}`);
+          console.log(`✅ ${result.version}: ${result.description} (${result.executionTime}ms)`);
         } else {
           console.error(`❌ ${result.version}: ${result.description} - ${result.error?.message}`);
-          if (startMessage.includes('Running')) {
-            console.error(`   Execution stopped due to failure.`);
-          }
+          console.error(`   Execution stopped due to failure.`);
           break;
         }
       }
 
-      const successCount = results.filter((r: any) => r.success).length;
-      const totalTime = results.reduce((sum: number, r: any) => sum + r.executionTime, 0);
+      const successCount = results.filter(r => r.success).length;
+      const totalTime = results.reduce((sum, r) => sum + r.executionTime, 0);
 
-      console.log(`\n🎉 ${summaryTemplate.replace('{count}', `${successCount}/${results.length}`).replace('{time}', `${totalTime}ms`)}`);
+      console.log(`\n🎉 Completed ${successCount}/${results.length} migrations in ${totalTime}ms`);
     } finally {
       await this.cleanup();
     }
   }
 
   /**
-   * Run pending migrations
-   */
-  async up(): Promise<void> {
-    await this.executeOperation(
-      () => this.runner!.migrate(),
-      '🚀 Running migrations...\n',
-      '✅ No pending migrations to run.',
-      '{result}',
-      'Completed {count} migrations in {time}'
-    );
-  }
-
-  /**
    * Rollback migrations
    */
   async down(steps: number = 1): Promise<void> {
-    await this.executeOperation(
-      () => this.runner!.rollback(steps),
-      `🔄 Rolling back ${steps} migration(s)...\n`,
-      '✅ No migrations to rollback.',
-      'Rolled back {result}',
-      'Rolled back {count} migrations in {time}'
-    );
+    await this.initialize();
+
+    try {
+      console.log(`🔄 Rolling back ${steps} migration(s)...\n`);
+
+      const results = await this.runner!.rollback(steps);
+
+      if (results.length === 0) {
+        console.log('✅ No migrations to rollback.');
+        return;
+      }
+
+      for (const result of results) {
+        if (result.success) {
+          console.log(`✅ Rolled back ${result.version}: ${result.description} (${result.executionTime}ms)`);
+        } else {
+          console.error(`❌ Failed to rollback ${result.version}: ${result.description} - ${result.error?.message}`);
+          break;
+        }
+      }
+
+      const successCount = results.filter(r => r.success).length;
+      const totalTime = results.reduce((sum, r) => sum + r.executionTime, 0);
+
+      console.log(`\n🎉 Rolled back ${successCount}/${results.length} migrations in ${totalTime}ms`);
+    } finally {
+      await this.cleanup();
+    }
   }
 
   /**
@@ -245,68 +245,6 @@ For more information, see the documentation.
 }
 
 /**
- * Handle down command with validation
- */
-async function handleDownCommand(cli: MigrationCLI, args: string[]): Promise<void> {
-  const steps = args[0] ? parseInt(args[0], 10) : 1;
-  if (isNaN(steps) || steps < 1) {
-    console.error('❌ Invalid number of steps. Must be a positive integer.');
-    process.exit(1);
-  }
-  await cli.down(steps);
-}
-
-/**
- * Handle create command
- */
-async function handleCreateCommand(cli: MigrationCLI, args: string[]): Promise<void> {
-  const description = args.join(' ');
-  await cli.create(description);
-}
-
-/**
- * Handle help commands
- */
-function handleHelpCommand(cli: MigrationCLI): void {
-  cli.help();
-}
-
-/**
- * Handle unknown commands
- */
-function handleUnknownCommand(command: string | undefined): void {
-  console.error(`❌ Unknown command: ${command || '(none)'}`);
-  console.log('Run "npm run migrate:help" for usage information.');
-  process.exit(1);
-}
-
-/**
- * Command mapping for better organization
- */
-const COMMAND_HANDLERS = {
-  'status': (cli: MigrationCLI, _args: string[]) => cli.status(),
-  'up': (cli: MigrationCLI, _args: string[]) => cli.up(),
-  'down': handleDownCommand,
-  'create': handleCreateCommand,
-  'validate': (cli: MigrationCLI, _args: string[]) => cli.validate(),
-  'help': handleHelpCommand,
-  '--help': handleHelpCommand,
-  '-h': handleHelpCommand,
-};
-
-/**
- * Execute command if it exists
- */
-async function executeCommand(command: string, cli: MigrationCLI, args: string[]): Promise<void> {
-  const handler = COMMAND_HANDLERS[command as keyof typeof COMMAND_HANDLERS];
-  if (handler) {
-    await handler(cli, args);
-  } else {
-    handleUnknownCommand(command);
-  }
-}
-
-/**
  * Main CLI entry point
  */
 async function main(): Promise<void> {
@@ -315,7 +253,44 @@ async function main(): Promise<void> {
   const args = process.argv.slice(3);
 
   try {
-    await executeCommand(command, cli, args);
+    switch (command) {
+      case 'status':
+        await cli.status();
+        break;
+
+      case 'up':
+        await cli.up();
+        break;
+
+      case 'down':
+        const steps = args[0] ? parseInt(args[0], 10) : 1;
+        if (isNaN(steps) || steps < 1) {
+          console.error('❌ Invalid number of steps. Must be a positive integer.');
+          process.exit(1);
+        }
+        await cli.down(steps);
+        break;
+
+      case 'create':
+        const description = args.join(' ');
+        await cli.create(description);
+        break;
+
+      case 'validate':
+        await cli.validate();
+        break;
+
+      case 'help':
+      case '--help':
+      case '-h':
+        cli.help();
+        break;
+
+      default:
+        console.error(`❌ Unknown command: ${command || '(none)'}`);
+        console.log('Run "npm run migrate:help" for usage information.');
+        process.exit(1);
+    }
   } catch (error) {
     console.error(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);

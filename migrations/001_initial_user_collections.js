@@ -4,131 +4,69 @@
  * Created: 2025-01-12T00:00:00.000Z
  */
 
-/**
- * Helper function to execute multiple promises with proper error handling
- */
-function executeIndexOperations(operations) {
-  var Promise = require('bluebird') || global.Promise;
-  return Promise.all(operations);
-}
-
-/**
- * Helper function to create index operations for a collection
- */
-function createCollectionIndexes(db, collectionName, indexes) {
-  var collection = db.collection(collectionName);
-  var operations = indexes.map(function(indexSpec) {
-    return collection.createIndex(indexSpec.keys, indexSpec.options || {});
-  });
-  return executeIndexOperations(operations);
-}
-
-/**
- * Helper function to drop index operations for a collection
- */
-function dropCollectionIndexes(db, collectionName, indexes) {
-  var collection = db.collection(collectionName);
-  var operations = indexes.map(function(indexSpec) {
-    return collection.dropIndex(indexSpec.keys);
-  });
-  return executeIndexOperations(operations);
-}
-
 module.exports = {
   version: '001',
   description: 'Create initial user collections and indexes',
 
   /**
    * Apply migration
-   * @param db - The MongoDB database instance
+   * @param {import('mongodb').Db} db
    */
-  up: function(db) {
-    var Promise = require('bluebird') || global.Promise;
+  async up(db) {
+    // Create users collection with indexes
+    const usersCollection = db.collection('users');
     
-    return new Promise(function(resolve, reject) {
-      // User collection indexes
-      var userIndexes = [
-        { keys: { email: 1 }, options: { unique: true } },
-        { keys: { username: 1 }, options: { unique: true } },
-        { keys: { createdAt: 1 } },
-        { keys: { updatedAt: 1 } }
-      ];
-
-      createCollectionIndexes(db, 'users', userIndexes).then(function() {
-        // Account collection indexes
-        var accountIndexes = [
-          { keys: { provider: 1, providerAccountId: 1 }, options: { unique: true } },
-          { keys: { userId: 1 } }
-        ];
-        return createCollectionIndexes(db, 'accounts', accountIndexes);
-      }).then(function() {
-        // Session collection indexes
-        var sessionIndexes = [
-          { keys: { sessionToken: 1 }, options: { unique: true } },
-          { keys: { userId: 1 } },
-          { keys: { expires: 1 } }
-        ];
-        return createCollectionIndexes(db, 'sessions', sessionIndexes);
-      }).then(function() {
-        // Verification token collection indexes
-        var tokenIndexes = [
-          { keys: { identifier: 1, token: 1 }, options: { unique: true } },
-          { keys: { expires: 1 } }
-        ];
-        return createCollectionIndexes(db, 'verification_tokens', tokenIndexes);
-      }).then(function() {
-        resolve();
-        return true;
-      }).catch(function(error) {
-        reject(error);
-      });
-    });
+    // Create unique indexes for email and username
+    await usersCollection.createIndex({ email: 1 }, { unique: true });
+    await usersCollection.createIndex({ username: 1 }, { unique: true });
+    
+    // Create index for faster lookups
+    await usersCollection.createIndex({ createdAt: 1 });
+    await usersCollection.createIndex({ updatedAt: 1 });
+    
+    // Create accounts collection for NextAuth
+    const accountsCollection = db.collection('accounts');
+    await accountsCollection.createIndex({ provider: 1, providerAccountId: 1 }, { unique: true });
+    await accountsCollection.createIndex({ userId: 1 });
+    
+    // Create sessions collection for NextAuth
+    const sessionsCollection = db.collection('sessions');
+    await sessionsCollection.createIndex({ sessionToken: 1 }, { unique: true });
+    await sessionsCollection.createIndex({ userId: 1 });
+    await sessionsCollection.createIndex({ expires: 1 });
+    
+    // Create verification tokens collection for NextAuth
+    const verificationTokensCollection = db.collection('verificationtokens');
+    await verificationTokensCollection.createIndex({ identifier: 1, token: 1 }, { unique: true });
+    await verificationTokensCollection.createIndex({ expires: 1 });
   },
 
   /**
    * Rollback migration
-   * @param db - The MongoDB database instance
+   * @param {import('mongodb').Db} db
    */
-  down: function(db) {
-    var Promise = require('bluebird') || global.Promise;
+  async down(db) {
+    // Drop indexes from users collection
+    const usersCollection = db.collection('users');
+    await usersCollection.dropIndex({ email: 1 });
+    await usersCollection.dropIndex({ username: 1 });
+    await usersCollection.dropIndex({ createdAt: 1 });
+    await usersCollection.dropIndex({ updatedAt: 1 });
     
-    return new Promise(function(resolve, reject) {
-      // User collection indexes to drop
-      var userIndexes = [
-        { keys: { email: 1 } },
-        { keys: { username: 1 } },
-        { keys: { createdAt: 1 } },
-        { keys: { updatedAt: 1 } }
-      ];
-
-      dropCollectionIndexes(db, 'users', userIndexes).then(function() {
-        // Account collection indexes to drop
-        var accountIndexes = [
-          { keys: { provider: 1, providerAccountId: 1 } },
-          { keys: { userId: 1 } }
-        ];
-        return dropCollectionIndexes(db, 'accounts', accountIndexes);
-      }).then(function() {
-        // Session collection indexes to drop
-        var sessionIndexes = [
-          { keys: { sessionToken: 1 } },
-          { keys: { userId: 1 } },
-          { keys: { expires: 1 } }
-        ];
-        return dropCollectionIndexes(db, 'sessions', sessionIndexes);
-      }).then(function() {
-        // Verification token collection indexes to drop
-        var tokenIndexes = [
-          { keys: { identifier: 1, token: 1 } },
-          { keys: { expires: 1 } }
-        ];
-        return dropCollectionIndexes(db, 'verification_tokens', tokenIndexes);
-      }).then(function() {
-        resolve();
-        return true;
-      }).catch(function(error) {
-        reject(error);
-      });
-    });
+    // Drop indexes from accounts collection
+    const accountsCollection = db.collection('accounts');
+    await accountsCollection.dropIndex({ provider: 1, providerAccountId: 1 });
+    await accountsCollection.dropIndex({ userId: 1 });
+    
+    // Drop indexes from sessions collection
+    const sessionsCollection = db.collection('sessions');
+    await sessionsCollection.dropIndex({ sessionToken: 1 });
+    await sessionsCollection.dropIndex({ userId: 1 });
+    await sessionsCollection.dropIndex({ expires: 1 });
+    
+    // Drop indexes from verification tokens collection
+    const verificationTokensCollection = db.collection('verificationtokens');
+    await verificationTokensCollection.dropIndex({ identifier: 1, token: 1 });
+    await verificationTokensCollection.dropIndex({ expires: 1 });
   }
 };
