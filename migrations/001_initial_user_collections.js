@@ -4,6 +4,36 @@
  * Created: 2025-01-12T00:00:00.000Z
  */
 
+/**
+ * Helper function to execute multiple promises with proper error handling
+ */
+function executeIndexOperations(operations) {
+  var Promise = require('bluebird') || global.Promise;
+  return Promise.all(operations);
+}
+
+/**
+ * Helper function to create index operations for a collection
+ */
+function createCollectionIndexes(db, collectionName, indexes) {
+  var collection = db.collection(collectionName);
+  var operations = indexes.map(function(indexSpec) {
+    return collection.createIndex(indexSpec.keys, indexSpec.options || {});
+  });
+  return executeIndexOperations(operations);
+}
+
+/**
+ * Helper function to drop index operations for a collection
+ */
+function dropCollectionIndexes(db, collectionName, indexes) {
+  var collection = db.collection(collectionName);
+  var operations = indexes.map(function(indexSpec) {
+    return collection.dropIndex(indexSpec.keys);
+  });
+  return executeIndexOperations(operations);
+}
+
 module.exports = {
   version: '001',
   description: 'Create initial user collections and indexes',
@@ -16,44 +46,36 @@ module.exports = {
     var Promise = require('bluebird') || global.Promise;
     
     return new Promise(function(resolve, reject) {
-      // Create users collection with indexes
-      var usersCollection = db.collection('users');
-      
-      var userIndexPromises = [
-        // Create unique indexes for email and username
-        usersCollection.createIndex({ email: 1 }, { unique: true }),
-        usersCollection.createIndex({ username: 1 }, { unique: true }),
-        
-        // Create index for faster data access
-        usersCollection.createIndex({ createdAt: 1 }),
-        usersCollection.createIndex({ updatedAt: 1 })
+      // User collection indexes
+      var userIndexes = [
+        { keys: { email: 1 }, options: { unique: true } },
+        { keys: { username: 1 }, options: { unique: true } },
+        { keys: { createdAt: 1 } },
+        { keys: { updatedAt: 1 } }
       ];
-      
-      Promise.all(userIndexPromises).then(function() {
-        // Create accounts collection for NextAuth
-        var accountsCollection = db.collection('accounts');
-        var accountIndexPromises = [
-          accountsCollection.createIndex({ provider: 1, providerAccountId: 1 }, { unique: true }),
-          accountsCollection.createIndex({ userId: 1 })
+
+      createCollectionIndexes(db, 'users', userIndexes).then(function() {
+        // Account collection indexes
+        var accountIndexes = [
+          { keys: { provider: 1, providerAccountId: 1 }, options: { unique: true } },
+          { keys: { userId: 1 } }
         ];
-        return Promise.all(accountIndexPromises);
+        return createCollectionIndexes(db, 'accounts', accountIndexes);
       }).then(function() {
-        // Create sessions collection for NextAuth
-        var sessionsCollection = db.collection('sessions');
-        var sessionIndexPromises = [
-          sessionsCollection.createIndex({ sessionToken: 1 }, { unique: true }),
-          sessionsCollection.createIndex({ userId: 1 }),
-          sessionsCollection.createIndex({ expires: 1 })
+        // Session collection indexes
+        var sessionIndexes = [
+          { keys: { sessionToken: 1 }, options: { unique: true } },
+          { keys: { userId: 1 } },
+          { keys: { expires: 1 } }
         ];
-        return Promise.all(sessionIndexPromises);
+        return createCollectionIndexes(db, 'sessions', sessionIndexes);
       }).then(function() {
-        // Create verification tokens collection for NextAuth
-        var verificationTokensCollection = db.collection('verification_tokens');
-        var tokenIndexPromises = [
-          verificationTokensCollection.createIndex({ identifier: 1, token: 1 }, { unique: true }),
-          verificationTokensCollection.createIndex({ expires: 1 })
+        // Verification token collection indexes
+        var tokenIndexes = [
+          { keys: { identifier: 1, token: 1 }, options: { unique: true } },
+          { keys: { expires: 1 } }
         ];
-        return Promise.all(tokenIndexPromises);
+        return createCollectionIndexes(db, 'verification_tokens', tokenIndexes);
       }).then(function() {
         resolve();
         return true;
@@ -71,41 +93,36 @@ module.exports = {
     var Promise = require('bluebird') || global.Promise;
     
     return new Promise(function(resolve, reject) {
-      // Drop indexes from users collection
-      var usersCollection = db.collection('users');
-      
-      var userDropPromises = [
-        usersCollection.dropIndex({ email: 1 }),
-        usersCollection.dropIndex({ username: 1 }),
-        usersCollection.dropIndex({ createdAt: 1 }),
-        usersCollection.dropIndex({ updatedAt: 1 })
+      // User collection indexes to drop
+      var userIndexes = [
+        { keys: { email: 1 } },
+        { keys: { username: 1 } },
+        { keys: { createdAt: 1 } },
+        { keys: { updatedAt: 1 } }
       ];
-      
-      Promise.all(userDropPromises).then(function() {
-        // Drop indexes from accounts collection
-        var accountsCollection = db.collection('accounts');
-        var accountDropPromises = [
-          accountsCollection.dropIndex({ provider: 1, providerAccountId: 1 }),
-          accountsCollection.dropIndex({ userId: 1 })
+
+      dropCollectionIndexes(db, 'users', userIndexes).then(function() {
+        // Account collection indexes to drop
+        var accountIndexes = [
+          { keys: { provider: 1, providerAccountId: 1 } },
+          { keys: { userId: 1 } }
         ];
-        return Promise.all(accountDropPromises);
+        return dropCollectionIndexes(db, 'accounts', accountIndexes);
       }).then(function() {
-        // Drop indexes from sessions collection
-        var sessionsCollection = db.collection('sessions');
-        var sessionDropPromises = [
-          sessionsCollection.dropIndex({ sessionToken: 1 }),
-          sessionsCollection.dropIndex({ userId: 1 }),
-          sessionsCollection.dropIndex({ expires: 1 })
+        // Session collection indexes to drop
+        var sessionIndexes = [
+          { keys: { sessionToken: 1 } },
+          { keys: { userId: 1 } },
+          { keys: { expires: 1 } }
         ];
-        return Promise.all(sessionDropPromises);
+        return dropCollectionIndexes(db, 'sessions', sessionIndexes);
       }).then(function() {
-        // Drop indexes from verification tokens collection
-        var verificationTokensCollection = db.collection('verification_tokens');
-        var tokenDropPromises = [
-          verificationTokensCollection.dropIndex({ identifier: 1, token: 1 }),
-          verificationTokensCollection.dropIndex({ expires: 1 })
+        // Verification token collection indexes to drop
+        var tokenIndexes = [
+          { keys: { identifier: 1, token: 1 } },
+          { keys: { expires: 1 } }
         ];
-        return Promise.all(tokenDropPromises);
+        return dropCollectionIndexes(db, 'verification_tokens', tokenIndexes);
       }).then(function() {
         resolve();
         return true;

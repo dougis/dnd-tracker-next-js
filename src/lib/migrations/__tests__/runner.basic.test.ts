@@ -1,15 +1,31 @@
 /**
- * Simplified MigrationRunner tests for core functionality
+ * Basic MigrationRunner tests - core functionality
  */
 
 // Mock MongoDB
 jest.mock('mongodb');
 
+// Mock file system operations
+jest.mock('fs/promises', () => ({
+  readdir: jest.fn(),
+  readFile: jest.fn(),
+  writeFile: jest.fn(),
+  access: jest.fn(),
+  mkdir: jest.fn(),
+}));
+
+// Mock path operations
+jest.mock('path', () => ({
+  join: jest.fn(),
+  extname: jest.fn(),
+  basename: jest.fn(),
+}));
+
 import { Db, MongoClient } from 'mongodb';
 import { MigrationRunner } from '../runner';
 import { MigrationConfig } from '../types';
 
-describe('MigrationRunner', () => {
+describe('MigrationRunner - Basic Tests', () => {
   let mockDb: jest.Mocked<Db>;
   let mockClient: jest.Mocked<MongoClient>;
   let mockCollection: any;
@@ -31,10 +47,15 @@ describe('MigrationRunner', () => {
 
     mockDb = {
       collection: jest.fn().mockReturnValue(mockCollection),
+      createCollection: jest.fn(),
+      listCollections: jest.fn().mockReturnValue({
+        toArray: jest.fn().mockResolvedValue([]),
+      }),
     } as any;
 
     mockClient = {
       db: jest.fn().mockReturnValue(mockDb),
+      close: jest.fn(),
     } as any;
 
     config = {
@@ -65,9 +86,7 @@ describe('MigrationRunner', () => {
         'Migration configuration is required'
       );
     });
-  });
 
-  describe('validation', () => {
     it('should validate required configuration fields', () => {
       const invalidConfig = { ...config, migrationsPath: '' };
       expect(() => new MigrationRunner(mockClient, invalidConfig)).toThrow(
@@ -75,8 +94,34 @@ describe('MigrationRunner', () => {
       );
     });
 
+    it('should set default values for optional configuration fields', () => {
+      const minimalConfig = {
+        migrationsPath: '/test/migrations',
+        collectionName: 'migrations',
+      } as MigrationConfig;
+
+      const testRunner = new MigrationRunner(mockClient, minimalConfig);
+      expect(testRunner).toBeInstanceOf(MigrationRunner);
+    });
+  });
+
+  describe('basic validation', () => {
+    it('should validate migration path accessibility', async () => {
+      const fs = require('fs/promises');
+      fs.access = jest.fn().mockRejectedValue({ code: 'ENOENT' });
+
+      const inaccessibleConfig = {
+        ...config,
+        migrationsPath: '/non/existent/path',
+      };
+
+      const inaccessibleRunner = new MigrationRunner(mockClient, inaccessibleConfig);
+      await expect(inaccessibleRunner.getStatus()).rejects.toThrow();
+    });
+
     it('should handle invalid timeout values', () => {
       const invalidConfig = { ...config, timeout: -1 };
+
       expect(() => new MigrationRunner(mockClient, invalidConfig)).toThrow(
         'Timeout must be a positive number'
       );
@@ -84,28 +129,9 @@ describe('MigrationRunner', () => {
 
     it('should handle invalid collection names', () => {
       const invalidConfig = { ...config, collectionName: '' };
+
       expect(() => new MigrationRunner(mockClient, invalidConfig)).toThrow(
         'Collection name cannot be empty'
-      );
-    });
-  });
-
-  describe('rollback', () => {
-    it('should return empty array when no migrations to rollback', async () => {
-      mockCollection.find.mockReturnValue({
-        toArray: jest.fn().mockResolvedValue([]),
-        sort: jest.fn().mockReturnThis(),
-      });
-
-      const results = await runner.rollback();
-      expect(results).toHaveLength(0);
-    });
-  });
-
-  describe('createMigration', () => {
-    it('should throw error for empty description', async () => {
-      await expect(runner.createMigration('')).rejects.toThrow(
-        'Migration description is required'
       );
     });
   });

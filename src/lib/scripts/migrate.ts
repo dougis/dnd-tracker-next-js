@@ -281,6 +281,32 @@ function handleUnknownCommand(command: string | undefined): void {
 }
 
 /**
+ * Command mapping for better organization
+ */
+const COMMAND_HANDLERS = {
+  'status': (cli: MigrationCLI, _args: string[]) => cli.status(),
+  'up': (cli: MigrationCLI, _args: string[]) => cli.up(),
+  'down': handleDownCommand,
+  'create': handleCreateCommand,
+  'validate': (cli: MigrationCLI, _args: string[]) => cli.validate(),
+  'help': handleHelpCommand,
+  '--help': handleHelpCommand,
+  '-h': handleHelpCommand,
+};
+
+/**
+ * Execute command if it exists
+ */
+async function executeCommand(command: string, cli: MigrationCLI, args: string[]): Promise<void> {
+  const handler = COMMAND_HANDLERS[command as keyof typeof COMMAND_HANDLERS];
+  if (handler) {
+    await handler(cli, args);
+  } else {
+    handleUnknownCommand(command);
+  }
+}
+
+/**
  * Main CLI entry point
  */
 async function main(): Promise<void> {
@@ -289,30 +315,7 @@ async function main(): Promise<void> {
   const args = process.argv.slice(3);
 
   try {
-    switch (command) {
-      case 'status':
-        await cli.status();
-        break;
-      case 'up':
-        await cli.up();
-        break;
-      case 'down':
-        await handleDownCommand(cli, args);
-        break;
-      case 'create':
-        await handleCreateCommand(cli, args);
-        break;
-      case 'validate':
-        await cli.validate();
-        break;
-      case 'help':
-      case '--help':
-      case '-h':
-        handleHelpCommand(cli);
-        break;
-      default:
-        handleUnknownCommand(command);
-    }
+    await executeCommand(command, cli, args);
   } catch (error) {
     console.error(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);

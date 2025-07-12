@@ -58,15 +58,34 @@ export class MigrationRunner implements IMigrationRunner {
       throw new Error('Migration configuration is required');
     }
 
-    if (!config.migrationsPath || config.migrationsPath.trim() === '') {
+    this.validateMigrationsPath(config.migrationsPath);
+    this.validateCollectionName(config.collectionName);
+    this.validateTimeout(config.timeout);
+  }
+
+  /**
+   * Validate migrations path
+   */
+  private validateMigrationsPath(migrationsPath: string): void {
+    if (!migrationsPath || migrationsPath.trim() === '') {
       throw new Error('Migrations path is required');
     }
+  }
 
-    if (!config.collectionName || config.collectionName.trim() === '') {
+  /**
+   * Validate collection name
+   */
+  private validateCollectionName(collectionName: string): void {
+    if (!collectionName || collectionName.trim() === '') {
       throw new Error('Collection name cannot be empty');
     }
+  }
 
-    if (config.timeout !== undefined && (config.timeout <= 0 || !Number.isFinite(config.timeout))) {
+  /**
+   * Validate timeout value
+   */
+  private validateTimeout(timeout: number | undefined): void {
+    if (timeout !== undefined && (timeout <= 0 || !Number.isFinite(timeout))) {
       throw new Error('Timeout must be a positive number');
     }
   }
@@ -95,21 +114,23 @@ export class MigrationRunner implements IMigrationRunner {
         this.getExecutedMigrations(),
       ]);
 
-      // Note: executedVersions removed as it was unused
+      // Ensure we have valid arrays
+      const files = migrationFiles || [];
+      const executed = executedMigrations || [];
 
-      return migrationFiles
+      return files
         .map(filename => this.parseMigrationFilename(filename))
         .filter((parsed): parsed is NonNullable<typeof parsed> => parsed !== null)
         .sort((a, b) => a.version.localeCompare(b.version))
         .map(parsed => {
-          const executed = executedMigrations.find(m => m.version === parsed.version);
+          const executedRecord = executed.find(m => m.version === parsed.version);
           return {
             version: parsed.version,
             description: parsed.description,
             filename: parsed.filename,
-            status: executed ? 'executed' : 'pending',
-            executedAt: executed?.executedAt,
-            executionTime: executed?.executionTime,
+            status: executedRecord ? 'executed' : 'pending',
+            executedAt: executedRecord?.executedAt,
+            executionTime: executedRecord?.executionTime,
           } as MigrationStatus;
         });
     } catch (error) {
