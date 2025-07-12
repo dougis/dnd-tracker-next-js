@@ -137,6 +137,7 @@ Every migration should have a corresponding `down` method that can safely undo t
 - Validate on a copy of production data
 
 ### 3. Keep migrations atomic
+
 Each migration should represent a single logical change that can be applied or rolled back as a unit.
 
 ### 4. Handle errors gracefully
@@ -154,6 +155,7 @@ async up(db) {
 ```
 
 ### 5. Use transactions for complex changes
+
 ```javascript
 async up(db) {
   const session = db.client.startSession();
