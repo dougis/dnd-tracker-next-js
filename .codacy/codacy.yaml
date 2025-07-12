@@ -3,11 +3,12 @@ engine_configuration:
       tool: spellcheck
     - exclude_patterns:
         - eslint.config.mjs
+        - .next/**
+        - .next/**/*
       tool: eslint
 exclude_paths:
     - node_modules/**
     - .next/**
-    - .next/**/*
     - dist/**
     - build/**
     - coverage/**
