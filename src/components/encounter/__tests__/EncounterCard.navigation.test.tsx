@@ -3,9 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EncounterCard } from '../EncounterCard';
 import { createMockEncounter } from './test-utils/mockFactories';
-
-// Mock next/navigation
-const mockPush = jest.fn();
+import { mockPush, commonNavigationBeforeEach } from './test-utils/navigationTestHelpers';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -59,7 +57,7 @@ describe('EncounterCard Navigation', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    commonNavigationBeforeEach();
   });
 
   describe('Card Click Navigation', () => {
@@ -71,7 +69,7 @@ describe('EncounterCard Navigation', () => {
       // Find the card element by looking for the main card container
       const cardContent = screen.getByTestId('card-content');
       expect(cardContent).toBeInTheDocument();
-      
+
       // Click on the card content area
       await user.click(cardContent);
       expect(mockPush).toHaveBeenCalledWith('/encounters/card-encounter-123');
@@ -111,7 +109,7 @@ describe('EncounterCard Navigation', () => {
       render(<EncounterCard {...defaultProps} encounter={differentEncounter} />);
 
       const cardContent = screen.getByTestId('card-content');
-      
+
       await user.click(cardContent);
       expect(mockPush).toHaveBeenCalledWith('/encounters/different-card-456');
     });
@@ -185,7 +183,7 @@ describe('EncounterCard Navigation', () => {
     it('should have transition effects', () => {
       render(<EncounterCard {...defaultProps} />);
 
-      // Check that the card renders properly - styling is handled by the Card component  
+      // Check that the card renders properly - styling is handled by the Card component
       const cardContent = screen.getByTestId('card-content');
       expect(cardContent).toBeInTheDocument();
     });
@@ -199,7 +197,8 @@ describe('EncounterCard Navigation', () => {
 
       render(<EncounterCard {...minimalProps} />);
 
-      expect(screen.getByText('Card Test Encounter')).toBeInTheDocument();
+      expect(screen.getByTestId('card-header')).toBeInTheDocument();
+      expect(screen.getByTestId('card-content')).toBeInTheDocument();
     });
 
     it('should pass correct props to child components', () => {
@@ -208,7 +207,7 @@ describe('EncounterCard Navigation', () => {
       // Verify that child components receive the correct props
       expect(screen.getByTestId('card-header')).toBeInTheDocument();
       expect(screen.getByTestId('card-content')).toBeInTheDocument();
-      expect(screen.getByText('Card Test Encounter')).toBeInTheDocument();
+      expect(screen.getAllByText('Card Test Encounter')).toHaveLength(2); // Header and content
       expect(screen.getByText('Test encounter description')).toBeInTheDocument();
     });
   });

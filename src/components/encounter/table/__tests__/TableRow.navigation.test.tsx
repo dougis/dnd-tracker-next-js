@@ -3,9 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TableRow } from '../TableRow';
 import { createMockEncounter } from '../../__tests__/test-utils/mockFactories';
-
-// Mock next/navigation
-const mockPush = jest.fn();
+import { mockPush, commonNavigationBeforeEach } from '../../__tests__/test-utils/navigationTestHelpers';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -52,7 +50,7 @@ describe('TableRow Navigation', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    commonNavigationBeforeEach();
   });
 
   describe('Row Click Navigation', () => {

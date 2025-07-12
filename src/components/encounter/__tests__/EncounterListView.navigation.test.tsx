@@ -2,9 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EncounterListView } from '../EncounterListView';
-
-// Mock next/navigation
-const mockPush = jest.fn();
+import { mockPush, commonNavigationBeforeEach } from './test-utils/navigationTestHelpers';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -14,7 +12,7 @@ jest.mock('next/navigation', () => ({
 
 // Mock all the complex dependencies
 jest.mock('../hooks/useEncounterData', () => ({
-  useEncounterData: () => ({
+  useEncounterData: jest.fn(() => ({
     encounters: [],
     isLoading: false,
     error: null,
@@ -26,7 +24,7 @@ jest.mock('../hooks/useEncounterData', () => ({
     },
     goToPage: jest.fn(),
     refetch: jest.fn(),
-  }),
+  })),
 }));
 
 jest.mock('../hooks/useEncounterFilters', () => ({
@@ -43,14 +41,14 @@ jest.mock('../hooks/useEncounterFilters', () => ({
 }));
 
 jest.mock('../hooks/useEncounterSelection', () => ({
-  useEncounterSelection: () => ({
+  useEncounterSelection: jest.fn(() => ({
     selectedEncounters: [],
     selectAll: jest.fn(),
     selectEncounter: jest.fn(),
     clearSelection: jest.fn(),
     isAllSelected: false,
     hasSelection: false,
-  }),
+  })),
 }));
 
 jest.mock('../EncounterListView/ErrorFallback', () => ({
@@ -91,7 +89,7 @@ jest.mock('@/components/shared/Pagination', () => ({
 
 describe('EncounterListView Navigation', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    commonNavigationBeforeEach();
   });
 
   describe('Create Encounter Navigation', () => {
@@ -133,10 +131,11 @@ describe('EncounterListView Navigation', () => {
   describe('Error Handling', () => {
     beforeEach(() => {
       // Reset all mocks
-      jest.clearAllMocks();
-      
+      commonNavigationBeforeEach();
+
       // Mock useEncounterData to return an error
-      require('../hooks/useEncounterData').useEncounterData.mockImplementation(() => ({
+      const { useEncounterData } = require('../hooks/useEncounterData');
+      useEncounterData.mockImplementation(() => ({
         encounters: [],
         isLoading: false,
         error: new Error('Failed to load encounters'),
@@ -169,10 +168,27 @@ describe('EncounterListView Navigation', () => {
   describe('Batch Actions Visibility', () => {
     beforeEach(() => {
       // Reset all mocks
-      jest.clearAllMocks();
-      
+      commonNavigationBeforeEach();
+
+      // Mock useEncounterData to return normal state (no error)
+      const { useEncounterData } = require('../hooks/useEncounterData');
+      useEncounterData.mockImplementation(() => ({
+        encounters: [],
+        isLoading: false,
+        error: null,
+        pagination: {
+          currentPage: 1,
+          totalPages: 1,
+          totalItems: 0,
+          itemsPerPage: 20,
+        },
+        goToPage: jest.fn(),
+        refetch: jest.fn(),
+      }));
+
       // Mock useEncounterSelection to return a selection
-      require('../hooks/useEncounterSelection').useEncounterSelection.mockImplementation(() => ({
+      const { useEncounterSelection } = require('../hooks/useEncounterSelection');
+      useEncounterSelection.mockImplementation(() => ({
         selectedEncounters: ['encounter-1', 'encounter-2'],
         selectAll: jest.fn(),
         selectEncounter: jest.fn(),
@@ -192,10 +208,11 @@ describe('EncounterListView Navigation', () => {
   describe('Loading State', () => {
     beforeEach(() => {
       // Reset all mocks
-      jest.clearAllMocks();
-      
+      commonNavigationBeforeEach();
+
       // Mock useEncounterData to return loading state
-      require('../hooks/useEncounterData').useEncounterData.mockImplementation(() => ({
+      const { useEncounterData } = require('../hooks/useEncounterData');
+      useEncounterData.mockImplementation(() => ({
         encounters: [],
         isLoading: true,
         error: null,
@@ -214,6 +231,38 @@ describe('EncounterListView Navigation', () => {
   });
 
   describe('Pagination Visibility', () => {
+    beforeEach(() => {
+      // Reset all mocks to ensure clean state
+      commonNavigationBeforeEach();
+
+      // Ensure useEncounterData returns pagination data with no error
+      const { useEncounterData } = require('../hooks/useEncounterData');
+      useEncounterData.mockImplementation(() => ({
+        encounters: [],
+        isLoading: false,
+        error: null,
+        pagination: {
+          currentPage: 1,
+          totalPages: 3,
+          totalItems: 45,
+          itemsPerPage: 20,
+        },
+        goToPage: jest.fn(),
+        refetch: jest.fn(),
+      }));
+
+      // Ensure no selection so BatchActions doesn't interfere
+      const { useEncounterSelection } = require('../hooks/useEncounterSelection');
+      useEncounterSelection.mockImplementation(() => ({
+        selectedEncounters: [],
+        selectAll: jest.fn(),
+        selectEncounter: jest.fn(),
+        clearSelection: jest.fn(),
+        isAllSelected: false,
+        hasSelection: false,
+      }));
+    });
+
     it('should render pagination when pagination data is available', () => {
       render(<EncounterListView />);
 
@@ -223,10 +272,11 @@ describe('EncounterListView Navigation', () => {
     describe('when no pagination data', () => {
       beforeEach(() => {
         // Reset all mocks
-        jest.clearAllMocks();
-        
+        commonNavigationBeforeEach();
+
         // Mock useEncounterData to return no pagination
-        require('../hooks/useEncounterData').useEncounterData.mockImplementation(() => ({
+        const { useEncounterData } = require('../hooks/useEncounterData');
+        useEncounterData.mockImplementation(() => ({
           encounters: [],
           isLoading: false,
           error: null,

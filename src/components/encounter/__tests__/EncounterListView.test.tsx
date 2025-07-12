@@ -58,6 +58,13 @@ jest.mock('../hooks/useEncounterSelection', () => ({
   useEncounterSelection: () => mockUseEncounterSelection,
 }));
 
+// Mock next/navigation for useRouter hook
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+  }),
+}));
+
 // Mock child components
 jest.mock('../BatchActions', () => ({
   BatchActions: ({ selectedCount, onClearSelection, onRefetch }: any) => (
