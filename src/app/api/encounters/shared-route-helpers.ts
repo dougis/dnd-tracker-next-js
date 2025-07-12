@@ -197,6 +197,21 @@ export function createBatchResponse(
 // VALIDATION UTILITIES
 // ============================================================================
 
+// ============================================================================
+// SHARED VALIDATION SCHEMAS
+// ============================================================================
+
+/**
+ * Common format enum for reuse across schemas
+ */
+const formatEnum = z.enum(['json', 'xml']);
+
+/**
+ * Base boolean transform for query parameters
+ */
+const booleanTransform = (defaultValue: string) =>
+  z.string().transform(v => v === 'true').default(defaultValue);
+
 /**
  * Shared options schema for import/restore operations
  */
@@ -214,11 +229,19 @@ const restoreOptionsSchema = baseOptionsSchema.extend({
 });
 
 /**
+ * Shared query fields for backup/export operations
+ */
+const sharedQueryFields = {
+  includeCharacterSheets: booleanTransform('false'),
+  includePrivateNotes: booleanTransform('false'),
+};
+
+/**
  * Standard import body validation schema
  */
 export const importBodySchema = z.object({
   data: z.string().min(1, 'Import data is required'),
-  format: z.enum(['json', 'xml']),
+  format: formatEnum,
   options: baseOptionsSchema.default({}),
 });
 
@@ -226,20 +249,19 @@ export const importBodySchema = z.object({
  * Standard export query validation schema
  */
 export const exportQuerySchema = z.object({
-  format: z.enum(['json', 'xml']).default('json'),
-  includeCharacterSheets: z.string().transform(v => v === 'true').default('false'),
-  includePrivateNotes: z.string().transform(v => v === 'true').default('false'),
-  includeIds: z.string().transform(v => v === 'true').default('false'),
-  stripPersonalData: z.string().transform(v => v === 'true').default('false'),
+  format: formatEnum.default('json'),
+  ...sharedQueryFields,
+  includeIds: booleanTransform('false'),
+  stripPersonalData: booleanTransform('false'),
 });
 
 /**
  * Standard backup query validation schema
  */
 export const backupQuerySchema = z.object({
-  includeCharacterSheets: z.string().transform(v => v === 'true').default('true'),
-  includePrivateNotes: z.string().transform(v => v === 'true').default('true'),
-  format: z.enum(['json', 'xml']).default('json'),
+  includeCharacterSheets: booleanTransform('true'),
+  includePrivateNotes: booleanTransform('true'),
+  format: formatEnum.default('json'),
 });
 
 /**
@@ -247,7 +269,7 @@ export const backupQuerySchema = z.object({
  */
 export const restoreBodySchema = z.object({
   backupData: z.string().min(1, 'Backup data is required'),
-  format: z.enum(['json', 'xml']),
+  format: formatEnum,
   options: restoreOptionsSchema.default({}),
 });
 
