@@ -4,6 +4,7 @@
  */
 
 import { COMMON_TEST_ENCOUNTERS } from './batchActionsSharedMocks';
+import { expectCallbacksInvoked, expectErrorToast } from './testSetup';
 
 export interface MockBatchOptions {
   operation?: string;
@@ -86,13 +87,6 @@ export const expectBatchApiCall = (operation: string, encounterIds = COMMON_TEST
   });
 };
 
-/**
- * Common expectation for callback functions being called
- */
-const expectCallbacksInvoked = (onClearSelection: jest.Mock, onRefetch: jest.Mock) => {
-  expect(onClearSelection).toHaveBeenCalledTimes(1);
-  expect(onRefetch).toHaveBeenCalledTimes(1);
-};
 
 /**
  * Expect successful operation result
@@ -129,16 +123,6 @@ export const expectPartialSuccessResult = (
   expectCallbacksInvoked(onClearSelection, onRefetch);
 };
 
-/**
- * Expect error toast message
- */
-export const expectErrorToast = (mockToast: jest.Mock, errorMessage: string) => {
-  expect(mockToast).toHaveBeenCalledWith({
-    title: 'Error',
-    description: errorMessage,
-    variant: 'destructive',
-  });
-};
 
 /**
  * Expect empty selection error

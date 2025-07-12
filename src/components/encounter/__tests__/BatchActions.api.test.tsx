@@ -1,9 +1,10 @@
-import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import { BatchActions } from '../BatchActions';
-import { createMockToast, commonBeforeEach } from './test-utils/mockSetup';
+import { screen, waitFor } from '@testing-library/react';
 import { clickButton } from './test-utils/interactionHelpers';
-import { COMMON_TEST_ENCOUNTERS, COMMON_TEST_COUNT } from './test-utils/batchActionsSharedMocks';
+import {
+  createDefaultBatchActionsProps,
+  createBatchActionsRenderer,
+  setupBatchActionsBeforeEach
+} from './test-utils/testSetup';
 import {
   mockSuccessfulBatchApi,
   mockPartialFailureBatchApi,
@@ -14,6 +15,7 @@ import {
   executeBatchOperationTest,
   executeBatchErrorTest,
 } from './test-utils/batchApiHelpers';
+import { createMockToast } from './test-utils/mockSetup';
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -33,21 +35,14 @@ jest.mock('../BatchActions/utils', () => ({
   ),
 }));
 
-describe('BatchActions API Integration', () => {
-  const defaultProps = {
-    selectedCount: COMMON_TEST_COUNT,
-    selectedEncounters: COMMON_TEST_ENCOUNTERS,
-    onClearSelection: jest.fn(),
-    onRefetch: jest.fn(),
-  };
+const mockFetch = global.fetch as jest.Mock;
 
-  const renderBatchActions = (props = {}) => {
-    return render(<BatchActions {...defaultProps} {...props} />);
-  };
+describe('BatchActions API Integration', () => {
+  const defaultProps = createDefaultBatchActionsProps();
+  const renderBatchActions = createBatchActionsRenderer(defaultProps);
 
   beforeEach(() => {
-    commonBeforeEach();
-    (global.fetch as jest.Mock).mockClear();
+    setupBatchActionsBeforeEach(mockFetch);
   });
 
   afterEach(() => {

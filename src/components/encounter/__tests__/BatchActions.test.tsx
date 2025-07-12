@@ -1,9 +1,12 @@
-import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import { BatchActions } from '../BatchActions';
-import { createMockToast, commonBeforeEach } from './test-utils/mockSetup';
+import { screen, waitFor } from '@testing-library/react';
 import { clickButton, expectFunctionToBeCalled } from './test-utils/interactionHelpers';
-import { COMMON_TEST_ENCOUNTERS, COMMON_TEST_COUNT, mockSuccessfulResponse, executeActionTest, executeDeleteDialogTest, executeErrorActionTest } from './test-utils/batchActionsSharedMocks';
+import { COMMON_TEST_ENCOUNTERS, mockSuccessfulResponse, executeActionTest, executeDeleteDialogTest, executeErrorActionTest } from './test-utils/batchActionsSharedMocks';
+import {
+  createDefaultBatchActionsProps,
+  createBatchActionsRenderer,
+  setupBatchActionsBeforeEach
+} from './test-utils/testSetup';
+import { createMockToast } from './test-utils/mockSetup';
 
 // Mock the toast hook
 const mockToast = createMockToast();
@@ -42,16 +45,8 @@ const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
 describe('BatchActions', () => {
-  const defaultProps = {
-    selectedCount: COMMON_TEST_COUNT,
-    onClearSelection: jest.fn(),
-    onRefetch: jest.fn(),
-  };
-
-  // Helper function to render BatchActions with default props
-  const renderBatchActions = (props = {}) => {
-    return render(<BatchActions {...defaultProps} {...props} />);
-  };
+  const defaultProps = createDefaultBatchActionsProps();
+  const renderBatchActions = createBatchActionsRenderer(defaultProps);
 
   // Helper function to test action button behavior
   const testActionButton = async (
@@ -129,8 +124,7 @@ describe('BatchActions', () => {
   };
 
   beforeEach(() => {
-    commonBeforeEach();
-    mockFetch.mockClear();
+    setupBatchActionsBeforeEach(mockFetch);
   });
 
   afterAll(() => {
