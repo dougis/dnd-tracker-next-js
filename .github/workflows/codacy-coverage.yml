@@ -38,7 +38,8 @@ jobs:
         run: npm ci
 
       - name: Run tests with coverage
-        run: npm run test:ci
+        run: timeout 600 npm run test:ci
+        timeout-minutes: 15
         env:
           # MongoDB configuration - connecting to service container
           MONGODB_URI: 'mongodb://localhost:27017/testdb'
