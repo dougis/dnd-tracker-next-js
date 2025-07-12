@@ -2,7 +2,13 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EncounterListView } from '../EncounterListView';
-import { mockPush, commonNavigationBeforeEach } from './test-utils/navigationTestHelpers';
+import { 
+  mockPush, 
+  commonNavigationBeforeEach,
+  createListViewMocks,
+  expectNavigation,
+  expectNoNavigation
+} from './test-utils/navigationTestHelpers';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -10,46 +16,27 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
-// Mock all the complex dependencies
-jest.mock('../hooks/useEncounterData', () => ({
-  useEncounterData: jest.fn(() => ({
-    encounters: [],
-    isLoading: false,
-    error: null,
-    pagination: {
-      currentPage: 1,
-      totalPages: 1,
-      totalItems: 0,
-      itemsPerPage: 20,
-    },
-    goToPage: jest.fn(),
-    refetch: jest.fn(),
-  })),
-}));
+// Use centralized mock setup
+jest.mock('../hooks/useEncounterData', () => {
+  const { createListViewMocks } = require('./test-utils/navigationTestHelpers');
+  return {
+    useEncounterData: createListViewMocks().useEncounterData,
+  };
+});
 
-jest.mock('../hooks/useEncounterFilters', () => ({
-  useEncounterFilters: () => ({
-    filters: { status: [], difficulty: [], tags: [] },
-    searchQuery: '',
-    sortBy: 'name',
-    sortOrder: 'asc',
-    updateFilters: jest.fn(),
-    updateSearchQuery: jest.fn(),
-    updateSort: jest.fn(),
-    clearFilters: jest.fn(),
-  }),
-}));
+jest.mock('../hooks/useEncounterFilters', () => {
+  const { createListViewMocks } = require('./test-utils/navigationTestHelpers');
+  return {
+    useEncounterFilters: createListViewMocks().useEncounterFilters,
+  };
+});
 
-jest.mock('../hooks/useEncounterSelection', () => ({
-  useEncounterSelection: jest.fn(() => ({
-    selectedEncounters: [],
-    selectAll: jest.fn(),
-    selectEncounter: jest.fn(),
-    clearSelection: jest.fn(),
-    isAllSelected: false,
-    hasSelection: false,
-  })),
-}));
+jest.mock('../hooks/useEncounterSelection', () => {
+  const { createListViewMocks } = require('./test-utils/navigationTestHelpers');
+  return {
+    useEncounterSelection: createListViewMocks().useEncounterSelection,
+  };
+});
 
 jest.mock('../EncounterListView/ErrorFallback', () => ({
   ErrorFallback: ({ onRetry }: any) => (
@@ -95,18 +82,14 @@ describe('EncounterListView Navigation', () => {
   describe('Create Encounter Navigation', () => {
     it('should navigate to encounter creation when create button is clicked', async () => {
       const user = userEvent.setup();
-
       render(<EncounterListView />);
-
       const createButton = screen.getByTestId('create-encounter-btn');
       await user.click(createButton);
-
-      expect(mockPush).toHaveBeenCalledWith('/encounters/create');
+      expectNavigation('/encounters/create');
     });
 
     it('should render create encounter button in controls section', () => {
       render(<EncounterListView />);
-
       expect(screen.getByTestId('create-encounter-btn')).toBeInTheDocument();
       expect(screen.getByText('Create New Encounter')).toBeInTheDocument();
     });
@@ -130,10 +113,7 @@ describe('EncounterListView Navigation', () => {
 
   describe('Error Handling', () => {
     beforeEach(() => {
-      // Reset all mocks
       commonNavigationBeforeEach();
-
-      // Mock useEncounterData to return an error
       const { useEncounterData } = require('../hooks/useEncounterData');
       useEncounterData.mockImplementation(() => ({
         encounters: [],
@@ -147,31 +127,23 @@ describe('EncounterListView Navigation', () => {
 
     it('should render error fallback when there is an error', () => {
       render(<EncounterListView />);
-
       expect(screen.getByTestId('error-fallback')).toBeInTheDocument();
       expect(screen.queryByTestId('controls-section')).not.toBeInTheDocument();
     });
 
     it('should handle retry from error fallback', async () => {
       const user = userEvent.setup();
-
       render(<EncounterListView />);
-
       const retryButton = screen.getByText('Retry');
       await user.click(retryButton);
-
-      // The retry functionality should be called
-      // (specific implementation depends on the error fallback component)
     });
   });
 
   describe('Batch Actions Visibility', () => {
     beforeEach(() => {
-      // Reset all mocks
       commonNavigationBeforeEach();
-
-      // Mock useEncounterData to return normal state (no error)
       const { useEncounterData } = require('../hooks/useEncounterData');
+      const { useEncounterSelection } = require('../hooks/useEncounterSelection');
       useEncounterData.mockImplementation(() => ({
         encounters: [],
         isLoading: false,
@@ -185,9 +157,6 @@ describe('EncounterListView Navigation', () => {
         goToPage: jest.fn(),
         refetch: jest.fn(),
       }));
-
-      // Mock useEncounterSelection to return a selection
-      const { useEncounterSelection } = require('../hooks/useEncounterSelection');
       useEncounterSelection.mockImplementation(() => ({
         selectedEncounters: ['encounter-1', 'encounter-2'],
         selectAll: jest.fn(),
@@ -200,17 +169,13 @@ describe('EncounterListView Navigation', () => {
 
     it('should render batch actions when encounters are selected', () => {
       render(<EncounterListView />);
-
       expect(screen.getByTestId('batch-actions')).toBeInTheDocument();
     });
   });
 
   describe('Loading State', () => {
     beforeEach(() => {
-      // Reset all mocks
       commonNavigationBeforeEach();
-
-      // Mock useEncounterData to return loading state
       const { useEncounterData } = require('../hooks/useEncounterData');
       useEncounterData.mockImplementation(() => ({
         encounters: [],
@@ -224,7 +189,6 @@ describe('EncounterListView Navigation', () => {
 
     it('should render content section even when loading', () => {
       render(<EncounterListView />);
-
       expect(screen.getByTestId('content-section')).toBeInTheDocument();
       expect(screen.getByTestId('controls-section')).toBeInTheDocument();
     });
@@ -232,11 +196,9 @@ describe('EncounterListView Navigation', () => {
 
   describe('Pagination Visibility', () => {
     beforeEach(() => {
-      // Reset all mocks to ensure clean state
       commonNavigationBeforeEach();
-
-      // Ensure useEncounterData returns pagination data with no error
       const { useEncounterData } = require('../hooks/useEncounterData');
+      const { useEncounterSelection } = require('../hooks/useEncounterSelection');
       useEncounterData.mockImplementation(() => ({
         encounters: [],
         isLoading: false,
@@ -250,9 +212,6 @@ describe('EncounterListView Navigation', () => {
         goToPage: jest.fn(),
         refetch: jest.fn(),
       }));
-
-      // Ensure no selection so BatchActions doesn't interfere
-      const { useEncounterSelection } = require('../hooks/useEncounterSelection');
       useEncounterSelection.mockImplementation(() => ({
         selectedEncounters: [],
         selectAll: jest.fn(),
@@ -265,32 +224,27 @@ describe('EncounterListView Navigation', () => {
 
     it('should render pagination when pagination data is available', () => {
       render(<EncounterListView />);
-
       expect(screen.getByTestId('pagination')).toBeInTheDocument();
     });
+  });
 
-    describe('when no pagination data', () => {
-      beforeEach(() => {
-        // Reset all mocks
-        commonNavigationBeforeEach();
+  describe('No Pagination Data', () => {
+    beforeEach(() => {
+      commonNavigationBeforeEach();
+      const { useEncounterData } = require('../hooks/useEncounterData');
+      useEncounterData.mockImplementation(() => ({
+        encounters: [],
+        isLoading: false,
+        error: null,
+        pagination: null,
+        goToPage: jest.fn(),
+        refetch: jest.fn(),
+      }));
+    });
 
-        // Mock useEncounterData to return no pagination
-        const { useEncounterData } = require('../hooks/useEncounterData');
-        useEncounterData.mockImplementation(() => ({
-          encounters: [],
-          isLoading: false,
-          error: null,
-          pagination: null,
-          goToPage: jest.fn(),
-          refetch: jest.fn(),
-        }));
-      });
-
-      it('should not render pagination when pagination data is null', () => {
-        render(<EncounterListView />);
-
-        expect(screen.queryByTestId('pagination')).not.toBeInTheDocument();
-      });
+    it('should not render pagination when pagination data is null', () => {
+      render(<EncounterListView />);
+      expect(screen.queryByTestId('pagination')).not.toBeInTheDocument();
     });
   });
 });

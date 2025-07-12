@@ -3,7 +3,14 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EncounterCard } from '../EncounterCard';
 import { createMockEncounter } from './test-utils/mockFactories';
-import { mockPush, commonNavigationBeforeEach } from './test-utils/navigationTestHelpers';
+import { 
+  mockPush, 
+  commonNavigationBeforeEach,
+  createMockCardHeader,
+  createMockCardContent,
+  expectNavigation,
+  expectNoNavigation
+} from './test-utils/navigationTestHelpers';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -11,35 +18,14 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
-// Mock card components to isolate navigation testing
+// Use centralized mock components
 jest.mock('../card/CardHeader', () => {
-  return {
-    CardHeader: ({ encounter, onSelect, isSelected }: any) => (
-      <div data-testid="card-header">
-        <h3>{encounter.name}</h3>
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={() => onSelect?.(encounter.id)}
-          data-checkbox="true"
-        />
-        <div data-actions="true">
-          <button>Action Button</button>
-        </div>
-      </div>
-    ),
-  };
+  const { createMockCardHeader } = require('./test-utils/navigationTestHelpers');
+  return createMockCardHeader();
 });
-
 jest.mock('../card/CardContent', () => {
-  return {
-    CardContent: ({ encounter }: any) => (
-      <div data-testid="card-content">
-        <p>{encounter.name}</p>
-        <p>{encounter.description}</p>
-      </div>
-    ),
-  };
+  const { createMockCardContent } = require('./test-utils/navigationTestHelpers');
+  return createMockCardContent();
 });
 
 describe('EncounterCard Navigation', () => {
@@ -56,6 +42,10 @@ describe('EncounterCard Navigation', () => {
     onRefetch: jest.fn(),
   };
 
+  const renderCard = (props = {}) => {
+    return render(<EncounterCard {...defaultProps} {...props} />);
+  };
+
   beforeEach(() => {
     commonNavigationBeforeEach();
   });
@@ -63,39 +53,27 @@ describe('EncounterCard Navigation', () => {
   describe('Card Click Navigation', () => {
     it('should navigate to encounter detail view when card is clicked', async () => {
       const user = userEvent.setup();
-
-      render(<EncounterCard {...defaultProps} />);
-
-      // Find the card element by looking for the main card container
+      renderCard();
       const cardContent = screen.getByTestId('card-content');
-      expect(cardContent).toBeInTheDocument();
-
-      // Click on the card content area
       await user.click(cardContent);
-      expect(mockPush).toHaveBeenCalledWith('/encounters/card-encounter-123');
+      expectNavigation('/encounters/card-encounter-123');
     });
 
     it('should not navigate when clicking on checkbox', async () => {
       const user = userEvent.setup();
-
-      render(<EncounterCard {...defaultProps} />);
-
+      renderCard();
       const checkbox = screen.getByRole('checkbox');
       await user.click(checkbox);
-
-      expect(mockPush).not.toHaveBeenCalled();
+      expectNoNavigation();
       expect(defaultProps.onSelect).toHaveBeenCalledWith('card-encounter-123');
     });
 
     it('should not navigate when clicking on action buttons', async () => {
       const user = userEvent.setup();
-
-      render(<EncounterCard {...defaultProps} />);
-
+      renderCard();
       const actionButton = screen.getByText('Action Button');
       await user.click(actionButton);
-
-      expect(mockPush).not.toHaveBeenCalled();
+      expectNoNavigation();
     });
 
     it('should navigate with different encounter IDs', async () => {
@@ -105,85 +83,34 @@ describe('EncounterCard Navigation', () => {
         name: 'Different Card Encounter',
         description: 'Different description',
       });
-
-      render(<EncounterCard {...defaultProps} encounter={differentEncounter} />);
-
+      renderCard({ encounter: differentEncounter });
       const cardContent = screen.getByTestId('card-content');
-
       await user.click(cardContent);
-      expect(mockPush).toHaveBeenCalledWith('/encounters/different-card-456');
+      expectNavigation('/encounters/different-card-456');
     });
   });
 
   describe('Event Prevention Logic', () => {
     it('should prevent click when target has data-checkbox attribute', async () => {
       const user = userEvent.setup();
-
-      render(<EncounterCard {...defaultProps} />);
-
+      renderCard();
       const checkbox = screen.getByRole('checkbox');
       await user.click(checkbox);
-
-      expect(mockPush).not.toHaveBeenCalled();
+      expectNoNavigation();
     });
 
     it('should prevent click when target has data-actions attribute', async () => {
       const user = userEvent.setup();
-
-      render(<EncounterCard {...defaultProps} />);
-
+      renderCard();
       const actionButton = screen.getByText('Action Button');
       await user.click(actionButton);
-
-      expect(mockPush).not.toHaveBeenCalled();
-    });
-
-    it('should prevent click when target is within element with data-checkbox', async () => {
-      const user = userEvent.setup();
-
-      render(<EncounterCard {...defaultProps} />);
-
-      // The checkbox is within an element that has data-checkbox
-      const checkbox = screen.getByRole('checkbox');
-      await user.click(checkbox);
-
-      expect(mockPush).not.toHaveBeenCalled();
-    });
-
-    it('should prevent click when target is within element with data-actions', async () => {
-      const user = userEvent.setup();
-
-      render(<EncounterCard {...defaultProps} />);
-
-      // The action button is within an element that has data-actions
-      const actionButton = screen.getByText('Action Button');
-      await user.click(actionButton);
-
-      expect(mockPush).not.toHaveBeenCalled();
+      expectNoNavigation();
     });
   });
 
   describe('Accessibility', () => {
-    it('should have proper cursor styling for clickable card', () => {
-      render(<EncounterCard {...defaultProps} />);
-
-      // Check for cursor-pointer class in the rendered output
-      const cardContent = screen.getByTestId('card-content');
-      expect(cardContent).toBeInTheDocument();
-    });
-
-    it('should have hover effects', () => {
-      render(<EncounterCard {...defaultProps} />);
-
-      // Check that the card renders properly - styling is handled by the Card component
-      const cardContent = screen.getByTestId('card-content');
-      expect(cardContent).toBeInTheDocument();
-    });
-
-    it('should have transition effects', () => {
-      render(<EncounterCard {...defaultProps} />);
-
-      // Check that the card renders properly - styling is handled by the Card component
+    it('should render card components properly', () => {
+      renderCard();
       const cardContent = screen.getByTestId('card-content');
       expect(cardContent).toBeInTheDocument();
     });
@@ -194,20 +121,16 @@ describe('EncounterCard Navigation', () => {
       const minimalProps = {
         encounter: mockEncounter,
       };
-
       render(<EncounterCard {...minimalProps} />);
-
       expect(screen.getByTestId('card-header')).toBeInTheDocument();
       expect(screen.getByTestId('card-content')).toBeInTheDocument();
     });
 
     it('should pass correct props to child components', () => {
-      render(<EncounterCard {...defaultProps} />);
-
-      // Verify that child components receive the correct props
+      renderCard();
       expect(screen.getByTestId('card-header')).toBeInTheDocument();
       expect(screen.getByTestId('card-content')).toBeInTheDocument();
-      expect(screen.getAllByText('Card Test Encounter')).toHaveLength(2); // Header and content
+      expect(screen.getAllByText('Card Test Encounter')).toHaveLength(2);
       expect(screen.getByText('Test encounter description')).toBeInTheDocument();
     });
   });

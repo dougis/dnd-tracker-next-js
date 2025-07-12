@@ -3,7 +3,13 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TableRow } from '../TableRow';
 import { createMockEncounter } from '../../__tests__/test-utils/mockFactories';
-import { mockPush, commonNavigationBeforeEach } from '../../__tests__/test-utils/navigationTestHelpers';
+import { 
+  mockPush, 
+  commonNavigationBeforeEach, 
+  createMockTableCells,
+  expectNavigation,
+  expectNoNavigation
+} from '../../__tests__/test-utils/navigationTestHelpers';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -11,30 +17,11 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
-// Mock table cell components to avoid complex dependencies
-jest.mock('../TableCells', () => ({
-  SelectionCell: ({ encounter, isSelected, onSelect }: any) => (
-    <td data-testid="selection-cell">
-      <input
-        type="checkbox"
-        checked={isSelected}
-        onChange={() => onSelect(encounter.id)}
-        data-checkbox="true"
-      />
-    </td>
-  ),
-  NameCell: ({ encounter }: any) => <td data-testid="name-cell">{encounter.name}</td>,
-  StatusCell: ({ encounter }: any) => <td data-testid="status-cell">{encounter.status}</td>,
-  DifficultyCell: ({ encounter }: any) => <td data-testid="difficulty-cell">{encounter.difficulty}</td>,
-  ParticipantsCell: ({ encounter }: any) => <td data-testid="participants-cell">{encounter.participantCount}</td>,
-  TargetLevelCell: ({ encounter }: any) => <td data-testid="target-level-cell">{encounter.targetLevel}</td>,
-  UpdatedCell: () => <td data-testid="updated-cell">Updated</td>,
-  ActionsCell: ({ encounter }: any) => (
-    <td data-testid="actions-cell" data-actions="true">
-      <button>Actions for {encounter.name}</button>
-    </td>
-  ),
-}));
+// Use centralized mock table cells
+jest.mock('../TableCells', () => {
+  const { createMockTableCells } = require('../../__tests__/test-utils/navigationTestHelpers');
+  return createMockTableCells();
+});
 
 describe('TableRow Navigation', () => {
   const mockEncounter = createMockEncounter({
@@ -49,6 +36,16 @@ describe('TableRow Navigation', () => {
     onRefetch: jest.fn(),
   };
 
+  const renderTableRow = (props = {}) => {
+    return render(
+      <table>
+        <tbody>
+          <TableRow {...defaultProps} {...props} />
+        </tbody>
+      </table>
+    );
+  };
+
   beforeEach(() => {
     commonNavigationBeforeEach();
   });
@@ -56,54 +53,27 @@ describe('TableRow Navigation', () => {
   describe('Row Click Navigation', () => {
     it('should navigate to encounter detail view when row is clicked', async () => {
       const user = userEvent.setup();
-
-      render(
-        <table>
-          <tbody>
-            <TableRow {...defaultProps} />
-          </tbody>
-        </table>
-      );
-
+      renderTableRow();
       const row = screen.getByRole('row');
       await user.click(row);
-
-      expect(mockPush).toHaveBeenCalledWith('/encounters/test-encounter-123');
+      expectNavigation('/encounters/test-encounter-123');
     });
 
     it('should not navigate when clicking on checkbox', async () => {
       const user = userEvent.setup();
-
-      render(
-        <table>
-          <tbody>
-            <TableRow {...defaultProps} />
-          </tbody>
-        </table>
-      );
-
+      renderTableRow();
       const checkbox = screen.getByRole('checkbox');
       await user.click(checkbox);
-
-      expect(mockPush).not.toHaveBeenCalled();
+      expectNoNavigation();
       expect(defaultProps.onSelect).toHaveBeenCalledWith('test-encounter-123');
     });
 
     it('should not navigate when clicking on actions cell', async () => {
       const user = userEvent.setup();
-
-      render(
-        <table>
-          <tbody>
-            <TableRow {...defaultProps} />
-          </tbody>
-        </table>
-      );
-
+      renderTableRow();
       const actionsButton = screen.getByText('Actions for Test Encounter Navigation');
       await user.click(actionsButton);
-
-      expect(mockPush).not.toHaveBeenCalled();
+      expectNoNavigation();
     });
 
     it('should navigate with different encounter IDs', async () => {
@@ -112,84 +82,22 @@ describe('TableRow Navigation', () => {
         id: 'different-encounter-456',
         name: 'Different Encounter',
       });
-
-      render(
-        <table>
-          <tbody>
-            <TableRow {...defaultProps} encounter={differentEncounter} />
-          </tbody>
-        </table>
-      );
-
+      renderTableRow({ encounter: differentEncounter });
       const row = screen.getByRole('row');
       await user.click(row);
-
-      expect(mockPush).toHaveBeenCalledWith('/encounters/different-encounter-456');
-    });
-
-    it('should handle keyboard navigation (Enter key)', async () => {
-      const user = userEvent.setup();
-
-      render(
-        <table>
-          <tbody>
-            <TableRow {...defaultProps} />
-          </tbody>
-        </table>
-      );
-
-      const row = screen.getByRole('row');
-      row.focus();
-      await user.keyboard('{Enter}');
-
-      // Note: We'll need to implement keyboard navigation in the actual component
-      // This test documents the expected behavior
-    });
-
-    it('should handle keyboard navigation (Space key)', async () => {
-      const user = userEvent.setup();
-
-      render(
-        <table>
-          <tbody>
-            <TableRow {...defaultProps} />
-          </tbody>
-        </table>
-      );
-
-      const row = screen.getByRole('row');
-      row.focus();
-      await user.keyboard('{Space}');
-
-      // Note: We'll need to implement keyboard navigation in the actual component
-      // This test documents the expected behavior
+      expectNavigation('/encounters/different-encounter-456');
     });
   });
 
   describe('Accessibility', () => {
     it('should have proper ARIA attributes for navigation', () => {
-      render(
-        <table>
-          <tbody>
-            <TableRow {...defaultProps} />
-          </tbody>
-        </table>
-      );
-
+      renderTableRow();
       const row = screen.getByRole('row');
       expect(row).toHaveClass('cursor-pointer');
-      // We should add aria-label or similar for accessibility
     });
 
     it('should indicate that row is clickable', () => {
-      render(
-        <table>
-          <tbody>
-            <TableRow {...defaultProps} />
-          </tbody>
-        </table>
-      );
-
+      renderTableRow();
       const row = screen.getByRole('row');
       expect(row).toHaveClass('cursor-pointer');
     });
@@ -198,23 +106,15 @@ describe('TableRow Navigation', () => {
   describe('Event Prevention', () => {
     it('should prevent navigation when event target is in a prevented element', async () => {
       const user = userEvent.setup();
-
-      render(
-        <table>
-          <tbody>
-            <TableRow {...defaultProps} />
-          </tbody>
-        </table>
-      );
-
-      // Click on elements that should prevent navigation
+      renderTableRow();
+      
       const checkbox = screen.getByRole('checkbox');
       const actionsButton = screen.getByText('Actions for Test Encounter Navigation');
 
       await user.click(checkbox);
       await user.click(actionsButton);
 
-      expect(mockPush).not.toHaveBeenCalled();
+      expectNoNavigation();
     });
   });
 });
