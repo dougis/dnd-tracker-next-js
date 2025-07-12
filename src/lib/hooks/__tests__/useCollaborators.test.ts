@@ -3,27 +3,13 @@
  */
 import { renderHook, act } from '@testing-library/react';
 import { useCollaborators } from '../useCollaborators';
-import {
-  createMockResponse,
-  createMockErrorResponse,
-  setupConsoleSpy,
-  restoreConsoleSpy,
-  clearFetchMock,
-  expectFunctionTypes,
-  expectApiCall,
-  expectConsoleError,
-  testAsyncOperation,
-  testStateChange,
-  TEST_EMAIL,
-  TEST_ID
-} from './hookTestUtils';
 
 // Mock fetch
 global.fetch = jest.fn();
 
 describe('useCollaborators', () => {
   beforeEach(() => {
-    clearFetchMock();
+    (fetch as jest.Mock).mockClear();
   });
 
   afterEach(() => {
@@ -36,12 +22,10 @@ describe('useCollaborators', () => {
 
       expect(result.current.newCollaboratorEmail).toBe('');
       expect(result.current.showAddCollaborator).toBe(false);
-      expectFunctionTypes(result.current, [
-        'setNewCollaboratorEmail',
-        'handleToggleAdd',
-        'handleAddCollaborator',
-        'handleRemoveCollaborator'
-      ]);
+      expect(typeof result.current.setNewCollaboratorEmail).toBe('function');
+      expect(typeof result.current.handleToggleAdd).toBe('function');
+      expect(typeof result.current.handleAddCollaborator).toBe('function');
+      expect(typeof result.current.handleRemoveCollaborator).toBe('function');
     });
   });
 
@@ -49,13 +33,11 @@ describe('useCollaborators', () => {
     it('toggles showAddCollaborator from false to true', () => {
       const { result } = renderHook(() => useCollaborators());
 
-      testStateChange(
-        result,
-        'showAddCollaborator',
-        false,
-        true,
-        () => result.current.handleToggleAdd()
-      );
+      act(() => {
+        result.current.handleToggleAdd();
+      });
+
+      expect(result.current.showAddCollaborator).toBe(true);
     });
 
     it('toggles showAddCollaborator from true to false and clears email', () => {
@@ -63,12 +45,12 @@ describe('useCollaborators', () => {
 
       // Set initial state
       act(() => {
-        result.current.setNewCollaboratorEmail(TEST_EMAIL);
+        result.current.setNewCollaboratorEmail('test@example.com');
         result.current.handleToggleAdd(); // Show add form
       });
 
       expect(result.current.showAddCollaborator).toBe(true);
-      expect(result.current.newCollaboratorEmail).toBe(TEST_EMAIL);
+      expect(result.current.newCollaboratorEmail).toBe('test@example.com');
 
       // Toggle off
       act(() => {
@@ -82,22 +64,31 @@ describe('useCollaborators', () => {
 
   describe('handleAddCollaborator', () => {
     it('should make API call to add collaborator when email is provided', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce(createMockResponse());
+      const mockResponse = { ok: true, json: async () => ({ success: true }) };
+      (fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
 
       const { result } = renderHook(() => useCollaborators());
 
       // Set email
       act(() => {
-        result.current.setNewCollaboratorEmail(TEST_EMAIL);
+        result.current.setNewCollaboratorEmail('test@example.com');
       });
 
       // Add collaborator
       let addResult: boolean;
-      await testAsyncOperation(async () => {
+      await act(async () => {
         addResult = await result.current.handleAddCollaborator();
       });
 
-      expectApiCall('/api/collaborators', 'POST', { email: TEST_EMAIL });
+      expect(fetch).toHaveBeenCalledWith('/api/collaborators', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'test@example.com',
+        }),
+      });
 
       // Should return true on success
       expect(addResult!).toBe(true);
@@ -137,40 +128,46 @@ describe('useCollaborators', () => {
     });
 
     it('should handle API errors gracefully', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce(createMockErrorResponse(400));
-      const consoleSpy = setupConsoleSpy();
+      const mockResponse = { ok: false, status: 400 };
+      (fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       const { result } = renderHook(() => useCollaborators());
 
       act(() => {
-        result.current.setNewCollaboratorEmail(TEST_EMAIL);
+        result.current.setNewCollaboratorEmail('test@example.com');
       });
 
       let addResult: boolean;
-      await testAsyncOperation(async () => {
+      await act(async () => {
         addResult = await result.current.handleAddCollaborator();
       });
 
-      expectConsoleError(consoleSpy, 'Failed to add collaborator:');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Failed to add collaborator:',
+        expect.any(Error)
+      );
       // Should return false on error
       expect(addResult!).toBe(false);
 
-      restoreConsoleSpy(consoleSpy);
+      consoleSpy.mockRestore();
     });
   });
 
   describe('handleRemoveCollaborator', () => {
     it('should make API call to remove collaborator', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce(createMockResponse());
+      const mockResponse = { ok: true, json: async () => ({ success: true }) };
+      (fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
 
       const { result } = renderHook(() => useCollaborators());
 
       let removeResult: boolean;
-      await testAsyncOperation(async () => {
-        removeResult = await result.current.handleRemoveCollaborator(TEST_ID);
+      await act(async () => {
+        removeResult = await result.current.handleRemoveCollaborator('collaborator-123');
       });
 
-      expect(fetch).toHaveBeenCalledWith(`/api/collaborators/${TEST_ID}`, {
+      expect(fetch).toHaveBeenCalledWith('/api/collaborators/collaborator-123', {
         method: 'DELETE',
       });
       // Should return true on success
@@ -178,21 +175,26 @@ describe('useCollaborators', () => {
     });
 
     it('should handle API errors gracefully', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce(createMockErrorResponse(404));
-      const consoleSpy = setupConsoleSpy();
+      const mockResponse = { ok: false, status: 404 };
+      (fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       const { result } = renderHook(() => useCollaborators());
 
       let removeResult: boolean;
-      await testAsyncOperation(async () => {
-        removeResult = await result.current.handleRemoveCollaborator(TEST_ID);
+      await act(async () => {
+        removeResult = await result.current.handleRemoveCollaborator('collaborator-123');
       });
 
-      expectConsoleError(consoleSpy, 'Failed to remove collaborator:');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Failed to remove collaborator:',
+        expect.any(Error)
+      );
       // Should return false on error
       expect(removeResult!).toBe(false);
 
-      restoreConsoleSpy(consoleSpy);
+      consoleSpy.mockRestore();
     });
   });
 });
