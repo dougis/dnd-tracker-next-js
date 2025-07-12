@@ -14,18 +14,43 @@ export function useCollaborators() {
     }
   };
 
-  const handleAddCollaborator = () => {
+  const handleAddCollaborator = async () => {
     if (newCollaboratorEmail.trim()) {
-      // TODO: Implement collaborator addition
-      console.log('Adding collaborator:', newCollaboratorEmail);
-      setNewCollaboratorEmail('');
-      setShowAddCollaborator(false);
+      try {
+        const response = await fetch('/api/collaborators', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: newCollaboratorEmail,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to add collaborator: ${response.status}`);
+        }
+
+        setNewCollaboratorEmail('');
+        setShowAddCollaborator(false);
+      } catch (error) {
+        console.error('Failed to add collaborator:', error);
+      }
     }
   };
 
-  const handleRemoveCollaborator = (collaboratorId: string) => {
-    // TODO: Implement collaborator removal
-    console.log('Removing collaborator:', collaboratorId);
+  const handleRemoveCollaborator = async (collaboratorId: string) => {
+    try {
+      const response = await fetch(`/api/collaborators/${collaboratorId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to remove collaborator: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Failed to remove collaborator:', error);
+    }
   };
 
   return {
