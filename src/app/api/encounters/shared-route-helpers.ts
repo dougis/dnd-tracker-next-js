@@ -407,3 +407,39 @@ export function createRestoreResponse(
     },
   };
 }
+
+// ============================================================================
+// ENCOUNTER ACCESS UTILITIES
+// ============================================================================
+
+/**
+ * Validate that a user has access to an encounter
+ */
+export async function validateEncounterOwnership(
+  encounterId: string,
+  userId: string,
+  operation?: string
+) {
+  // Import here to avoid circular dependency
+  const { EncounterService } = await import('@/lib/services/EncounterService');
+
+  const encounterResult = await EncounterService.getEncounterById(encounterId);
+  if (!encounterResult.success) {
+    return encounterResult;
+  }
+
+  const encounter = encounterResult.data!;
+  if (encounter.ownerId.toString() !== userId) {
+    return {
+      success: false,
+      error: {
+        message: operation
+          ? `You do not have permission to ${operation} this encounter`
+          : 'You do not have permission to access this encounter',
+        code: 'INSUFFICIENT_PERMISSIONS',
+      },
+    };
+  }
+
+  return { success: true, data: encounter };
+}

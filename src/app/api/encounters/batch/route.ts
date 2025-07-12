@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import { EncounterService } from '@/lib/services/EncounterService';
 import { withAuth } from '@/lib/api/route-helpers';
-import { handleApiError, processBatchItems, createBatchResponse, performExportOperation } from '../shared-route-helpers';
+import { handleApiError, processBatchItems, createBatchResponse, performExportOperation, validateEncounterOwnership } from '../shared-route-helpers';
 import { z } from 'zod';
 
 const batchOperationSchema = z.object({
@@ -92,28 +92,9 @@ async function handleBatchTemplate(encounterId: string, userId: string, options:
   return await EncounterServiceImportExport.createTemplate(encounterId, userId, templateName);
 }
 
-async function checkEncounterOwnership(encounterId: string, userId: string, operation: string) {
-  const encounterResult = await EncounterService.getEncounterById(encounterId);
-  if (!encounterResult.success) {
-    return encounterResult;
-  }
-
-  const encounter = encounterResult.data!;
-  if (encounter.ownerId.toString() !== userId) {
-    return {
-      success: false,
-      error: {
-        message: `You do not have permission to ${operation} this encounter`,
-        code: 'INSUFFICIENT_PERMISSIONS',
-      },
-    };
-  }
-
-  return { success: true, data: encounter };
-}
 
 async function handleBatchDelete(encounterId: string, userId: string) {
-  const ownershipCheck = await checkEncounterOwnership(encounterId, userId, 'delete');
+  const ownershipCheck = await validateEncounterOwnership(encounterId, userId, 'delete');
   if (!ownershipCheck.success) {
     return ownershipCheck;
   }
@@ -122,7 +103,7 @@ async function handleBatchDelete(encounterId: string, userId: string) {
 }
 
 async function handleBatchArchive(encounterId: string, userId: string, options: any) {
-  const ownershipCheck = await checkEncounterOwnership(encounterId, userId, 'archive');
+  const ownershipCheck = await validateEncounterOwnership(encounterId, userId, 'archive');
   if (!ownershipCheck.success) {
     return ownershipCheck;
   }
@@ -139,7 +120,7 @@ async function handleBatchArchive(encounterId: string, userId: string, options: 
 }
 
 async function handleBatchPublish(encounterId: string, userId: string, options: any) {
-  const ownershipCheck = await checkEncounterOwnership(encounterId, userId, 'publish');
+  const ownershipCheck = await validateEncounterOwnership(encounterId, userId, 'publish');
   if (!ownershipCheck.success) {
     return ownershipCheck;
   }
@@ -152,7 +133,7 @@ async function handleBatchPublish(encounterId: string, userId: string, options: 
 }
 
 async function handleBatchDuplicate(encounterId: string, userId: string, options: any) {
-  const ownershipCheck = await checkEncounterOwnership(encounterId, userId, 'duplicate');
+  const ownershipCheck = await validateEncounterOwnership(encounterId, userId, 'duplicate');
   if (!ownershipCheck.success) {
     return ownershipCheck;
   }
