@@ -91,8 +91,8 @@ export const expectBatchApiCall = (operation: string, encounterIds = ['enc1', 'e
  * Expect successful operation result
  */
 export const expectSuccessfulOperationResult = (
-  mockToast: jest.Mock, 
-  operation: string, 
+  mockToast: jest.Mock,
+  operation: string,
   count = 3,
   onClearSelection: jest.Mock,
   onRefetch: jest.Mock
