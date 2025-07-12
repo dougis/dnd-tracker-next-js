@@ -198,16 +198,28 @@ export function createBatchResponse(
 // ============================================================================
 
 /**
+ * Shared options schema for import/restore operations
+ */
+const baseOptionsSchema = z.object({
+  preserveIds: z.boolean().default(false),
+  createMissingCharacters: z.boolean().default(true),
+  overwriteExisting: z.boolean().default(false),
+});
+
+/**
+ * Extended options schema for restore operations
+ */
+const restoreOptionsSchema = baseOptionsSchema.extend({
+  selectiveRestore: z.array(z.string()).optional(),
+});
+
+/**
  * Standard import body validation schema
  */
 export const importBodySchema = z.object({
   data: z.string().min(1, 'Import data is required'),
   format: z.enum(['json', 'xml']),
-  options: z.object({
-    preserveIds: z.boolean().default(false),
-    createMissingCharacters: z.boolean().default(true),
-    overwriteExisting: z.boolean().default(false),
-  }).default({}),
+  options: baseOptionsSchema.default({}),
 });
 
 /**
@@ -236,12 +248,7 @@ export const backupQuerySchema = z.object({
 export const restoreBodySchema = z.object({
   backupData: z.string().min(1, 'Backup data is required'),
   format: z.enum(['json', 'xml']),
-  options: z.object({
-    preserveIds: z.boolean().default(false),
-    createMissingCharacters: z.boolean().default(true),
-    overwriteExisting: z.boolean().default(false),
-    selectiveRestore: z.array(z.string()).optional(),
-  }).default({}),
+  options: restoreOptionsSchema.default({}),
 });
 
 // ============================================================================
@@ -314,17 +321,21 @@ export function parseXmlBackup(xmlData: string): any {
 }
 
 /**
+ * Escape XML special characters
+ */
+export function escapeXml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
  * Convert backup data to XML
  */
 export function convertBackupToXml(backupData: any): string {
-  const escapeXml = (text: string): string => {
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  };
 
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += '<encounterBackup>\n';
