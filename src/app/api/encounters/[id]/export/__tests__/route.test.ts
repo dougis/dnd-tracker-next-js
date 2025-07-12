@@ -1,15 +1,26 @@
 import { NextRequest } from 'next/server';
 import { GET } from '../route';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
+import { auth } from '@/lib/auth';
 
-// Mock the service
+// Mock the service and auth
 jest.mock('@/lib/services/EncounterServiceImportExport');
+jest.mock('@/lib/auth');
 
 const mockService = EncounterServiceImportExport as jest.Mocked<typeof EncounterServiceImportExport>;
+const mockAuth = auth as jest.MockedFunction<typeof auth>;
 
 describe('/api/encounters/[id]/export', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Mock successful authentication for all tests
+    mockAuth.mockResolvedValue({
+      user: {
+        id: 'test-user-123',
+        email: 'test@example.com',
+      },
+    } as any);
   });
 
   describe('GET', () => {
@@ -83,7 +94,7 @@ describe('/api/encounters/[id]/export', () => {
       // Assert
       expect(mockService.exportToJson).toHaveBeenCalledWith(
         '123',
-        'temp-user-id',
+        'test-user-123',
         {
           includeCharacterSheets: true,
           includePrivateNotes: true,
@@ -111,7 +122,7 @@ describe('/api/encounters/[id]/export', () => {
       // Assert
       expect(mockService.exportToJson).toHaveBeenCalledWith(
         '123',
-        'temp-user-id',
+        'test-user-123',
         {
           includeCharacterSheets: false,
           includePrivateNotes: false,

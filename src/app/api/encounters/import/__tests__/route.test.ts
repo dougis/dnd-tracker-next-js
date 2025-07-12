@@ -1,12 +1,15 @@
 import { NextRequest } from 'next/server';
 import { POST } from '../route';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
+import { auth } from '@/lib/auth';
 import { Types } from 'mongoose';
 
-// Mock the service
+// Mock the service and auth
 jest.mock('@/lib/services/EncounterServiceImportExport');
+jest.mock('@/lib/auth');
 
 const mockService = EncounterServiceImportExport as jest.Mocked<typeof EncounterServiceImportExport>;
+const mockAuth = auth as jest.MockedFunction<typeof auth>;
 
 // Test data generation helpers
 const createMockImportData = (overrides: any = {}) => ({
@@ -76,7 +79,7 @@ const createNextRequest = (body: any) => ({
 }) as unknown as NextRequest;
 
 const createDefaultOptions = (overrides: any = {}) => ({
-  ownerId: 'temp-user-id',
+  ownerId: 'test-user-123', // Updated to match the mocked authenticated user ID
   preserveIds: false,
   createMissingCharacters: true,
   overwriteExisting: false,
@@ -103,6 +106,14 @@ const expectErrorResponse = async (response: Response, expectedStatus: number, e
 describe('/api/encounters/import', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Mock successful authentication for all tests
+    mockAuth.mockResolvedValue({
+      user: {
+        id: 'test-user-123',
+        email: 'test@example.com',
+      },
+    } as any);
   });
 
   describe('POST', () => {
