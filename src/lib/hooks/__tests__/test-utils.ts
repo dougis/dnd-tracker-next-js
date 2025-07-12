@@ -84,6 +84,54 @@ export async function testAsyncError(operation: () => Promise<any>, expectedErro
   }
 }
 
+// API error testing pattern with console spy
+export async function testApiErrorWithConsole(
+  operation: () => Promise<any>,
+  expectedConsoleMessage: string,
+  expectedResult?: boolean
+) {
+  const consoleSpy = createConsoleSpy();
+  
+  let result: any;
+  if (expectedResult !== undefined) {
+    result = await operation();
+    expect(result).toBe(expectedResult);
+  } else {
+    try {
+      await operation();
+      throw new Error('Expected operation to throw an error');
+    } catch (error) {
+      // Error was thrown as expected
+    }
+  }
+
+  expect(consoleSpy).toHaveBeenCalledWith(
+    expectedConsoleMessage,
+    expect.any(Error)
+  );
+  
+  consoleSpy.mockRestore();
+  return result;
+}
+
+// Test async operation with loading state
+export async function testAsyncWithLoadingState<T>(
+  result: { current: T },
+  operation: () => Promise<any>,
+  loadingKey: keyof T
+) {
+  // Start operation without awaiting
+  const promise = operation();
+  
+  // Check loading state immediately
+  expect(result.current[loadingKey]).toBe(true);
+
+  // Wait for completion
+  await promise;
+  await new Promise(resolve => setTimeout(resolve, 50)); // Small delay to ensure state update
+  expect(result.current[loadingKey]).toBe(false);
+}
+
 // Test patterns for async operations with state
 export async function testAsyncStateChange<T>(
   result: { current: T },

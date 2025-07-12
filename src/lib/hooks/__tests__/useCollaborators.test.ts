@@ -12,7 +12,7 @@ import {
   expectFunctionType,
   setupFetchMock,
   cleanupFetchMock,
-  createConsoleSpy,
+  testApiErrorWithConsole,
 } from './test-utils';
 
 describe('useCollaborators', () => {
@@ -128,24 +128,19 @@ describe('useCollaborators', () => {
 
     it('should handle API errors gracefully', async () => {
       setupFetchMock(createMockResponse(false));
-      const consoleSpy = createConsoleSpy();
       const { result } = renderHook(() => useCollaborators());
 
       act(() => {
         result.current.setNewCollaboratorEmail(TEST_EMAIL);
       });
 
-      let addResult: boolean;
       await act(async () => {
-        addResult = await result.current.handleAddCollaborator();
+        await testApiErrorWithConsole(
+          () => result.current.handleAddCollaborator(),
+          'Failed to add collaborator:',
+          false
+        );
       });
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Failed to add collaborator:',
-        expect.any(Error)
-      );
-      expect(addResult!).toBe(false);
-      consoleSpy.mockRestore();
     });
   });
 
@@ -165,20 +160,15 @@ describe('useCollaborators', () => {
 
     it('should handle API errors gracefully', async () => {
       setupFetchMock(createMockResponse(false));
-      const consoleSpy = createConsoleSpy();
       const { result } = renderHook(() => useCollaborators());
 
-      let removeResult: boolean;
       await act(async () => {
-        removeResult = await result.current.handleRemoveCollaborator(TEST_ID);
+        await testApiErrorWithConsole(
+          () => result.current.handleRemoveCollaborator(TEST_ID),
+          'Failed to remove collaborator:',
+          false
+        );
       });
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Failed to remove collaborator:',
-        expect.any(Error)
-      );
-      expect(removeResult!).toBe(false);
-      consoleSpy.mockRestore();
     });
   });
 });

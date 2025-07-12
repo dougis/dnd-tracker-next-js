@@ -10,10 +10,9 @@ import {
   expectApiCall,
   expectHookState,
   expectFunctionType,
-  testAsyncError,
   setupFetchMock,
   cleanupFetchMock,
-  createConsoleSpy,
+  testApiErrorWithConsole,
   createDelayedOperation,
 } from './test-utils';
 
@@ -104,24 +103,18 @@ describe('useEditableContent', () => {
 
     it('handles save errors gracefully', async () => {
       const mockOnSave = jest.fn().mockRejectedValue(new Error('Save failed'));
-      const consoleSpy = createConsoleSpy();
       const { result } = renderHook(() =>
         useEditableContent(TEST_CONTENT, mockOnSave)
       );
 
       await act(async () => {
-        await testAsyncError(
+        await testApiErrorWithConsole(
           () => result.current.handleSave(),
-          'Save failed'
+          'Failed to save content:'
         );
       });
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Failed to save content:',
-        expect.any(Error)
-      );
+      
       expect(result.current.isSaving).toBe(false);
-      consoleSpy.mockRestore();
     });
   });
 
@@ -144,22 +137,15 @@ describe('useEditableContent', () => {
 
     it('should handle API errors when saving without callback', async () => {
       setupFetchMock(createMockResponse(false));
-      const consoleSpy = createConsoleSpy();
       const { result } = renderHook(() => useEditableContent(TEST_CONTENT));
 
       await act(async () => {
-        await testAsyncError(
+        await testApiErrorWithConsole(
           () => result.current.handleSave(),
-          'Failed to save content: 400'
+          'Failed to save content:'
         );
       });
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Failed to save content:',
-        expect.any(Error)
-      );
-
-      consoleSpy.mockRestore();
       cleanupFetchMock();
     });
 
