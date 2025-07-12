@@ -38,7 +38,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // For page routes, redirect to signin with callback URL
-    const url = new URL('/auth/signin', request.url);
+    const url = new URL('/signin', request.url);
     url.searchParams.set('callbackUrl', encodeURI(request.url));
     return NextResponse.redirect(url);
   }

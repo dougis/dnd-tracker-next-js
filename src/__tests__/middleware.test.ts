@@ -115,8 +115,8 @@ describe('Middleware Route Protection', () => {
       const publicRoutes = [
         '/',
         '/about',
-        '/auth/signin',
-        '/auth/signup',
+        '/signin',
+        '/signup',
         '/auth/error',
         '/api/health',
       ];
@@ -162,7 +162,7 @@ describe('Middleware Route Protection', () => {
       });
       expect(mockRedirect).toHaveBeenCalledWith(
         expect.objectContaining({
-          href: expect.stringContaining('/auth/signin'),
+          href: expect.stringContaining('/signin'),
           searchParams: expect.any(Object),
         })
       );
@@ -180,7 +180,7 @@ describe('Middleware Route Protection', () => {
 
       // Mock URL constructor and redirect
       const mockUrl = {
-        href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A//localhost%3A3000/dashboard/characters',
+        href: 'http://localhost:3000/signin?callbackUrl=http%3A//localhost%3A3000/dashboard/characters',
         searchParams: {
           set: jest.fn(),
         },
@@ -330,7 +330,7 @@ describe('Middleware Route Protection', () => {
   });
 
   describe('URL Construction', () => {
-    it('should construct signin URL correctly', async () => {
+    it('should construct signin URL correctly with /signin path', async () => {
       const { middleware } = await import('../middleware');
 
       const request = {
@@ -342,7 +342,7 @@ describe('Middleware Route Protection', () => {
 
       // Mock URL to track constructor calls
       const mockUrl = {
-        href: 'http://localhost:3000/auth/signin',
+        href: 'http://localhost:3000/signin',
         searchParams: {
           set: jest.fn(),
         },
@@ -350,7 +350,7 @@ describe('Middleware Route Protection', () => {
 
       const originalURL = global.URL;
       global.URL = jest.fn().mockImplementation((path, base) => {
-        expect(path).toBe('/auth/signin');
+        expect(path).toBe('/signin');
         expect(base).toBe('http://localhost:3000/dashboard');
         return mockUrl;
       }) as any;
@@ -360,7 +360,7 @@ describe('Middleware Route Protection', () => {
       await middleware(request);
 
       expect(global.URL).toHaveBeenCalledWith(
-        '/auth/signin',
+        '/signin',
         'http://localhost:3000/dashboard'
       );
 
