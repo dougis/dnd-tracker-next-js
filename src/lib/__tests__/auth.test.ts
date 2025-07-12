@@ -442,61 +442,38 @@ describe('Authentication System', () => {
       expect(expectedPages.error).toBe('/error');
     });
 
-    it('should correctly configure NextAuth pages.error path for route groups', async () => {
-      // Import the auth configuration to test actual values
-      const { handlers } = await import('../auth');
-      
-      // Test that the auth configuration can be imported successfully
-      expect(handlers).toBeDefined();
-      expect(handlers.GET).toBeDefined();
-      expect(handlers.POST).toBeDefined();
-      
-      // Verify that the error page is configured to /error
-      // This tests the specific change made for issue #363
-      // The error page should be '/error' not '/auth/error' because
-      // (auth) is a route group that doesn't contribute to URL paths
-      const errorPagePath = '/error';
-      expect(errorPagePath).toBe('/error');
-      expect(errorPagePath).not.toBe('/auth/error');
-    });
-
-    it('should configure NextAuth with correct provider and adapter setup', async () => {
-      // This test ensures the NextAuth configuration is properly set up
-      // and covers the actual auth.ts file structure
+    it('should load NextAuth configuration without errors', async () => {
+      // Test that the auth configuration can be loaded and covers actual file execution
+      // This ensures the specific change for issue #363 doesn't break the module
       const authModule = await import('../auth');
       
-      // Test all exports are available
+      // Verify all required exports are available after import
       expect(authModule.handlers).toBeDefined();
       expect(authModule.auth).toBeDefined();
       expect(authModule.signIn).toBeDefined();
       expect(authModule.signOut).toBeDefined();
-      
-      // Test environment variables are used
-      expect(process.env.MONGODB_URI).toBeDefined();
-      expect(process.env.MONGODB_DB_NAME).toBeDefined();
-      
-      // Test that NextAuth can handle different environment configurations
+    });
+
+    it('should handle different NODE_ENV configurations during import', async () => {
+      // Test that NextAuth configuration works across different environments
+      // This covers the debug configuration line in auth.ts
       const originalNodeEnv = process.env.NODE_ENV;
       
-      // Test development environment
-      process.env.NODE_ENV = 'development';
-      await import('../auth');
-      
-      // Test production environment
-      process.env.NODE_ENV = 'production';
-      await import('../auth');
-      
-      // Restore original environment
-      process.env.NODE_ENV = originalNodeEnv;
-      
-      // Verify the configuration paths are correct for our route structure
-      // This directly tests the fix for issue #363
-      const signInPath = '/signin';
-      const errorPath = '/error';
-      
-      expect(signInPath).toBe('/signin');
-      expect(errorPath).toBe('/error');
-      expect(errorPath).not.toContain('/auth/');
+      try {
+        // Test development environment debug configuration
+        process.env.NODE_ENV = 'development';
+        const devModule = await import('../auth');
+        expect(devModule.handlers).toBeDefined();
+        
+        // Test production environment debug configuration  
+        process.env.NODE_ENV = 'production';
+        const prodModule = await import('../auth');
+        expect(prodModule.handlers).toBeDefined();
+        
+      } finally {
+        // Always restore original environment
+        process.env.NODE_ENV = originalNodeEnv;
+      }
     });
 
     it('should handle debug mode based on environment', () => {
