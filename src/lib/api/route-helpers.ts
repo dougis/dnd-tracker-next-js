@@ -290,7 +290,7 @@ export const createDeleteRouteHandler = (
 export function handleServiceResult(
   result: { success: boolean; data?: any; error?: any },
   successMessage?: string,
-  successStatus: number = 200,
+  _successStatus: number = 200,
   errorStatus: number = 400
 ) {
   if (!result.success) {
@@ -299,8 +299,6 @@ export function handleServiceResult(
 
   return createSuccessResponse(
     result.data ? { data: result.data } : {},
-    successMessage,
-    undefined,
-    successStatus
+    successMessage
   );
 }
