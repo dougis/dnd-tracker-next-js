@@ -12,8 +12,8 @@ const customJestConfig = {
   globalTeardown: '<rootDir>/jest.global-teardown.js', // Added global teardown for MongoDB
   testEnvironment: 'jest-environment-jsdom',
   // Parallel execution configuration
-  maxWorkers: process.env.CI ? 2 : '75%', // Use 2 workers in CI, 75% of available cores locally
-  maxConcurrency: 10, // Limit concurrent test suites to prevent resource exhaustion
+  maxWorkers: process.env.CI ? 1 : '75%', // Use 1 worker in CI to prevent resource exhaustion, 75% of available cores locally
+  maxConcurrency: process.env.CI ? 5 : 10, // Lower concurrency in CI to prevent resource exhaustion
   testSequencer: '<rootDir>/jest.sequencer.js', // Custom sequencer for optimal test ordering
   // Worker configuration for better resource management
   workerIdleMemoryLimit: '512MB', // Restart workers if they exceed memory limit
