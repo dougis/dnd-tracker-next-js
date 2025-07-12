@@ -68,8 +68,6 @@ async function executeBatchOperation(operation: string, encounterId: string, use
   return await handler();
 }
 
-
-
 async function handleBatchExport(encounterId: string, userId: string, options: any) {
   const exportOptions = {
     includeCharacterSheets: options.includeCharacterSheets,
