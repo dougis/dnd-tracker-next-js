@@ -12,9 +12,9 @@ module.exports = {
    * Apply migration
    * @param {import('mongodb').Db} db
    */
-  async up(db) {
+  up: async function(db) {
     // Create users collection with indexes
-    const usersCollection = db.collection('users');
+    var usersCollection = db.collection('users');
     
     // Create unique indexes for email and username
     await usersCollection.createIndex({ email: 1 }, { unique: true });
@@ -25,18 +25,18 @@ module.exports = {
     await usersCollection.createIndex({ updatedAt: 1 });
     
     // Create accounts collection for NextAuth
-    const accountsCollection = db.collection('accounts');
+    var accountsCollection = db.collection('accounts');
     await accountsCollection.createIndex({ provider: 1, providerAccountId: 1 }, { unique: true });
     await accountsCollection.createIndex({ userId: 1 });
     
     // Create sessions collection for NextAuth
-    const sessionsCollection = db.collection('sessions');
+    var sessionsCollection = db.collection('sessions');
     await sessionsCollection.createIndex({ sessionToken: 1 }, { unique: true });
     await sessionsCollection.createIndex({ userId: 1 });
     await sessionsCollection.createIndex({ expires: 1 });
     
     // Create verification tokens collection for NextAuth
-    const verificationTokensCollection = db.collection('verificationtokens');
+    var verificationTokensCollection = db.collection('verification_tokens');
     await verificationTokensCollection.createIndex({ identifier: 1, token: 1 }, { unique: true });
     await verificationTokensCollection.createIndex({ expires: 1 });
   },
@@ -45,27 +45,27 @@ module.exports = {
    * Rollback migration
    * @param {import('mongodb').Db} db
    */
-  async down(db) {
+  down: async function(db) {
     // Drop indexes from users collection
-    const usersCollection = db.collection('users');
+    var usersCollection = db.collection('users');
     await usersCollection.dropIndex({ email: 1 });
     await usersCollection.dropIndex({ username: 1 });
     await usersCollection.dropIndex({ createdAt: 1 });
     await usersCollection.dropIndex({ updatedAt: 1 });
     
     // Drop indexes from accounts collection
-    const accountsCollection = db.collection('accounts');
+    var accountsCollection = db.collection('accounts');
     await accountsCollection.dropIndex({ provider: 1, providerAccountId: 1 });
     await accountsCollection.dropIndex({ userId: 1 });
     
     // Drop indexes from sessions collection
-    const sessionsCollection = db.collection('sessions');
+    var sessionsCollection = db.collection('sessions');
     await sessionsCollection.dropIndex({ sessionToken: 1 });
     await sessionsCollection.dropIndex({ userId: 1 });
     await sessionsCollection.dropIndex({ expires: 1 });
     
     // Drop indexes from verification tokens collection
-    const verificationTokensCollection = db.collection('verificationtokens');
+    var verificationTokensCollection = db.collection('verification_tokens');
     await verificationTokensCollection.dropIndex({ identifier: 1, token: 1 });
     await verificationTokensCollection.dropIndex({ expires: 1 });
   }

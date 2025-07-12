@@ -90,72 +90,72 @@ class MigrationCLI {
   }
 
   /**
-   * Run pending migrations
+   * Execute migration operation with common error handling and reporting
    */
-  async up(): Promise<void> {
+  private async executeOperation<T>(
+    operation: () => Promise<T[]>,
+    startMessage: string,
+    emptyMessage: string,
+    successMessageTemplate: string,
+    summaryTemplate: string
+  ): Promise<void> {
     await this.initialize();
 
     try {
-      console.log('🚀 Running migrations...\n');
+      console.log(startMessage);
 
-      const results = await this.runner!.migrate();
+      const results = await operation();
 
       if (results.length === 0) {
-        console.log('✅ No pending migrations to run.');
+        console.log(emptyMessage);
         return;
       }
 
-      for (const result of results) {
+      for (const result of results as any[]) {
         if (result.success) {
-          console.log(`✅ ${result.version}: ${result.description} (${result.executionTime}ms)`);
+          console.log(`✅ ${successMessageTemplate.replace('{result}', `${result.version}: ${result.description} (${result.executionTime}ms)`)}`);
         } else {
           console.error(`❌ ${result.version}: ${result.description} - ${result.error?.message}`);
-          console.error(`   Execution stopped due to failure.`);
+          if (startMessage.includes('Running')) {
+            console.error(`   Execution stopped due to failure.`);
+          }
           break;
         }
       }
 
-      const successCount = results.filter(r => r.success).length;
-      const totalTime = results.reduce((sum, r) => sum + r.executionTime, 0);
+      const successCount = results.filter((r: any) => r.success).length;
+      const totalTime = results.reduce((sum: number, r: any) => sum + r.executionTime, 0);
 
-      console.log(`\n🎉 Completed ${successCount}/${results.length} migrations in ${totalTime}ms`);
+      console.log(`\n🎉 ${summaryTemplate.replace('{count}', `${successCount}/${results.length}`).replace('{time}', `${totalTime}ms`)}`);
     } finally {
       await this.cleanup();
     }
   }
 
   /**
+   * Run pending migrations
+   */
+  async up(): Promise<void> {
+    await this.executeOperation(
+      () => this.runner!.migrate(),
+      '🚀 Running migrations...\n',
+      '✅ No pending migrations to run.',
+      '{result}',
+      'Completed {count} migrations in {time}'
+    );
+  }
+
+  /**
    * Rollback migrations
    */
   async down(steps: number = 1): Promise<void> {
-    await this.initialize();
-
-    try {
-      console.log(`🔄 Rolling back ${steps} migration(s)...\n`);
-
-      const results = await this.runner!.rollback(steps);
-
-      if (results.length === 0) {
-        console.log('✅ No migrations to rollback.');
-        return;
-      }
-
-      for (const result of results) {
-        if (result.success) {
-          console.log(`✅ Rolled back ${result.version}: ${result.description} (${result.executionTime}ms)`);
-        } else {
-          console.error(`❌ Failed to rollback ${result.version}: ${result.description} - ${result.error?.message}`);
-          break;
-        }
-      }
-
-      const successCount = results.filter(r => r.success).length;
-      const totalTime = results.reduce((sum, r) => sum + r.executionTime, 0);
-
-      console.log(`\n🎉 Rolled back ${successCount}/${results.length} migrations in ${totalTime}ms`);
-    } finally {
-      await this.cleanup();
-    }
+    await this.executeOperation(
+      () => this.runner!.rollback(steps),
+      `🔄 Rolling back ${steps} migration(s)...\n`,
+      '✅ No migrations to rollback.',
+      'Rolled back {result}',
+      'Rolled back {count} migrations in {time}'
+    );
   }
 
   /**
