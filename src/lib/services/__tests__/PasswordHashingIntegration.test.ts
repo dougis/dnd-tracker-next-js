@@ -90,7 +90,7 @@ describe('Password Hashing Integration Tests', () => {
       expect(isValid).toBe(true);
 
       // Should fail with wrong password
-      const isInvalid = await user.comparePassword('WrongPassword');
+      const isInvalid = await user.comparePassword(TestPasswordConstants.WRONG_SIMPLE);
       expect(isInvalid).toBe(false);
     });
 
@@ -131,7 +131,7 @@ describe('Password Hashing Integration Tests', () => {
       (bcrypt.hash as jest.Mock) = jest.fn().mockResolvedValue('invalid-hash');
 
       const user = createTestUser({
-        passwordHash: 'ValidPassword123!',
+        passwordHash: TestPasswordConstants.VALID_ALT_PASSWORD,
       });
 
       await expect(user.save()).rejects.toThrow('CRITICAL SECURITY ERROR');
@@ -144,10 +144,10 @@ describe('Password Hashing Integration Tests', () => {
   describe('Password Security Utilities Integration', () => {
     it('should validate password strength requirements', () => {
       const testCases = [
-        { password: 'StrongPassword123!', shouldPass: true, expectedStrength: 'strong' },
+        { password: TestPasswordConstants.STRONG_PASSWORD, shouldPass: true, expectedStrength: 'strong' },
         { password: 'WeakPassword', shouldPass: false, expectedStrength: 'weak' },
         { password: 'MediumPass1', shouldPass: false, expectedStrength: 'medium' },
-        { password: 'short', shouldPass: false, expectedStrength: 'weak' },
+        { password: TestPasswordConstants.SHORT_PASSWORD, shouldPass: false, expectedStrength: 'weak' },
         { password: 'NoNumbers!', shouldPass: false, expectedStrength: 'medium' }, // Fixed: this is medium
         { password: 'nonumbersorspecial', shouldPass: false, expectedStrength: 'weak' },
       ];
@@ -165,9 +165,9 @@ describe('Password Hashing Integration Tests', () => {
 
     it('should correctly identify hashed vs plaintext passwords', () => {
       const plaintextPasswords = [
-        'password123',
-        'TestPassword123!',
-        'short',
+        TestPasswordConstants.WEAK_123,
+        TestPasswordConstants.VALID_PASSWORD,
+        TestPasswordConstants.SHORT_PASSWORD,
         'verylongpasswordthatisnothashedbutlongenoughtobeconfusing',
       ];
 
@@ -190,8 +190,8 @@ describe('Password Hashing Integration Tests', () => {
   describe('End-to-End Security Verification', () => {
     it('should never store plaintext passwords', async () => {
       const testPasswords = [
-        'Password123!',
-        'AnotherSecurePassword456!',
+        TestPasswordConstants.PASSWORD_123,
+        TestPasswordConstants.SECOND_PASSWORD,
         'ThirdTestPassword789@',
         'FinalPassword321#',
       ];
@@ -215,7 +215,7 @@ describe('Password Hashing Integration Tests', () => {
         expect(isValid).toBe(true);
 
         // Should fail with wrong password
-        const isInvalid = await user.comparePassword('WrongPassword123!');
+        const isInvalid = await user.comparePassword(TestPasswordConstants.WRONG_PASSWORD);
         expect(isInvalid).toBe(false);
       }
     });
@@ -294,7 +294,7 @@ describe('Password Hashing Integration Tests', () => {
       expect(user.passwordHash).toMatch(/^\$2[aby]\$\d+\$/);
 
       // Test error handling
-      const weakUser = createTestUser({ passwordHash: 'weak' });
+      const weakUser = createTestUser({ passwordHash: TestPasswordConstants.WEAK_PASSWORD });
       await expect(weakUser.save()).rejects.toThrow();
 
       console.log('🔒 Security Compliance Check:');

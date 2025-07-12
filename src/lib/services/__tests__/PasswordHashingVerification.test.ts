@@ -30,7 +30,7 @@ describe('Password Hashing Security Verification', () => {
       expect(isValid).toBe(true);
 
       // Should fail with wrong password
-      const isInvalid = await comparePassword('WrongPassword', hashedPassword);
+      const isInvalid = await comparePassword(TestPasswordConstants.WRONG_SIMPLE, hashedPassword);
       expect(isInvalid).toBe(false);
     });
 
@@ -70,7 +70,7 @@ describe('Password Hashing Security Verification', () => {
       expect(isCorrect).toBe(true);
 
       // Should fail with wrong password
-      const isWrong = await comparePassword('WrongPassword123!', hashedPassword);
+      const isWrong = await comparePassword(TestPasswordConstants.WRONG_PASSWORD, hashedPassword);
       expect(isWrong).toBe(false);
     });
 
@@ -103,9 +103,9 @@ describe('Password Hashing Security Verification', () => {
   describe('Security Compliance', () => {
     it('should never store plaintext passwords', async () => {
       const passwords = [
-        'Password123!',
-        'AnotherPassword456!',
-        'ThirdPassword789!',
+        TestPasswordConstants.PASSWORD_123,
+        TestPasswordConstants.ANOTHER_PASSWORD,
+        TestPasswordConstants.THIRD_PASSWORD,
       ];
 
       for (const password of passwords) {
@@ -141,9 +141,9 @@ describe('Password Hashing Security Verification', () => {
 
     it('should detect plaintext vs hashed passwords', () => {
       const plaintextPasswords = [
-        'password123',
-        'TestPassword123!',
-        'short',
+        TestPasswordConstants.WEAK_123,
+        TestPasswordConstants.VALID_PASSWORD,
+        TestPasswordConstants.SHORT_PASSWORD,
         'verylongpasswordthatisnothashedbutlongenoughtobeconfusing',
       ];
 
@@ -166,7 +166,7 @@ describe('Password Hashing Security Verification', () => {
 
     it('should reject weak passwords', async () => {
       const weakPasswords = [
-        'short',     // too short
+        TestPasswordConstants.SHORT_PASSWORD,     // too short
         '',          // empty
         'a'.repeat(1001), // too long
       ];
@@ -184,9 +184,9 @@ describe('Password Hashing Security Verification', () => {
     it('should enforce password security requirements', async () => {
       // Test password strength validation
       const testCases = [
-        { password: 'StrongPassword123!', shouldPass: true, expectedStrength: 'strong' },
+        { password: TestPasswordConstants.STRONG_PASSWORD, shouldPass: true, expectedStrength: 'strong' },
         { password: 'MediumPass1', shouldPass: false, expectedStrength: 'medium' },
-        { password: 'weak', shouldPass: false, expectedStrength: 'weak' },
+        { password: TestPasswordConstants.WEAK_PASSWORD, shouldPass: false, expectedStrength: 'weak' },
       ];
 
       for (const testCase of testCases) {

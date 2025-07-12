@@ -9,6 +9,7 @@ import {
   EmailVerification,
 } from '@/lib/validations/user';
 import { exerciseMethodForCoverage } from './diffCoverageTestUtils';
+import { TestPasswordConstants } from '../../test-utils/password-constants';
 
 /**
  * Focused tests to ensure diff coverage for UserServiceAuth
@@ -18,8 +19,8 @@ describe('UserServiceAuth Diff Coverage', () => {
   const mockUserData: UserRegistration = {
     email: 'difftest@example.com',
     username: 'difftestuser',
-    password: 'Password123!',
-    confirmPassword: 'Password123!',
+    password: TestPasswordConstants.PASSWORD_123,
+    confirmPassword: TestPasswordConstants.PASSWORD_123,
     firstName: 'Diff',
     lastName: 'Test',
     agreeToTerms: true,
@@ -28,7 +29,7 @@ describe('UserServiceAuth Diff Coverage', () => {
 
   const mockLoginData: UserLogin = {
     email: 'difftest@example.com',
-    password: 'Password123!',
+    password: TestPasswordConstants.PASSWORD_123,
   };
 
   it('should exercise createUser method to cover formatted lines', async () => {

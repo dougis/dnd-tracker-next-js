@@ -51,13 +51,13 @@ describe('Password Security Utils', () => {
       const isValid = await comparePassword(plainPassword, hashedPassword);
       expect(isValid).toBe(true);
 
-      const isInvalid = await comparePassword('WrongPassword123!', hashedPassword);
+      const isInvalid = await comparePassword(TestPasswordConstants.WRONG_PASSWORD, hashedPassword);
       expect(isInvalid).toBe(false);
     });
 
     it('should reject comparison with unhashed passwords', async () => {
       await expect(
-        comparePassword('password', 'plaintext')
+        comparePassword(TestPasswordConstants.SIMPLE_WEAK, TestPasswordConstants.PLAIN_TEXT)
       ).rejects.toThrow('SECURITY ERROR');
     });
 
@@ -69,7 +69,7 @@ describe('Password Security Utils', () => {
       ).rejects.toThrow('must be strings');
 
       await expect(
-        comparePassword('password', null as any)
+        comparePassword(TestPasswordConstants.SIMPLE_WEAK, null as any)
       ).rejects.toThrow('must be strings');
     });
   });
@@ -89,8 +89,8 @@ describe('Password Security Utils', () => {
 
     it('should correctly identify non-hashed passwords', () => {
       const plainPasswords = [
-        'password123',
-        'TestPassword123!',
+        TestPasswordConstants.WEAK_123,
+        TestPasswordConstants.VALID_PASSWORD,
         '$invalid$hash',
         '$2a$hashedPasswordExample', // too short
         'plaintext',
@@ -112,7 +112,7 @@ describe('Password Security Utils', () => {
   describe('validatePasswordStrength', () => {
     it('should validate strong passwords', () => {
       const strongPasswords = [
-        'StrongPassword123!',
+        TestPasswordConstants.STRONG_PASSWORD,
         'MySecureP@ssw0rd',
         'Complex$Pass123',
       ];
@@ -140,7 +140,7 @@ describe('Password Security Utils', () => {
 
     it('should identify weak passwords', () => {
       const weakPasswords = [
-        'password',
+        TestPasswordConstants.SIMPLE_WEAK,
         '12345678',
         'PASSWORD',
         'short',

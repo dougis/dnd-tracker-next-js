@@ -8,6 +8,7 @@ import {
   passwordResetSchema,
   emailVerificationSchema,
 } from '../../validations/user';
+import { TestPasswordConstants } from '../../test-utils/password-constants';
 
 // Mock the validation schemas
 jest.mock('../../validations/user');

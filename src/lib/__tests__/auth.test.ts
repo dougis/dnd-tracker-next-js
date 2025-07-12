@@ -1,4 +1,5 @@
 import { UserService } from '../services/UserService';
+import { TestPasswordConstants } from '../test-utils/password-constants';
 
 // Mock all external dependencies
 jest.mock('@auth/mongodb-adapter', () => ({
@@ -117,7 +118,7 @@ describe('Authentication System', () => {
     beforeEach(() => {
       mockCredentials = {
         email: 'test@example.com',
-        password: 'Password123!',
+        password: TestPasswordConstants.PASSWORD_123,
       };
 
       mockUserService = UserService as jest.Mocked<typeof UserService>;
@@ -198,7 +199,7 @@ describe('Authentication System', () => {
 
       const authResult = await mockUserService.authenticateUser({
         email: mockCredentials.email,
-        password: 'wrongpassword',
+        password: TestPasswordConstants.WRONG_SIMPLE,
         rememberMe: false,
       });
 
