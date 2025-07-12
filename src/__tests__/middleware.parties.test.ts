@@ -16,7 +16,9 @@ import {
   expectRedirectWithCallback,
   testEdgeCaseRoute,
   testAuthenticatedUserAccess,
-  testNonInterfenceRoutes
+  testNonInterfenceRoutes,
+  expectMiddlewareMatcherConfiguration,
+  createProtectedRouteTestSuite
 } from './utils/middleware-test-helpers';
 
 // Mock NextAuth JWT module
@@ -76,11 +78,7 @@ describe('Middleware Parties Route Protection', () => {
       '/parties/123/edit'
     ];
 
-    protectedRoutes.forEach(pathname => {
-      it(`should identify ${pathname} as a protected route`, async () => {
-        await testProtectedRoute(pathname);
-      });
-    });
+    createProtectedRouteTestSuite(protectedRoutes, testProtectedRoute);
 
     it('should identify deeply nested parties routes as protected', async () => {
       const nestedRoutes = [
@@ -149,26 +147,7 @@ describe('Middleware Parties Route Protection', () => {
 
   describe('Middleware Configuration Update', () => {
     it('should include parties routes in matcher configuration', async () => {
-      const middlewareModule = await import('../middleware');
-
-      expect(middlewareModule.config).toBeDefined();
-      expect(middlewareModule.config.matcher).toContain('/parties/:path*');
-
-      // Verify the complete matcher includes parties routes
-      const expectedMatchers = [
-        '/dashboard/:path*',
-        '/characters/:path*',
-        '/encounters/:path*',
-        '/parties/:path*',  // This should be added
-        '/combat/:path*',
-        '/api/users/:path*',
-        '/api/characters/:path*',
-        '/api/encounters/:path*',
-        '/api/combat/:path*',
-        '/api/parties/:path*',
-      ];
-
-      expect(middlewareModule.config.matcher).toEqual(expectedMatchers);
+      await expectMiddlewareMatcherConfiguration();
     });
   });
 

@@ -80,3 +80,29 @@ export function createAPIUnauthenticatedMockSetup(mockGetToken: jest.MockedFunct
     mockJson.mockReturnValue({ json: { error: 'Authentication required' }, status: 401 });
   };
 }
+
+/**
+ * Shared mock setup for NextAuth JWT and NextResponse
+ */
+export function createStandardMiddlewareMocks() {
+  // Mock NextAuth JWT module
+  jest.mock('next-auth/jwt', () => ({
+    getToken: jest.fn(),
+  }));
+
+  // Mock NextResponse
+  const mockRedirect = jest.fn();
+  const mockNext = jest.fn();
+  const mockJson = jest.fn();
+
+  jest.mock('next/server', () => ({
+    NextRequest: jest.fn(),
+    NextResponse: {
+      redirect: mockRedirect,
+      next: mockNext,
+      json: mockJson,
+    },
+  }));
+
+  return { mockRedirect, mockNext, mockJson };
+}

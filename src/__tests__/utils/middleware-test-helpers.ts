@@ -128,3 +128,34 @@ export async function testNonInterfenceRoutes(
     mockGetToken.mockReset();
   }
 }
+
+export async function expectMiddlewareMatcherConfiguration() {
+  const middlewareModule = await import('../../middleware');
+
+  expect(middlewareModule.config).toBeDefined();
+  expect(middlewareModule.config.matcher).toContain('/parties/:path*');
+
+  // Verify the complete matcher includes parties routes
+  const expectedMatchers = [
+    '/dashboard/:path*',
+    '/characters/:path*',
+    '/encounters/:path*',
+    '/parties/:path*',  // This should be added
+    '/combat/:path*',
+    '/api/users/:path*',
+    '/api/characters/:path*',
+    '/api/encounters/:path*',
+    '/api/combat/:path*',
+    '/api/parties/:path*',
+  ];
+
+  expect(middlewareModule.config.matcher).toEqual(expectedMatchers);
+}
+
+export function createProtectedRouteTestSuite(routes: string[], testFunction: (_pathname: string) => Promise<void>) {
+  return routes.forEach(pathname => {
+    it(`should identify ${pathname} as a protected route`, async () => {
+      await testFunction(pathname);
+    });
+  });
+}
