@@ -39,6 +39,9 @@ export function Settings() {
 
   const currentTier = (session.user.subscriptionTier as SubscriptionTier) || 'free';
 
+  /**
+   * Handles account deletion with proper confirmation flow
+   */
   const handleDeleteAccount = async () => {
     if (!session?.user?.id) return;
 
