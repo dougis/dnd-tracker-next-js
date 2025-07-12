@@ -26,7 +26,7 @@ export const createToastHookMock = (mockToast: jest.Mock) => () => ({
 });
 
 /**
- * Standard utils mock factory  
+ * Standard utils mock factory
  */
 export const createUtilsMockFactory = () => () => ({
   getEncounterText: jest.fn((count: number) =>
