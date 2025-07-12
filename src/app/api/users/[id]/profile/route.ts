@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { ZodError } from 'zod';
 import { UserService } from '@/lib/services/UserService';
 import { userProfileUpdateSchema } from '@/lib/validations/user';
-import { withAuthAndAccess, createSuccessResponse, handleServiceError, handleZodValidationError } from '@/lib/api/route-helpers';
+import { withAuthAndAccess, handleUserServiceResult, handleZodValidationError } from '@/lib/api/route-helpers';
 
 export async function PATCH(
   request: NextRequest,
@@ -14,15 +14,9 @@ export async function PATCH(
       const validatedData = userProfileUpdateSchema.parse(body);
 
       const result = await UserService.updateUserProfile(userId, validatedData);
-
-      if (!result.success) {
-        return handleServiceError(result, 'Profile update failed');
-      }
-
-      return createSuccessResponse(
-        { user: result.data },
-        'Profile updated successfully'
-      );
+      return handleUserServiceResult(result, 'Profile updated successfully', {
+        defaultErrorMessage: 'Profile update failed'
+      });
     } catch (error) {
       if (error instanceof ZodError) {
         return handleZodValidationError(error);
@@ -38,12 +32,7 @@ export async function GET(
 ) {
   return withAuthAndAccess(params, async (userId) => {
     const result = await UserService.getUserById(userId);
-
-    if (!result.success) {
-      return handleServiceError(result, 'User not found', 404);
-    }
-
-    return createSuccessResponse({ user: result.data });
+    return handleUserServiceResult(result);
   });
 }
 
@@ -53,14 +42,9 @@ export async function DELETE(
 ) {
   return withAuthAndAccess(params, async (userId) => {
     const result = await UserService.deleteUser(userId);
-
-    if (!result.success) {
-      if (result.error?.code === 'USER_NOT_FOUND') {
-        return handleServiceError(result, 'User not found', 404);
-      }
-      return handleServiceError(result, 'Account deletion failed', 500);
-    }
-
-    return createSuccessResponse({}, 'Account deleted successfully');
+    return handleUserServiceResult(result, 'Account deleted successfully', {
+      defaultErrorMessage: 'Account deletion failed',
+      defaultErrorStatus: 500
+    });
   });
 }

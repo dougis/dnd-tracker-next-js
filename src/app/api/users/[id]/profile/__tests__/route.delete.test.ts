@@ -2,13 +2,16 @@ import { NextRequest } from 'next/server';
 import { DELETE } from '../route';
 import { UserService } from '@/lib/services/UserService';
 import { auth } from '@/lib/auth';
-import { 
-  TEST_USER_ID, 
-  createMockParams, 
-  createMockSession, 
-  expectSuccessResponse, 
-  expectErrorResponse 
-} from './test-helpers';
+import {
+  SHARED_API_TEST_CONSTANTS,
+  createMockParams,
+  createMockSession,
+  expectSuccessResponse,
+  expectErrorResponse,
+  expectAuthenticationError,
+  expectAuthorizationError,
+  setupAPITest
+} from '@/lib/test-utils/shared-api-test-helpers';
 
 // Mock dependencies
 jest.mock('@/lib/services/UserService');
@@ -18,6 +21,7 @@ const mockUserService = UserService as jest.Mocked<typeof UserService>;
 const mockAuth = auth as jest.MockedFunction<typeof auth>;
 
 describe('DELETE /api/users/[id]/profile', () => {
+  const TEST_USER_ID = SHARED_API_TEST_CONSTANTS.TEST_USER_ID;
   const mockRequest = new NextRequest(`http://localhost:3000/api/users/${TEST_USER_ID}/profile`);
 
   const executeDeleteRequest = async (userId: string = TEST_USER_ID) => {
@@ -26,7 +30,7 @@ describe('DELETE /api/users/[id]/profile', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    setupAPITest();
     mockAuth.mockResolvedValue({
       ...createMockSession(),
       expires: '2024-12-31',
@@ -55,7 +59,7 @@ describe('DELETE /api/users/[id]/profile', () => {
 
       const response = await executeDeleteRequest();
 
-      await expectErrorResponse(response, 401, 'Authentication required');
+      await expectAuthenticationError(response);
       expect(mockUserService.deleteUser).not.toHaveBeenCalled();
     });
 
@@ -68,7 +72,7 @@ describe('DELETE /api/users/[id]/profile', () => {
 
       const response = await executeDeleteRequest();
 
-      await expectErrorResponse(response, 403, 'You can only access your own profile');
+      await expectAuthorizationError(response);
       expect(mockUserService.deleteUser).not.toHaveBeenCalled();
     });
   });

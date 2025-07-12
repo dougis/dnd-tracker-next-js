@@ -94,6 +94,34 @@ export function handleServiceError(result: any, defaultMessage: string, defaultS
   return NextResponse.json(responseBody, { status });
 }
 
+/**
+ * Handles UserService results with specialized error handling for common patterns
+ */
+export function handleUserServiceResult(result: any, successMessage?: string, options?: {
+  notFoundMessage?: string;
+  defaultErrorMessage?: string;
+  defaultErrorStatus?: number;
+}) {
+  if (result.success) {
+    if (result.data === undefined || result.data === null) {
+      // For operations like delete that return undefined data
+      return createSuccessResponse({}, successMessage);
+    }
+    return createSuccessResponse({ user: result.data }, successMessage);
+  }
+
+  // Handle specific error codes
+  if (result.error?.code === 'USER_NOT_FOUND') {
+    return handleServiceError(result, options?.notFoundMessage || 'User not found', 404);
+  }
+
+  return handleServiceError(
+    result, 
+    options?.defaultErrorMessage || 'Operation failed', 
+    options?.defaultErrorStatus || 500
+  );
+}
+
 export function handleZodValidationError(error: any) {
   return NextResponse.json(
     {

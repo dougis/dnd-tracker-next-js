@@ -41,7 +41,7 @@ export function Settings() {
 
   const handleDeleteAccount = async () => {
     if (!session?.user?.id) return;
-    
+
     setIsDeleting(true);
     setDeleteError(null);
 
@@ -69,8 +69,8 @@ export function Settings() {
     } catch (error) {
       console.error('Account deletion error:', error);
       setDeleteError(
-        error instanceof Error 
-          ? error.message 
+        error instanceof Error
+          ? error.message
           : 'An error occurred while deleting your account. Please try again.'
       );
     } finally {

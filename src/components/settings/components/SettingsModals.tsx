@@ -76,8 +76,8 @@ export function DeleteModal({ isOpen, onClose, onConfirm, isDeleting = false }: 
             Are you sure you want to delete your account? All your data will be permanently removed.
           </p>
           <div className="flex gap-4">
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={onConfirm}
               disabled={isDeleting}
             >
