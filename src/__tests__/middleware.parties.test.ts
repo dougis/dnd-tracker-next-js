@@ -5,7 +5,6 @@
  * These tests should fail initially and pass after middleware implementation.
  */
 
-import { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { setupEnvironment, resetAllMocks } from './utils/test-setup';
 import { createIterativeTestRunner } from './utils/test-runners';
@@ -14,7 +13,10 @@ import {
   testRedirectFlow,
   expectStandardAPIResponse,
   expectAuthenticationCheck,
-  expectRedirectWithCallback
+  expectRedirectWithCallback,
+  testEdgeCaseRoute,
+  testAuthenticatedUserAccess,
+  testNonInterfenceRoutes
 } from './utils/middleware-test-helpers';
 
 // Mock NextAuth JWT module
@@ -130,31 +132,7 @@ describe('Middleware Parties Route Protection', () => {
     });
 
     it('should allow authenticated users to access parties routes', async () => {
-      const { middleware } = await import('../middleware');
-
-      const request = {
-        nextUrl: { pathname: '/parties' },
-        url: 'http://localhost:3000/parties',
-      } as NextRequest;
-
-      const mockToken = {
-        email: 'test@example.com',
-        sub: 'user-123',
-        iat: Date.now(),
-        exp: Date.now() + 3600,
-      };
-
-      mockGetToken.mockResolvedValue(mockToken);
-      mockNext.mockReturnValue({ type: 'next' });
-
-      await middleware(request);
-
-      expect(mockGetToken).toHaveBeenCalledWith({
-        req: request,
-        secret: process.env.NEXTAUTH_SECRET,
-      });
-      expect(mockNext).toHaveBeenCalled();
-      expect(mockRedirect).not.toHaveBeenCalled();
+      await testAuthenticatedUserAccess('/parties', mockGetToken, mockNext, mockRedirect);
     });
 
     it('should redirect from nested parties routes with correct callback URL', async () => {
@@ -196,67 +174,21 @@ describe('Middleware Parties Route Protection', () => {
 
   describe('Edge Cases for Parties Routes', () => {
     it('should handle parties routes with query parameters', async () => {
-      const { middleware } = await import('../middleware');
-
-      const request = {
-        nextUrl: { pathname: '/parties' },
-        url: 'http://localhost:3000/parties?filter=active&sort=name',
-      } as NextRequest;
-
-      mockGetToken.mockResolvedValue(null);
-      mockRedirect.mockReturnValue({ type: 'redirect' });
-
-      await middleware(request);
-
-      expect(mockGetToken).toHaveBeenCalled();
-      expect(mockRedirect).toHaveBeenCalled();
+      await testEdgeCaseRoute('/parties', 'http://localhost:3000/parties?filter=active&sort=name', mockGetToken, mockRedirect);
     });
 
     it('should handle parties routes with hash fragments', async () => {
-      const { middleware } = await import('../middleware');
-
-      const request = {
-        nextUrl: { pathname: '/parties/123' },
-        url: 'http://localhost:3000/parties/123#members-section',
-      } as NextRequest;
-
-      mockGetToken.mockResolvedValue(null);
-      mockRedirect.mockReturnValue({ type: 'redirect' });
-
-      await middleware(request);
-
-      expect(mockGetToken).toHaveBeenCalled();
-      expect(mockRedirect).toHaveBeenCalled();
+      await testEdgeCaseRoute('/parties/123', 'http://localhost:3000/parties/123#members-section', mockGetToken, mockRedirect);
     });
 
     it('should not interfere with similar but different routes', async () => {
-      const { middleware } = await import('../middleware');
-
       const nonPartiesRoutes = [
         '/part',
         '/party',  // Without the 's'
         '/user/parties',   // Parties as a subpath but not the main route
       ];
 
-      for (const pathname of nonPartiesRoutes) {
-        mockNext.mockReturnValue({ type: 'next' });
-
-        const request = {
-          nextUrl: { pathname },
-          url: `http://localhost:3000${pathname}`,
-        } as NextRequest;
-
-        const result = await middleware(request);
-
-        // These routes should not trigger authentication checks
-        expect(mockGetToken).not.toHaveBeenCalled();
-        expect(result).toBeDefined();
-
-        // Reset for next iteration
-        jest.clearAllMocks();
-        mockNext.mockReset();
-        mockGetToken.mockReset();
-      }
+      await testNonInterfenceRoutes(nonPartiesRoutes, mockGetToken, mockNext);
     });
   });
 });
