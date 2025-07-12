@@ -77,7 +77,7 @@ describe('/api/encounters/import - Security Tests', () => {
 
     it('should use actual user ID from session when authenticated', async () => {
       const testUserId = 'user-123';
-      
+
       // Mock valid session
       mockAuth.mockResolvedValue({
         user: {
@@ -111,7 +111,7 @@ describe('/api/encounters/import - Security Tests', () => {
 
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
-      
+
       // Verify that the service was called with the correct user ID
       expect(EncounterServiceImportExport.importFromJson).toHaveBeenCalledWith(
         mockRequestBody.data,
@@ -126,7 +126,7 @@ describe('/api/encounters/import - Security Tests', () => {
 
     it('should not use hardcoded temp-user-id', async () => {
       const testUserId = 'user-456';
-      
+
       // Mock valid session
       mockAuth.mockResolvedValue({
         user: {
@@ -156,7 +156,7 @@ describe('/api/encounters/import - Security Tests', () => {
       });
 
       await POST(request);
-      
+
       // Verify that the service was NOT called with temp-user-id
       expect(EncounterServiceImportExport.importFromJson).not.toHaveBeenCalledWith(
         mockRequestBody.data,
@@ -164,7 +164,7 @@ describe('/api/encounters/import - Security Tests', () => {
           ownerId: 'temp-user-id',
         })
       );
-      
+
       // Verify it WAS called with the actual user ID
       expect(EncounterServiceImportExport.importFromJson).toHaveBeenCalledWith(
         mockRequestBody.data,
