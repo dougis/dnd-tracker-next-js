@@ -166,7 +166,7 @@ describe('/api/encounters/[id]/export', () => {
       const response = await GET(request, { params });
 
       // Assert
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(400);
     });
   });
 });
