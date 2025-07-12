@@ -115,39 +115,26 @@ export async function testApiErrorWithConsole(
   return result;
 }
 
-// Test async operation with loading state
+// Test async operation with loading state - consolidated version
 export async function testAsyncWithLoadingState<T>(
   result: { current: T },
   operation: () => Promise<any>,
   loadingKey: keyof T
 ) {
-  // Start operation without awaiting
-  const promise = operation();
+  // Start operation within act
+  act(() => {
+    operation();
+  });
 
   // Check loading state immediately
   expect(result.current[loadingKey]).toBe(true);
 
   // Wait for completion
-  await promise;
-  await new Promise(resolve => setTimeout(resolve, 50)); // Small delay to ensure state update
+  await act(async () => {
+    await new Promise(resolve => setTimeout(resolve, 150));
+  });
+
   expect(result.current[loadingKey]).toBe(false);
-}
-
-// Test patterns for async operations with state
-export async function testAsyncStateChange<T>(
-  result: { current: T },
-  operation: () => Promise<any>,
-  stateKey: keyof T,
-  expectedInitialValue: any,
-  expectedFinalValue: any
-) {
-  // Start operation and check initial state
-  operation();
-  expect(result.current[stateKey]).toBe(expectedInitialValue);
-
-  // Wait for completion and check final state
-  await new Promise(resolve => setTimeout(resolve, 150));
-  expect(result.current[stateKey]).toBe(expectedFinalValue);
 }
 
 // Hook state expectations
@@ -199,21 +186,5 @@ export async function testNoApiCall<T>(
   expect(operationResult!).toBe(expectedResult);
 }
 
-// Test loading state during async operation
-export async function testLoadingStateDuringOperation<T>(
-  result: { current: T },
-  operation: () => Promise<any>,
-  loadingKey: keyof T
-) {
-  act(() => {
-    operation();
-  });
-
-  expect(result.current[loadingKey]).toBe(true);
-
-  await act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 150));
-  });
-
-  expect(result.current[loadingKey]).toBe(false);
-}
+// Test loading state during async operation - use the consolidated version above
+export const testLoadingStateDuringOperation = testAsyncWithLoadingState;
