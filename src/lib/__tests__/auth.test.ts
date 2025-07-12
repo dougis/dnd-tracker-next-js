@@ -446,7 +446,7 @@ describe('Authentication System', () => {
       // Test that the auth configuration can be loaded and covers actual file execution
       // This ensures the specific change for issue #363 doesn't break the module
       const authModule = await import('../auth');
-      
+
       // Verify all required exports are available after import
       expect(authModule.handlers).toBeDefined();
       expect(authModule.auth).toBeDefined();
@@ -458,18 +458,18 @@ describe('Authentication System', () => {
       // Test that NextAuth configuration works across different environments
       // This covers the debug configuration line in auth.ts
       const originalNodeEnv = process.env.NODE_ENV;
-      
+
       try {
         // Test development environment debug configuration
         process.env.NODE_ENV = 'development';
         const devModule = await import('../auth');
         expect(devModule.handlers).toBeDefined();
-        
-        // Test production environment debug configuration  
+
+        // Test production environment debug configuration
         process.env.NODE_ENV = 'production';
         const prodModule = await import('../auth');
         expect(prodModule.handlers).toBeDefined();
-        
+
       } finally {
         // Always restore original environment
         process.env.NODE_ENV = originalNodeEnv;
