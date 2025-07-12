@@ -13,44 +13,38 @@ export interface ToastProps {
   };
 }
 
+// Helper function to build options object
+const buildToastOptions = (description?: string, duration?: number, action?: ToastProps['action']) => {
+  const options: any = {};
+
+  if (description !== undefined && description !== null) {
+    options.description = description;
+  }
+
+  if (duration !== undefined && duration !== null) {
+    options.duration = duration;
+  }
+
+  if (action) {
+    options.action = action;
+  }
+
+  return Object.keys(options).length > 0 ? options : undefined;
+};
+
+// Helper function to call appropriate toast method
+const callToastMethod = (variant: ToastProps['variant'], title: string, options?: any) => {
+  const toastMethod = variant === 'destructive' ? toast.error :
+                     variant === 'default' ? toast.success :
+                     toast;
+
+  return options ? toastMethod(title, options) : toastMethod(title);
+};
+
 export function useToast() {
   const showToast = ({ title, description, variant, duration, action }: ToastProps) => {
-    const options: any = {};
-
-    if (description !== undefined && description !== null) {
-      options.description = description;
-    }
-
-    if (duration !== undefined && duration !== null) {
-      options.duration = duration;
-    }
-
-    if (action) {
-      options.action = action;
-    }
-
-    const hasOptions = Object.keys(options).length > 0;
-
-    if (variant === 'destructive') {
-      if (hasOptions) {
-        toast.error(title, options);
-      } else {
-        toast.error(title);
-      }
-    } else if (variant === 'default') {
-      if (hasOptions) {
-        toast.success(title, options);
-      } else {
-        toast.success(title);
-      }
-    } else {
-      // For undefined variant or unknown variants, use base toast
-      if (hasOptions) {
-        toast(title, options);
-      } else {
-        toast(title);
-      }
-    }
+    const options = buildToastOptions(description, duration, action);
+    callToastMethod(variant, title, options);
   };
 
   const dismiss = (id?: string) => {
