@@ -9,11 +9,10 @@ import {
   mockPartialFailureBatchApi,
   mockErrorBatchApi,
   mockNetworkErrorBatchApi,
-  expectBatchApiCall,
-  expectSuccessfulOperationResult,
   expectPartialSuccessResult,
-  expectErrorToast,
   expectEmptySelectionError,
+  executeBatchOperationTest,
+  executeBatchErrorTest,
 } from './test-utils/batchApiHelpers';
 
 // Mock fetch globally
@@ -57,35 +56,28 @@ describe('BatchActions API Integration', () => {
 
   describe('Bulk Duplicate', () => {
     it('should call batch API with duplicate operation', async () => {
-      mockSuccessfulBatchApi({ operation: 'duplicate' });
-
-      renderBatchActions();
-      await clickButton(/duplicate/i);
-
-      await waitFor(() => {
-        expectBatchApiCall('duplicate');
-      });
-
-      await waitFor(() => {
-        expectSuccessfulOperationResult(
-          mockToast,
-          'duplicate',
-          3,
-          defaultProps.onClearSelection,
-          defaultProps.onRefetch
-        );
-      });
+      await executeBatchOperationTest(
+        'duplicate',
+        () => mockSuccessfulBatchApi({ operation: 'duplicate' }),
+        renderBatchActions,
+        clickButton,
+        waitFor,
+        mockToast,
+        defaultProps.onClearSelection,
+        defaultProps.onRefetch
+      );
     });
 
     it('should handle duplicate API errors', async () => {
-      mockErrorBatchApi({ statusCode: 500, errorMessage: 'Server error' });
-
-      renderBatchActions();
-      await clickButton(/duplicate/i);
-
-      await waitFor(() => {
-        expectErrorToast(mockToast, 'Server error');
-      });
+      await executeBatchErrorTest(
+        'duplicate',
+        'Server error',
+        () => mockErrorBatchApi({ statusCode: 500, errorMessage: 'Server error' }),
+        renderBatchActions,
+        clickButton,
+        waitFor,
+        mockToast
+      );
     });
 
     it('should handle partial failures in duplicate operation', async () => {
@@ -109,92 +101,70 @@ describe('BatchActions API Integration', () => {
 
   describe('Bulk Archive', () => {
     it('should call batch API with archive operation', async () => {
-      mockSuccessfulBatchApi({ operation: 'archive' });
-
-      renderBatchActions();
-      await clickButton(/archive/i);
-
-      await waitFor(() => {
-        expectBatchApiCall('archive');
-      });
-
-      await waitFor(() => {
-        expectSuccessfulOperationResult(
-          mockToast,
-          'archive',
-          3,
-          defaultProps.onClearSelection,
-          defaultProps.onRefetch
-        );
-      });
+      await executeBatchOperationTest(
+        'archive',
+        () => mockSuccessfulBatchApi({ operation: 'archive' }),
+        renderBatchActions,
+        clickButton,
+        waitFor,
+        mockToast,
+        defaultProps.onClearSelection,
+        defaultProps.onRefetch
+      );
     });
 
     it('should handle archive API errors', async () => {
-      mockErrorBatchApi({ statusCode: 403, errorMessage: 'Access denied' });
-
-      renderBatchActions();
-      await clickButton(/archive/i);
-
-      await waitFor(() => {
-        expectErrorToast(mockToast, 'Access denied');
-      });
+      await executeBatchErrorTest(
+        'archive',
+        'Access denied',
+        () => mockErrorBatchApi({ statusCode: 403, errorMessage: 'Access denied' }),
+        renderBatchActions,
+        clickButton,
+        waitFor,
+        mockToast
+      );
     });
   });
 
   describe('Bulk Delete', () => {
     it('should call batch API with delete operation after confirmation', async () => {
-      mockSuccessfulBatchApi({ operation: 'delete' });
-
-      renderBatchActions();
-
-      // Open delete dialog
-      await clickButton(/delete/i);
-      expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-
-      // Confirm deletion
-      await clickButton('Delete');
-
-      await waitFor(() => {
-        expectBatchApiCall('delete');
-      });
-
-      await waitFor(() => {
-        expectSuccessfulOperationResult(
-          mockToast,
-          'delete',
-          3,
-          defaultProps.onClearSelection,
-          defaultProps.onRefetch
-        );
-      });
+      await executeBatchOperationTest(
+        'delete',
+        () => mockSuccessfulBatchApi({ operation: 'delete' }),
+        renderBatchActions,
+        clickButton,
+        waitFor,
+        mockToast,
+        defaultProps.onClearSelection,
+        defaultProps.onRefetch,
+        true
+      );
     });
 
     it('should handle delete API errors', async () => {
-      mockErrorBatchApi({ statusCode: 500, errorMessage: 'Database error' });
-
-      renderBatchActions();
-
-      // Open delete dialog and confirm
-      await clickButton(/delete/i);
-      await clickButton('Delete');
-
-      await waitFor(() => {
-        expectErrorToast(mockToast, 'Database error');
-      });
+      await executeBatchErrorTest(
+        'delete',
+        'Database error',
+        () => mockErrorBatchApi({ statusCode: 500, errorMessage: 'Database error' }),
+        renderBatchActions,
+        clickButton,
+        waitFor,
+        mockToast,
+        true
+      );
     });
 
     it('should handle network errors', async () => {
-      mockNetworkErrorBatchApi('Network error');
-
-      renderBatchActions();
-
-      // Open delete dialog and confirm
-      await clickButton(/delete/i);
-      await clickButton('Delete');
-
-      await waitFor(() => {
-        expectErrorToast(mockToast, 'Network error');
-      });
+      await executeBatchErrorTest(
+        'delete',
+        'Network error',
+        () => mockNetworkErrorBatchApi('Network error'),
+        renderBatchActions,
+        clickButton,
+        waitFor,
+        mockToast,
+        true
+      );
     });
 
     it('should close delete dialog after successful operation', async () => {

@@ -41,6 +41,18 @@ export const mockSuccessfulResponse = (mockFetch: jest.Mock, successful = COMMON
 };
 
 /**
+ * Helper to mock an error fetch response
+ */
+export const mockErrorResponse = (mockFetch: jest.Mock, errorMessage = 'API Error') => {
+  mockFetch.mockResolvedValueOnce({
+    ok: false,
+    json: async () => ({
+      error: errorMessage
+    }),
+  });
+};
+
+/**
  * Common test execution patterns to eliminate duplication
  */
 export interface TestActionParams {
@@ -127,4 +139,36 @@ export const executeDeleteDialogTest = async (
       expectCallbacksFn?.();
     });
   }
+};
+
+/**
+ * Helper to execute and verify error action test
+ */
+export const executeErrorActionTest = async (
+  params: {
+    mockFetch: jest.Mock;
+    buttonName: string | RegExp;
+    errorMessage?: string;
+    isDeleteAction?: boolean;
+  },
+  renderFn: (_props?: any) => void,
+  clickButtonFn: (_buttonName: string | RegExp) => Promise<void>,
+  waitForFn: (_callback: () => void) => Promise<void>,
+  expectErrorToastFn: (_message: string) => void
+) => {
+  // Mock API error response
+  mockErrorResponse(params.mockFetch, params.errorMessage);
+
+  renderFn({ selectedEncounters: COMMON_TEST_ENCOUNTERS });
+
+  if (params.isDeleteAction) {
+    await clickButtonFn(/delete/i);
+    await clickButtonFn('Delete');
+  } else {
+    await clickButtonFn(params.buttonName);
+  }
+
+  await waitForFn(() => {
+    expectErrorToastFn(params.errorMessage || 'API Error');
+  });
 };

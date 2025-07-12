@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { BatchActions } from '../BatchActions';
 import { createMockToast, commonBeforeEach } from './test-utils/mockSetup';
 import { clickButton, expectFunctionToBeCalled } from './test-utils/interactionHelpers';
-import { COMMON_TEST_ENCOUNTERS, COMMON_TEST_COUNT, mockSuccessfulResponse, executeActionTest, executeDeleteDialogTest } from './test-utils/batchActionsSharedMocks';
+import { COMMON_TEST_ENCOUNTERS, COMMON_TEST_COUNT, mockSuccessfulResponse, executeActionTest, executeDeleteDialogTest, executeErrorActionTest } from './test-utils/batchActionsSharedMocks';
 
 // Mock the toast hook
 const mockToast = createMockToast();
@@ -83,30 +83,24 @@ describe('BatchActions', () => {
     expectedErrorMessage: string,
     isDeleteAction = false
   ) => {
-    // Mock API error response
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({
-        error: 'API Error'
-      }),
-    });
-
-    renderBatchActions({ selectedEncounters: COMMON_TEST_ENCOUNTERS });
-
-    if (isDeleteAction) {
-      await clickButton(/delete/i);
-      await clickButton('Delete');
-    } else {
-      await clickButton(buttonName);
-    }
-
-    await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith({
-        title: 'Error',
-        description: 'API Error',
-        variant: 'destructive',
-      });
-    });
+    await executeErrorActionTest(
+      {
+        mockFetch,
+        buttonName,
+        errorMessage: expectedErrorMessage,
+        isDeleteAction
+      },
+      renderBatchActions,
+      clickButton,
+      waitFor,
+      (message: string) => {
+        expect(mockToast).toHaveBeenCalledWith({
+          title: 'Error',
+          description: message,
+          variant: 'destructive',
+        });
+      }
+    );
   };
 
   // Helper function to test encounter count display

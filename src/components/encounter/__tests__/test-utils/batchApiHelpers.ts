@@ -14,20 +14,30 @@ export interface MockBatchOptions {
 }
 
 /**
+ * Create a batch API response structure
+ */
+const createBatchApiResponse = (operation: string, successful: number, failed: number) => ({
+  success: true,
+  operation,
+  results: Array.from({ length: successful }, (_, i) => ({
+    encounterId: `enc${i + 1}`,
+    status: 'success',
+  })),
+  errors: failed > 0 ? Array.from({ length: failed }, (_, i) => ({
+    encounterId: `enc${successful + i + 1}`,
+    status: 'error',
+    error: 'Access denied',
+  })) : [],
+  summary: { totalProcessed: successful + failed, successful, failed },
+});
+
+/**
  * Mock successful batch API response
  */
 export const mockSuccessfulBatchApi = ({ operation = 'duplicate', successful = 3, failed = 0 }: MockBatchOptions = {}) => {
   (global.fetch as jest.Mock).mockResolvedValueOnce({
     ok: true,
-    json: async () => ({
-      success: true,
-      operation,
-      results: Array.from({ length: successful }, (_, i) => ({
-        encounterId: `enc${i + 1}`,
-        status: 'success',
-      })),
-      summary: { totalProcessed: successful + failed, successful, failed },
-    }),
+    json: async () => createBatchApiResponse(operation, successful, failed),
   });
 };
 
@@ -37,20 +47,7 @@ export const mockSuccessfulBatchApi = ({ operation = 'duplicate', successful = 3
 export const mockPartialFailureBatchApi = ({ operation = 'duplicate', successful = 2, failed = 1 }: MockBatchOptions = {}) => {
   (global.fetch as jest.Mock).mockResolvedValueOnce({
     ok: true,
-    json: async () => ({
-      success: true,
-      operation,
-      results: Array.from({ length: successful }, (_, i) => ({
-        encounterId: `enc${i + 1}`,
-        status: 'success',
-      })),
-      errors: Array.from({ length: failed }, (_, i) => ({
-        encounterId: `enc${successful + i + 1}`,
-        status: 'error',
-        error: 'Access denied',
-      })),
-      summary: { totalProcessed: successful + failed, successful, failed },
-    }),
+    json: async () => createBatchApiResponse(operation, successful, failed),
   });
 };
 
@@ -90,6 +87,14 @@ export const expectBatchApiCall = (operation: string, encounterIds = COMMON_TEST
 };
 
 /**
+ * Common expectation for callback functions being called
+ */
+const expectCallbacksInvoked = (onClearSelection: jest.Mock, onRefetch: jest.Mock) => {
+  expect(onClearSelection).toHaveBeenCalledTimes(1);
+  expect(onRefetch).toHaveBeenCalledTimes(1);
+};
+
+/**
  * Expect successful operation result
  */
 export const expectSuccessfulOperationResult = (
@@ -103,8 +108,7 @@ export const expectSuccessfulOperationResult = (
     title: `Encounters ${operation}d`,
     description: `${count} encounters have been ${operation}d successfully.`,
   });
-  expect(onClearSelection).toHaveBeenCalledTimes(1);
-  expect(onRefetch).toHaveBeenCalledTimes(1);
+  expectCallbacksInvoked(onClearSelection, onRefetch);
 };
 
 /**
@@ -122,8 +126,7 @@ export const expectPartialSuccessResult = (
     title: 'Partial Success',
     description: `${successful} encounters ${operation}d successfully, ${failed} failed.`,
   });
-  expect(onClearSelection).toHaveBeenCalledTimes(1);
-  expect(onRefetch).toHaveBeenCalledTimes(1);
+  expectCallbacksInvoked(onClearSelection, onRefetch);
 };
 
 /**
@@ -143,4 +146,65 @@ export const expectErrorToast = (mockToast: jest.Mock, errorMessage: string) => 
 export const expectEmptySelectionError = (mockToast: jest.Mock, operation: string) => {
   expect(global.fetch).not.toHaveBeenCalled();
   expectErrorToast(mockToast, `No encounters selected for ${operation}.`);
+};
+
+/**
+ * Execute a complete batch operation test with API verification
+ */
+export const executeBatchOperationTest = async (
+  operation: string,
+  mockSetupFn: () => void,
+  renderFn: () => any,
+  clickButtonFn: (_selector: string | RegExp) => Promise<void>,
+  waitForFn: (_callback: () => void) => Promise<void>,
+  mockToast: jest.Mock,
+  onClearSelection: jest.Mock,
+  onRefetch: jest.Mock,
+  isDeleteOperation = false
+) => {
+  mockSetupFn();
+  renderFn();
+
+  if (isDeleteOperation) {
+    await clickButtonFn(/delete/i);
+    await clickButtonFn('Delete');
+  } else {
+    await clickButtonFn(new RegExp(operation, 'i'));
+  }
+
+  await waitForFn(() => {
+    expectBatchApiCall(operation);
+  });
+
+  await waitForFn(() => {
+    expectSuccessfulOperationResult(mockToast, operation, 3, onClearSelection, onRefetch);
+  });
+};
+
+/**
+ * Execute error handling test for batch operations
+ */
+export const executeBatchErrorTest = async (
+  operation: string,
+  errorMessage: string,
+  mockSetupFn: () => void,
+  renderFn: () => any,
+  clickButtonFn: (_selector: string | RegExp) => Promise<void>,
+  waitForFn: (_callback: () => void) => Promise<void>,
+  mockToast: jest.Mock,
+  isDeleteOperation = false
+) => {
+  mockSetupFn();
+  renderFn();
+
+  if (isDeleteOperation) {
+    await clickButtonFn(/delete/i);
+    await clickButtonFn('Delete');
+  } else {
+    await clickButtonFn(new RegExp(operation, 'i'));
+  }
+
+  await waitForFn(() => {
+    expectErrorToast(mockToast, errorMessage);
+  });
 };
