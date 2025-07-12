@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import type { ImportOptions } from '@/lib/services/EncounterServiceImportExport';
-import { validateAuth } from '@/lib/api/route-helpers';
+import { withAuth } from '@/lib/api/route-helpers';
 import { z } from 'zod';
 
 const importBodySchema = z.object({
@@ -15,37 +15,33 @@ const importBodySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  try {
-    // Validate authentication first
-    const { error: authError, session } = await validateAuth();
-    if (authError) return authError;
+  return withAuth(async (userId: string) => {
+    try {
+      const body = await request.json();
+      const validatedBody = importBodySchema.parse(body);
 
-    const body = await request.json();
-    const validatedBody = importBodySchema.parse(body);
+      const options: ImportOptions = {
+        ownerId: userId,
+        ...validatedBody.options,
+      };
 
-    const userId = session!.user.id;
+      const result = await performImport(validatedBody.data, validatedBody.format, options);
 
-    const options: ImportOptions = {
-      ownerId: userId,
-      ...validatedBody.options,
-    };
+      if (!result.success) {
+        return NextResponse.json(
+          {
+            error: result.error?.message || 'Import failed',
+            details: result.error?.details,
+          },
+          { status: 400 }
+        );
+      }
 
-    const result = await performImport(validatedBody.data, validatedBody.format, options);
-
-    if (!result.success) {
-      return NextResponse.json(
-        {
-          error: result.error?.message || 'Import failed',
-          details: result.error?.details,
-        },
-        { status: 400 }
-      );
+      return createSuccessResponse(result.data);
+    } catch (error) {
+      return handleImportError(error);
     }
-
-    return createSuccessResponse(result.data);
-  } catch (error) {
-    return handleImportError(error);
-  }
+  });
 }
 
 async function performImport(data: string, format: string, options: ImportOptions) {

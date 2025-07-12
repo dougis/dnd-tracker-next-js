@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import { EncounterService } from '@/lib/services/EncounterService';
-import { validateAuth } from '@/lib/api/route-helpers';
+import { withAuth } from '@/lib/api/route-helpers';
 import { z } from 'zod';
 
 const batchOperationSchema = z.object({
@@ -26,24 +26,20 @@ const batchOperationSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  try {
-    // Validate authentication first
-    const { error: authError, session } = await validateAuth();
-    if (authError) return authError;
+  return withAuth(async (userId: string) => {
+    try {
+      const body = await request.json();
+      const validatedBody = batchOperationSchema.parse(body);
 
-    const body = await request.json();
-    const validatedBody = batchOperationSchema.parse(body);
+      const { operation, encounterIds, options } = validatedBody;
+      const { results, errors } = await processBatchOperation(operation, encounterIds, userId, options);
 
-    const userId = session!.user.id;
-
-    const { operation, encounterIds, options } = validatedBody;
-    const { results, errors } = await processBatchOperation(operation, encounterIds, userId, options);
-
-    const response = buildBatchResponse(operation, results, errors, encounterIds.length);
-    return NextResponse.json(response);
-  } catch (error) {
-    return handleBatchError(error);
-  }
+      const response = buildBatchResponse(operation, results, errors, encounterIds.length);
+      return NextResponse.json(response);
+    } catch (error) {
+      return handleBatchError(error);
+    }
+  });
 }
 
 async function processBatchOperation(operation: string, encounterIds: string[], userId: string, options: any) {

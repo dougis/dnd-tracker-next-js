@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import { EncounterService } from '@/lib/services/EncounterService';
-import { validateAuth } from '@/lib/api/route-helpers';
+import { withAuth } from '@/lib/api/route-helpers';
 import { z } from 'zod';
 
 const backupQuerySchema = z.object({
@@ -11,24 +11,20 @@ const backupQuerySchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
-  try {
-    // Validate authentication first
-    const { error: authError, session } = await validateAuth();
-    if (authError) return authError;
+  return withAuth(async (userId: string) => {
+    try {
+      const { searchParams } = new URL(request.url);
+      const query = Object.fromEntries(searchParams.entries());
+      const validatedQuery = backupQuerySchema.parse(query);
 
-    const { searchParams } = new URL(request.url);
-    const query = Object.fromEntries(searchParams.entries());
-    const validatedQuery = backupQuerySchema.parse(query);
+      const encounters = await getUserEncounters(userId);
+      const backupData = await createBackupData(encounters, userId, validatedQuery);
 
-    const userId = session!.user.id;
-
-    const encounters = await getUserEncounters(userId);
-    const backupData = await createBackupData(encounters, userId, validatedQuery);
-
-    return createBackupResponse(backupData, validatedQuery.format);
-  } catch (error) {
-    return handleBackupError(error);
-  }
+      return createBackupResponse(backupData, validatedQuery.format);
+    } catch (error) {
+      return handleBackupError(error);
+    }
+  });
 }
 
 async function getUserEncounters(userId: string) {

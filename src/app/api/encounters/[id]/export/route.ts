@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import type { ExportOptions } from '@/lib/services/EncounterServiceImportExport';
-import { validateAuth } from '@/lib/api/route-helpers';
+import { withAuth } from '@/lib/api/route-helpers';
 import { z } from 'zod';
 
 const exportQuerySchema = z.object({
@@ -16,61 +16,57 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    // Validate authentication first
-    const { error: authError, session } = await validateAuth();
-    if (authError) return authError;
+  return withAuth(async (userId: string) => {
+    try {
+      const { searchParams } = new URL(request.url);
+      const query = Object.fromEntries(searchParams.entries());
 
-    const { searchParams } = new URL(request.url);
-    const query = Object.fromEntries(searchParams.entries());
+      const validatedQuery = exportQuerySchema.parse(query);
 
-    const validatedQuery = exportQuerySchema.parse(query);
+      const resolvedParams = await params;
+      const encounterId = resolvedParams.id;
 
-    const resolvedParams = await params;
-    const encounterId = resolvedParams.id;
+      const options: ExportOptions = {
+        includeCharacterSheets: validatedQuery.includeCharacterSheets,
+        includePrivateNotes: validatedQuery.includePrivateNotes,
+        includeIds: validatedQuery.includeIds,
+        stripPersonalData: validatedQuery.stripPersonalData,
+      };
 
-    const userId = session!.user.id;
+      let result;
 
-    const options: ExportOptions = {
-      includeCharacterSheets: validatedQuery.includeCharacterSheets,
-      includePrivateNotes: validatedQuery.includePrivateNotes,
-      includeIds: validatedQuery.includeIds,
-      stripPersonalData: validatedQuery.stripPersonalData,
-    };
+      if (validatedQuery.format === 'json') {
+        result = await EncounterServiceImportExport.exportToJson(encounterId, userId, options);
+      } else {
+        result = await EncounterServiceImportExport.exportToXml(encounterId, userId, options);
+      }
 
-    let result;
+      if (!result.success) {
+        return NextResponse.json(
+          { error: result.error?.message || 'Export failed' },
+          { status: 400 }
+        );
+      }
 
-    if (validatedQuery.format === 'json') {
-      result = await EncounterServiceImportExport.exportToJson(encounterId, userId, options);
-    } else {
-      result = await EncounterServiceImportExport.exportToXml(encounterId, userId, options);
-    }
+      const contentType = validatedQuery.format === 'json'
+        ? 'application/json'
+        : 'application/xml';
 
-    if (!result.success) {
+      const filename = `encounter-${encounterId}-${Date.now()}.${validatedQuery.format}`;
+
+      return new NextResponse(result.data, {
+        status: 200,
+        headers: {
+          'Content-Type': contentType,
+          'Content-Disposition': `attachment; filename="${filename}"`,
+        },
+      });
+    } catch (error) {
+      console.error('Export error:', error);
       return NextResponse.json(
-        { error: result.error?.message || 'Export failed' },
-        { status: 400 }
+        { error: 'Internal server error' },
+        { status: 500 }
       );
     }
-
-    const contentType = validatedQuery.format === 'json'
-      ? 'application/json'
-      : 'application/xml';
-
-    const filename = `encounter-${encounterId}-${Date.now()}.${validatedQuery.format}`;
-
-    return new NextResponse(result.data, {
-      status: 200,
-      headers: {
-        'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename="${filename}"`,
-      },
-    });
-  } catch (error) {
-    console.error('Export error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
+  });
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
-import { validateAuth } from '@/lib/api/route-helpers';
+import { withAuth } from '@/lib/api/route-helpers';
 import { z } from 'zod';
 
 const restoreBodySchema = z.object({
@@ -15,32 +15,28 @@ const restoreBodySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  try {
-    // Validate authentication first
-    const { error: authError, session } = await validateAuth();
-    if (authError) return authError;
+  return withAuth(async (userId: string) => {
+    try {
+      const body = await request.json();
+      const validatedBody = restoreBodySchema.parse(body);
 
-    const body = await request.json();
-    const validatedBody = restoreBodySchema.parse(body);
+      const backupData = parseBackupData(validatedBody);
+      const validationError = validateBackupStructure(backupData);
+      if (validationError) return validationError;
 
-    const userId = session!.user.id;
+      const importOptions = {
+        ownerId: userId,
+        ...validatedBody.options,
+      };
 
-    const backupData = parseBackupData(validatedBody);
-    const validationError = validateBackupStructure(backupData);
-    if (validationError) return validationError;
+      const { results, errors } = await processEncounters(backupData, validatedBody, importOptions);
 
-    const importOptions = {
-      ownerId: userId,
-      ...validatedBody.options,
-    };
-
-    const { results, errors } = await processEncounters(backupData, validatedBody, importOptions);
-
-    const response = buildRestoreResponse(results, errors, backupData);
-    return NextResponse.json(response);
-  } catch (error) {
-    return handleRestoreError(error);
-  }
+      const response = buildRestoreResponse(results, errors, backupData);
+      return NextResponse.json(response);
+    } catch (error) {
+      return handleRestoreError(error);
+    }
+  });
 }
 
 function parseBackupData(validatedBody: any): any {
