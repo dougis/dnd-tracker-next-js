@@ -28,16 +28,16 @@ export function setupEnvironment() {
 export async function executeMiddlewareTest(
   pathname: string,
   setupMocks: () => void,
-  expectations: (mockGetToken: jest.MockedFunction<any>, request: any) => void
+  expectations: (_mockGetToken: jest.MockedFunction<any>, _request: any) => void
 ) {
   const { middleware } = await import('../../middleware');
   const { createMockRequest } = await import('./mock-factories');
-  
+
   const request = createMockRequest(pathname);
   setupMocks();
-  
+
   await middleware(request);
-  
+
   expectations(jest.fn(), request);
 }
 

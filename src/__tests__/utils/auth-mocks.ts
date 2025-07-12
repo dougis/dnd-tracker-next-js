@@ -40,7 +40,7 @@ export async function testAllUnauthenticatedScenarios(
   mockAuth: jest.MockedFunction<any>,
   testFunction: () => Promise<any>
 ) {
-  for (const { description, session } of unauthenticatedScenarios) {
+  for (const { description: _description, session } of unauthenticatedScenarios) {
     jest.clearAllMocks();
     mockAuth.mockResolvedValue(session as any);
     await expectRedirectToSignin(testFunction, mockAuth);
