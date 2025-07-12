@@ -9,10 +9,8 @@ import { getToken } from 'next-auth/jwt';
 import { setupEnvironment, resetAllMocks } from './utils/test-setup';
 import { createIterativeTestRunner } from './utils/test-runners';
 import {
-  executeMiddlewareTest,
   testRedirectFlow,
   expectStandardAPIResponse,
-  expectAuthenticationCheck,
   expectRedirectWithCallback,
   testEdgeCaseRoute,
   testAuthenticatedUserAccess,
@@ -20,7 +18,8 @@ import {
   expectMiddlewareMatcherConfiguration,
   createProtectedRouteTestSuite,
   setupUnauthenticatedMocks as setupUnauthenticatedMocksUtil,
-  setupAPIUnauthenticatedMocks as setupAPIUnauthenticatedMocksUtil
+  setupAPIUnauthenticatedMocks as setupAPIUnauthenticatedMocksUtil,
+  createProtectedRouteTest
 } from './utils/middleware-test-helpers';
 
 // Mock NextAuth JWT module
@@ -56,8 +55,7 @@ beforeEach(() => {
 });
 
 async function testProtectedRoute(pathname: string) {
-  const { request } = await executeMiddlewareTest(pathname, () => setupUnauthenticatedMocksUtil(mockGetToken, mockRedirect));
-  expectAuthenticationCheck(request, mockGetToken);
+  await createProtectedRouteTest(pathname, mockGetToken, mockRedirect, setupUnauthenticatedMocksUtil);
 }
 
 describe('Middleware Parties Route Protection', () => {
@@ -85,9 +83,7 @@ describe('Middleware Parties Route Protection', () => {
 
   describe('Parties API Route Protection', () => {
     async function testProtectedAPIRoute(pathname: string) {
-      const { request } = await executeMiddlewareTest(pathname, () => setupAPIUnauthenticatedMocksUtil(mockGetToken, mockJson));
-      expectAuthenticationCheck(request, mockGetToken);
-      expectStandardAPIResponse(mockJson);
+      await createProtectedRouteTest(pathname, mockGetToken, mockJson, setupAPIUnauthenticatedMocksUtil, expectStandardAPIResponse);
     }
 
     it('should protect /api/parties routes', async () => {

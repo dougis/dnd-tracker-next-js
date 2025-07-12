@@ -9,8 +9,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import PartiesPage from '../page';
-import { createMockUser } from '@/__tests__/utils/mock-factories';
-import { setupAuthenticatedMocks, expectRedirectToSignin } from '@/__tests__/utils/auth-mocks';
+import { expectRedirectToSignin, testAuthenticatedAccess } from '@/__tests__/utils/auth-mocks';
 import { createUnauthenticatedScenarios, createUserTestCases, createPageStructureExpectation } from '@/__tests__/utils/page-auth-helpers';
 import { createParameterizedTest } from '@/__tests__/utils/test-runners';
 
@@ -56,26 +55,19 @@ describe('PartiesPage Authentication', () => {
     );
   });
 
-  // Helper function for authenticated tests
-  async function testAuthenticatedAccess(userId: string = 'user-123') {
-    const user = createMockUser({ id: userId });
-    setupAuthenticatedMocks(mockAuth, user);
-    const result = await PartiesPage();
-
-    expect(mockAuth).toHaveBeenCalled();
-    expect(result).toBeDefined();
-
-    return result;
+  // Use shared helper for authenticated tests
+  async function testPartiesPageAccess(userId: string = 'user-123') {
+    return await testAuthenticatedAccess(mockAuth, PartiesPage, userId);
   }
 
   describe('Authenticated Access', () => {
     it('should render page content when user is authenticated', async () => {
-      await testAuthenticatedAccess();
+      await testPartiesPageAccess();
     });
 
     it('should pass user ID to PartyListView component', async () => {
       const userId = 'user-456';
-      await testAuthenticatedAccess(userId);
+      await testPartiesPageAccess(userId);
       // Note: Full component rendering verification would require testing-library setup
     });
   });
@@ -121,7 +113,7 @@ describe('PartiesPage Authentication', () => {
 
   describe('Page Structure', () => {
     it('should render correct page structure when authenticated', async () => {
-      const result = await testAuthenticatedAccess();
+      const result = await testPartiesPageAccess();
 
       // Verify the page structure is correct
       expect(typeof result).toBe('object');

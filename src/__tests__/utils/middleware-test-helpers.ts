@@ -22,8 +22,7 @@ export async function executeMiddlewareTest(pathname: string, setup: () => void)
 export async function testRedirectFlow(pathname: string, mockGetToken: jest.MockedFunction<any>, mockRedirect: jest.MockedFunction<any>) {
   const { mockUrl, originalURL } = createMockURLForRedirect(pathname);
 
-  mockGetToken.mockResolvedValue(null);
-  mockRedirect.mockReturnValue({ type: 'redirect' });
+  setupUnauthenticatedMocks(mockGetToken, mockRedirect);
 
   const { request } = await executeMiddlewareTest(pathname, () => {});
 
@@ -81,10 +80,7 @@ export async function testAuthenticatedUserAccess(
 
   const { request } = await executeMiddlewareTest(pathname, () => {});
 
-  expect(mockGetToken).toHaveBeenCalledWith({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  expectAuthenticationCheck(request, mockGetToken);
   expect(mockNext).toHaveBeenCalled();
   expect(mockRedirect).not.toHaveBeenCalled();
 }
@@ -149,4 +145,21 @@ export function createProtectedRouteTestSuite(routes: string[], testFunction: (_
       await testFunction(pathname);
     });
   });
+}
+
+/**
+ * Generic protected route test for both page and API routes
+ */
+export async function createProtectedRouteTest(
+  pathname: string,
+  _mockGetToken: jest.MockedFunction<any>,
+  _mockResponse: jest.MockedFunction<any>,
+  setupMocks: (_mockGetToken: jest.MockedFunction<any>, _mockResponse: jest.MockedFunction<any>) => void,
+  expectResponse?: (_mockResponse: jest.MockedFunction<any>) => void
+) {
+  const { request } = await executeMiddlewareTest(pathname, () => setupMocks(_mockGetToken, _mockResponse));
+  expectAuthenticationCheck(request, _mockGetToken);
+  if (expectResponse) {
+    expectResponse(_mockResponse);
+  }
 }
