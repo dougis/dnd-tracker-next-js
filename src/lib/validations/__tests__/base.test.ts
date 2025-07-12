@@ -21,6 +21,7 @@ import {
   createArraySchema,
   createPaginationSchema,
 } from '../base';
+import { TestPasswordConstants } from '../../test-utils/password-constants';
 
 describe('Base Validation Schemas', () => {
   describe('emailSchema', () => {
@@ -55,7 +56,7 @@ describe('Base Validation Schemas', () => {
 
   describe('passwordSchema', () => {
     it('should validate strong passwords', () => {
-      const validPasswords = ['Password123!', 'MyStr0ng@Pass', 'Complex1ty$'];
+      const validPasswords = [TestPasswordConstants.PASSWORD_123, TestPasswordConstants.MY_STRONG_PASSWORD, TestPasswordConstants.COMPLEXITY_PASSWORD];
 
       validPasswords.forEach(password => {
         const result = safeValidate(passwordSchema, password);
