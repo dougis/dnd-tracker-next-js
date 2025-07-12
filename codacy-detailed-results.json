@@ -1,0 +1,75 @@
+                    
+                    
+┌──────────────────┐
+│ 22 Code Findings │
+└──────────────────┘
+                                                                 
+    src/lib/services/__tests__/PasswordHashingIntegration.test.ts
+   ❯❯❱ codacy.tools-configs.codacy.javascript.security.hard-coded-password
+          Hardcoded passwords are a security risk. They can be easily found by attackers and used to gain
+          unauthorized access to the system.                                                             
+                                                                                                         
+           68┆ const plainPassword = 'TestPassword123!';
+            ⋮┆----------------------------------------
+           97┆ const plainPassword = 'TestPassword123!';
+            ⋮┆----------------------------------------
+          117┆ const shortPassword = 'short';
+            ⋮┆----------------------------------------
+          223┆ const password = 'TestSaltRounds123!';
+            ⋮┆----------------------------------------
+          274┆ const password = 'SecurityCompliantPassword123!';
+                                                                  
+    src/lib/services/__tests__/PasswordHashingVerification.test.ts
+   ❯❯❱ codacy.tools-configs.codacy.javascript.security.hard-coded-password
+          Hardcoded passwords are a security risk. They can be easily found by attackers and used to gain
+          unauthorized access to the system.                                                             
+                                                                                                         
+           14┆ const plainPassword = 'TestPassword123!';
+            ⋮┆----------------------------------------
+           37┆ const plainPassword = 'TestPassword123!';
+            ⋮┆----------------------------------------
+           45┆ const strongPassword = 'StrongPassword123!';
+            ⋮┆----------------------------------------
+           46┆ const weakPassword = 'weak';
+            ⋮┆----------------------------------------
+           62┆ const plainPassword = 'AuthTestPassword123!';
+            ⋮┆----------------------------------------
+           77┆ const originalPassword = 'OriginalPassword123!';
+            ⋮┆----------------------------------------
+           78┆ const newPassword = 'NewPassword123!';
+            ⋮┆----------------------------------------
+          127┆ const password = 'SaltTestPassword123!';
+                                                              
+    src/lib/services/__tests__/RealPasswordHashingTest.test.ts
+   ❯❯❱ codacy.tools-configs.codacy.javascript.security.hard-coded-password
+          Hardcoded passwords are a security risk. They can be easily found by attackers and used to gain
+          unauthorized access to the system.                                                             
+                                                                                                         
+           16┆ const plainPassword = 'TestPassword123!';
+            ⋮┆----------------------------------------
+           45┆ const plainPassword = 'DirectBcryptTest123!';
+            ⋮┆----------------------------------------
+           95┆ const plainPassword = 'ReportTest123!';
+                                                                        
+    src/lib/services/__tests__/UserServiceDatabase.comprehensive.test.ts
+   ❯❯❱ codacy.tools-configs.codacy.javascript.security.hard-coded-password
+          Hardcoded passwords are a security risk. They can be easily found by attackers and used to gain
+          unauthorized access to the system.                                                             
+                                                                                                         
+          449┆ const newPassword = 'NewPassword123!';
+                                                     
+    src/lib/utils/__tests__/password-security.test.ts
+   ❯❯❱ codacy.tools-configs.codacy.javascript.security.hard-coded-password
+          Hardcoded passwords are a security risk. They can be easily found by attackers and used to gain
+          unauthorized access to the system.                                                             
+                                                                                                         
+           12┆ const plainPassword = 'TestPassword123!';
+            ⋮┆----------------------------------------
+           33┆ const hashedPassword = '$2b$12$W/6WPGC5/e.M2vtQEpusM.0ltMcd1DeZUzqQ5LxJ.W7iRsyp0zZNm';
+            ⋮┆----------------------------------------
+           47┆ const plainPassword = 'TestPassword123!';
+            ⋮┆----------------------------------------
+           64┆ const hashedPassword = '$2b$12$hashedPasswordExample.hash.here.example';
+            ⋮┆----------------------------------------
+          193┆ const plainPassword = 'SecureTestPassword123!';
+

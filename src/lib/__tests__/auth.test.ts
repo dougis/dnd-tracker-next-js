@@ -433,12 +433,12 @@ describe('Authentication System', () => {
 
     it('should have correct page configuration', () => {
       const expectedPages = {
-        signIn: '/auth/signin',
-        error: '/auth/error',
+        signIn: '/signin',
+        error: '/error',
       };
 
-      expect(expectedPages.signIn).toBe('/auth/signin');
-      expect(expectedPages.error).toBe('/auth/error');
+      expect(expectedPages.signIn).toBe('/signin');
+      expect(expectedPages.error).toBe('/error');
     });
 
     it('should handle debug mode based on environment', () => {
