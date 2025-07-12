@@ -87,7 +87,7 @@ describe('CharactersPage', () => {
       replace: jest.fn(),
       prefetch: jest.fn(),
     } as any);
-    
+
     // Mock global prompt for character duplication
     global.prompt = jest.fn().mockReturnValue('Test Character (Copy)');
   });
@@ -154,10 +154,10 @@ describe('CharactersPage', () => {
 
     it('handles character deletion with confirmation dialog', async () => {
       renderHelpers.renderPage();
-      
+
       // Test that delete action is callable (actual implementation uses confirmation dialog)
       testActions.deleteCharacter();
-      
+
       // Since we're testing the page integration, we verify the action handler exists
       // The actual confirmation dialog and deletion logic is tested in useCharacterPageActions.test.ts
       expect(true).toBe(true); // Placeholder assertion - the action handler was called successfully
@@ -165,10 +165,10 @@ describe('CharactersPage', () => {
 
     it('handles character duplication with name prompt', async () => {
       renderHelpers.renderPage();
-      
+
       // Test that duplicate action is callable (actual implementation uses prompt and async logic)
       testActions.duplicateCharacter();
-      
+
       // Since we're testing the page integration, we verify the action handler exists
       // The actual prompt and duplication logic is tested in useCharacterPageActions.test.ts
       expect(true).toBe(true); // Placeholder assertion - the action handler was called successfully
