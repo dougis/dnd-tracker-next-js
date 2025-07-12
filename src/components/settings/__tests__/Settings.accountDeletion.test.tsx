@@ -2,31 +2,23 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { useSession, signOut } from 'next-auth/react';
 import { Settings } from '../Settings';
 import { mockSessions, getSettingsSelectors } from './test-helpers';
 import {
+  mockUseSession,
+  mockSignOut,
+  mockFetch,
   setupSettingsBeforeEach,
   setupAccountDeletionModal,
   createAccountDeletionTestExecutor
 } from './shared-settings-test-setup';
 import '@testing-library/jest-dom';
 
-// Mock next-auth
+// Apply all standard settings test mocks
 jest.mock('next-auth/react');
-const mockUseSession = useSession as jest.MockedFunction<typeof useSession>;
-const mockSignOut = signOut as jest.MockedFunction<typeof signOut>;
-
-// Mock API calls
-const mockFetch = jest.fn();
-global.fetch = mockFetch;
-
-// Mock theme components
 jest.mock('@/components/theme-toggle', () => ({
   ThemeToggle: () => <button data-testid="theme-toggle">Theme Toggle</button>,
 }));
-
-// Mock the settings form hook
 jest.mock('../hooks/useSettingsForm', () => ({
   useSettingsForm: () => ({
     profileData: { name: 'Test User', email: 'test@example.com' },
@@ -41,6 +33,9 @@ jest.mock('../hooks/useSettingsForm', () => ({
     handleNotificationsSubmit: jest.fn(),
   }),
 }));
+
+// Set global fetch
+global.fetch = mockFetch;
 
 describe('Settings Component - Account Deletion', () => {
   const selectors = getSettingsSelectors();

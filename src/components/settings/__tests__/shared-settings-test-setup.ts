@@ -165,6 +165,46 @@ export function setupAccountDeletionModal(render: Function, fireEvent: Function,
 }
 
 /**
+ * Common account deletion test actions
+ */
+const deletionTestActions = {
+  clickConfirmButton: (screen: any, fireEvent: Function) => {
+    const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
+    fireEvent.click(confirmButton);
+    return confirmButton;
+  },
+
+  async expectApiCall(waitFor: Function, mockFetch: Function) {
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/users/1/profile',
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    });
+  },
+
+  async expectSignOut(waitFor: Function, mockSignOut: Function) {
+    await waitFor(() => {
+      expect(mockSignOut).toHaveBeenCalledWith({
+        callbackUrl: '/',
+        redirect: true,
+      });
+    });
+  },
+
+  async expectErrorMessage(waitFor: Function, screen: any, errorMessage: string) {
+    await waitFor(() => {
+      expect(screen.getByText(new RegExp(errorMessage, 'i'))).toBeInTheDocument();
+    });
+  }
+};
+
+/**
  * Creates standardized test execution for account deletion workflows
  */
 export function createAccountDeletionTestExecutor(
@@ -177,58 +217,28 @@ export function createAccountDeletionTestExecutor(
   return {
     async executeSuccessfulDeletion() {
       mockDeleteAccountResponse(true, '', mockFetch);
-      const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
-      fireEvent.click(confirmButton);
-
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith(
-          '/api/users/1/profile',
-          {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-      });
-
-      await waitFor(() => {
-        expect(mockSignOut).toHaveBeenCalledWith({
-          callbackUrl: '/',
-          redirect: true,
-        });
-      });
+      deletionTestActions.clickConfirmButton(screen, fireEvent);
+      await deletionTestActions.expectApiCall(waitFor, mockFetch);
+      await deletionTestActions.expectSignOut(waitFor, mockSignOut);
     },
 
     async executeFailedDeletion(errorMessage: string = 'Failed to delete account') {
       mockDeleteAccountResponse(false, errorMessage, mockFetch);
-      const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
-      fireEvent.click(confirmButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(new RegExp(errorMessage, 'i'))).toBeInTheDocument();
-      });
-
+      deletionTestActions.clickConfirmButton(screen, fireEvent);
+      await deletionTestActions.expectErrorMessage(waitFor, screen, errorMessage);
       expect(mockSignOut).not.toHaveBeenCalled();
     },
 
     async executeNetworkError(errorMessage: string = 'Network error') {
       mockNetworkError(errorMessage, mockFetch);
-      const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
-      fireEvent.click(confirmButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/An error occurred while deleting your account|Network error/)).toBeInTheDocument();
-      });
-
+      deletionTestActions.clickConfirmButton(screen, fireEvent);
+      await deletionTestActions.expectErrorMessage(waitFor, screen, 'An error occurred while deleting your account|Network error');
       expect(mockSignOut).not.toHaveBeenCalled();
     },
 
     async testLoadingState() {
       mockApiDelay(100, mockFetch);
-      const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
-      fireEvent.click(confirmButton);
-
+      const confirmButton = deletionTestActions.clickConfirmButton(screen, fireEvent);
       expect(confirmButton).toBeDisabled();
       expect(screen.getByText(/deleting/i)).toBeInTheDocument();
     }
