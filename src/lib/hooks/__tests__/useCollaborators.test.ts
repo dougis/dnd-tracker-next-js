@@ -10,19 +10,20 @@ import {
   expectApiCall,
   expectHookState,
   expectFunctionType,
+  setupFetchMock,
+  cleanupFetchMock,
+  createConsoleSpy,
 } from './test-utils';
-
-// Mock fetch
-global.fetch = jest.fn();
 
 describe('useCollaborators', () => {
   beforeEach(() => {
-    (fetch as jest.Mock).mockClear();
+    setupFetchMock();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    cleanupFetchMock();
   });
+
 
   describe('initialization', () => {
     it('initializes with correct default state', () => {
@@ -77,15 +78,13 @@ describe('useCollaborators', () => {
 
   describe('handleAddCollaborator', () => {
     it('should make API call to add collaborator when email is provided', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce(createMockResponse());
+      setupFetchMock(createMockResponse());
       const { result } = renderHook(() => useCollaborators());
 
-      // Set email
       act(() => {
         result.current.setNewCollaboratorEmail(TEST_EMAIL);
       });
 
-      // Add collaborator
       let addResult: boolean;
       await act(async () => {
         addResult = await result.current.handleAddCollaborator();
@@ -128,9 +127,8 @@ describe('useCollaborators', () => {
     });
 
     it('should handle API errors gracefully', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce(createMockResponse(false));
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
+      setupFetchMock(createMockResponse(false));
+      const consoleSpy = createConsoleSpy();
       const { result } = renderHook(() => useCollaborators());
 
       act(() => {
@@ -153,7 +151,7 @@ describe('useCollaborators', () => {
 
   describe('handleRemoveCollaborator', () => {
     it('should make API call to remove collaborator', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce(createMockResponse());
+      setupFetchMock(createMockResponse());
       const { result } = renderHook(() => useCollaborators());
 
       let removeResult: boolean;
@@ -166,8 +164,8 @@ describe('useCollaborators', () => {
     });
 
     it('should handle API errors gracefully', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce(createMockResponse(false));
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      setupFetchMock(createMockResponse(false));
+      const consoleSpy = createConsoleSpy();
       const { result } = renderHook(() => useCollaborators());
 
       let removeResult: boolean;

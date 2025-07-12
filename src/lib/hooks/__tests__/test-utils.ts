@@ -32,9 +32,30 @@ export async function withConsoleSpy<T>(fn: (_spy: jest.SpyInstance) => Promise<
   }
 }
 
+// Console spy for synchronous operations
+export function createConsoleSpy() {
+  return jest.spyOn(console, 'error').mockImplementation();
+}
+
+// Fetch mock utility
+export function setupFetchMock(response: any = createMockResponse()) {
+  global.fetch = jest.fn().mockResolvedValue(response);
+  return fetch as jest.Mock;
+}
+
+// Fetch mock cleanup
+export function cleanupFetchMock() {
+  (fetch as jest.Mock).mockClear();
+}
+
 // Async operation helper
 export async function waitForAsyncOperation(operation: () => Promise<any>) {
   return await operation();
+}
+
+// Delayed operation utility for testing async states
+export function createDelayedOperation(delay: number = 100) {
+  return () => new Promise(resolve => setTimeout(resolve, delay));
 }
 
 // API call assertions
@@ -61,6 +82,23 @@ export async function testAsyncError(operation: () => Promise<any>, expectedErro
     expect(error).toBeInstanceOf(Error);
     expect((error as Error).message).toBe(expectedError);
   }
+}
+
+// Test patterns for async operations with state
+export async function testAsyncStateChange<T>(
+  result: { current: T },
+  operation: () => Promise<any>,
+  stateKey: keyof T,
+  expectedInitialValue: any,
+  expectedFinalValue: any
+) {
+  // Start operation and check initial state
+  operation();
+  expect(result.current[stateKey]).toBe(expectedInitialValue);
+
+  // Wait for completion and check final state
+  await new Promise(resolve => setTimeout(resolve, 150));
+  expect(result.current[stateKey]).toBe(expectedFinalValue);
 }
 
 // Hook state expectations
