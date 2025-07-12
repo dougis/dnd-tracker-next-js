@@ -2,6 +2,13 @@ import { NextRequest } from 'next/server';
 import { DELETE } from '../route';
 import { UserService } from '@/lib/services/UserService';
 import { auth } from '@/lib/auth';
+import { 
+  TEST_USER_ID, 
+  createMockParams, 
+  createMockSession, 
+  expectSuccessResponse, 
+  expectErrorResponse 
+} from './test-helpers';
 
 // Mock dependencies
 jest.mock('@/lib/services/UserService');
@@ -11,13 +18,17 @@ const mockUserService = UserService as jest.Mocked<typeof UserService>;
 const mockAuth = auth as jest.MockedFunction<typeof auth>;
 
 describe('DELETE /api/users/[id]/profile', () => {
-  const mockUserId = '507f1f77bcf86cd799439011';
-  const mockRequest = new NextRequest('http://localhost:3000/api/users/507f1f77bcf86cd799439011/profile');
+  const mockRequest = new NextRequest(`http://localhost:3000/api/users/${TEST_USER_ID}/profile`);
+
+  const executeDeleteRequest = async (userId: string = TEST_USER_ID) => {
+    const params = createMockParams(userId);
+    return DELETE(mockRequest, { params });
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockAuth.mockResolvedValue({
-      user: { id: mockUserId, email: 'test@example.com' },
+      ...createMockSession(),
       expires: '2024-12-31',
     });
   });
@@ -29,16 +40,12 @@ describe('DELETE /api/users/[id]/profile', () => {
         data: undefined,
       });
 
-      const params = Promise.resolve({ id: mockUserId });
-      const response = await DELETE(mockRequest, { params });
-      const responseData = await response.json();
+      const response = await executeDeleteRequest();
 
-      expect(response.status).toBe(200);
-      expect(responseData).toEqual({
-        success: true,
+      await expectSuccessResponse(response, {
         message: 'Account deleted successfully',
       });
-      expect(mockUserService.deleteUser).toHaveBeenCalledWith(mockUserId);
+      expect(mockUserService.deleteUser).toHaveBeenCalledWith(TEST_USER_ID);
     });
   });
 
@@ -46,34 +53,22 @@ describe('DELETE /api/users/[id]/profile', () => {
     it('should return 401 when user is not authenticated', async () => {
       mockAuth.mockResolvedValue(null);
 
-      const params = Promise.resolve({ id: mockUserId });
-      const response = await DELETE(mockRequest, { params });
-      const responseData = await response.json();
+      const response = await executeDeleteRequest();
 
-      expect(response.status).toBe(401);
-      expect(responseData).toEqual({
-        success: false,
-        message: 'Authentication required',
-      });
+      await expectErrorResponse(response, 401, 'Authentication required');
       expect(mockUserService.deleteUser).not.toHaveBeenCalled();
     });
 
     it('should return 403 when user tries to delete different account', async () => {
       const differentUserId = '507f1f77bcf86cd799439012';
       mockAuth.mockResolvedValue({
-        user: { id: differentUserId, email: 'other@example.com' },
+        ...createMockSession(differentUserId),
         expires: '2024-12-31',
       });
 
-      const params = Promise.resolve({ id: mockUserId });
-      const response = await DELETE(mockRequest, { params });
-      const responseData = await response.json();
+      const response = await executeDeleteRequest();
 
-      expect(response.status).toBe(403);
-      expect(responseData).toEqual({
-        success: false,
-        message: 'You can only access your own profile',
-      });
+      await expectErrorResponse(response, 403, 'You can only access your own profile');
       expect(mockUserService.deleteUser).not.toHaveBeenCalled();
     });
   });
@@ -82,51 +77,33 @@ describe('DELETE /api/users/[id]/profile', () => {
     it('should handle user not found error', async () => {
       mockUserService.deleteUser.mockResolvedValue({
         success: false,
-        error: 'USER_NOT_FOUND',
+        error: { code: 'USER_NOT_FOUND', message: 'User not found' },
         message: 'User not found',
       });
 
-      const params = Promise.resolve({ id: mockUserId });
-      const response = await DELETE(mockRequest, { params });
-      const responseData = await response.json();
+      const response = await executeDeleteRequest();
 
-      expect(response.status).toBe(404);
-      expect(responseData).toEqual({
-        success: false,
-        message: 'User not found',
-      });
+      await expectErrorResponse(response, 404, 'User not found');
     });
 
     it('should handle deletion failure', async () => {
       mockUserService.deleteUser.mockResolvedValue({
         success: false,
-        error: 'USER_DELETION_FAILED',
+        error: { code: 'USER_DELETION_FAILED' },
         message: 'Failed to delete user',
       });
 
-      const params = Promise.resolve({ id: mockUserId });
-      const response = await DELETE(mockRequest, { params });
-      const responseData = await response.json();
+      const response = await executeDeleteRequest();
 
-      expect(response.status).toBe(500);
-      expect(responseData).toEqual({
-        success: false,
-        message: 'Account deletion failed',
-      });
+      await expectErrorResponse(response, 500, 'Account deletion failed');
     });
 
     it('should handle unexpected errors', async () => {
       mockUserService.deleteUser.mockRejectedValue(new Error('Database connection failed'));
 
-      const params = Promise.resolve({ id: mockUserId });
-      const response = await DELETE(mockRequest, { params });
-      const responseData = await response.json();
+      const response = await executeDeleteRequest();
 
-      expect(response.status).toBe(500);
-      expect(responseData).toEqual({
-        success: false,
-        message: 'Internal server error',
-      });
+      await expectErrorResponse(response, 500, 'Internal server error');
     });
   });
 

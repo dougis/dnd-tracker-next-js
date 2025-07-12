@@ -4,6 +4,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useSession, signOut } from 'next-auth/react';
 import { Settings } from '../Settings';
+import { mockSessions, getSettingsSelectors } from './test-helpers';
 import '@testing-library/jest-dom';
 
 // Mock next-auth
@@ -36,21 +37,30 @@ jest.mock('../hooks/useSettingsForm', () => ({
   }),
 }));
 
-const mockSession = {
-  user: {
-    id: '507f1f77bcf86cd799439011',
-    name: 'Test User',
-    email: 'test@example.com',
-    subscriptionTier: 'free',
-  },
-  expires: '2024-12-31',
-};
-
 describe('Settings Component - Account Deletion', () => {
+  const selectors = getSettingsSelectors();
+
+  const setupAccountDeletionModal = () => {
+    render(<Settings />);
+    const deleteButton = selectors.deleteAccountButton();
+    fireEvent.click(deleteButton);
+    return deleteButton;
+  };
+
+  const mockDeleteApiResponse = (success: boolean, message: string = '') => {
+    mockFetch.mockResolvedValueOnce({
+      ok: success,
+      json: async () => ({
+        success,
+        message: success ? 'Account deleted successfully' : message || 'Failed to delete account',
+      }),
+    });
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseSession.mockReturnValue({
-      data: mockSession,
+      data: mockSessions.free,
       status: 'authenticated',
       update: jest.fn(),
     });
@@ -59,19 +69,15 @@ describe('Settings Component - Account Deletion', () => {
   describe('Delete Account Button', () => {
     it('should render delete account button', () => {
       render(<Settings />);
-      
-      const deleteButton = screen.getByRole('button', { name: /delete account/i });
+
+      const deleteButton = selectors.deleteAccountButton();
       expect(deleteButton).toBeInTheDocument();
       expect(deleteButton).toHaveClass('bg-destructive');
     });
 
     it('should open delete confirmation modal when delete button is clicked', () => {
-      render(<Settings />);
-      
-      const deleteButton = screen.getByRole('button', { name: /delete account/i });
-      fireEvent.click(deleteButton);
+      setupAccountDeletionModal();
 
-      // Check for modal elements specifically
       expect(screen.getByRole('button', { name: /confirm delete/i })).toBeInTheDocument();
       expect(screen.getByText('This action cannot be undone')).toBeInTheDocument();
       expect(screen.getByText(/All your data will be permanently removed/)).toBeInTheDocument();
@@ -80,9 +86,7 @@ describe('Settings Component - Account Deletion', () => {
 
   describe('Delete Confirmation Modal', () => {
     beforeEach(() => {
-      render(<Settings />);
-      const deleteButton = screen.getByRole('button', { name: /delete account/i });
-      fireEvent.click(deleteButton);
+      setupAccountDeletionModal();
     });
 
     it('should display warning message in modal', () => {
@@ -105,26 +109,18 @@ describe('Settings Component - Account Deletion', () => {
 
   describe('Account Deletion Process', () => {
     beforeEach(() => {
-      render(<Settings />);
-      const deleteButton = screen.getByRole('button', { name: /delete account/i });
-      fireEvent.click(deleteButton);
+      setupAccountDeletionModal();
     });
 
     it('should call delete API when confirm is clicked', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          message: 'Account deleted successfully',
-        }),
-      });
+      mockDeleteApiResponse(true);
 
       const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith(
-          '/api/users/507f1f77bcf86cd799439011/profile',
+          '/api/users/1/profile',
           {
             method: 'DELETE',
             headers: {
@@ -136,13 +132,7 @@ describe('Settings Component - Account Deletion', () => {
     });
 
     it('should sign out user after successful deletion', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          message: 'Account deleted successfully',
-        }),
-      });
+      mockDeleteApiResponse(true);
 
       const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
       fireEvent.click(confirmButton);
@@ -156,13 +146,7 @@ describe('Settings Component - Account Deletion', () => {
     });
 
     it('should close modal after successful deletion', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          message: 'Account deleted successfully',
-        }),
-      });
+      mockDeleteApiResponse(true);
 
       const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
       fireEvent.click(confirmButton);
@@ -173,13 +157,7 @@ describe('Settings Component - Account Deletion', () => {
     });
 
     it('should show error message when deletion fails', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({
-          success: false,
-          message: 'Failed to delete account',
-        }),
-      });
+      mockDeleteApiResponse(false, 'Failed to delete account');
 
       const confirmButton = screen.getByRole('button', { name: /confirm delete/i });
       fireEvent.click(confirmButton);
@@ -187,7 +165,7 @@ describe('Settings Component - Account Deletion', () => {
       await waitFor(() => {
         expect(screen.getByText(/Failed to delete account/)).toBeInTheDocument();
       });
-      
+
       expect(mockSignOut).not.toHaveBeenCalled();
     });
 
@@ -200,16 +178,14 @@ describe('Settings Component - Account Deletion', () => {
       await waitFor(() => {
         expect(screen.getByText(/An error occurred while deleting your account|Network error/)).toBeInTheDocument();
       });
-      
+
       expect(mockSignOut).not.toHaveBeenCalled();
     });
   });
 
   describe('Loading States', () => {
     beforeEach(() => {
-      render(<Settings />);
-      const deleteButton = screen.getByRole('button', { name: /delete account/i });
-      fireEvent.click(deleteButton);
+      setupAccountDeletionModal();
     });
 
     it('should disable confirm button during deletion', async () => {
