@@ -1,0 +1,28 @@
+{
+  "migrations": {
+    "autoRun": true,
+    "backupEnabled": false,
+    "timeout": 60000,
+    "dryRun": false,
+    "validateOnly": false,
+    "requireConfirmation": false,
+    "migrationsPath": "./migrations",
+    "collectionName": "migrations"
+  },
+  "deployment": {
+    "environment": "development",
+    "healthCheckTimeout": 30000,
+    "healthCheckRetries": 5,
+    "healthCheckInterval": 5000
+  },
+  "database": {
+    "connectionTimeout": 10000,
+    "queryTimeout": 5000,
+    "retries": 3
+  },
+  "monitoring": {
+    "enabled": false,
+    "alertsEnabled": false,
+    "metricsEnabled": false
+  }
+}

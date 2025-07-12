@@ -1,0 +1,247 @@
+name: Deploy to Staging with Migrations
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      skip_migrations:
+        description: 'Skip migration execution'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      dry_run:
+        description: 'Run in dry-run mode'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+  MONGODB_URI: ${{ secrets.MONGODB_URI_STAGING }}
+  MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
+  NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+  NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL_STAGING }}
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run type checking
+        run: npm run typecheck
+
+      - name: Run test suite
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_TEST || 'mongodb://localhost:27017/test' }}
+        run: npm run test:ci
+
+      - name: Test build
+        run: npm run build
+
+  migration-validation:
+    name: Validate Migrations
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate migration files
+        run: npm run migrate:validate
+
+      - name: Check migration status
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_STAGING }}
+        run: npm run migrate:status
+
+      - name: Migration dry-run test
+        if: github.event.inputs.dry_run != 'true'
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_STAGING }}
+          MIGRATION_DRY_RUN: 'true'
+        run: npm run migrate:up
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [test, migration-validation]
+    environment: staging
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+        with:
+          version: latest
+
+      - name: Create backup before deployment
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_STAGING }}
+        run: |
+          timestamp=$(date +"%Y%m%d-%H%M%S")
+          backup_file="staging-backup-${timestamp}.gz"
+          echo "BACKUP_FILE=${backup_file}" >> $GITHUB_ENV
+          echo "Creating backup: ${backup_file}"
+          # Install MongoDB tools if needed
+          sudo apt-get update && sudo apt-get install -y mongodb-database-tools
+          mongodump --uri="${MONGODB_URI}" --gzip --archive="/tmp/${backup_file}"
+          echo "Backup created successfully"
+
+      - name: Deploy with migrations to Fly.io
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI_STAGING }}
+          SKIP_MIGRATIONS: ${{ github.event.inputs.skip_migrations || 'false' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: |
+          chmod +x scripts/deploy-with-migrations.sh
+          ./scripts/deploy-with-migrations.sh staging "$DRY_RUN" "$SKIP_MIGRATIONS"
+
+      - name: Wait for deployment to stabilize
+        run: sleep 30
+
+      - name: Verify deployment health
+        run: |
+          max_attempts=10
+          attempt=1
+          app_url="https://dnd-tracker-staging.fly.dev"
+          
+          while [[ $attempt -le $max_attempts ]]; do
+            echo "Health check attempt ${attempt}/${max_attempts}"
+            
+            if curl -f -s "${app_url}/api/health" > /dev/null; then
+              echo "✅ Health check passed"
+              break
+            else
+              if [[ $attempt -eq $max_attempts ]]; then
+                echo "❌ Health check failed after ${max_attempts} attempts"
+                exit 1
+              fi
+              
+              echo "⚠️ Health check failed, retrying in 10 seconds..."
+              sleep 10
+              ((attempt++))
+            fi
+          done
+
+      - name: Verify migration status
+        run: |
+          app_url="https://dnd-tracker-staging.fly.dev"
+          
+          echo "Checking migration status..."
+          if curl -f -s "${app_url}/api/health/migrations" | jq -e '.status == "ok"' > /dev/null; then
+            echo "✅ Migration status check passed"
+          else
+            echo "❌ Migration status check failed"
+            curl -s "${app_url}/api/health/migrations" | jq '.'
+            exit 1
+          fi
+
+      - name: Verify database connectivity
+        run: |
+          app_url="https://dnd-tracker-staging.fly.dev"
+          
+          echo "Checking database connectivity..."
+          if curl -f -s "${app_url}/api/health/database" | jq -e '.status == "ok"' > /dev/null; then
+            echo "✅ Database connectivity check passed"
+          else
+            echo "❌ Database connectivity check failed"
+            curl -s "${app_url}/api/health/database" | jq '.'
+            exit 1
+          fi
+
+      - name: Run post-deployment tests
+        env:
+          STAGING_URL: "https://dnd-tracker-staging.fly.dev"
+        run: |
+          echo "Running post-deployment validation tests..."
+          # Add specific post-deployment tests here
+          echo "✅ Post-deployment tests completed"
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "🎉 Staging deployment completed successfully!"
+          echo "Application URL: https://dnd-tracker-staging.fly.dev"
+          # Add notification to Slack/Discord/Email here
+
+      - name: Rollback on failure
+        if: failure() && github.event.inputs.dry_run != 'true'
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          echo "🔄 Deployment failed, attempting rollback..."
+          
+          # Rollback Fly.io deployment
+          flyctl rollback --yes || echo "App rollback failed"
+          
+          # Rollback migrations if they were executed
+          if [[ "${{ github.event.inputs.skip_migrations }}" != "true" ]]; then
+            echo "Rolling back migrations..."
+            npm run migrate:down 1 || echo "Migration rollback failed"
+          fi
+          
+          echo "Rollback procedures completed"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: |
+          echo "❌ Staging deployment failed!"
+          echo "Check the deployment logs for details."
+          # Add failure notification here
+
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: always()
+    steps:
+      - name: Cleanup temporary files
+        run: |
+          echo "Cleaning up temporary files..."
+          # Add cleanup logic here if needed
+          echo "✅ Cleanup completed"

@@ -23,7 +23,11 @@
     "migrate:down": "tsx src/lib/scripts/migrate.ts down",
     "migrate:create": "tsx src/lib/scripts/migrate.ts create",
     "migrate:validate": "tsx src/lib/scripts/migrate.ts validate",
-    "migrate:help": "tsx src/lib/scripts/migrate.ts help"
+    "migrate:help": "tsx src/lib/scripts/migrate.ts help",
+    "deploy:migrate:production": "bash scripts/migrate-production.sh",
+    "deploy:full": "bash scripts/deploy-with-migrations.sh",
+    "deploy:staging": "bash scripts/deploy-with-migrations.sh staging",
+    "deploy:production": "bash scripts/deploy-with-migrations.sh production"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.10.0",

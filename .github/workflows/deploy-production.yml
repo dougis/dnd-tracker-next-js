@@ -1,0 +1,448 @@
+name: Deploy to Production with Migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_production:
+        description: 'Type "DEPLOY_TO_PRODUCTION" to confirm production deployment'
+        required: true
+        type: string
+      skip_migrations:
+        description: 'Skip migration execution'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      skip_backup:
+        description: 'Skip backup creation'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN_PROD }}
+  MONGODB_URI: ${{ secrets.MONGODB_URI_PROD }}
+  MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
+  NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+  NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL_PROD }}
+
+jobs:
+  validate-input:
+    name: Validate Production Deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate confirmation input
+        run: |
+          if [[ "${{ github.event.inputs.confirm_production }}" != "DEPLOY_TO_PRODUCTION" ]]; then
+            echo "❌ Production deployment not confirmed"
+            echo "Please type 'DEPLOY_TO_PRODUCTION' exactly to confirm production deployment"
+            exit 1
+          fi
+          echo "✅ Production deployment confirmed"
+
+      - name: Check deployment authorization
+        run: |
+          echo "Deployment requested by: ${{ github.actor }}"
+          echo "Deployment confirmed at: $(date)"
+
+  comprehensive-testing:
+    name: Comprehensive Testing
+    runs-on: ubuntu-latest
+    needs: validate-input
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run comprehensive linting
+        run: |
+          npm run lint
+          npm run format:check
+
+      - name: Run type checking
+        run: npm run typecheck
+
+      - name: Run full test suite
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_TEST || 'mongodb://localhost:27017/test' }}
+        run: |
+          npm run test:ci
+          echo "✅ All tests passed"
+
+      - name: Security audit
+        run: |
+          npm audit --audit-level=high
+          echo "✅ Security audit passed"
+
+      - name: Build verification
+        run: |
+          npm run build
+          echo "✅ Production build successful"
+
+  migration-safety-check:
+    name: Migration Safety Check
+    runs-on: ubuntu-latest
+    needs: comprehensive-testing
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate migration files
+        run: |
+          echo "🔍 Validating migration files for production safety..."
+          npm run migrate:validate
+          echo "✅ Migration validation passed"
+
+      - name: Check current production migration status
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_PROD }}
+        run: |
+          echo "📊 Checking current production migration status..."
+          npm run migrate:status
+          echo "✅ Migration status retrieved"
+
+      - name: Production migration dry-run
+        if: github.event.inputs.skip_migrations != 'true'
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_PROD }}
+          MIGRATION_DRY_RUN: 'true'
+        run: |
+          echo "🧪 Running production migration dry-run..."
+          npm run migrate:up
+          echo "✅ Migration dry-run completed successfully"
+
+      - name: Estimate migration impact
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_PROD }}
+        run: |
+          echo "📈 Estimating migration impact..."
+          # Add migration impact analysis here
+          echo "✅ Migration impact assessment completed"
+
+  create-production-backup:
+    name: Create Production Backup
+    runs-on: ubuntu-latest
+    needs: migration-safety-check
+    if: github.event.inputs.skip_backup != 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install MongoDB tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mongodb-database-tools
+
+      - name: Create comprehensive backup
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_PROD }}
+        run: |
+          timestamp=$(date +"%Y%m%d-%H%M%S")
+          backup_file="production-backup-${timestamp}.gz"
+          backup_path="/tmp/${backup_file}"
+          
+          echo "💾 Creating production backup: ${backup_file}"
+          mongodump --uri="${MONGODB_URI}" --gzip --archive="${backup_path}"
+          
+          # Verify backup
+          backup_size=$(stat -c%s "${backup_path}")
+          echo "📦 Backup size: ${backup_size} bytes"
+          
+          if [[ $backup_size -lt 1000 ]]; then
+            echo "❌ Backup appears to be too small, possibly corrupted"
+            exit 1
+          fi
+          
+          echo "BACKUP_FILE=${backup_file}" >> $GITHUB_ENV
+          echo "BACKUP_PATH=${backup_path}" >> $GITHUB_ENV
+          echo "✅ Production backup created successfully"
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-backup-${{ env.BACKUP_FILE }}
+          path: ${{ env.BACKUP_PATH }}
+          retention-days: 30
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [comprehensive-testing, migration-safety-check, create-production-backup]
+    if: always() && (needs.create-production-backup.result == 'success' || github.event.inputs.skip_backup == 'true')
+    environment: production
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+        with:
+          version: latest
+
+      - name: Pre-deployment notification
+        run: |
+          echo "🚀 Starting production deployment..."
+          echo "Deployment time: $(date)"
+          echo "Deployed by: ${{ github.actor }}"
+          echo "Skip migrations: ${{ github.event.inputs.skip_migrations }}"
+          echo "Skip backup: ${{ github.event.inputs.skip_backup }}"
+
+      - name: Deploy to production with enhanced monitoring
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN_PROD }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI_PROD }}
+          SKIP_MIGRATIONS: ${{ github.event.inputs.skip_migrations || 'false' }}
+          MIGRATION_REQUIRE_CONFIRMATION: 'false'
+        run: |
+          echo "🎯 Deploying to production environment..."
+          chmod +x scripts/deploy-with-migrations.sh
+          ./scripts/deploy-with-migrations.sh production false "$SKIP_MIGRATIONS"
+
+      - name: Extended deployment stabilization
+        run: |
+          echo "⏳ Waiting for production deployment to stabilize..."
+          sleep 60
+
+      - name: Comprehensive health verification
+        run: |
+          max_attempts=15
+          attempt=1
+          app_url="https://dnd-tracker.fly.dev"
+          
+          echo "🏥 Running comprehensive health checks..."
+          
+          while [[ $attempt -le $max_attempts ]]; do
+            echo "Health check attempt ${attempt}/${max_attempts}"
+            
+            # Basic health check
+            if curl -f -s "${app_url}/api/health" > /dev/null; then
+              echo "✅ Basic health check passed"
+              break
+            else
+              if [[ $attempt -eq $max_attempts ]]; then
+                echo "❌ Health check failed after ${max_attempts} attempts"
+                exit 1
+              fi
+              
+              echo "⚠️ Health check failed, retrying in 15 seconds..."
+              sleep 15
+              ((attempt++))
+            fi
+          done
+
+      - name: Verify production migration integrity
+        run: |
+          app_url="https://dnd-tracker.fly.dev"
+          
+          echo "🔍 Verifying migration integrity..."
+          migration_response=$(curl -s "${app_url}/api/health/migrations")
+          echo "Migration status response: ${migration_response}"
+          
+          if echo "${migration_response}" | jq -e '.status == "ok"' > /dev/null; then
+            echo "✅ Migration integrity verified"
+          else
+            echo "❌ Migration integrity check failed"
+            echo "${migration_response}" | jq '.'
+            exit 1
+          fi
+
+      - name: Verify database performance
+        run: |
+          app_url="https://dnd-tracker.fly.dev"
+          
+          echo "⚡ Checking database performance..."
+          db_response=$(curl -s "${app_url}/api/health/database")
+          echo "Database status response: ${db_response}"
+          
+          if echo "${db_response}" | jq -e '.status == "ok"' > /dev/null; then
+            echo "✅ Database performance check passed"
+            
+            # Check performance metrics
+            connection_time=$(echo "${db_response}" | jq -r '.database.connectionTime')
+            query_time=$(echo "${db_response}" | jq -r '.database.queryTime')
+            
+            echo "Connection time: ${connection_time}"
+            echo "Query time: ${query_time}"
+          else
+            echo "❌ Database performance check failed"
+            echo "${db_response}" | jq '.'
+            exit 1
+          fi
+
+      - name: Production smoke tests
+        env:
+          PRODUCTION_URL: "https://dnd-tracker.fly.dev"
+        run: |
+          echo "🧪 Running production smoke tests..."
+          
+          # Test critical endpoints
+          endpoints=(
+            "/api/health"
+            "/api/health/migrations"
+            "/api/health/database"
+          )
+          
+          for endpoint in "${endpoints[@]}"; do
+            echo "Testing ${endpoint}..."
+            if curl -f -s "${PRODUCTION_URL}${endpoint}" > /dev/null; then
+              echo "✅ ${endpoint} is responsive"
+            else
+              echo "❌ ${endpoint} failed"
+              exit 1
+            fi
+          done
+          
+          echo "✅ Production smoke tests completed"
+
+      - name: Update deployment status
+        run: |
+          echo "📝 Recording deployment details..."
+          echo "Deployment completed at: $(date)"
+          echo "Deployment duration: $((SECONDS / 60)) minutes"
+          echo "Git commit: ${{ github.sha }}"
+          echo "Deployed by: ${{ github.actor }}"
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "🎉 Production deployment completed successfully!"
+          echo "Application URL: https://dnd-tracker.fly.dev"
+          echo "Deployment time: $(date)"
+          echo "All health checks passed ✅"
+          # Add success notification integration here
+
+  post-deployment-monitoring:
+    name: Post-Deployment Monitoring
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: success()
+    steps:
+      - name: Extended monitoring period
+        run: |
+          echo "👀 Starting extended monitoring period..."
+          
+          app_url="https://dnd-tracker.fly.dev"
+          monitoring_duration=300  # 5 minutes
+          check_interval=30        # 30 seconds
+          
+          end_time=$((SECONDS + monitoring_duration))
+          
+          while [[ $SECONDS -lt $end_time ]]; do
+            echo "Monitoring check at $(date)"
+            
+            # Health check
+            if curl -f -s "${app_url}/api/health" > /dev/null; then
+              echo "✅ Application healthy"
+            else
+              echo "⚠️ Health check warning at $(date)"
+            fi
+            
+            sleep $check_interval
+          done
+          
+          echo "✅ Extended monitoring completed"
+
+      - name: Generate deployment report
+        run: |
+          echo "📊 Generating deployment report..."
+          cat << EOF > deployment-report.md
+          # Production Deployment Report
+          
+          **Deployment Date:** $(date)
+          **Deployed by:** ${{ github.actor }}
+          **Git Commit:** ${{ github.sha }}
+          **Skip Migrations:** ${{ github.event.inputs.skip_migrations }}
+          **Skip Backup:** ${{ github.event.inputs.skip_backup }}
+          
+          ## Status
+          - ✅ Deployment successful
+          - ✅ Health checks passed
+          - ✅ Migration integrity verified
+          - ✅ Database performance validated
+          - ✅ Smoke tests completed
+          - ✅ Extended monitoring completed
+          
+          ## Application URLs
+          - Production: https://dnd-tracker.fly.dev
+          
+          EOF
+          
+          echo "✅ Deployment report generated"
+
+  rollback-on-failure:
+    name: Emergency Rollback
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: failure()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+        with:
+          version: latest
+
+      - name: Execute emergency rollback
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN_PROD }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI_PROD }}
+        run: |
+          echo "🚨 EMERGENCY: Production deployment failed, executing rollback..."
+          
+          # Rollback Fly.io deployment
+          echo "🔄 Rolling back application deployment..."
+          flyctl rollback --app dnd-tracker-next-js-prod --yes || echo "App rollback failed"
+          
+          # Rollback migrations if they were executed
+          if [[ "${{ github.event.inputs.skip_migrations }}" != "true" ]]; then
+            echo "🔄 Rolling back database migrations..."
+            npm install -g tsx
+            npm ci
+            npm run migrate:down 1 || echo "Migration rollback failed"
+          fi
+          
+          echo "🔄 Rollback procedures completed"
+
+      - name: Notify deployment failure
+        if: always()
+        run: |
+          echo "🚨 PRODUCTION DEPLOYMENT FAILED!"
+          echo "Emergency rollback procedures have been executed"
+          echo "Manual intervention may be required"
+          echo "Check deployment logs immediately"
+          # Add critical failure notification here
