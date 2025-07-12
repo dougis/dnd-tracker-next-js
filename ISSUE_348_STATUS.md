@@ -3,6 +3,7 @@
 This PR implements full account deletion functionality as specified in issue #348.
 
 ## Changes Made
+
 - ✅ Account deletion functionality implemented
 - ✅ Confirmation dialog with data loss warnings  
 - ✅ API integration with proper error handling
@@ -11,6 +12,7 @@ This PR implements full account deletion functionality as specified in issue #34
 - ✅ Tests passing locally
 
 ## Code Quality Improvements
+
 - Eliminated duplication in API route handlers
 - Consolidated test utilities and patterns
 - Standardized error handling across components
