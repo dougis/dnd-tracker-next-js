@@ -11,7 +11,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/characters') ||
     pathname.startsWith('/encounters') ||
-    pathname.startsWith('/combat');
+    pathname.startsWith('/combat') ||
+    pathname.startsWith('/settings');
 
   // Check if this is a protected API route
   const isProtectedAPI = isProtectedApiRoute(pathname);
@@ -53,6 +54,7 @@ export const config = {
     '/characters/:path*',
     '/encounters/:path*',
     '/combat/:path*',
+    '/settings/:path*',
     '/api/users/:path*',
     '/api/characters/:path*',
     '/api/encounters/:path*',
