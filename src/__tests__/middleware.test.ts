@@ -247,7 +247,7 @@ describe('Middleware Route Protection', () => {
       } as NextRequest;
 
       (getToken as jest.Mock).mockResolvedValue(null);
-      
+
       const mockJsonResponse = { type: 'json', status: 401 };
       mockJson.mockReturnValue(mockJsonResponse);
 
