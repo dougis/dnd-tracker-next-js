@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CopyIcon } from 'lucide-react';
 import { generateShareLink, copyToClipboard } from '@/lib/utils/encounter-utils';
+import { useToast } from '@/hooks/use-toast';
 import type { Types } from 'mongoose';
 
 interface ShareLinkSectionProps {
@@ -16,12 +17,22 @@ interface ShareLinkSectionProps {
  */
 export function ShareLinkSection({ encounterId, showShareLink, onGenerateLink }: ShareLinkSectionProps) {
   const shareLink = generateShareLink(encounterId);
+  const { toast } = useToast();
 
   const handleCopyLink = async () => {
     const success = await copyToClipboard(shareLink);
     if (success) {
-      // TODO: Show toast notification
-      console.log('Link copied to clipboard');
+      toast({
+        title: 'Link copied!',
+        description: 'Share link has been copied to clipboard.',
+        variant: 'default'
+      });
+    } else {
+      toast({
+        title: 'Copy failed',
+        description: 'Failed to copy link to clipboard. Please try again.',
+        variant: 'destructive'
+      });
     }
   };
 
