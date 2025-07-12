@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import type { ExportOptions } from '@/lib/services/EncounterServiceImportExport';
+import { validateAuth } from '@/lib/api/route-helpers';
 import { z } from 'zod';
 
 const exportQuerySchema = z.object({
@@ -16,6 +17,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Validate authentication first
+    const { error: authError, session } = await validateAuth();
+    if (authError) return authError;
+
     const { searchParams } = new URL(request.url);
     const query = Object.fromEntries(searchParams.entries());
 
@@ -24,8 +29,7 @@ export async function GET(
     const resolvedParams = await params;
     const encounterId = resolvedParams.id;
 
-    // TODO: Get user ID from authentication
-    const userId = 'temp-user-id'; // Replace with actual user ID from auth
+    const userId = session!.user.id;
 
     const options: ExportOptions = {
       includeCharacterSheets: validatedQuery.includeCharacterSheets,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import { EncounterService } from '@/lib/services/EncounterService';
+import { validateAuth } from '@/lib/api/route-helpers';
 import { z } from 'zod';
 
 const batchOperationSchema = z.object({
@@ -26,11 +27,14 @@ const batchOperationSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate authentication first
+    const { error: authError, session } = await validateAuth();
+    if (authError) return authError;
+
     const body = await request.json();
     const validatedBody = batchOperationSchema.parse(body);
 
-    // TODO: Get user ID from authentication
-    const userId = 'temp-user-id'; // Replace with actual user ID from auth
+    const userId = session!.user.id;
 
     const { operation, encounterIds, options } = validatedBody;
     const { results, errors } = await processBatchOperation(operation, encounterIds, userId, options);
