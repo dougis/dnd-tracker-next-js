@@ -1,6 +1,6 @@
 /**
  * Shared mock setup for BatchActions tests
- * Eliminates duplication of common mock configurations
+ * Eliminates duplication of common mock configurations across test files
  */
 
 /**
