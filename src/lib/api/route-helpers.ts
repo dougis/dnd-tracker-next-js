@@ -65,26 +65,12 @@ export async function withAuthAndAccess(
   }
 }
 
-export function createSuccessResponse<T>(
-  data: T | Record<string, any>,
-  message?: string,
-  pagination?: any,
-  status: number = 200
-) {
-  // Handle both old format (spread data) and new format (data object)
-  const responseData = data && typeof data === 'object' && 'data' in data
-    ? data
-    : { data };
-
-  return NextResponse.json(
-    {
-      success: true,
-      ...(message && { message }),
-      ...(pagination && { pagination }),
-      ...responseData,
-    },
-    { status }
-  );
+export function createSuccessResponse(data: any, message?: string) {
+  return NextResponse.json({
+    success: true,
+    ...(message && { message }),
+    ...data,
+  });
 }
 
 function createErrorDetails(result: any, defaultMessage: string) {
@@ -174,28 +160,16 @@ export function handleZodValidationError(error: any) {
 }
 
 /**
- * Generic ID validation function for route parameters
- * Consolidates ID validation across all API routes
+ * Validates and extracts encounter ID from route parameters
  */
-export async function validateRouteId(
-  params: Promise<{ id: string }>,
-  entityType: string = 'resource'
-): Promise<string> {
+export async function validateEncounterId(params: Promise<{ id: string }>) {
   const { id } = await params;
 
-  if (!id || typeof id !== 'string' || id.trim() === '') {
-    throw new Error(`Invalid ${entityType} ID`);
+  if (!id || typeof id !== 'string') {
+    throw new Error('Invalid encounter ID');
   }
 
   return id;
-}
-
-/**
- * Legacy function for backward compatibility
- * @deprecated Use validateRouteId instead
- */
-export async function validateEncounterId(params: Promise<{ id: string }>) {
-  return validateRouteId(params, 'encounter');
 }
 
 /**
