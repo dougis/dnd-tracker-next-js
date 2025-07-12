@@ -16,12 +16,14 @@ jest.mock('next-auth/jwt', () => ({
 // Mock NextResponse
 const mockRedirect = jest.fn();
 const mockNext = jest.fn();
+const mockJson = jest.fn();
 
 jest.mock('next/server', () => ({
   NextRequest: jest.fn(),
   NextResponse: {
     redirect: mockRedirect,
     next: mockNext,
+    json: mockJson,
   },
 }));
 
@@ -40,6 +42,7 @@ beforeEach(() => {
   // Reset mocks
   mockRedirect.mockReset();
   mockNext.mockReset();
+  mockJson.mockReset();
   (getToken as jest.Mock).mockReset();
 });
 
@@ -233,6 +236,32 @@ describe('Middleware Route Protection', () => {
           searchParams: expect.any(Object),
         })
       );
+    });
+
+    it('should return 401 JSON response for unauthenticated API requests', async () => {
+      const { middleware } = await import('../middleware');
+
+      const request = {
+        nextUrl: { pathname: '/api/users/123' },
+        url: 'http://localhost:3000/api/users/123',
+      } as NextRequest;
+
+      (getToken as jest.Mock).mockResolvedValue(null);
+      
+      const mockJsonResponse = { type: 'json', status: 401 };
+      mockJson.mockReturnValue(mockJsonResponse);
+
+      const result = await middleware(request);
+
+      expect(getToken).toHaveBeenCalledWith({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET,
+      });
+      expect(mockJson).toHaveBeenCalledWith(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+      expect(result).toBe(mockJsonResponse);
     });
   });
 
