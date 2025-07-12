@@ -3,6 +3,8 @@
  * Eliminates code duplication across batch operation test scenarios
  */
 
+import { COMMON_TEST_ENCOUNTERS } from './batchActionsSharedMocks';
+
 export interface MockBatchOptions {
   operation?: string;
   statusCode?: number;
@@ -73,7 +75,7 @@ export const mockNetworkErrorBatchApi = (errorMessage = 'Network error') => {
 /**
  * Expect correct batch API call
  */
-export const expectBatchApiCall = (operation: string, encounterIds = ['enc1', 'enc2', 'enc3']) => {
+export const expectBatchApiCall = (operation: string, encounterIds = COMMON_TEST_ENCOUNTERS) => {
   expect(global.fetch).toHaveBeenCalledWith('/api/encounters/batch', {
     method: 'POST',
     headers: {

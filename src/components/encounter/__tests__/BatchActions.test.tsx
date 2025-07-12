@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { BatchActions } from '../BatchActions';
 import { createMockToast, commonBeforeEach } from './test-utils/mockSetup';
 import { clickButton, expectFunctionToBeCalled } from './test-utils/interactionHelpers';
+import { COMMON_TEST_ENCOUNTERS, COMMON_TEST_COUNT } from './test-utils/batchActionsSharedMocks';
 
 // Mock the toast hook
 const mockToast = createMockToast();
@@ -42,7 +43,7 @@ global.fetch = mockFetch;
 
 describe('BatchActions', () => {
   const defaultProps = {
-    selectedCount: 3,
+    selectedCount: COMMON_TEST_COUNT,
     onClearSelection: jest.fn(),
     onRefetch: jest.fn(),
   };
@@ -63,13 +64,13 @@ describe('BatchActions', () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        results: ['id1', 'id2', 'id3'],
+        results: COMMON_TEST_ENCOUNTERS,
         errors: [],
         summary: { successful: 3, failed: 0 }
       }),
     });
 
-    renderBatchActions({ selectedEncounters: ['id1', 'id2', 'id3'] });
+    renderBatchActions({ selectedEncounters: COMMON_TEST_ENCOUNTERS });
     await clickButton(buttonName);
 
     // Determine action type from title for description
@@ -100,7 +101,7 @@ describe('BatchActions', () => {
       }),
     });
 
-    renderBatchActions({ selectedEncounters: ['id1', 'id2', 'id3'] });
+    renderBatchActions({ selectedEncounters: COMMON_TEST_ENCOUNTERS });
 
     if (isDeleteAction) {
       await clickButton(/delete/i);
@@ -131,14 +132,14 @@ describe('BatchActions', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          results: ['id1', 'id2', 'id3'],
+          results: COMMON_TEST_ENCOUNTERS,
           errors: [],
           summary: { successful: 3, failed: 0 }
         }),
       });
     }
 
-    renderBatchActions({ selectedEncounters: ['id1', 'id2', 'id3'] });
+    renderBatchActions({ selectedEncounters: COMMON_TEST_ENCOUNTERS });
 
     // Open dialog
     await clickButton(/delete/i);
@@ -230,13 +231,13 @@ describe('BatchActions', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          results: ['id1', 'id2', 'id3'],
+          results: COMMON_TEST_ENCOUNTERS,
           errors: [],
           summary: { successful: 3, failed: 0 }
         }),
       });
 
-      renderBatchActions({ selectedEncounters: ['id1', 'id2', 'id3'] });
+      renderBatchActions({ selectedEncounters: COMMON_TEST_ENCOUNTERS });
       await clickButton(/delete/i);
 
       const deleteButton = screen.getByRole('button', { name: 'Delete' });

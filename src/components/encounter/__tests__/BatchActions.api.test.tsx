@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { BatchActions } from '../BatchActions';
 import { createMockToast, commonBeforeEach } from './test-utils/mockSetup';
 import { clickButton } from './test-utils/interactionHelpers';
+import { COMMON_TEST_ENCOUNTERS, COMMON_TEST_COUNT } from './test-utils/batchActionsSharedMocks';
 import {
   mockSuccessfulBatchApi,
   mockPartialFailureBatchApi,
@@ -35,8 +36,8 @@ jest.mock('../BatchActions/utils', () => ({
 
 describe('BatchActions API Integration', () => {
   const defaultProps = {
-    selectedCount: 3,
-    selectedEncounters: ['enc1', 'enc2', 'enc3'],
+    selectedCount: COMMON_TEST_COUNT,
+    selectedEncounters: COMMON_TEST_ENCOUNTERS,
     onClearSelection: jest.fn(),
     onRefetch: jest.fn(),
   };
