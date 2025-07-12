@@ -4,7 +4,7 @@
  */
 
 import { ServiceResult } from '../../UserServiceErrors';
-import { TestPasswordConstants } from '../../test-utils/password-constants';
+import { TestPasswordConstants } from '../../../test-utils/password-constants';
 
 /**
  * Generic factory function type

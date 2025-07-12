@@ -5,7 +5,7 @@ import {
   validatePasswordStrength,
   auditPasswordSecurity,
 } from '../password-security';
-import { TestPasswordConstants } from '../test-utils/password-constants';
+import { TestPasswordConstants } from '../../test-utils/password-constants';
 
 describe('Password Security Utils', () => {
   describe('hashPassword', () => {
