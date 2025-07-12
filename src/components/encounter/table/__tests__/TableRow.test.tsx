@@ -4,30 +4,28 @@ import userEvent from '@testing-library/user-event';
 import { TableRow } from '../TableRow';
 import { createMockEncounter } from '../../__tests__/test-utils/mockFactories';
 
-// Mock table cell components
-jest.mock('../TableCells', () => ({
-  SelectionCell: ({ encounter, isSelected, onSelect }: any) => (
-    <td data-testid="selection-cell">
-      <input
-        type="checkbox"
-        checked={isSelected}
-        onChange={() => onSelect(encounter.id)}
-      />
-    </td>
-  ),
-  NameCell: ({ encounter }: any) => <td data-testid="name-cell">{encounter.name}</td>,
-  StatusCell: ({ encounter }: any) => <td data-testid="status-cell">{encounter.status}</td>,
-  DifficultyCell: ({ encounter }: any) => <td data-testid="difficulty-cell">{encounter.difficulty}</td>,
-  ParticipantsCell: ({ encounter }: any) => <td data-testid="participants-cell">{encounter.participantCount}</td>,
-  TargetLevelCell: ({ encounter }: any) => <td data-testid="target-level-cell">{encounter.targetLevel}</td>,
-  UpdatedCell: () => <td data-testid="updated-cell">Updated</td>,
-  ActionsCell: ({ encounter, onRefetch }: any) => (
+// Mock next/navigation
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+  }),
+}));
+
+// Use centralized mock table cells with additional functionality for testing
+jest.mock('../TableCells', () => {
+  const { createMockTableCells } = require('../../__tests__/test-utils/navigationTestHelpers');
+  const tableCellMocks = createMockTableCells();
+  // Override ActionsCell to include refetch functionality for this test
+  const RefetchActionsCell = ({ encounter, onRefetch }: any) => (
     <td data-testid="actions-cell">
       Actions for {encounter.name}
       <button onClick={onRefetch}>Refetch</button>
     </td>
-  ),
-}));
+  );
+  RefetchActionsCell.displayName = 'RefetchActionsCell';
+  tableCellMocks.ActionsCell = RefetchActionsCell;
+  return tableCellMocks;
+});
 
 describe('TableRow', () => {
   const mockEncounter = createMockEncounter();
@@ -38,18 +36,22 @@ describe('TableRow', () => {
     onRefetch: jest.fn(),
   };
 
+  const renderTableRow = (props = {}) => {
+    return render(
+      <table>
+        <tbody>
+          <TableRow {...defaultProps} {...props} />
+        </tbody>
+      </table>
+    );
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('should render table row with all cells', () => {
-    render(
-      <table>
-        <tbody>
-          <TableRow {...defaultProps} />
-        </tbody>
-      </table>
-    );
+    renderTableRow();
 
     expect(screen.getByTestId('selection-cell')).toBeInTheDocument();
     expect(screen.getByTestId('name-cell')).toBeInTheDocument();
@@ -62,13 +64,7 @@ describe('TableRow', () => {
   });
 
   it('should render selection checkbox', () => {
-    render(
-      <table>
-        <tbody>
-          <TableRow {...defaultProps} />
-        </tbody>
-      </table>
-    );
+    renderTableRow();
 
     const checkbox = screen.getByRole('checkbox');
     expect(checkbox).toBeInTheDocument();
@@ -76,13 +72,7 @@ describe('TableRow', () => {
   });
 
   it('should show checked state when selected', () => {
-    render(
-      <table>
-        <tbody>
-          <TableRow {...defaultProps} isSelected={true} />
-        </tbody>
-      </table>
-    );
+    renderTableRow({ isSelected: true });
 
     const checkbox = screen.getByRole('checkbox');
     expect(checkbox).toBeChecked();
@@ -90,13 +80,7 @@ describe('TableRow', () => {
 
   it('should call onSelect when checkbox is clicked', async () => {
     const user = userEvent.setup();
-    render(
-      <table>
-        <tbody>
-          <TableRow {...defaultProps} />
-        </tbody>
-      </table>
-    );
+    renderTableRow();
 
     const checkbox = screen.getByRole('checkbox');
     await user.click(checkbox);
@@ -105,13 +89,7 @@ describe('TableRow', () => {
   });
 
   it('should pass encounter data to cell components', () => {
-    render(
-      <table>
-        <tbody>
-          <TableRow {...defaultProps} />
-        </tbody>
-      </table>
-    );
+    renderTableRow();
 
     expect(screen.getByText('Test Encounter')).toBeInTheDocument();
     expect(screen.getByText('medium')).toBeInTheDocument();
@@ -122,13 +100,7 @@ describe('TableRow', () => {
 
   it('should pass onRefetch to ActionsCell', async () => {
     const user = userEvent.setup();
-    render(
-      <table>
-        <tbody>
-          <TableRow {...defaultProps} />
-        </tbody>
-      </table>
-    );
+    renderTableRow();
 
     const refetchButton = screen.getByText('Refetch');
     await user.click(refetchButton);
@@ -145,13 +117,7 @@ describe('TableRow', () => {
       participantCount: 5,
     });
 
-    render(
-      <table>
-        <tbody>
-          <TableRow {...defaultProps} encounter={customEncounter} />
-        </tbody>
-      </table>
-    );
+    renderTableRow({ encounter: customEncounter });
 
     expect(screen.getByText('Custom Encounter')).toBeInTheDocument();
     expect(screen.getByText('hard')).toBeInTheDocument();
@@ -161,26 +127,14 @@ describe('TableRow', () => {
   });
 
   it('should apply correct styling to row', () => {
-    render(
-      <table>
-        <tbody>
-          <TableRow {...defaultProps} />
-        </tbody>
-      </table>
-    );
+    renderTableRow();
 
     const row = screen.getByRole('row');
     expect(row).toHaveClass('border-b');
   });
 
   it('should apply hover styling classes', () => {
-    render(
-      <table>
-        <tbody>
-          <TableRow {...defaultProps} isSelected={true} />
-        </tbody>
-      </table>
-    );
+    renderTableRow({ isSelected: true });
 
     const row = screen.getByRole('row');
     expect(row).toHaveClass('hover:bg-muted/50', 'cursor-pointer', 'group');
@@ -188,13 +142,7 @@ describe('TableRow', () => {
 
   it('should handle rapid checkbox clicks', async () => {
     const user = userEvent.setup();
-    render(
-      <table>
-        <tbody>
-          <TableRow {...defaultProps} />
-        </tbody>
-      </table>
-    );
+    renderTableRow();
 
     const checkbox = screen.getByRole('checkbox');
 
@@ -208,13 +156,7 @@ describe('TableRow', () => {
   });
 
   it('should maintain state during re-renders', () => {
-    const { rerender } = render(
-      <table>
-        <tbody>
-          <TableRow {...defaultProps} isSelected={false} />
-        </tbody>
-      </table>
-    );
+    const { rerender } = renderTableRow({ isSelected: false });
 
     let checkbox = screen.getByRole('checkbox');
     expect(checkbox).not.toBeChecked();

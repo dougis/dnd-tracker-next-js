@@ -2,26 +2,46 @@ import { EncounterService } from '@/lib/services/EncounterService';
 import { createErrorHandler, createSuccessHandler, extractErrorMessage, type ToastFunction } from './errorUtils';
 import type { EncounterListItem } from '../types';
 
-export const createNavigationHandlers = (encounter: EncounterListItem) => {
+export const createNavigationHandlers = (encounter: EncounterListItem, router?: any) => {
   return {
     handleView: () => {
-      // TODO: Navigate to encounter detail view
-      console.log('View encounter:', encounter.id);
+      if (router) {
+        router.push(`/encounters/${encounter.id}`);
+      }
     },
 
     handleEdit: () => {
-      // TODO: Navigate to encounter edit page
-      console.log('Edit encounter:', encounter.id);
+      if (router) {
+        router.push(`/encounters/${encounter.id}/edit`);
+      }
     },
 
     handleStartCombat: () => {
-      // TODO: Navigate to combat interface with this encounter
-      console.log('Start combat for encounter:', encounter.id);
+      if (router) {
+        router.push(`/combat?encounter=${encounter.id}`);
+      }
     },
 
-    handleShare: () => {
-      // TODO: Implement sharing functionality
-      console.log('Share encounter:', encounter.id);
+    handleShare: async () => {
+      try {
+        const shareData = {
+          title: encounter.name,
+          text: `Check out this D&D encounter: ${encounter.name}`,
+          url: `${window.location.origin}/encounters/${encounter.id}`,
+        };
+
+        // Try Web Share API first
+        if (navigator.share) {
+          await navigator.share(shareData);
+        } else if (navigator.clipboard) {
+          // Fallback to clipboard
+          await navigator.clipboard.writeText(shareData.url);
+        } else {
+          throw new Error('Sharing not supported');
+        }
+      } catch (error) {
+        console.error('Error sharing encounter:', error);
+      }
     },
   };
 };

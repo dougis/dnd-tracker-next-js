@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { CardHeader } from './card/CardHeader';
 import { CardContent } from './card/CardContent';
@@ -12,22 +13,19 @@ const shouldPreventCardClick = (target: EventTarget | null): boolean => {
   );
 };
 
-const handleEncounterView = (encounterId: string): void => {
-  // TODO: Navigate to encounter detail view
-  console.log('View encounter:', encounterId);
-};
-
 export function EncounterCard({
   encounter,
   isSelected = false,
   onSelect,
   onRefetch,
 }: EncounterCardProps) {
+  const router = useRouter();
+
   const handleCardClick = (e: React.MouseEvent) => {
     if (shouldPreventCardClick(e.target)) {
       return;
     }
-    handleEncounterView(encounter.id);
+    router.push(`/encounters/${encounter.id}`);
   };
 
   return (

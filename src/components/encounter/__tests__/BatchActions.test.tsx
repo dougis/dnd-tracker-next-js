@@ -50,91 +50,19 @@ describe('BatchActions', () => {
     return render(<BatchActions {...defaultProps} {...props} />);
   };
 
-  // Helper function to test action button behavior
-  const testActionButton = async (
-    buttonName: string | RegExp,
-    expectedConsoleMessage: string,
-    expectedClearCalls = 1,
-    expectedRefetchCalls = 1
-  ) => {
-    renderBatchActions();
-    await clickButton(buttonName);
-
-    await waitFor(() => {
-      expect(consoleSpy).toHaveBeenCalledWith(expectedConsoleMessage);
-      expectFunctionToBeCalled(defaultProps.onClearSelection, expectedClearCalls);
-      expectFunctionToBeCalled(defaultProps.onRefetch, expectedRefetchCalls);
-    });
-  };
-
-  // Helper function to test error handling for actions
-  const testActionError = async (
-    buttonName: string | RegExp,
-    expectedErrorMessage: string,
-    isDeleteAction = false
-  ) => {
-    renderBatchActions();
-
-    if (isDeleteAction) {
-      await clickButton(/delete/i);
-      await clickButton('Delete');
-    } else {
-      await clickButton(buttonName);
-    }
-
-    await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith({
-        title: 'Error',
-        description: expectedErrorMessage,
-        variant: 'destructive',
-      });
-    });
-  };
-
-  // Helper function to test encounter count display
-  const testEncounterCountDisplay = (count: number, expectedText: string) => {
-    renderBatchActions({ selectedCount: count });
-    expect(screen.getByText(expectedText)).toBeInTheDocument();
-  };
-
-  // Helper function to test delete dialog workflow
-  const testDeleteDialogWorkflow = async (actionType: 'open' | 'cancel' | 'confirm') => {
-    renderBatchActions();
-
-    // Open dialog
-    await clickButton(/delete/i);
-
-    if (actionType === 'open') {
-      expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-      expect(screen.getByText('Delete Encounters')).toBeInTheDocument();
-      expect(screen.getByText(/Are you sure you want to delete 3 encounters?/)).toBeInTheDocument();
-    } else if (actionType === 'cancel') {
-      await clickButton(/cancel/i);
-      await waitFor(() => {
-        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
-      });
-    } else if (actionType === 'confirm') {
-      await clickButton('Delete');
-
-      await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('Bulk delete encounters');
-        expectFunctionToBeCalled(defaultProps.onClearSelection);
-        expectFunctionToBeCalled(defaultProps.onRefetch);
-      });
-    }
-  };
-
   beforeEach(commonBeforeEach);
 
   afterAll(() => commonAfterAll(consoleSpy));
 
   describe('Rendering', () => {
     it('should render with selected count', () => {
-      testEncounterCountDisplay(3, '3 encounters selected');
+      renderBatchActions({ selectedCount: 3 });
+      expect(screen.getByText('3 encounters selected')).toBeInTheDocument();
     });
 
     it('should render singular text for one encounter', () => {
-      testEncounterCountDisplay(1, '1 encounter selected');
+      renderBatchActions({ selectedCount: 1 });
+      expect(screen.getByText('1 encounter selected')).toBeInTheDocument();
     });
 
     it('should render all action buttons', () => {
@@ -155,25 +83,58 @@ describe('BatchActions', () => {
     });
 
     it('should handle duplicate action', async () => {
-      await testActionButton(/duplicate/i, 'Bulk duplicate encounters');
+      renderBatchActions();
+      await clickButton(/duplicate/i);
+
+      await waitFor(() => {
+        expect(consoleSpy).toHaveBeenCalledWith('Bulk duplicate encounters');
+        expectFunctionToBeCalled(defaultProps.onClearSelection);
+        expectFunctionToBeCalled(defaultProps.onRefetch);
+      });
     });
 
     it('should handle archive action', async () => {
-      await testActionButton(/archive/i, 'Bulk archive encounters');
+      renderBatchActions();
+      await clickButton(/archive/i);
+
+      await waitFor(() => {
+        expect(consoleSpy).toHaveBeenCalledWith('Bulk archive encounters');
+        expectFunctionToBeCalled(defaultProps.onClearSelection);
+        expectFunctionToBeCalled(defaultProps.onRefetch);
+      });
     });
   });
 
   describe('Delete Dialog', () => {
     it('should open delete dialog when delete button is clicked', async () => {
-      await testDeleteDialogWorkflow('open');
+      renderBatchActions();
+      await clickButton(/delete/i);
+
+      expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+      expect(screen.getByText('Delete Encounters')).toBeInTheDocument();
+      expect(screen.getByText(/Are you sure you want to delete 3 encounters?/)).toBeInTheDocument();
     });
 
     it('should close dialog when cancel is clicked', async () => {
-      await testDeleteDialogWorkflow('cancel');
+      renderBatchActions();
+      await clickButton(/delete/i);
+      await clickButton(/cancel/i);
+
+      await waitFor(() => {
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      });
     });
 
     it('should handle delete confirmation', async () => {
-      await testDeleteDialogWorkflow('confirm');
+      renderBatchActions();
+      await clickButton(/delete/i);
+      await clickButton('Delete');
+
+      await waitFor(() => {
+        expect(consoleSpy).toHaveBeenCalledWith('Bulk delete encounters');
+        expectFunctionToBeCalled(defaultProps.onClearSelection);
+        expectFunctionToBeCalled(defaultProps.onRefetch);
+      });
     });
 
     it('should show delete button initially and handle click', async () => {
@@ -205,25 +166,55 @@ describe('BatchActions', () => {
     });
 
     it('should handle errors in duplicate action', async () => {
-      await testActionError(/duplicate/i, 'Failed to duplicate encounter. Please try again.');
+      renderBatchActions();
+      await clickButton(/duplicate/i);
+
+      await waitFor(() => {
+        expect(mockToast).toHaveBeenCalledWith({
+          title: 'Error',
+          description: 'Failed to duplicate encounter. Please try again.',
+          variant: 'destructive',
+        });
+      });
     });
 
     it('should handle errors in archive action', async () => {
-      await testActionError(/archive/i, 'Failed to archive encounter. Please try again.');
+      renderBatchActions();
+      await clickButton(/archive/i);
+
+      await waitFor(() => {
+        expect(mockToast).toHaveBeenCalledWith({
+          title: 'Error',
+          description: 'Failed to archive encounter. Please try again.',
+          variant: 'destructive',
+        });
+      });
     });
 
     it('should handle errors in delete action', async () => {
-      await testActionError(/delete/i, 'Failed to delete encounter. Please try again.', true);
+      renderBatchActions();
+      await clickButton(/delete/i);
+      await clickButton('Delete');
+
+      await waitFor(() => {
+        expect(mockToast).toHaveBeenCalledWith({
+          title: 'Error',
+          description: 'Failed to delete encounter. Please try again.',
+          variant: 'destructive',
+        });
+      });
     });
   });
 
   describe('Edge Cases', () => {
     it('should handle zero selected count', () => {
-      testEncounterCountDisplay(0, '0 encounters selected');
+      renderBatchActions({ selectedCount: 0 });
+      expect(screen.getByText('0 encounters selected')).toBeInTheDocument();
     });
 
     it('should handle large selected count', () => {
-      testEncounterCountDisplay(100, '100 encounters selected');
+      renderBatchActions({ selectedCount: 100 });
+      expect(screen.getByText('100 encounters selected')).toBeInTheDocument();
     });
   });
 });

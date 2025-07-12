@@ -6,6 +6,13 @@ import { createConsoleSpy, commonBeforeEach, commonAfterAll } from './test-utils
 import { createMockServices, createMockActionHandlers } from './test-utils/testSetup';
 import { clickButton, openDropdown, expectFunctionToBeCalled } from './test-utils/interactionHelpers';
 
+// Mock next/navigation
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+  }),
+}));
+
 // Setup shared mocks
 const { EncounterService, toast } = createMockServices();
 const { navigation: mockNavigationHandlers, service: mockServiceHandlers } = createMockActionHandlers();
