@@ -73,7 +73,7 @@ describe('BatchActions', () => {
     await clickButton(buttonName);
 
     // Determine action type from title for description
-    const actionType = expectedToastTitle.includes('duplicate') ? 'duplicated' : 
+    const actionType = expectedToastTitle.includes('duplicate') ? 'duplicated' :
                      expectedToastTitle.includes('archive') ? 'archived' : 'deleted';
 
     await waitFor(() => {
