@@ -46,3 +46,21 @@ export async function GET(
     return createSuccessResponse({ user: result.data });
   });
 }
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return withAuthAndAccess(params, async (userId) => {
+    const result = await UserService.deleteUser(userId);
+
+    if (!result.success) {
+      if (result.error === 'USER_NOT_FOUND') {
+        return handleServiceError(result, 'User not found', 404);
+      }
+      return handleServiceError(result, 'Account deletion failed', 500);
+    }
+
+    return createSuccessResponse({}, 'Account deleted successfully');
+  });
+}
