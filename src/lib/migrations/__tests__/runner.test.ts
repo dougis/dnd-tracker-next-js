@@ -3,18 +3,6 @@
  * Following TDD principles - all tests should fail initially until implementation is created
  */
 
-import { Db, MongoClient } from 'mongodb';
-import { MigrationRunner } from '../runner';
-import {
-  Migration,
-  MigrationConfig,
-} from '../types';
-import {
-  createFactory,
-  testUtils,
-  assertionHelpers,
-} from '../../services/__tests__/shared/test-factory-utils';
-
 // Mock MongoDB
 jest.mock('mongodb');
 
@@ -33,6 +21,18 @@ jest.mock('path', () => ({
   extname: jest.fn(),
   basename: jest.fn(),
 }));
+
+import { Db, MongoClient } from 'mongodb';
+import { MigrationRunner } from '../runner';
+import {
+  Migration,
+  MigrationConfig,
+} from '../types';
+import {
+  createFactory,
+  testUtils,
+  assertionHelpers,
+} from '../../services/__tests__/shared/test-factory-utils';
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -105,7 +105,10 @@ describe('MigrationRunner', () => {
 
     // Setup path mocks
     mockPath.join = jest.fn((...args) => args.join('/'));
-    mockPath.extname = jest.fn((file) => file.split('.').pop() || '');
+    mockPath.extname = jest.fn((file) => {
+      const parts = file.split('.');
+      return parts.length > 1 ? '.' + parts.pop() : '';
+    });
     mockPath.basename = jest.fn((file) => file.split('/').pop() || '');
   });
 
