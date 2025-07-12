@@ -113,7 +113,7 @@ describe('useEditableContent', () => {
           'Failed to save content:'
         );
       });
-      
+
       expect(result.current.isSaving).toBe(false);
     });
   });

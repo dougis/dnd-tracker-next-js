@@ -91,7 +91,7 @@ export async function testApiErrorWithConsole(
   expectedResult?: boolean
 ) {
   const consoleSpy = createConsoleSpy();
-  
+
   let result: any;
   if (expectedResult !== undefined) {
     result = await operation();
@@ -100,7 +100,7 @@ export async function testApiErrorWithConsole(
     try {
       await operation();
       throw new Error('Expected operation to throw an error');
-    } catch (error) {
+    } catch {
       // Error was thrown as expected
     }
   }
@@ -109,7 +109,7 @@ export async function testApiErrorWithConsole(
     expectedConsoleMessage,
     expect.any(Error)
   );
-  
+
   consoleSpy.mockRestore();
   return result;
 }
@@ -122,7 +122,7 @@ export async function testAsyncWithLoadingState<T>(
 ) {
   // Start operation without awaiting
   const promise = operation();
-  
+
   // Check loading state immediately
   expect(result.current[loadingKey]).toBe(true);
 
