@@ -58,9 +58,10 @@ interface DeleteModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  isDeleting?: boolean;
 }
 
-export function DeleteModal({ isOpen, onClose, onConfirm }: DeleteModalProps) {
+export function DeleteModal({ isOpen, onClose, onConfirm, isDeleting = false }: DeleteModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -75,8 +76,14 @@ export function DeleteModal({ isOpen, onClose, onConfirm }: DeleteModalProps) {
             Are you sure you want to delete your account? All your data will be permanently removed.
           </p>
           <div className="flex gap-4">
-            <Button variant="destructive" onClick={onConfirm}>Confirm Delete</Button>
-            <Button variant="outline" onClick={onClose}>
+            <Button 
+              variant="destructive" 
+              onClick={onConfirm}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Confirm Delete'}
+            </Button>
+            <Button variant="outline" onClick={onClose} disabled={isDeleting}>
               Cancel
             </Button>
           </div>

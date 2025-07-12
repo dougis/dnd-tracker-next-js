@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useSettingsForm } from './hooks/useSettingsForm';
 import { ProfileSection } from './components/ProfileSection';
@@ -30,6 +30,8 @@ export function Settings() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   if (status !== 'authenticated' || !session?.user) {
     return null;
@@ -37,11 +39,56 @@ export function Settings() {
 
   const currentTier = (session.user.subscriptionTier as SubscriptionTier) || 'free';
 
+  const handleDeleteAccount = async () => {
+    if (!session?.user?.id) return;
+    
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    try {
+      const response = await fetch(`/api/users/${session.user.id}/profile`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Failed to delete account');
+      }
+
+      // Sign out the user and redirect to home page
+      await signOut({
+        callbackUrl: '/',
+        redirect: true,
+      });
+
+      setShowDeleteModal(false);
+    } catch (error) {
+      console.error('Account deletion error:', error);
+      setDeleteError(
+        error instanceof Error 
+          ? error.message 
+          : 'An error occurred while deleting your account. Please try again.'
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div data-testid="settings-container" className="space-y-6">
       {message && (
         <Alert variant={message.type === 'error' ? 'destructive' : 'default'}>
           <AlertDescription>{message.text}</AlertDescription>
+        </Alert>
+      )}
+
+      {deleteError && (
+        <Alert variant="destructive">
+          <AlertDescription>{deleteError}</AlertDescription>
         </Alert>
       )}
 
@@ -84,11 +131,14 @@ export function Settings() {
       />
       <DeleteModal
         isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={() => {
-          // TODO: Implement account deletion
-          setShowDeleteModal(false);
+        onClose={() => {
+          if (!isDeleting) {
+            setShowDeleteModal(false);
+            setDeleteError(null);
+          }
         }}
+        onConfirm={handleDeleteAccount}
+        isDeleting={isDeleting}
       />
     </div>
   );
