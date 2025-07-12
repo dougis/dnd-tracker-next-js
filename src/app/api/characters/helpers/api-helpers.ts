@@ -1,5 +1,9 @@
-import { NextResponse } from 'next/server';
-import type { ServiceError } from '@/lib/services/CharacterServiceErrors';
+// Re-export from consolidated API helpers to eliminate code duplication
+export {
+  createErrorResponse,
+  createSuccessResponse,
+  handleServiceResult
+} from '@/lib/api/route-helpers';
 
 export interface ApiErrorResponse {
   success: false;
@@ -12,41 +16,6 @@ export interface ApiSuccessResponse<T = any> {
   data: T;
   message?: string;
   pagination?: any;
-}
-
-export function createErrorResponse(
-  error: string | ServiceError,
-  status: number,
-  details?: any
-): NextResponse<ApiErrorResponse> {
-  const errorMessage = typeof error === 'string' ? error : error.message;
-  const errorDetails = typeof error === 'string' ? details : error.details;
-
-  return NextResponse.json(
-    {
-      success: false,
-      error: errorMessage,
-      ...(errorDetails && { details: errorDetails })
-    },
-    { status }
-  );
-}
-
-export function createSuccessResponse<T>(
-  data: T,
-  message?: string,
-  pagination?: any,
-  status: number = 200
-): NextResponse<ApiSuccessResponse<T>> {
-  return NextResponse.json(
-    {
-      success: true,
-      data,
-      ...(message && { message }),
-      ...(pagination && { pagination })
-    },
-    { status }
-  );
 }
 
 export function validateAuth(request: Request): string | null {

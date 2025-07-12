@@ -1,31 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { EncounterService } from '@/lib/services/EncounterService';
 import { updateEncounterSchema } from '@/lib/validations/encounter';
-
-// Helper function to validate authentication
-async function validateAuth() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json(
-      { success: false, error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
-  return { session, userId: session.user.id };
-}
-
-// Helper function to validate encounter ID
-async function validateEncounterId(params: Promise<{ id: string }>) {
-  const { id: encounterId } = await params;
-  if (!encounterId || encounterId.trim() === '') {
-    return NextResponse.json(
-      { success: false, error: 'Encounter ID is required' },
-      { status: 400 }
-    );
-  }
-  return encounterId;
-}
+import {
+  validateAuth,
+  validateRouteId
+} from '@/lib/api/route-helpers';
 
 // Helper function to parse and validate request body for PUT
 async function parseUpdateData(request: NextRequest) {
@@ -85,10 +64,17 @@ async function validateBasicRequest(params: Promise<{ id: string }>) {
   const authResult = await validateAuth();
   if (authResult instanceof NextResponse) return { error: authResult };
 
-  const encounterId = await validateEncounterId(params);
-  if (encounterId instanceof NextResponse) return { error: encounterId };
-
-  return { authResult, encounterId };
+  try {
+    const encounterId = await validateRouteId(params, 'encounter');
+    return { authResult, encounterId };
+  } catch (error) {
+    return {
+      error: NextResponse.json(
+        { success: false, error: error instanceof Error ? error.message : 'Invalid encounter ID' },
+        { status: 400 }
+      )
+    };
+  }
 }
 
 // Helper function for validation steps that include access check
@@ -97,7 +83,16 @@ async function validateRequestWithAccess(params: Promise<{ id: string }>) {
   if (basicResult.error) return basicResult;
 
   const { authResult, encounterId } = basicResult;
-  const { userId } = authResult;
+  const userId = authResult.session?.user?.id;
+
+  if (!userId) {
+    return {
+      error: NextResponse.json(
+        { success: false, error: 'User ID not found in session' },
+        { status: 401 }
+      )
+    };
+  }
 
   const accessResult = await validateEncounterAccess(encounterId, userId);
   if (accessResult instanceof NextResponse) return { error: accessResult };

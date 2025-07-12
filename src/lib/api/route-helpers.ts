@@ -65,12 +65,26 @@ export async function withAuthAndAccess(
   }
 }
 
-export function createSuccessResponse(data: any, message?: string) {
-  return NextResponse.json({
-    success: true,
-    ...(message && { message }),
-    ...data,
-  });
+export function createSuccessResponse<T>(
+  data: T | Record<string, any>,
+  message?: string,
+  pagination?: any,
+  status: number = 200
+) {
+  // Handle both old format (spread data) and new format (data object)
+  const responseData = data && typeof data === 'object' && 'data' in data
+    ? data
+    : { data };
+
+  return NextResponse.json(
+    {
+      success: true,
+      ...(message && { message }),
+      ...(pagination && { pagination }),
+      ...responseData,
+    },
+    { status }
+  );
 }
 
 function createErrorDetails(result: any, defaultMessage: string) {
@@ -123,6 +137,28 @@ export function handleUserServiceResult(result: any, successMessage?: string, op
   );
 }
 
+/**
+ * Generic error response function that handles different error types
+ * Consolidates error creation across all API routes
+ */
+export function createErrorResponse(
+  error: string | any,
+  status: number = 400,
+  details?: any
+) {
+  const errorMessage = typeof error === 'string' ? error : error?.message || 'Unknown error';
+  const errorDetails = typeof error === 'string' ? details : error?.details;
+
+  return NextResponse.json(
+    {
+      success: false,
+      error: errorMessage,
+      ...(errorDetails && { details: errorDetails })
+    },
+    { status }
+  );
+}
+
 export function handleZodValidationError(error: any) {
   return NextResponse.json(
     {
@@ -138,16 +174,28 @@ export function handleZodValidationError(error: any) {
 }
 
 /**
- * Validates and extracts encounter ID from route parameters
+ * Generic ID validation function for route parameters
+ * Consolidates ID validation across all API routes
  */
-export async function validateEncounterId(params: Promise<{ id: string }>) {
+export async function validateRouteId(
+  params: Promise<{ id: string }>,
+  entityType: string = 'resource'
+): Promise<string> {
   const { id } = await params;
 
-  if (!id || typeof id !== 'string') {
-    throw new Error('Invalid encounter ID');
+  if (!id || typeof id !== 'string' || id.trim() === '') {
+    throw new Error(`Invalid ${entityType} ID`);
   }
 
   return id;
+}
+
+/**
+ * Legacy function for backward compatibility
+ * @deprecated Use validateRouteId instead
+ */
+export async function validateEncounterId(params: Promise<{ id: string }>) {
+  return validateRouteId(params, 'encounter');
 }
 
 /**
@@ -260,3 +308,25 @@ export const createDeleteRouteHandler = (
     defaultErrorStatus?: number;
   }
 ) => createSimpleRouteHandler(serviceCall, successMessage, errorOptions);
+
+/**
+ * Generic service result handler that can be used across all API routes
+ * Consolidates result handling patterns
+ */
+export function handleServiceResult(
+  result: { success: boolean; data?: any; error?: any },
+  successMessage?: string,
+  successStatus: number = 200,
+  errorStatus: number = 400
+) {
+  if (!result.success) {
+    return handleServiceError(result, result.error?.message || 'Operation failed', errorStatus);
+  }
+
+  return createSuccessResponse(
+    result.data ? { data: result.data } : {},
+    successMessage,
+    undefined,
+    successStatus
+  );
+}
