@@ -13,7 +13,7 @@ const mockAuth = auth as jest.MockedFunction<typeof auth>;
 describe('/api/encounters/[id]/export', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Mock successful authentication for all tests
     mockAuth.mockResolvedValue({
       user: {

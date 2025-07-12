@@ -106,7 +106,7 @@ const expectErrorResponse = async (response: Response, expectedStatus: number, e
 describe('/api/encounters/import', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Mock successful authentication for all tests
     mockAuth.mockResolvedValue({
       user: {

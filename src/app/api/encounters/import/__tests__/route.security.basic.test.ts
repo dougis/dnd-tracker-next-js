@@ -65,7 +65,7 @@ describe('/api/encounters/import - Basic Security Tests', () => {
 
     it('should pass authentication when valid session exists', async () => {
       const testUserId = 'user-123';
-      
+
       // Mock valid session
       mockAuth.mockResolvedValue({
         user: {
@@ -89,7 +89,7 @@ describe('/api/encounters/import - Basic Security Tests', () => {
 
       // The key security test: authentication should pass and not return 401
       expect(response.status).not.toBe(401);
-      
+
       // If there's an error, it should not be authentication-related
       if (response.status !== 200) {
         const data = await response.json();
