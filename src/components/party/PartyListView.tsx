@@ -80,7 +80,11 @@ function buildTableProps(
   };
 }
 
-export function PartyListView() {
+interface PartyListViewProps {
+  userId: string;
+}
+
+export function PartyListView({ userId: _userId }: PartyListViewProps) {
   const { viewMode, setViewMode, filterState, dataState, selectionState } = usePartyListState();
 
   const handleCreateParty = () => {
