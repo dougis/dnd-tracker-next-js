@@ -14,6 +14,7 @@ import {
   cleanupFetchMock,
   testApiErrorWithConsole,
   createDelayedOperation,
+  testLoadingStateDuringOperation,
 } from './test-utils';
 
 describe('useEditableContent', () => {
@@ -88,17 +89,11 @@ describe('useEditableContent', () => {
         useEditableContent(TEST_CONTENT, mockOnSave)
       );
 
-      act(() => {
-        result.current.handleSave();
-      });
-
-      expect(result.current.isSaving).toBe(true);
-
-      await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 150));
-      });
-
-      expect(result.current.isSaving).toBe(false);
+      await testLoadingStateDuringOperation(
+        result,
+        () => result.current.handleSave(),
+        'isSaving'
+      );
     });
 
     it('handles save errors gracefully', async () => {
@@ -154,17 +149,12 @@ describe('useEditableContent', () => {
       (fetch as jest.Mock).mockImplementation(() => createDelayedMockResponse(100));
       const { result } = renderHook(() => useEditableContent(TEST_CONTENT));
 
-      act(() => {
-        result.current.handleSave();
-      });
+      await testLoadingStateDuringOperation(
+        result,
+        () => result.current.handleSave(),
+        'isSaving'
+      );
 
-      expect(result.current.isSaving).toBe(true);
-
-      await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 150));
-      });
-
-      expect(result.current.isSaving).toBe(false);
       cleanupFetchMock();
     });
   });

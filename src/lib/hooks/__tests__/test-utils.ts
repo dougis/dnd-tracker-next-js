@@ -1,6 +1,7 @@
 /**
  * Shared test utilities to eliminate code duplication across hook tests
  */
+import { act } from '@testing-library/react';
 
 // Test constants
 export const TEST_EMAIL = 'test@example.com';
@@ -159,4 +160,60 @@ export function expectHookState(result: any, expectations: Record<string, any>) 
 // Function type checking
 export function expectFunctionType(obj: any, funcName: string) {
   expect(typeof obj[funcName]).toBe('function');
+}
+
+// Test successful operation with API call
+export async function testSuccessfulOperation<T>(
+  result: { current: T },
+  operation: () => Promise<boolean>,
+  expectedMethod: string,
+  expectedEndpoint: string,
+  expectedBody?: any,
+  expectedStateChanges?: Record<string, any>
+) {
+  let operationResult: boolean;
+  await act(async () => {
+    operationResult = await operation();
+  });
+
+  expectApiCall(expectedMethod, expectedEndpoint, expectedBody);
+  expect(operationResult!).toBe(true);
+
+  if (expectedStateChanges) {
+    expectHookState(result, expectedStateChanges);
+  }
+}
+
+// Test operation that should not make API call
+export async function testNoApiCall<T>(
+  result: { current: T },
+  operation: () => Promise<boolean>,
+  expectedResult: boolean = false
+) {
+  let operationResult: boolean;
+  await act(async () => {
+    operationResult = await operation();
+  });
+
+  expect(fetch).not.toHaveBeenCalled();
+  expect(operationResult!).toBe(expectedResult);
+}
+
+// Test loading state during async operation
+export async function testLoadingStateDuringOperation<T>(
+  result: { current: T },
+  operation: () => Promise<any>,
+  loadingKey: keyof T
+) {
+  act(() => {
+    operation();
+  });
+
+  expect(result.current[loadingKey]).toBe(true);
+
+  await act(async () => {
+    await new Promise(resolve => setTimeout(resolve, 150));
+  });
+
+  expect(result.current[loadingKey]).toBe(false);
 }

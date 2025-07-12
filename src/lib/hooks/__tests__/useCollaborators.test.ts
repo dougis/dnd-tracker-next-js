@@ -7,12 +7,13 @@ import {
   TEST_EMAIL,
   TEST_ID,
   createMockResponse,
-  expectApiCall,
   expectHookState,
   expectFunctionType,
   setupFetchMock,
   cleanupFetchMock,
   testApiErrorWithConsole,
+  testSuccessfulOperation,
+  testNoApiCall,
 } from './test-utils';
 
 describe('useCollaborators', () => {
@@ -85,29 +86,23 @@ describe('useCollaborators', () => {
         result.current.setNewCollaboratorEmail(TEST_EMAIL);
       });
 
-      let addResult: boolean;
-      await act(async () => {
-        addResult = await result.current.handleAddCollaborator();
-      });
-
-      expectApiCall('POST', '/api/collaborators', { email: TEST_EMAIL });
-      expect(addResult!).toBe(true);
-      expectHookState(result, {
-        newCollaboratorEmail: '',
-        showAddCollaborator: false,
-      });
+      await testSuccessfulOperation(
+        result,
+        () => result.current.handleAddCollaborator(),
+        'POST',
+        '/api/collaborators',
+        { email: TEST_EMAIL },
+        {
+          newCollaboratorEmail: '',
+          showAddCollaborator: false,
+        }
+      );
     });
 
     it('should not make API call when email is empty', async () => {
       const { result } = renderHook(() => useCollaborators());
 
-      let addResult: boolean;
-      await act(async () => {
-        addResult = await result.current.handleAddCollaborator();
-      });
-
-      expect(fetch).not.toHaveBeenCalled();
-      expect(addResult!).toBe(false);
+      await testNoApiCall(result, () => result.current.handleAddCollaborator());
     });
 
     it('should not make API call when email is only whitespace', async () => {
@@ -117,13 +112,7 @@ describe('useCollaborators', () => {
         result.current.setNewCollaboratorEmail('   ');
       });
 
-      let addResult: boolean;
-      await act(async () => {
-        addResult = await result.current.handleAddCollaborator();
-      });
-
-      expect(fetch).not.toHaveBeenCalled();
-      expect(addResult!).toBe(false);
+      await testNoApiCall(result, () => result.current.handleAddCollaborator());
     });
 
     it('should handle API errors gracefully', async () => {
@@ -149,13 +138,12 @@ describe('useCollaborators', () => {
       setupFetchMock(createMockResponse());
       const { result } = renderHook(() => useCollaborators());
 
-      let removeResult: boolean;
-      await act(async () => {
-        removeResult = await result.current.handleRemoveCollaborator(TEST_ID);
-      });
-
-      expectApiCall('DELETE', `/api/collaborators/${TEST_ID}`);
-      expect(removeResult!).toBe(true);
+      await testSuccessfulOperation(
+        result,
+        () => result.current.handleRemoveCollaborator(TEST_ID),
+        'DELETE',
+        `/api/collaborators/${TEST_ID}`
+      );
     });
 
     it('should handle API errors gracefully', async () => {
