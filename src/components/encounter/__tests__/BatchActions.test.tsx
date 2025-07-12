@@ -6,26 +6,22 @@ import {
   createBatchActionsRenderer,
   setupBatchActionsBeforeEach
 } from './test-utils/testSetup';
-import { createStandardMocks } from './test-utils/sharedMocks';
+import { createBatchTestMocks } from './test-utils/batchTestHelpers';
 
-// Create mocks using shared utilities
-const { mockToast, mockFetch } = createStandardMocks();
+// Create mocks using consolidated utilities
+const { mockToast, mockFetch } = createBatchTestMocks();
 
-// Mock the toast hook
+// Mock configurations - keeping inline to avoid initialization issues
 jest.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({
-    toast: mockToast,
-  }),
+  useToast: () => ({ toast: mockToast }),
 }));
 
-// Mock the utils
 jest.mock('../BatchActions/utils', () => ({
   getEncounterText: jest.fn((count: number) =>
     `${count} encounter${count !== 1 ? 's' : ''}`
   ),
 }));
 
-// Mock the error utils
 jest.mock('../actions/errorUtils', () => ({
   createSuccessHandler: jest.fn((toast) => jest.fn((action, target) => {
     toast({
