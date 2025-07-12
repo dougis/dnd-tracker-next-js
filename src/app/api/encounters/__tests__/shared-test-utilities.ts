@@ -374,7 +374,11 @@ export const expectErrorResponse = async (
  * Standard authentication error assertion
  */
 export const expectAuthenticationError = async (response: Response) => {
-  return expectErrorResponse(response, 401, 'Authentication required');
+  expect(response.status).toBe(401);
+  const responseData = await response.json();
+  expect(responseData.message).toBe('Authentication required');
+  expect(responseData.success).toBe(false);
+  return responseData;
 };
 
 /**
