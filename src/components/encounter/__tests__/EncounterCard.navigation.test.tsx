@@ -44,24 +44,30 @@ describe('EncounterCard Navigation', () => {
     return render(<EncounterCard {...defaultProps} {...props} />);
   };
 
+  const getElements = () => ({
+    cardContent: () => screen.getByTestId('card-content'),
+    checkbox: () => screen.getByRole('checkbox'),
+    actionButton: () => screen.getByText('Action Button')
+  });
+
   beforeEach(() => {
     commonNavigationBeforeEach();
   });
 
   describe('Card Click Navigation', () => {
+    const elements = getElements();
+
     it('should navigate to encounter detail view when card is clicked', async () => {
       const user = userEvent.setup();
       renderCard();
-      const cardContent = screen.getByTestId('card-content');
-      await user.click(cardContent);
+      await user.click(elements.cardContent());
       expectNavigation('/encounters/card-encounter-123');
     });
 
     it('should not navigate when clicking on checkbox', async () => {
       const user = userEvent.setup();
       renderCard();
-      const checkbox = screen.getByRole('checkbox');
-      await user.click(checkbox);
+      await user.click(elements.checkbox());
       expectNoNavigation();
       expect(defaultProps.onSelect).toHaveBeenCalledWith('card-encounter-123');
     });
@@ -69,8 +75,7 @@ describe('EncounterCard Navigation', () => {
     it('should not navigate when clicking on action buttons', async () => {
       const user = userEvent.setup();
       renderCard();
-      const actionButton = screen.getByText('Action Button');
-      await user.click(actionButton);
+      await user.click(elements.actionButton());
       expectNoNavigation();
     });
 

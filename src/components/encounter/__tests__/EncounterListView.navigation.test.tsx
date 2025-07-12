@@ -73,6 +73,13 @@ jest.mock('@/components/shared/Pagination', () => ({
 }));
 
 describe('EncounterListView Navigation', () => {
+  const renderComponent = () => render(<EncounterListView />);
+
+  const getElements = () => ({
+    createButton: () => screen.getByTestId('create-encounter-btn'),
+    retryButton: () => screen.getByText('Retry')
+  });
+
   beforeEach(() => {
     commonNavigationBeforeEach();
   });
@@ -80,31 +87,28 @@ describe('EncounterListView Navigation', () => {
   describe('Create Encounter Navigation', () => {
     it('should navigate to encounter creation when create button is clicked', async () => {
       const user = userEvent.setup();
-      render(<EncounterListView />);
-      const createButton = screen.getByTestId('create-encounter-btn');
-      await user.click(createButton);
+      renderComponent();
+      await user.click(getElements().createButton());
       expectNavigation('/encounters/create');
     });
 
     it('should render create encounter button in controls section', () => {
-      render(<EncounterListView />);
-      expect(screen.getByTestId('create-encounter-btn')).toBeInTheDocument();
+      renderComponent();
+      expect(getElements().createButton()).toBeInTheDocument();
       expect(screen.getByText('Create New Encounter')).toBeInTheDocument();
     });
   });
 
   describe('Component Structure', () => {
     it('should render main layout components', () => {
-      render(<EncounterListView />);
-
+      renderComponent();
       expect(screen.getByTestId('controls-section')).toBeInTheDocument();
       expect(screen.getByTestId('content-section')).toBeInTheDocument();
       expect(screen.getByTestId('pagination')).toBeInTheDocument();
     });
 
     it('should not render batch actions when no selection', () => {
-      render(<EncounterListView />);
-
+      renderComponent();
       expect(screen.queryByTestId('batch-actions')).not.toBeInTheDocument();
     });
   });

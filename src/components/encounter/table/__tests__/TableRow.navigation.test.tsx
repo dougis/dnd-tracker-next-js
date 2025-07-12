@@ -45,24 +45,30 @@ describe('TableRow Navigation', () => {
     );
   };
 
+  const getElements = () => ({
+    row: () => screen.getByRole('row'),
+    checkbox: () => screen.getByRole('checkbox'),
+    actionsButton: () => screen.getByText('Actions for Test Encounter Navigation')
+  });
+
   beforeEach(() => {
     commonNavigationBeforeEach();
   });
 
   describe('Row Click Navigation', () => {
+    const elements = getElements();
+
     it('should navigate to encounter detail view when row is clicked', async () => {
       const user = userEvent.setup();
       renderTableRow();
-      const row = screen.getByRole('row');
-      await user.click(row);
+      await user.click(elements.row());
       expectNavigation('/encounters/test-encounter-123');
     });
 
     it('should not navigate when clicking on checkbox', async () => {
       const user = userEvent.setup();
       renderTableRow();
-      const checkbox = screen.getByRole('checkbox');
-      await user.click(checkbox);
+      await user.click(elements.checkbox());
       expectNoNavigation();
       expect(defaultProps.onSelect).toHaveBeenCalledWith('test-encounter-123');
     });
@@ -70,8 +76,7 @@ describe('TableRow Navigation', () => {
     it('should not navigate when clicking on actions cell', async () => {
       const user = userEvent.setup();
       renderTableRow();
-      const actionsButton = screen.getByText('Actions for Test Encounter Navigation');
-      await user.click(actionsButton);
+      await user.click(elements.actionsButton());
       expectNoNavigation();
     });
 

@@ -25,6 +25,16 @@ export const expectNoNavigation = () => {
   expect(mockPush).not.toHaveBeenCalled();
 };
 
+// Helper to reduce duplication in test patterns
+const createUserInteractionTest = (renderComponent: () => void, getElement: () => HTMLElement, action: (_user: any, _element: HTMLElement) => Promise<void>) => {
+  return async () => {
+    const user = userEvent.setup();
+    renderComponent();
+    const element = getElement();
+    await action(user, element);
+  };
+};
+
 // Centralized navigation test patterns
 export const createNavigationTests = (config: {
   componentName: string;
@@ -45,44 +55,33 @@ export const createNavigationTests = (config: {
     shouldTestKeyboard = false
   } = config;
 
-  return {
-    [`should navigate to encounter detail when ${componentName.toLowerCase()} is clicked`]: async () => {
-      const user = userEvent.setup();
-      renderComponent();
-      const element = getClickableElement();
+  const createClickTest = (testName: string, elementGetter: () => HTMLElement, assertion: () => void) =>
+    createUserInteractionTest(renderComponent, elementGetter, async (user, element) => {
       await user.click(element);
-      expectNavigation(expectedNavigationPath);
-    },
+      assertion();
+    });
+
+  return {
+    [`should navigate to encounter detail when ${componentName.toLowerCase()} is clicked`]:
+      createClickTest('navigation', getClickableElement, () => expectNavigation(expectedNavigationPath)),
 
     ...(getCheckbox && {
-      [`should not navigate when clicking on checkbox in ${componentName.toLowerCase()}`]: async () => {
-        const user = userEvent.setup();
-        renderComponent();
-        const checkbox = getCheckbox();
-        await user.click(checkbox);
-        expectNoNavigation();
-      }
+      [`should not navigate when clicking on checkbox in ${componentName.toLowerCase()}`]:
+        createClickTest('checkbox prevention', getCheckbox, () => expectNoNavigation())
     }),
 
     ...(getActionButton && {
-      [`should not navigate when clicking on action button in ${componentName.toLowerCase()}`]: async () => {
-        const user = userEvent.setup();
-        renderComponent();
-        const actionButton = getActionButton();
-        await user.click(actionButton);
-        expectNoNavigation();
-      }
+      [`should not navigate when clicking on action button in ${componentName.toLowerCase()}`]:
+        createClickTest('action prevention', getActionButton, () => expectNoNavigation())
     }),
 
     ...(shouldTestKeyboard && {
-      [`should handle keyboard navigation in ${componentName.toLowerCase()}`]: async () => {
-        const user = userEvent.setup();
-        renderComponent();
-        const element = getClickableElement();
-        element.focus();
-        await user.keyboard('{Enter}');
-        // Note: Keyboard navigation implementation pending
-      }
+      [`should handle keyboard navigation in ${componentName.toLowerCase()}`]:
+        createUserInteractionTest(renderComponent, getClickableElement, async (user, element) => {
+          element.focus();
+          await user.keyboard('{Enter}');
+          // Note: Keyboard navigation implementation pending
+        })
     })
   };
 };
@@ -204,34 +203,23 @@ export const createPreventNavigationTests = (config: {
 
   const tests: Record<string, () => Promise<void>> = {};
 
-  if (getCheckbox) {
-    tests['should prevent navigation when clicking checkbox'] = async () => {
-      const user = userEvent.setup();
-      renderComponent();
-      const checkbox = getCheckbox();
-      await user.click(checkbox);
+  const createPreventTest = (testName: string, elementGetter: () => HTMLElement) =>
+    createUserInteractionTest(renderComponent, elementGetter, async (user, element) => {
+      await user.click(element);
       expectNoNavigation();
-    };
+    });
+
+  if (getCheckbox) {
+    tests['should prevent navigation when clicking checkbox'] = createPreventTest('checkbox', getCheckbox);
   }
 
   if (getActionButton) {
-    tests['should prevent navigation when clicking action button'] = async () => {
-      const user = userEvent.setup();
-      renderComponent();
-      const actionButton = getActionButton();
-      await user.click(actionButton);
-      expectNoNavigation();
-    };
+    tests['should prevent navigation when clicking action button'] = createPreventTest('action button', getActionButton);
   }
 
   additionalPreventElements.forEach((getElement, index) => {
-    tests[`should prevent navigation when clicking prevent element ${index + 1}`] = async () => {
-      const user = userEvent.setup();
-      renderComponent();
-      const element = getElement();
-      await user.click(element);
-      expectNoNavigation();
-    };
+    tests[`should prevent navigation when clicking prevent element ${index + 1}`] =
+      createPreventTest(`prevent element ${index + 1}`, getElement);
   });
 
   return tests;
