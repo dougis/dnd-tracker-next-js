@@ -32,8 +32,13 @@ export const TEST_INVALID_SETTINGS = {
 
 // API Test Utilities
 export function createTestRequest(body: any) {
-  const req = new NextRequest('https://example.com');
-  (req.json as jest.Mock).mockResolvedValue(body);
+  const req = new NextRequest('https://example.com', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  // Mock the json method to return our test data
+  req.json = jest.fn().mockResolvedValue(body);
   return req;
 }
 

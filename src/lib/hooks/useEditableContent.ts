@@ -9,8 +9,27 @@ export function useEditableContent(initialValue: string, onSave?: (_value: strin
 
   const handleSave = async () => {
     if (!onSave) {
-      // TODO: Implement save functionality
-      console.log('Saving content:', editedValue);
+      setIsSaving(true);
+      try {
+        const response = await fetch('/api/content', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            content: editedValue,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to save content: ${response.status}`);
+        }
+      } catch (error) {
+        console.error('Failed to save content:', error);
+        throw error;
+      } finally {
+        setIsSaving(false);
+      }
       return;
     }
 
@@ -19,6 +38,7 @@ export function useEditableContent(initialValue: string, onSave?: (_value: strin
       await onSave(editedValue);
     } catch (error) {
       console.error('Failed to save content:', error);
+      throw error;
     } finally {
       setIsSaving(false);
     }

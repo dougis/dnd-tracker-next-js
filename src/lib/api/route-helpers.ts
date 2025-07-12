@@ -123,6 +123,28 @@ export function handleUserServiceResult(result: any, successMessage?: string, op
   );
 }
 
+/**
+ * Generic error response function that handles different error types
+ * Consolidates error creation across all API routes
+ */
+export function createErrorResponse(
+  error: string | any,
+  status: number = 400,
+  details?: any
+) {
+  const errorMessage = typeof error === 'string' ? error : error?.message || 'Unknown error';
+  const errorDetails = typeof error === 'string' ? details : error?.details;
+
+  return NextResponse.json(
+    {
+      success: false,
+      error: errorMessage,
+      ...(errorDetails && { details: errorDetails })
+    },
+    { status }
+  );
+}
+
 export function handleZodValidationError(error: any) {
   return NextResponse.json(
     {
@@ -260,3 +282,23 @@ export const createDeleteRouteHandler = (
     defaultErrorStatus?: number;
   }
 ) => createSimpleRouteHandler(serviceCall, successMessage, errorOptions);
+
+/**
+ * Generic service result handler that can be used across all API routes
+ * Consolidates result handling patterns
+ */
+export function handleServiceResult(
+  result: { success: boolean; data?: any; error?: any },
+  successMessage?: string,
+  _successStatus: number = 200,
+  errorStatus: number = 400
+) {
+  if (!result.success) {
+    return handleServiceError(result, result.error?.message || 'Operation failed', errorStatus);
+  }
+
+  return createSuccessResponse(
+    result.data ? { data: result.data } : {},
+    successMessage
+  );
+}
