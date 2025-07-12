@@ -104,7 +104,7 @@ describe('BatchActions', () => {
   };
 
   // Helper function to test encounter count display
-  const testEncounterCountDisplay = (count: number, expectedText: string) => {
+  const _testEncounterCountDisplay = (count: number, expectedText: string) => {
     renderBatchActions({ selectedCount: count });
     expect(screen.getByText(expectedText)).toBeInTheDocument();
   };
