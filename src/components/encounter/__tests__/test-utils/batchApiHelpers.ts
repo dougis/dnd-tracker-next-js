@@ -156,6 +156,24 @@ const executeOperationClick = async (
 };
 
 /**
+ * Common test execution flow for batch operations
+ */
+const executeBatchTestFlow = async (
+  operation: string,
+  mockSetupFn: () => void,
+  renderFn: () => any,
+  clickButtonFn: (_selector: string | RegExp) => Promise<void>,
+  waitForFn: (_callback: () => void) => Promise<void>,
+  isDeleteOperation: boolean,
+  verificationFn: () => void
+) => {
+  mockSetupFn();
+  renderFn();
+  await executeOperationClick(operation, clickButtonFn, isDeleteOperation);
+  await waitForFn(verificationFn);
+};
+
+/**
  * Execute a complete batch operation test with API verification
  */
 export const executeBatchOperationTest = async (
@@ -169,14 +187,17 @@ export const executeBatchOperationTest = async (
   onRefetch: jest.Mock,
   isDeleteOperation = false
 ) => {
-  mockSetupFn();
-  renderFn();
-
-  await executeOperationClick(operation, clickButtonFn, isDeleteOperation);
-
-  await waitForFn(() => {
-    expectBatchApiCall(operation);
-  });
+  await executeBatchTestFlow(
+    operation,
+    mockSetupFn,
+    renderFn,
+    clickButtonFn,
+    waitForFn,
+    isDeleteOperation,
+    () => {
+      expectBatchApiCall(operation);
+    }
+  );
 
   await waitForFn(() => {
     expectSuccessfulOperationResult(mockToast, operation, 3, onClearSelection, onRefetch);
@@ -196,12 +217,15 @@ export const executeBatchErrorTest = async (
   mockToast: jest.Mock,
   isDeleteOperation = false
 ) => {
-  mockSetupFn();
-  renderFn();
-
-  await executeOperationClick(operation, clickButtonFn, isDeleteOperation);
-
-  await waitForFn(() => {
-    expectErrorToast(mockToast, errorMessage);
-  });
+  await executeBatchTestFlow(
+    operation,
+    mockSetupFn,
+    renderFn,
+    clickButtonFn,
+    waitForFn,
+    isDeleteOperation,
+    () => {
+      expectErrorToast(mockToast, errorMessage);
+    }
+  );
 };

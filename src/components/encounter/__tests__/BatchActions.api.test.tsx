@@ -15,12 +15,10 @@ import {
   executeBatchOperationTest,
   executeBatchErrorTest,
 } from './test-utils/batchApiHelpers';
-import { createMockToast } from './test-utils/mockSetup';
+import { createStandardMocks } from './test-utils/sharedMocks';
 
-// Create mocks
-const mockToast = createMockToast();
-const mockFetch = jest.fn();
-global.fetch = mockFetch;
+// Create mocks using shared utilities
+const { mockToast, mockFetch } = createStandardMocks();
 
 // Mock the toast hook
 jest.mock('@/hooks/use-toast', () => ({

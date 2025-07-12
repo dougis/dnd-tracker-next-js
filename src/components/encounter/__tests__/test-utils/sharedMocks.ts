@@ -17,26 +17,35 @@ export const createStandardMocks = () => {
 };
 
 /**
- * Standard jest.mock configuration for utils
+ * Standard toast hook mock factory
  */
-export const standardUtilsMock = () => ({
+export const createToastHookMock = (mockToast: jest.Mock) => () => ({
+  useToast: () => ({
+    toast: mockToast,
+  }),
+});
+
+/**
+ * Standard utils mock factory  
+ */
+export const createUtilsMockFactory = () => () => ({
   getEncounterText: jest.fn((count: number) =>
     `${count} encounter${count !== 1 ? 's' : ''}`
   ),
 });
 
 /**
- * Standard jest.mock configuration for error utils
+ * Standard error utils mock factory
  */
-export const standardErrorUtilsMock = (toast: jest.Mock) => ({
-  createSuccessHandler: jest.fn((toastFn) => jest.fn((action, target) => {
-    toastFn({
+export const createErrorUtilsMockFactory = () => () => ({
+  createSuccessHandler: jest.fn((toast) => jest.fn((action, target) => {
+    toast({
       title: `Encounter ${action}d`,
       description: `"${target}" has been ${action}d successfully.`,
     });
   })),
-  createErrorHandler: jest.fn((toastFn) => jest.fn((action) => {
-    toastFn({
+  createErrorHandler: jest.fn((toast) => jest.fn((action) => {
+    toast({
       title: 'Error',
       description: `Failed to ${action} encounter. Please try again.`,
       variant: 'destructive',
