@@ -34,7 +34,7 @@ describe('PartiesPage', () => {
     jest.clearAllMocks();
     mockAuth = require('@/lib/auth').auth;
     mockRedirect = require('next/navigation').redirect;
-    
+
     // Mock redirect to throw an error like Next.js does
     mockRedirect.mockImplementation((url: string) => {
       throw new Error(`REDIRECT: ${url}`);
@@ -87,7 +87,7 @@ describe('PartiesPage', () => {
   describe('Authentication', () => {
     it('should render when user is authenticated', async () => {
       mockAuth.mockResolvedValue(mockSession);
-      
+
       const PartiesPageResolved = await PartiesPage();
       render(PartiesPageResolved);
 
@@ -97,14 +97,14 @@ describe('PartiesPage', () => {
 
     it('should redirect when user is not authenticated', async () => {
       mockAuth.mockResolvedValue(null);
-      
+
       await expect(PartiesPage()).rejects.toThrow('REDIRECT: /signin?callbackUrl=/parties');
       expect(mockRedirect).toHaveBeenCalledWith('/signin?callbackUrl=/parties');
     });
 
     it('should redirect when session exists but no user id', async () => {
       mockAuth.mockResolvedValue({ user: {} });
-      
+
       await expect(PartiesPage()).rejects.toThrow('REDIRECT: /signin?callbackUrl=/parties');
       expect(mockRedirect).toHaveBeenCalledWith('/signin?callbackUrl=/parties');
     });
