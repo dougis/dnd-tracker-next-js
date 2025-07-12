@@ -4,9 +4,10 @@ import { EncounterCard } from '../EncounterCard';
 import { createMockProps, createMockEncounter, setupTestEnvironment } from './test-helpers';
 
 // Mock next/navigation
+const mockPush = jest.fn();
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
-    push: jest.fn(),
+    push: mockPush,
   }),
 }));
 
@@ -42,18 +43,14 @@ const clickActionButtons = () => {
 };
 
 const testNavigationClick = (props: any) => {
-  withConsoleSpy((spy) => {
-    const card = screen.getByText(props.encounter.name).closest('div[class*="cursor-pointer"]');
-    fireEvent.click(card!);
-    expect(spy).toHaveBeenCalledWith('View encounter:', props.encounter.id);
-  });
+  const card = screen.getByText(props.encounter.name).closest('div[class*="cursor-pointer"]');
+  fireEvent.click(card!);
+  expect(mockPush).toHaveBeenCalledWith(`/encounters/${props.encounter.id}`);
 };
 
 const testNoNavigationClick = (props: any, clickAction: () => void) => {
-  withConsoleSpy((spy) => {
-    clickAction();
-    expect(spy).not.toHaveBeenCalledWith('View encounter:', props.encounter.id);
-  });
+  clickAction();
+  expect(mockPush).not.toHaveBeenCalledWith(`/encounters/${props.encounter.id}`);
 };
 
 // Mock child components
@@ -79,6 +76,7 @@ describe('EncounterCard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockPush.mockClear();
   });
 
   afterEach(() => {
