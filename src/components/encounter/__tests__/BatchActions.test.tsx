@@ -85,7 +85,7 @@ describe('BatchActions', () => {
     it('should handle duplicate action', async () => {
       renderBatchActions();
       await clickButton(/duplicate/i);
-      
+
       await waitFor(() => {
         expect(consoleSpy).toHaveBeenCalledWith('Bulk duplicate encounters');
         expectFunctionToBeCalled(defaultProps.onClearSelection);
@@ -96,7 +96,7 @@ describe('BatchActions', () => {
     it('should handle archive action', async () => {
       renderBatchActions();
       await clickButton(/archive/i);
-      
+
       await waitFor(() => {
         expect(consoleSpy).toHaveBeenCalledWith('Bulk archive encounters');
         expectFunctionToBeCalled(defaultProps.onClearSelection);
@@ -109,7 +109,7 @@ describe('BatchActions', () => {
     it('should open delete dialog when delete button is clicked', async () => {
       renderBatchActions();
       await clickButton(/delete/i);
-      
+
       expect(screen.getByRole('alertdialog')).toBeInTheDocument();
       expect(screen.getByText('Delete Encounters')).toBeInTheDocument();
       expect(screen.getByText(/Are you sure you want to delete 3 encounters?/)).toBeInTheDocument();
@@ -119,7 +119,7 @@ describe('BatchActions', () => {
       renderBatchActions();
       await clickButton(/delete/i);
       await clickButton(/cancel/i);
-      
+
       await waitFor(() => {
         expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
       });
@@ -129,7 +129,7 @@ describe('BatchActions', () => {
       renderBatchActions();
       await clickButton(/delete/i);
       await clickButton('Delete');
-      
+
       await waitFor(() => {
         expect(consoleSpy).toHaveBeenCalledWith('Bulk delete encounters');
         expectFunctionToBeCalled(defaultProps.onClearSelection);
@@ -168,7 +168,7 @@ describe('BatchActions', () => {
     it('should handle errors in duplicate action', async () => {
       renderBatchActions();
       await clickButton(/duplicate/i);
-      
+
       await waitFor(() => {
         expect(mockToast).toHaveBeenCalledWith({
           title: 'Error',
@@ -181,7 +181,7 @@ describe('BatchActions', () => {
     it('should handle errors in archive action', async () => {
       renderBatchActions();
       await clickButton(/archive/i);
-      
+
       await waitFor(() => {
         expect(mockToast).toHaveBeenCalledWith({
           title: 'Error',
@@ -195,7 +195,7 @@ describe('BatchActions', () => {
       renderBatchActions();
       await clickButton(/delete/i);
       await clickButton('Delete');
-      
+
       await waitFor(() => {
         expect(mockToast).toHaveBeenCalledWith({
           title: 'Error',

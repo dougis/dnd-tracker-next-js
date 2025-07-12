@@ -3,10 +3,9 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TableRow } from '../TableRow';
 import { createMockEncounter } from '../../__tests__/test-utils/mockFactories';
-import { 
-  mockPush, 
-  commonNavigationBeforeEach, 
-  createMockTableCells,
+import {
+  mockPush,
+  commonNavigationBeforeEach,
   expectNavigation,
   expectNoNavigation
 } from '../../__tests__/test-utils/navigationTestHelpers';
@@ -107,7 +106,7 @@ describe('TableRow Navigation', () => {
     it('should prevent navigation when event target is in a prevented element', async () => {
       const user = userEvent.setup();
       renderTableRow();
-      
+
       const checkbox = screen.getByRole('checkbox');
       const actionsButton = screen.getByText('Actions for Test Encounter Navigation');
 

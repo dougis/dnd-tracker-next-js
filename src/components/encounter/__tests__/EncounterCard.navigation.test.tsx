@@ -3,11 +3,9 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EncounterCard } from '../EncounterCard';
 import { createMockEncounter } from './test-utils/mockFactories';
-import { 
-  mockPush, 
+import {
+  mockPush,
   commonNavigationBeforeEach,
-  createMockCardHeader,
-  createMockCardContent,
   expectNavigation,
   expectNoNavigation
 } from './test-utils/navigationTestHelpers';

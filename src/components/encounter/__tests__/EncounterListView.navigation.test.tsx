@@ -2,12 +2,10 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EncounterListView } from '../EncounterListView';
-import { 
-  mockPush, 
+import {
+  mockPush,
   commonNavigationBeforeEach,
-  createListViewMocks,
-  expectNavigation,
-  expectNoNavigation
+  expectNavigation
 } from './test-utils/navigationTestHelpers';
 
 jest.mock('next/navigation', () => ({
