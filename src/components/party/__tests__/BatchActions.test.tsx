@@ -22,6 +22,94 @@ describe('BatchActions', () => {
     return render(<BatchActions {...defaultProps} {...props} />);
   };
 
+  // Test helper functions to eliminate duplication
+  const setupUserEvent = () => userEvent.setup();
+
+  const getButtonByName = (name: string | RegExp) =>
+    screen.getByRole('button', { name });
+
+  const clickButtonAndWait = async (user: any, buttonName: string | RegExp) => {
+    const button = getButtonByName(buttonName);
+    await user.click(button);
+  };
+
+  const expectToastCall = (expectedCall: any) => {
+    expect(mockToast).toHaveBeenCalledWith(expectedCall);
+  };
+
+  const expectSuccessToast = (title: string, description: string) => {
+    expectToastCall({ title, description });
+  };
+
+  const expectErrorToast = (description: string) => {
+    expectToastCall({
+      title: 'Error',
+      description,
+      variant: 'destructive',
+    });
+  };
+
+  const createConsoleSpy = () => {
+    return jest.spyOn(console, 'log').mockImplementation(() => {
+      throw new Error('Test error');
+    });
+  };
+
+  const openDeleteDialog = async (user: any) => {
+    await clickButtonAndWait(user, /delete/i);
+  };
+
+  const confirmDeleteAction = async (user: any) => {
+    const confirmButton = getButtonByName('Delete');
+    await user.click(confirmButton);
+  };
+
+  const cancelDeleteAction = async (user: any) => {
+    const cancelButton = getButtonByName(/cancel/i);
+    await user.click(cancelButton);
+  };
+
+  const expectDialogVisible = () => {
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    expect(screen.getByText('Delete Parties')).toBeInTheDocument();
+    expect(screen.getByText(/Are you sure you want to delete 3 parties/)).toBeInTheDocument();
+  };
+
+  const expectDialogHidden = () => {
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  };
+
+  const expectCallbacksCalled = () => {
+    expect(defaultProps.onClearSelection).toHaveBeenCalled();
+    expect(defaultProps.onRefetch).toHaveBeenCalled();
+  };
+
+  const testBulkActionSuccess = async (buttonName: string | RegExp, expectedTitle: string, expectedDescription: string) => {
+    const user = setupUserEvent();
+    renderBatchActions();
+
+    await clickButtonAndWait(user, buttonName);
+
+    await waitFor(() => {
+      expectSuccessToast(expectedTitle, expectedDescription);
+    });
+  };
+
+  const testBulkActionError = async (buttonName: string | RegExp, expectedErrorMessage: string) => {
+    const user = setupUserEvent();
+    const consoleSpy = createConsoleSpy();
+
+    renderBatchActions();
+
+    await clickButtonAndWait(user, buttonName);
+
+    await waitFor(() => {
+      expectErrorToast(expectedErrorMessage);
+    });
+
+    consoleSpy.mockRestore();
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -40,73 +128,56 @@ describe('BatchActions', () => {
     it('should render all action buttons', () => {
       renderBatchActions();
 
-      expect(screen.getByRole('button', { name: /view/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument();
+      expect(getButtonByName(/view/i)).toBeInTheDocument();
+      expect(getButtonByName(/edit/i)).toBeInTheDocument();
+      expect(getButtonByName(/delete/i)).toBeInTheDocument();
     });
 
     it('should render clear selection button', () => {
       renderBatchActions();
-      expect(screen.getByRole('button', { name: /clear/i })).toBeInTheDocument();
+      expect(getButtonByName(/clear/i)).toBeInTheDocument();
     });
   });
 
   describe('Bulk Delete Functionality', () => {
     it('should show confirmation dialog when delete button is clicked', async () => {
-      const user = userEvent.setup();
+      const user = setupUserEvent();
       renderBatchActions();
 
-      const deleteButton = screen.getByRole('button', { name: /delete/i });
-      await user.click(deleteButton);
+      await openDeleteDialog(user);
 
       await waitFor(() => {
-        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-        expect(screen.getByText('Delete Parties')).toBeInTheDocument();
-        expect(screen.getByText(/Are you sure you want to delete 3 parties/)).toBeInTheDocument();
+        expectDialogVisible();
       });
     });
 
     it('should close dialog when cancel is clicked', async () => {
-      const user = userEvent.setup();
+      const user = setupUserEvent();
       renderBatchActions();
 
-      // Open dialog
-      const deleteButton = screen.getByRole('button', { name: /delete/i });
-      await user.click(deleteButton);
-
-      // Cancel dialog
-      const cancelButton = screen.getByRole('button', { name: /cancel/i });
-      await user.click(cancelButton);
+      await openDeleteDialog(user);
+      await cancelDeleteAction(user);
 
       await waitFor(() => {
-        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+        expectDialogHidden();
       });
     });
 
     it('should handle delete confirmation and call callbacks', async () => {
-      const user = userEvent.setup();
+      const user = setupUserEvent();
       renderBatchActions();
 
-      // Open dialog
-      const deleteButton = screen.getByRole('button', { name: /delete/i });
-      await user.click(deleteButton);
-
-      // Confirm deletion
-      const confirmButton = screen.getByRole('button', { name: 'Delete' });
-      await user.click(confirmButton);
+      await openDeleteDialog(user);
+      await confirmDeleteAction(user);
 
       await waitFor(() => {
-        expect(defaultProps.onClearSelection).toHaveBeenCalled();
-        expect(defaultProps.onRefetch).toHaveBeenCalled();
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Parties deleted',
-          description: '3 parties have been deleted successfully.',
-        });
+        expectCallbacksCalled();
+        expectSuccessToast('Parties deleted', '3 parties have been deleted successfully.');
       });
     });
 
     it('should handle delete errors gracefully', async () => {
-      const user = userEvent.setup();
+      const user = setupUserEvent();
 
       // Mock an error by causing onRefetch to throw
       const errorProps = {
@@ -118,112 +189,41 @@ describe('BatchActions', () => {
 
       renderBatchActions(errorProps);
 
-      // Open dialog and confirm
-      const deleteButton = screen.getByRole('button', { name: /delete/i });
-      await user.click(deleteButton);
-
-      const confirmButton = screen.getByRole('button', { name: 'Delete' });
-      await user.click(confirmButton);
+      await openDeleteDialog(user);
+      await confirmDeleteAction(user);
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Error',
-          description: 'Failed to delete parties. Please try again.',
-          variant: 'destructive',
-        });
+        expectErrorToast('Failed to delete parties. Please try again.');
       });
     });
   });
 
   describe('Bulk Edit Functionality', () => {
     it('should handle bulk edit action', async () => {
-      const user = userEvent.setup();
-      renderBatchActions();
-
-      const editButton = screen.getByRole('button', { name: /edit/i });
-      await user.click(editButton);
-
-      await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Bulk edit started',
-          description: 'Editing 3 parties...',
-        });
-      });
+      await testBulkActionSuccess(/edit/i, 'Bulk edit started', 'Editing 3 parties...');
     });
 
     it('should handle bulk edit errors gracefully', async () => {
-      const user = userEvent.setup();
-
-      // Create a spy that throws an error
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {
-        throw new Error('Edit failed');
-      });
-
-      renderBatchActions();
-
-      const editButton = screen.getByRole('button', { name: /edit/i });
-      await user.click(editButton);
-
-      await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Error',
-          description: 'Failed to edit parties. Please try again.',
-          variant: 'destructive',
-        });
-      });
-
-      consoleSpy.mockRestore();
+      await testBulkActionError(/edit/i, 'Failed to edit parties. Please try again.');
     });
   });
 
   describe('Bulk View Functionality', () => {
     it('should handle bulk view action', async () => {
-      const user = userEvent.setup();
-      renderBatchActions();
-
-      const viewButton = screen.getByRole('button', { name: /view/i });
-      await user.click(viewButton);
-
-      await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Opening party view',
-          description: 'Viewing 3 parties...',
-        });
-      });
+      await testBulkActionSuccess(/view/i, 'Opening party view', 'Viewing 3 parties...');
     });
 
     it('should handle bulk view errors gracefully', async () => {
-      const user = userEvent.setup();
-
-      // Create a spy that throws an error
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {
-        throw new Error('View failed');
-      });
-
-      renderBatchActions();
-
-      const viewButton = screen.getByRole('button', { name: /view/i });
-      await user.click(viewButton);
-
-      await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'Error',
-          description: 'Failed to view parties. Please try again.',
-          variant: 'destructive',
-        });
-      });
-
-      consoleSpy.mockRestore();
+      await testBulkActionError(/view/i, 'Failed to view parties. Please try again.');
     });
   });
 
   describe('Clear Selection', () => {
     it('should call onClearSelection when clear button is clicked', async () => {
-      const user = userEvent.setup();
+      const user = setupUserEvent();
       renderBatchActions();
 
-      const clearButton = screen.getByRole('button', { name: /clear/i });
-      await user.click(clearButton);
+      await clickButtonAndWait(user, /clear/i);
 
       expect(defaultProps.onClearSelection).toHaveBeenCalled();
     });
@@ -243,9 +243,9 @@ describe('BatchActions', () => {
     it('should disable action buttons when no parties are selected', () => {
       renderBatchActions({ selectedCount: 0 });
 
-      expect(screen.getByRole('button', { name: /view/i })).toBeDisabled();
-      expect(screen.getByRole('button', { name: /edit/i })).toBeDisabled();
-      expect(screen.getByRole('button', { name: /delete/i })).toBeDisabled();
+      expect(getButtonByName(/view/i)).toBeDisabled();
+      expect(getButtonByName(/edit/i)).toBeDisabled();
+      expect(getButtonByName(/delete/i)).toBeDisabled();
     });
   });
 });
