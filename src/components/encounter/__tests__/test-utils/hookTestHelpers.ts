@@ -32,16 +32,23 @@ export const expectServiceCallWith = (mockService: any, expectedParams: any) => 
   expect(mockService.searchEncounters).toHaveBeenCalledWith(expectedParams);
 };
 
-// Reusable test functions
-export const testSuccessfulDataFetch = async (hook: any, params: any, mockService: any) => {
-  const mockData = mockServiceResponses.searchSuccess();
-  mockService.searchEncounters.mockResolvedValue(mockData);
-
+// Helper function to render hook and wait for loading to complete
+const renderHookAndWaitForLoading = async (hook: any, params: any) => {
   const { result } = renderHook(() => hook(params));
 
   await waitFor(() => {
     expect(result.current.isLoading).toBe(false);
   });
+
+  return result;
+};
+
+// Reusable test functions
+export const testSuccessfulDataFetch = async (hook: any, params: any, mockService: any) => {
+  const mockData = mockServiceResponses.searchSuccess();
+  mockService.searchEncounters.mockResolvedValue(mockData);
+
+  const result = await renderHookAndWaitForLoading(hook, params);
 
   expect(result.current.encounters).toHaveLength(mockData.data.encounters.length);
   expect(result.current.error).toBe(null);
@@ -58,14 +65,11 @@ export const testErrorHandling = async (hook: any, params: any, mockService: any
     );
   }
 
-  const { result } = renderHook(() => hook(params));
-
-  await waitFor(() => {
-    expect(result.current.isLoading).toBe(false);
-  });
-
+  const result = await renderHookAndWaitForLoading(hook, params);
   expectErrorState(result, errorMessage);
-};export const testLoadingState = async (hook: any, params: any, mockService: any) => {
+};
+
+export const testLoadingState = async (hook: any, params: any, mockService: any) => {
   let resolveSearch: (_value: any) => void;
   const searchPromise = new Promise((resolve) => {
     resolveSearch = resolve;
