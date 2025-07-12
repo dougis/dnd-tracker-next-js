@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import { EncounterService } from '@/lib/services/EncounterService';
 import { withAuth } from '@/lib/api/route-helpers';
-import { handleApiError } from '../shared-route-helpers';
+import { handleApiError, processBatchItems, createBatchResponse, performExportOperation } from '../shared-route-helpers';
 import { z } from 'zod';
 
 const batchOperationSchema = z.object({
@@ -36,9 +36,12 @@ export async function POST(request: NextRequest) {
       const validatedBody = batchOperationSchema.parse(body);
 
       const { operation, encounterIds, options } = validatedBody;
-      const { results, errors } = await processBatchOperation(operation, encounterIds, userId, options);
+      const { results, errors } = await processBatchItems(
+        encounterIds,
+        async (encounterId: string) => await executeBatchOperation(operation, encounterId, userId, options)
+      );
 
-      const response = buildBatchResponse(operation, results, errors, encounterIds.length);
+      const response = createBatchResponse(operation, results, errors, encounterIds.length);
       return NextResponse.json(response);
     } catch (error) {
       return handleApiError(error);
@@ -46,21 +49,6 @@ export async function POST(request: NextRequest) {
   });
 }
 
-async function processBatchOperation(operation: string, encounterIds: string[], userId: string, options: any) {
-  const results: any[] = [];
-  const errors: any[] = [];
-
-  for (const encounterId of encounterIds) {
-    try {
-      const result = await executeBatchOperation(operation, encounterId, userId, options);
-      processBatchResult(result, encounterId, results, errors);
-    } catch (error) {
-      addBatchError(error, encounterId, errors);
-    }
-  }
-
-  return { results, errors };
-}
 
 async function executeBatchOperation(operation: string, encounterId: string, userId: string, options: any) {
   const handlers = {
@@ -80,43 +68,6 @@ async function executeBatchOperation(operation: string, encounterId: string, use
   return await handler();
 }
 
-function processBatchResult(result: any, encounterId: string, results: any[], errors: any[]) {
-  if (result.success) {
-    results.push({
-      encounterId,
-      status: 'success',
-      data: result.data || null,
-    });
-  } else {
-    errors.push({
-      encounterId,
-      status: 'error',
-      error: result.error?.message || 'Operation failed',
-    });
-  }
-}
-
-function addBatchError(error: any, encounterId: string, errors: any[]) {
-  errors.push({
-    encounterId,
-    status: 'error',
-    error: error instanceof Error ? error.message : 'Unknown error',
-  });
-}
-
-function buildBatchResponse(operation: string, results: any[], errors: any[], total: number) {
-  return {
-    success: true,
-    operation,
-    results,
-    errors: errors.length > 0 ? errors : undefined,
-    summary: {
-      totalProcessed: total,
-      successful: results.length,
-      failed: errors.length,
-    },
-  };
-}
 
 
 async function handleBatchExport(encounterId: string, userId: string, options: any) {
@@ -127,11 +78,7 @@ async function handleBatchExport(encounterId: string, userId: string, options: a
     stripPersonalData: options.stripPersonalData,
   };
 
-  if (options.format === 'json') {
-    return await EncounterServiceImportExport.exportToJson(encounterId, userId, exportOptions);
-  } else {
-    return await EncounterServiceImportExport.exportToXml(encounterId, userId, exportOptions);
-  }
+  return await performExportOperation(encounterId, userId, options.format, exportOptions);
 }
 
 async function handleBatchTemplate(encounterId: string, userId: string, options: any) {
