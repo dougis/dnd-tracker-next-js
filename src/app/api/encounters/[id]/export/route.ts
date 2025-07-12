@@ -2,15 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import type { ExportOptions } from '@/lib/services/EncounterServiceImportExport';
 import { withAuth } from '@/lib/api/route-helpers';
-import { z } from 'zod';
-
-const exportQuerySchema = z.object({
-  format: z.enum(['json', 'xml']).default('json'),
-  includeCharacterSheets: z.string().transform(v => v === 'true').default('false'),
-  includePrivateNotes: z.string().transform(v => v === 'true').default('false'),
-  includeIds: z.string().transform(v => v === 'true').default('false'),
-  stripPersonalData: z.string().transform(v => v === 'true').default('false'),
-});
+import {
+  exportQuerySchema,
+  handleApiError,
+  performExportOperation,
+  createExportResponse,
+  generateExportFilename,
+  createErrorResponse,
+} from '../../shared-route-helpers';
 
 export async function GET(
   request: NextRequest,
@@ -33,40 +32,20 @@ export async function GET(
         stripPersonalData: validatedQuery.stripPersonalData,
       };
 
-      let result;
-
-      if (validatedQuery.format === 'json') {
-        result = await EncounterServiceImportExport.exportToJson(encounterId, userId, options);
-      } else {
-        result = await EncounterServiceImportExport.exportToXml(encounterId, userId, options);
-      }
+      const result = await performExportOperation(encounterId, userId, validatedQuery.format, options);
 
       if (!result.success) {
-        return NextResponse.json(
-          { error: result.error?.message || 'Export failed' },
-          { status: 400 }
+        return createErrorResponse(
+          result.error?.message || 'Export failed',
+          400
         );
       }
 
-      const contentType = validatedQuery.format === 'json'
-        ? 'application/json'
-        : 'application/xml';
+      const filename = generateExportFilename('encounter', encounterId, validatedQuery.format);
 
-      const filename = `encounter-${encounterId}-${Date.now()}.${validatedQuery.format}`;
-
-      return new NextResponse(result.data, {
-        status: 200,
-        headers: {
-          'Content-Type': contentType,
-          'Content-Disposition': `attachment; filename="${filename}"`,
-        },
-      });
+      return createExportResponse(result.data!, validatedQuery.format, filename);
     } catch (error) {
-      console.error('Export error:', error);
-      return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+      return handleApiError(error);
     }
   });
 }

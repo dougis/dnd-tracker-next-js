@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import { withAuth } from '@/lib/api/route-helpers';
+import { handleApiError, createErrorResponse } from '../shared-route-helpers';
 import { z } from 'zod';
 
 const shareBodySchema = z.object({
@@ -26,10 +27,7 @@ export async function POST(
       );
 
       if (!result.success) {
-        return NextResponse.json(
-          { error: result.error?.message || 'Failed to generate share link' },
-          { status: 400 }
-        );
+        return createErrorResponse(result.error?.message || 'Failed to generate share link');
       }
 
       const expiresAt = new Date(Date.now() + validatedBody.expiresIn);
@@ -40,22 +38,7 @@ export async function POST(
         expiresAt: expiresAt.toISOString(),
       });
     } catch (error) {
-      console.error('Share error:', error);
-
-      if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          {
-            error: 'Invalid request data',
-            details: error.errors.map(e => e.message).join(', '),
-          },
-          { status: 400 }
-        );
-      }
-
-      return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+      return handleApiError(error);
     }
   });
 }

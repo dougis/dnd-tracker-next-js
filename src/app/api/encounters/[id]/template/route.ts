@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import { withAuth } from '@/lib/api/route-helpers';
+import { handleApiError, createErrorResponse } from '../shared-route-helpers';
 import { z } from 'zod';
 
 const templateBodySchema = z.object({
@@ -26,10 +27,7 @@ export async function POST(
       );
 
       if (!result.success) {
-        return NextResponse.json(
-          { error: result.error?.message || 'Failed to create template' },
-          { status: 400 }
-        );
+        return createErrorResponse(result.error?.message || 'Failed to create template');
       }
 
       return NextResponse.json({
@@ -37,22 +35,7 @@ export async function POST(
         template: result.data,
       });
     } catch (error) {
-      console.error('Template creation error:', error);
-
-      if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          {
-            error: 'Invalid request data',
-            details: error.errors.map(e => e.message).join(', '),
-          },
-          { status: 400 }
-        );
-      }
-
-      return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+      return handleApiError(error);
     }
   });
 }

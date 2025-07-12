@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import { EncounterService } from '@/lib/services/EncounterService';
 import { withAuth } from '@/lib/api/route-helpers';
+import { handleApiError } from '../shared-route-helpers';
 import { z } from 'zod';
 
 const batchOperationSchema = z.object({
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
       const response = buildBatchResponse(operation, results, errors, encounterIds.length);
       return NextResponse.json(response);
     } catch (error) {
-      return handleBatchError(error);
+      return handleApiError(error);
     }
   });
 }
@@ -113,24 +114,6 @@ function buildBatchResponse(operation: string, results: any[], errors: any[], to
   };
 }
 
-function handleBatchError(error: any): NextResponse {
-  console.error('Batch operation error:', error);
-
-  if (error instanceof z.ZodError) {
-    return NextResponse.json(
-      {
-        error: 'Invalid request data',
-        details: error.errors.map(e => e.message).join(', '),
-      },
-      { status: 400 }
-    );
-  }
-
-  return NextResponse.json(
-    { error: 'Internal server error' },
-    { status: 500 }
-  );
-}
 
 async function handleBatchExport(encounterId: string, userId: string, options: any) {
   const exportOptions = {

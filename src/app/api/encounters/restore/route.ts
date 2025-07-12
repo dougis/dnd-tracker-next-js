@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import { withAuth } from '@/lib/api/route-helpers';
-import { z } from 'zod';
-
-const restoreBodySchema = z.object({
-  backupData: z.string().min(1, 'Backup data is required'),
-  format: z.enum(['json', 'xml']),
-  options: z.object({
-    preserveIds: z.boolean().default(false),
-    createMissingCharacters: z.boolean().default(true),
-    overwriteExisting: z.boolean().default(false),
-    selectiveRestore: z.array(z.string()).optional(),
-  }).default({}),
-});
+import {
+  restoreBodySchema,
+  handleApiError,
+  parseBackupData,
+  validateBackupStructure,
+  performImportOperation,
+  createRestoreResponse,
+  createSuccessResponse,
+  createErrorResponse,
+} from '../shared-route-helpers';
 
 export async function POST(request: NextRequest) {
   return withAuth(async (userId: string) => {
@@ -20,9 +18,11 @@ export async function POST(request: NextRequest) {
       const body = await request.json();
       const validatedBody = restoreBodySchema.parse(body);
 
-      const backupData = parseBackupData(validatedBody);
+      const backupData = parseBackupData(validatedBody.backupData, validatedBody.format);
       const validationError = validateBackupStructure(backupData);
-      if (validationError) return validationError;
+      if (validationError) {
+        return createErrorResponse(validationError, 400);
+      }
 
       const importOptions = {
         ownerId: userId,
@@ -31,31 +31,15 @@ export async function POST(request: NextRequest) {
 
       const { results, errors } = await processEncounters(backupData, validatedBody, importOptions);
 
-      const response = buildRestoreResponse(results, errors, backupData);
-      return NextResponse.json(response);
+      const response = createRestoreResponse(results, errors, backupData);
+      return createSuccessResponse(response);
     } catch (error) {
-      return handleRestoreError(error);
+      return handleApiError(error);
     }
   });
 }
 
-function parseBackupData(validatedBody: any): any {
-  if (validatedBody.format === 'json') {
-    return JSON.parse(validatedBody.backupData);
-  } else {
-    return parseXmlBackup(validatedBody.backupData);
-  }
-}
 
-function validateBackupStructure(backupData: any): NextResponse | null {
-  if (!backupData.metadata || !backupData.encounters || !Array.isArray(backupData.encounters)) {
-    return NextResponse.json(
-      { error: 'Invalid backup data structure' },
-      { status: 400 }
-    );
-  }
-  return null;
-}
 
 async function processEncounters(backupData: any, validatedBody: any, importOptions: any) {
   const results: any[] = [];
@@ -85,17 +69,8 @@ function shouldSkipEncounter(encounter: any, options: any, index: number): boole
 }
 
 async function importEncounter(encounter: any, format: string, importOptions: any) {
-  if (format === 'json') {
-    return await EncounterServiceImportExport.importFromJson(
-      JSON.stringify(encounter),
-      importOptions
-    );
-  } else {
-    return await EncounterServiceImportExport.importFromXml(
-      encounter,
-      importOptions
-    );
-  }
+  const data = format === 'json' ? JSON.stringify(encounter) : encounter;
+  return await performImportOperation(data, format as 'json' | 'xml', importOptions);
 }
 
 function processImportResult(result: any, encounter: any, index: number, results: any[], errors: any[]) {
@@ -121,83 +96,5 @@ function addImportError(error: any, encounter: any, index: number, errors: any[]
   });
 }
 
-function buildRestoreResponse(results: any[], errors: any[], backupData: any) {
-  return {
-    success: true,
-    restored: results,
-    errors: errors.length > 0 ? errors : undefined,
-    summary: {
-      totalEncounters: backupData.encounters.length,
-      successfullyRestored: results.length,
-      failed: errors.length,
-      backupDate: backupData.metadata.backupDate,
-    },
-  };
-}
 
-function handleRestoreError(error: any): NextResponse {
-  console.error('Restore error:', error);
 
-  if (error instanceof z.ZodError) {
-    return NextResponse.json(
-      {
-        error: 'Invalid request data',
-        details: error.errors.map(e => e.message).join(', '),
-      },
-      { status: 400 }
-    );
-  }
-
-  if (error instanceof SyntaxError) {
-    return NextResponse.json(
-      { error: 'Invalid backup data format' },
-      { status: 400 }
-    );
-  }
-
-  return NextResponse.json(
-    { error: 'Internal server error' },
-    { status: 500 }
-  );
-}
-
-function parseXmlBackup(xmlData: string): any {
-  const { XMLParser } = require('fast-xml-parser');
-
-  const parser = new XMLParser({
-    ignoreAttributes: false,
-    parseAttributeValue: false,
-    trimValues: true,
-    parseTrueNumberOnly: false,
-  });
-
-  try {
-    const jsonObj = parser.parse(xmlData);
-
-    if (!jsonObj.encounterBackup) {
-      throw new Error('Invalid backup XML structure');
-    }
-
-    const backup = jsonObj.encounterBackup;
-    const metadata = {
-      backupDate: backup.metadata?.backupDate || '',
-      userId: backup.metadata?.userId || '',
-      encounterCount: parseInt(backup.metadata?.encounterCount || '0', 10),
-      format: backup.metadata?.format || 'xml',
-    };
-
-    const encounters = Array.isArray(backup.encounters?.encounter)
-      ? backup.encounters.encounter
-      : backup.encounters?.encounter
-        ? [backup.encounters.encounter]
-        : [];
-
-    return {
-      metadata,
-      encounters,
-    };
-  } catch (error) {
-    console.error('XML parsing error:', error);
-    throw new Error('Failed to parse XML backup data');
-  }
-}

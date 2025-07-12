@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { EncounterServiceImportExport } from '@/lib/services/EncounterServiceImportExport';
 import { EncounterService } from '@/lib/services/EncounterService';
 import { withAuth } from '@/lib/api/route-helpers';
-import { z } from 'zod';
-
-const backupQuerySchema = z.object({
-  includeCharacterSheets: z.string().transform(v => v === 'true').default('true'),
-  includePrivateNotes: z.string().transform(v => v === 'true').default('true'),
-  format: z.enum(['json', 'xml']).default('json'),
-});
+import {
+  backupQuerySchema,
+  handleApiError,
+  performExportOperation,
+  createExportResponse,
+  generateExportFilename,
+  convertBackupToXml,
+} from '../shared-route-helpers';
 
 export async function GET(request: NextRequest) {
   return withAuth(async (userId: string) => {
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
 
       return createBackupResponse(backupData, validatedQuery.format);
     } catch (error) {
-      return handleBackupError(error);
+      return handleApiError(error);
     }
   });
 }
@@ -71,75 +72,17 @@ async function createBackupData(encounters: any[], userId: string, validatedQuer
 }
 
 async function exportEncounter(encounterId: string, userId: string, format: string, exportOptions: any) {
-  if (format === 'json') {
-    return await EncounterServiceImportExport.exportToJson(encounterId, userId, exportOptions);
-  } else {
-    return await EncounterServiceImportExport.exportToXml(encounterId, userId, exportOptions);
-  }
+  return await performExportOperation(encounterId, userId, format as 'json' | 'xml', exportOptions);
 }
 
 function createBackupResponse(backupData: any, format: string) {
-  const contentType = format === 'json' ? 'application/json' : 'application/xml';
-  const filename = `encounters-backup-${Date.now()}.${format}`;
+  const filename = generateExportFilename('encounters-backup', '', format).replace('--', '-');
 
   const responseData = format === 'json'
     ? JSON.stringify(backupData, null, 2)
     : convertBackupToXml(backupData);
 
-  return new NextResponse(responseData, {
-    status: 200,
-    headers: {
-      'Content-Type': contentType,
-      'Content-Disposition': `attachment; filename="${filename}"`,
-    },
-  });
+  return createExportResponse(responseData, format as 'json' | 'xml', filename);
 }
 
-function handleBackupError(error: any): NextResponse {
-  console.error('Backup error:', error);
 
-  if (error instanceof z.ZodError) {
-    return NextResponse.json(
-      {
-        error: 'Invalid request parameters',
-        details: error.errors.map(e => e.message).join(', '),
-      },
-      { status: 400 }
-    );
-  }
-
-  return NextResponse.json(
-    { error: 'Internal server error' },
-    { status: 500 }
-  );
-}
-
-function convertBackupToXml(backupData: any): string {
-  const escapeXml = (text: string): string => {
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  };
-
-  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-  xml += '<encounterBackup>\n';
-  xml += '  <metadata>\n';
-  xml += `    <backupDate>${backupData.metadata.backupDate}</backupDate>\n`;
-  xml += `    <userId>${escapeXml(backupData.metadata.userId)}</userId>\n`;
-  xml += `    <encounterCount>${backupData.metadata.encounterCount}</encounterCount>\n`;
-  xml += `    <format>${backupData.metadata.format}</format>\n`;
-  xml += '  </metadata>\n';
-  xml += '  <encounters>\n';
-
-  for (const encounter of backupData.encounters) {
-    xml += `    <encounter>${escapeXml(encounter)}</encounter>\n`;
-  }
-
-  xml += '  </encounters>\n';
-  xml += '</encounterBackup>';
-
-  return xml;
-}
