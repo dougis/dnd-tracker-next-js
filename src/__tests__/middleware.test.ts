@@ -43,83 +43,46 @@ beforeEach(() => {
   (getToken as jest.Mock).mockReset();
 });
 
+// Helper functions to reduce code duplication
+const createTestRequest = (pathname: string): NextRequest => ({
+  nextUrl: { pathname },
+  url: `http://localhost:3000${pathname}`,
+} as NextRequest);
+
+const testProtectedRoute = async (pathname: string): Promise<void> => {
+  const { middleware } = await import('../middleware');
+  const request = createTestRequest(pathname);
+
+  (getToken as jest.Mock).mockResolvedValue(null);
+
+  await middleware(request);
+
+  expect(getToken).toHaveBeenCalledWith({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
+};
+
 describe('Middleware Route Protection', () => {
   describe('Protected Route Detection', () => {
     it('should identify dashboard routes as protected', async () => {
-      const { middleware } = await import('../middleware');
-      const request = {
-        nextUrl: { pathname: '/dashboard' },
-        url: 'http://localhost:3000/dashboard',
-      } as NextRequest;
-
-      (getToken as jest.Mock).mockResolvedValue(null);
-
-      await middleware(request);
-
-      expect(getToken).toHaveBeenCalledWith({
-        req: request,
-        secret: process.env.NEXTAUTH_SECRET,
-      });
+      await testProtectedRoute('/dashboard');
     });
 
     it('should identify characters routes as protected', async () => {
-      const { middleware } = await import('../middleware');
-
-      const request = {
-        nextUrl: { pathname: '/characters/create' },
-        url: 'http://localhost:3000/characters/create',
-      } as NextRequest;
-
-      (getToken as jest.Mock).mockResolvedValue(null);
-
-      await middleware(request);
-
-      expect(getToken).toHaveBeenCalled();
+      await testProtectedRoute('/characters/create');
     });
 
     it('should identify encounters routes as protected', async () => {
-      const { middleware } = await import('../middleware');
-
-      const request = {
-        nextUrl: { pathname: '/encounters/new' },
-        url: 'http://localhost:3000/encounters/new',
-      } as NextRequest;
-
-      (getToken as jest.Mock).mockResolvedValue(null);
-
-      await middleware(request);
-
-      expect(getToken).toHaveBeenCalled();
+      await testProtectedRoute('/encounters/new');
     });
 
     it('should identify combat routes as protected', async () => {
-      const { middleware } = await import('../middleware');
-
-      const request = {
-        nextUrl: { pathname: '/combat/123' },
-        url: 'http://localhost:3000/combat/123',
-      } as NextRequest;
-
-      (getToken as jest.Mock).mockResolvedValue(null);
-
-      await middleware(request);
-
-      expect(getToken).toHaveBeenCalled();
+      await testProtectedRoute('/combat/123');
     });
 
     it('should identify settings routes as protected', async () => {
-      const { middleware } = await import('../middleware');
-
-      const request = {
-        nextUrl: { pathname: '/settings' },
-        url: 'http://localhost:3000/settings',
-      } as NextRequest;
-
-      (getToken as jest.Mock).mockResolvedValue(null);
-
-      await middleware(request);
-
-      expect(getToken).toHaveBeenCalled();
+      await testProtectedRoute('/settings');
     });
   });
 
