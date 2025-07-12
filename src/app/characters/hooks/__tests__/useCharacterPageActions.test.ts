@@ -157,7 +157,7 @@ describe('useCharacterPageActions', () => {
         (CharacterService.deleteCharacter as jest.Mock).mockResolvedValue(mockError);
 
         const { result } = renderHook(() => useCharacterPageActions());
-        
+
         await act(async () => {
           await result.current.deleteCharacter(mockCharacter);
         });

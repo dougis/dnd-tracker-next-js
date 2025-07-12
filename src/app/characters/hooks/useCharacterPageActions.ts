@@ -77,7 +77,7 @@ export function useCharacterPageActions() {
 
       // Simple prompt for character name
       const newName = prompt(`Enter name for the duplicate character:`, `${character.name} (Copy)`);
-      
+
       if (!newName) {
         return false; // User cancelled
       }
