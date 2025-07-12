@@ -106,6 +106,21 @@ describe('Middleware Route Protection', () => {
 
       expect(getToken).toHaveBeenCalled();
     });
+
+    it('should identify settings routes as protected', async () => {
+      const { middleware } = await import('../middleware');
+
+      const request = {
+        nextUrl: { pathname: '/settings' },
+        url: 'http://localhost:3000/settings',
+      } as NextRequest;
+
+      (getToken as jest.Mock).mockResolvedValue(null);
+
+      await middleware(request);
+
+      expect(getToken).toHaveBeenCalled();
+    });
   });
 
   describe('Public Route Handling', () => {
@@ -231,6 +246,31 @@ describe('Middleware Route Protection', () => {
       expect(mockNext).toHaveBeenCalled();
       expect(mockRedirect).not.toHaveBeenCalled();
     });
+
+    it('should redirect unauthenticated users from settings page to signin', async () => {
+      const { middleware } = await import('../middleware');
+
+      const request = {
+        nextUrl: { pathname: '/settings' },
+        url: 'http://localhost:3000/settings',
+      } as NextRequest;
+
+      (getToken as jest.Mock).mockResolvedValue(null);
+      mockRedirect.mockReturnValue({ type: 'redirect' });
+
+      const _result = await middleware(request);
+
+      expect(getToken).toHaveBeenCalledWith({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET,
+      });
+      expect(mockRedirect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          href: expect.stringContaining('/signin'),
+          searchParams: expect.any(Object),
+        })
+      );
+    });
   });
 
   describe('Edge Cases', () => {
@@ -242,6 +282,8 @@ describe('Middleware Route Protection', () => {
         '/characters/123/edit',
         '/encounters/456/participants',
         '/combat/789/round/1',
+        '/settings/profile',
+        '/settings/notifications',
       ];
 
       for (const pathname of nestedRoutes) {
@@ -320,6 +362,7 @@ describe('Middleware Route Protection', () => {
         '/characters/:path*',
         '/encounters/:path*',
         '/combat/:path*',
+        '/settings/:path*',
         '/api/users/:path*',
         '/api/characters/:path*',
         '/api/encounters/:path*',
