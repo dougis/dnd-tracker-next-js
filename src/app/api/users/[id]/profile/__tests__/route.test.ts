@@ -2,15 +2,14 @@ import { PATCH, GET } from '../route';
 import { UserService } from '@/lib/services/UserService';
 import { auth } from '@/lib/auth';
 import {
-  TEST_USER_ID,
-  createMockSession,
-  createMockParams,
-  createMockRequest,
+  SHARED_API_TEST_CONSTANTS,
   createMockUser,
   createRequestBody,
   expectSuccessResponse,
   expectErrorResponse,
-} from './test-helpers';
+  setupAPITestWithAuth,
+  createRouteTestExecutor
+} from '@/lib/test-utils/shared-api-test-helpers';
 
 // Mock dependencies
 jest.mock('@/lib/services/UserService');
@@ -20,12 +19,12 @@ const mockUserService = UserService as jest.Mocked<typeof UserService>;
 const mockAuth = auth as jest.MockedFunction<typeof auth>;
 
 describe('/api/users/[id]/profile', () => {
-  const mockSession = createMockSession();
-  const mockParams = createMockParams();
+  const TEST_USER_ID = SHARED_API_TEST_CONSTANTS.TEST_USER_ID;
+  const routeExecutor = createRouteTestExecutor(PATCH, '/api/users');
+  const getExecutor = createRouteTestExecutor(GET, '/api/users');
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    mockAuth.mockResolvedValue(mockSession as any);
+    setupAPITestWithAuth(mockAuth, mockUserService);
   });
 
   describe('PATCH /api/users/[id]/profile', () => {
@@ -38,8 +37,7 @@ describe('/api/users/[id]/profile', () => {
         data: mockUpdatedUser,
       });
 
-      const request = createMockRequest(requestBody);
-      const response = await PATCH(request, { params: mockParams });
+      const response = await routeExecutor(TEST_USER_ID, requestBody, 'PATCH');
 
       await expectSuccessResponse(response, {
         message: 'Profile updated successfully',
@@ -55,19 +53,17 @@ describe('/api/users/[id]/profile', () => {
     it('should return 401 when user is not authenticated', async () => {
       mockAuth.mockResolvedValue(null);
 
-      const request = createMockRequest({ displayName: 'Test' });
-      const response = await PATCH(request, { params: mockParams });
+      const response = await routeExecutor(TEST_USER_ID, { displayName: 'Test' }, 'PATCH');
 
       await expectErrorResponse(response, 401, 'Authentication required');
       expect(mockUserService.updateUserProfile).not.toHaveBeenCalled();
     });
 
     it('should return 403 when user tries to update another user\'s profile', async () => {
-      const otherUserId = '507f1f77bcf86cd799439012';
-      const otherParams = createMockParams(otherUserId);
+      const differentUserId = '507f1f77bcf86cd799439012';
+      setupAPITestWithAuth(mockAuth, mockUserService, differentUserId);
 
-      const request = createMockRequest({ displayName: 'Test' });
-      const response = await PATCH(request, { params: otherParams });
+      const response = await routeExecutor(TEST_USER_ID, { displayName: 'Test' }, 'PATCH');
 
       await expectErrorResponse(response, 403, 'You can only access your own profile');
       expect(mockUserService.updateUserProfile).not.toHaveBeenCalled();
@@ -79,8 +75,7 @@ describe('/api/users/[id]/profile', () => {
         experienceLevel: 'invalid', // Invalid enum value
       };
 
-      const request = createMockRequest(invalidData);
-      const response = await PATCH(request, { params: mockParams });
+      const response = await routeExecutor(TEST_USER_ID, invalidData, 'PATCH');
 
       await expectErrorResponse(response, 400, 'Validation error', true);
       expect(mockUserService.updateUserProfile).not.toHaveBeenCalled();
@@ -95,10 +90,9 @@ describe('/api/users/[id]/profile', () => {
         },
       });
 
-      const request = createMockRequest({ displayName: 'Test' });
-      const response = await PATCH(request, { params: mockParams });
+      const response = await routeExecutor(TEST_USER_ID, { displayName: 'Test' }, 'PATCH');
 
-      await expectErrorResponse(response, 404, 'User not found', true);
+      await expectErrorResponse(response, 404, 'User not found');
     });
   });
 
@@ -111,8 +105,7 @@ describe('/api/users/[id]/profile', () => {
         data: mockUser,
       });
 
-      const request = createMockRequest({}, 'GET');
-      const response = await GET(request, { params: mockParams });
+      const response = await getExecutor(TEST_USER_ID, undefined, 'GET');
 
       await expectSuccessResponse(response, { user: mockUser });
       expect(mockUserService.getUserById).toHaveBeenCalledWith(TEST_USER_ID);
@@ -121,19 +114,17 @@ describe('/api/users/[id]/profile', () => {
     it('should return 401 when user is not authenticated', async () => {
       mockAuth.mockResolvedValue(null);
 
-      const request = createMockRequest({}, 'GET');
-      const response = await GET(request, { params: mockParams });
+      const response = await getExecutor(TEST_USER_ID, undefined, 'GET');
 
       await expectErrorResponse(response, 401, 'Authentication required');
       expect(mockUserService.getUserById).not.toHaveBeenCalled();
     });
 
     it('should return 403 when user tries to view another user\'s profile', async () => {
-      const otherUserId = '507f1f77bcf86cd799439012';
-      const otherParams = createMockParams(otherUserId);
+      const differentUserId = '507f1f77bcf86cd799439012';
+      setupAPITestWithAuth(mockAuth, mockUserService, differentUserId);
 
-      const request = createMockRequest({}, 'GET');
-      const response = await GET(request, { params: otherParams });
+      const response = await getExecutor(TEST_USER_ID, undefined, 'GET');
 
       await expectErrorResponse(response, 403, 'You can only access your own profile');
       expect(mockUserService.getUserById).not.toHaveBeenCalled();
@@ -148,8 +139,7 @@ describe('/api/users/[id]/profile', () => {
         },
       });
 
-      const request = createMockRequest({}, 'GET');
-      const response = await GET(request, { params: mockParams });
+      const response = await getExecutor(TEST_USER_ID, undefined, 'GET');
 
       await expectErrorResponse(response, 404, 'User not found');
     });

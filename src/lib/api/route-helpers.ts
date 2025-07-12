@@ -220,29 +220,11 @@ export function createValidatedRouteHandler<T>(
 }
 
 /**
- * Generic handler for simple GET routes
+ * Generic handler for simple routes (GET, DELETE, etc.) that don't need request body validation
  */
-export function createGetRouteHandler(
+export function createSimpleRouteHandler(
   serviceCall: (_userId: string) => Promise<any>,
-  errorOptions?: {
-    defaultErrorMessage?: string;
-    defaultErrorStatus?: number;
-  }
-) {
-  return async (_request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
-    return withAuthAndAccess(params, async (userId) => {
-      const result = await serviceCall(userId);
-      return handleUserServiceResult(result, undefined, errorOptions);
-    });
-  };
-}
-
-/**
- * Generic handler for DELETE routes
- */
-export function createDeleteRouteHandler(
-  serviceCall: (_userId: string) => Promise<any>,
-  successMessage: string,
+  successMessage?: string,
   errorOptions?: {
     defaultErrorMessage?: string;
     defaultErrorStatus?: number;
@@ -255,3 +237,26 @@ export function createDeleteRouteHandler(
     });
   };
 }
+
+/**
+ * Legacy alias for backward compatibility - use createSimpleRouteHandler instead
+ */
+export const createGetRouteHandler = (
+  serviceCall: (_userId: string) => Promise<any>,
+  errorOptions?: {
+    defaultErrorMessage?: string;
+    defaultErrorStatus?: number;
+  }
+) => createSimpleRouteHandler(serviceCall, undefined, errorOptions);
+
+/**
+ * Legacy alias for backward compatibility - use createSimpleRouteHandler instead
+ */
+export const createDeleteRouteHandler = (
+  serviceCall: (_userId: string) => Promise<any>,
+  successMessage: string,
+  errorOptions?: {
+    defaultErrorMessage?: string;
+    defaultErrorStatus?: number;
+  }
+) => createSimpleRouteHandler(serviceCall, successMessage, errorOptions);

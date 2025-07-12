@@ -82,31 +82,55 @@ export function setupSettingsBeforeEach(sessionData?: any, mockUseSessionFn?: an
 // ============================================================================
 
 /**
- * Mock a successful API response
+ * Generic API response mocker that consolidates common patterns
  */
-export function mockApiSuccess(responseData?: any) {
-  mockFetch.mockResolvedValueOnce({
-    ok: true,
+export function mockApiResponse(
+  success: boolean,
+  options: {
+    message?: string;
+    statusCode?: number;
+    responseData?: any;
+    mockFetchFn?: any;
+  } = {}
+) {
+  const {
+    message = success ? 'Operation successful' : 'API Error',
+    statusCode = success ? 200 : 500,
+    responseData = {},
+    mockFetchFn = mockFetch
+  } = options;
+
+  mockFetchFn.mockResolvedValueOnce({
+    ok: success,
+    status: statusCode,
     json: async () => ({
-      success: true,
+      success,
+      message,
       ...responseData,
     }),
   });
 }
 
 /**
+ * Mock a successful API response
+ */
+export const mockApiSuccess = (responseData?: any) =>
+  mockApiResponse(true, { responseData });
+
+/**
  * Mock a failed API response
  */
-export function mockApiError(message: string = 'API Error', statusCode: number = 500) {
-  mockFetch.mockResolvedValueOnce({
-    ok: false,
-    json: async () => ({
-      success: false,
-      message,
-    }),
-    status: statusCode,
+export const mockApiError = (message: string = 'API Error', statusCode: number = 500) =>
+  mockApiResponse(false, { message, statusCode });
+
+/**
+ * Mock account deletion API response
+ */
+export const mockDeleteAccountResponse = (success: boolean, message: string = '', mockFetchFn?: any) =>
+  mockApiResponse(success, {
+    message: success ? 'Account deleted successfully' : message || 'Failed to delete account',
+    mockFetchFn
   });
-}
 
 /**
  * Mock a network error
@@ -114,20 +138,6 @@ export function mockApiError(message: string = 'API Error', statusCode: number =
 export function mockNetworkError(errorMessage: string = 'Network error', mockFetchFn?: any) {
   const fetchMock = mockFetchFn || mockFetch;
   fetchMock.mockRejectedValueOnce(new Error(errorMessage));
-}
-
-/**
- * Mock account deletion API response
- */
-export function mockDeleteAccountResponse(success: boolean, message: string = '', mockFetchFn?: any) {
-  const fetchMock = mockFetchFn || mockFetch;
-  fetchMock.mockResolvedValueOnce({
-    ok: success,
-    json: async () => ({
-      success,
-      message: success ? 'Account deleted successfully' : message || 'Failed to delete account',
-    }),
-  });
 }
 
 /**
