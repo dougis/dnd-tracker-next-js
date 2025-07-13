@@ -1,8 +1,8 @@
 # Project Status Report
 
-**Project:** D&D Encounter Tracker Web App  
-**Status Date:** June 30, 2025  
-**Current Phase:** Phase 2 - Core Features Development  
+**Project:** D&D Encounter Tracker Web App
+**Status Date:** June 30, 2025
+**Current Phase:** Phase 2 - Core Features Development
 **Overall Progress:** 28% Complete (13 of 46 MVP issues)
 
 ## 1. Executive Summary
@@ -303,6 +303,6 @@ This consolidated Project Status report was created from the following legacy do
 - `legacy/FINAL PROJECT PLANNING SUMMARY.md` - Planning phase completion
   celebration and readiness assessment
 
-**Previous Status Date:** June 8-9, 2025 (legacy documents)  
-**Current Status Date:** June 30, 2025  
+**Previous Status Date:** June 8-9, 2025 (legacy documents)
+**Current Status Date:** June 30, 2025
 **Next Update Schedule:** Weekly during active development

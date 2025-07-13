@@ -132,7 +132,7 @@ create_backup() {
     
     if mongodump --uri="${MONGODB_URI}" --gzip --archive="${backup_path}"; then
         log_success "Backup created successfully: ${backup_path}"
-        echo "BACKUP_PATH=${backup_path}" >> $GITHUB_ENV || true  # For GitHub Actions
+        echo "BACKUP_PATH=${backup_path}" >> "$GITHUB_ENV" || true  # For GitHub Actions
     else
         log_error "Failed to create backup"
         exit 1

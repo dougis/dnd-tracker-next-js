@@ -1,8 +1,8 @@
 # High Level Design Document
 
-**Project:** D&D Encounter Tracker Web App  
-**Version:** 1.0  
-**Date:** June 8, 2025  
+**Project:** D&D Encounter Tracker Web App
+**Version:** 1.0
+**Date:** June 8, 2025
 **Framework:** Next.js 15 + MongoDB
 
 ## 1. Executive Summary

@@ -69,7 +69,7 @@ MONGODB_DB_NAME=dnd-tracker-dev
 # Optional OAuth Providers (if implementing social login)
 # GITHUB_ID=your-github-client-id
 # GITHUB_SECRET=your-github-client-secret
-# GOOGLE_ID=your-google-client-id  
+# GOOGLE_ID=your-google-client-id
 # GOOGLE_SECRET=your-google-client-secret
 
 # Optional Email Configuration (for password reset emails)
@@ -207,10 +207,10 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
      roles: ["readWrite"],
      database: "dnd-tracker-dev"
    }
-   
+
    // Production user (more restricted)
    {
-     username: "dnd-prod-user", 
+     username: "dnd-prod-user",
      password: "highly-secure-prod-password",
      roles: ["readWrite"],
      database: "dnd-tracker-prod"
@@ -222,7 +222,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
    ```bash
    # Development
    mongodb+srv://dnd-dev-user:password@dev-cluster.mongodb.net/dnd-tracker-dev?retryWrites=true&w=majority
-   
+
    # Production
    mongodb+srv://dnd-prod-user:password@prod-cluster.mongodb.net/dnd-tracker-prod?retryWrites=true&w=majority
    ```
@@ -299,7 +299,7 @@ Check that sessions are properly stored:
 ```javascript
 // In MongoDB Atlas, verify collections exist:
 // - accounts
-// - sessions  
+// - sessions
 // - users
 // - verification_tokens
 ```
@@ -411,7 +411,7 @@ export async function middleware(request: NextRequest) {
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
   });
-  
+
   if (!token) {
     return NextResponse.json(
       { error: 'Authentication required' },
@@ -441,7 +441,7 @@ export async function middleware(request: NextRequest) {
 ## Next Steps
 
 1. **Set up environment variables** for each deployment environment
-2. **Configure MongoDB Atlas** clusters and users  
+2. **Configure MongoDB Atlas** clusters and users
 3. **Generate secure secrets** for each environment
 4. **Set up email service** for password reset functionality
 5. **Configure OAuth providers** (optional)

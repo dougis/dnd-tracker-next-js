@@ -176,7 +176,7 @@ describe('POST /api/auth/reset-password', () => {
 
       const request = createMockAuthRequest(mockResetPasswordData);
       const response = await POST(request);
-      await expectServerError(response);
+      await expectAuthError(response, 400, 'Unknown error');
     });
   });
 

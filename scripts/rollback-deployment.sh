@@ -18,12 +18,8 @@ FORCE_ROLLBACK="${FORCE_ROLLBACK:-false}"
 CONFIG_FILE="./config/migration.${ENVIRONMENT}.json"
 if [[ -f "$CONFIG_FILE" && -x "$(command -v jq)" ]]; then
     echo "Loading rollback configuration from $CONFIG_FILE"
-    AUTO_ROLLBACK=$(jq -r '.rollback.autoRollback // true' "$CONFIG_FILE")
-    EMERGENCY_ROLLBACK=$(jq -r '.rollback.emergencyRollbackEnabled // true' "$CONFIG_FILE")
     NOTIFICATION_REQUIRED=$(jq -r '.rollback.rollbackNotificationRequired // true' "$CONFIG_FILE")
 else
-    AUTO_ROLLBACK="true"
-    EMERGENCY_ROLLBACK="true"
     NOTIFICATION_REQUIRED="true"
 fi
 
@@ -160,23 +156,29 @@ validate_prerequisites() {
 get_deployment_status() {
     echo "📊 Checking current deployment status..."
     
+    local app_healthy migration_accessible
+    
     # Check application health
     if curl -sf "https://dnd-tracker.fly.dev/api/health" >/dev/null 2>&1; then
         echo "✅ Application is responsive"
-        APP_HEALTHY="true"
+        app_healthy="true"
     else
         echo "❌ Application is not responding"
-        APP_HEALTHY="false"
+        app_healthy="false"
     fi
     
     # Check migration status
     if npm run migrate:status >/dev/null 2>&1; then
         echo "✅ Migration system is accessible"
-        MIGRATION_ACCESSIBLE="true"
+        migration_accessible="true"
     else
         echo "❌ Migration system is not accessible"
-        MIGRATION_ACCESSIBLE="false"
+        migration_accessible="false"
     fi
+    
+    # Export for use by calling functions
+    APP_HEALTHY="$app_healthy"
+    MIGRATION_ACCESSIBLE="$migration_accessible"
 }
 
 # Main rollback logic

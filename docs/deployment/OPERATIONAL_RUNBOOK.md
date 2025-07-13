@@ -49,7 +49,7 @@ This runbook provides step-by-step procedures for operating the D&D Tracker depl
    ```bash
    # Check backup was created
    ls -la /tmp/mongodb-backups/
-   
+
    # Test restoration (dry run)
    RESTORE_DRY_RUN=true \
    BACKUP_PATH=/tmp/mongodb-backups/backup-staging-latest.gz \
@@ -135,7 +135,7 @@ This runbook provides step-by-step procedures for operating the D&D Tracker depl
    ```bash
    # Check deployment logs
    flyctl logs -a dnd-tracker-production --since 1h
-   
+
    # Check monitoring for recent failures
    curl "https://dnd-tracker-production.fly.dev/api/monitoring/deployment?action=stats"
    ```

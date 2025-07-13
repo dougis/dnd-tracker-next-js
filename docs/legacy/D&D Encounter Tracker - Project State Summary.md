@@ -1,7 +1,7 @@
 # D&D Encounter Tracker - Project State Summary
 
-**Session Date:** June 24, 2025  
-**Repository:** [dougis/dnd-tracker-next-js](https://github.com/dougis/dnd-tracker-next-js)  
+**Session Date:** June 24, 2025
+**Repository:** [dougis/dnd-tracker-next-js](https://github.com/dougis/dnd-tracker-next-js)
 **Status:** 🚀 **MVP DEVELOPMENT IN PROGRESS**
 
 ## Project Overview
@@ -254,8 +254,8 @@ The MVP enables complete testing of the core D&D combat tracking workflow:
 
 ### Issue #17: User Service Layer Implementation ✅
 
-**Status:** COMPLETED and MERGED to main branch  
-**Completion Date:** December 24, 2025  
+**Status:** COMPLETED and MERGED to main branch
+**Completion Date:** December 24, 2025
 **Estimated Hours:** 8 hours | **Actual Hours:** 6 hours
 
 **Achievements:**

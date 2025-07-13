@@ -527,7 +527,32 @@ export class DeploymentManager {
    */
   async deploy(): Promise<FullDeploymentResult> {
     const startTime = Date.now();
-    const result: FullDeploymentResult = {
+    const result = this.initializeDeploymentResult();
+
+    try {
+      await this.recordMetric('validation', 'started');
+      await this.sendDeploymentStartNotification();
+
+      // Execute deployment steps
+      const success = await this.executeDeploymentSteps(result, startTime);
+      if (!success) {
+        return result;
+      }
+
+      result.metrics.totalTime = Date.now() - startTime;
+      await this.sendDeploymentSuccessNotification(result.metrics);
+      return result;
+
+    } catch (error) {
+      return this.handleDeploymentError(result, startTime, error);
+    }
+  }
+
+  /**
+   * Initialize deployment result structure
+   */
+  private initializeDeploymentResult(): FullDeploymentResult {
+    return {
       success: true,
       steps: [],
       dryRun: this.config.dryRun,
@@ -538,154 +563,230 @@ export class DeploymentManager {
         verificationTime: 0,
       },
     };
+  }
 
-    try {
-      // Record deployment start
-      await this.recordMetric('validation', 'started');
+  /**
+   * Send deployment start notification
+   */
+  private async sendDeploymentStartNotification(): Promise<void> {
+    await this.sendNotification({
+      type: 'deployment_started',
+      environment: this.config.environment,
+      timestamp: new Date(),
+    });
+  }
 
-      // Send deployment start notification
-      await this.sendNotification({
-        type: 'deployment_started',
-        environment: this.config.environment,
-        timestamp: new Date(),
+  /**
+   * Execute all deployment steps
+   */
+  private async executeDeploymentSteps(result: FullDeploymentResult, _startTime: number): Promise<boolean> {
+    const migrationStart = Date.now();
+
+    // Step 1: Validate
+    if (!await this.executeValidationStep(result, migrationStart)) {
+      return false;
+    }
+
+    // Step 2: Backup
+    if (!await this.executeBackupStep(result)) {
+      return false;
+    }
+
+    // Step 3: Migrate
+    if (!await this.executeMigrationStep(result, migrationStart)) {
+      return false;
+    }
+
+    // Step 4: Deploy
+    if (!await this.executeDeploymentStep(result)) {
+      return false;
+    }
+
+    // Step 5: Verify
+    return await this.executeVerificationStep(result);
+  }
+
+  /**
+   * Execute validation step
+   */
+  private async executeValidationStep(result: FullDeploymentResult, migrationStart: number): Promise<boolean> {
+    const validation = await this.validatePreDeployment();
+    if (!validation.isValid) {
+      await this.recordMetric('validation', 'failed', {
+        error: validation.errors.join(', '),
+        details: validation
       });
+      result.success = false;
+      result.failedStep = 'validate';
+      return false;
+    }
 
-      // Step 1: Validate pre-deployment
-      const migrationStart = Date.now();
-      const validation = await this.validatePreDeployment();
-      if (!validation.isValid) {
-        await this.recordMetric('validation', 'failed', {
-          error: validation.errors.join(', '),
-          details: validation
-        });
-        result.success = false;
-        result.failedStep = 'validate';
-        return result;
-      }
-      await this.recordMetric('validation', 'success', {
-        duration: Date.now() - migrationStart
+    await this.recordMetric('validation', 'success', {
+      duration: Date.now() - migrationStart
+    });
+    result.steps.push('validate');
+    return true;
+  }
+
+  /**
+   * Execute backup step
+   */
+  private async executeBackupStep(result: FullDeploymentResult): Promise<boolean> {
+    if (!this.config.backupEnabled || this.config.dryRun) {
+      return true;
+    }
+
+    await this.recordMetric('backup', 'started');
+    const backupStart = Date.now();
+    const backup = await this.createBackup();
+
+    if (!backup.success) {
+      await this.recordMetric('backup', 'failed', {
+        error: backup.error,
+        duration: Date.now() - backupStart
       });
-      result.steps.push('validate');
+      result.success = false;
+      result.failedStep = 'backup';
+      return false;
+    }
 
-      // Step 2: Create backup (if enabled and not dry run)
-      if (this.config.backupEnabled && !this.config.dryRun) {
-        await this.recordMetric('backup', 'started');
-        const backupStart = Date.now();
-        const backup = await this.createBackup();
-        if (!backup.success) {
-          await this.recordMetric('backup', 'failed', {
-            error: backup.error,
-            duration: Date.now() - backupStart
-          });
-          result.success = false;
-          result.failedStep = 'backup';
-          return result;
-        }
-        await this.recordMetric('backup', 'success', {
-          duration: Date.now() - backupStart,
-          details: { backupPath: backup.backupPath }
-        });
-        result.steps.push('backup');
-      }
+    await this.recordMetric('backup', 'success', {
+      duration: Date.now() - backupStart,
+      details: { backupPath: backup.backupPath }
+    });
+    result.steps.push('backup');
+    return true;
+  }
 
-      // Step 3: Run migrations
-      await this.recordMetric('migration', 'started');
-      const migrationStepStart = Date.now();
-      const migration = await this.runMigrations();
-      if (!migration.success) {
-        await this.recordMetric('migration', 'failed', {
-          error: migration.error,
-          duration: Date.now() - migrationStepStart
-        });
-        result.success = false;
-        result.failedStep = 'migrate';
-        result.migrationError = migration.error;
-        if (this.config.autoRollback) {
-          await this.recordMetric('rollback', 'started');
-          await this.rollback();
-          await this.recordMetric('rollback', 'success');
-          result.rollbackTriggered = true;
-        }
-        return result;
-      }
-      await this.recordMetric('migration', 'success', {
-        duration: Date.now() - migrationStepStart,
-        details: { migrationsExecuted: migration.migrationsExecuted }
+  /**
+   * Execute migration step
+   */
+  private async executeMigrationStep(result: FullDeploymentResult, migrationStart: number): Promise<boolean> {
+    await this.recordMetric('migration', 'started');
+    const migrationStepStart = Date.now();
+    const migration = await this.runMigrations();
+
+    if (!migration.success) {
+      await this.recordMetric('migration', 'failed', {
+        error: migration.error,
+        duration: Date.now() - migrationStepStart
       });
-      result.steps.push('migrate');
-      result.metrics.migrationTime = Date.now() - migrationStart;
+      result.success = false;
+      result.failedStep = 'migrate';
+      result.migrationError = migration.error;
 
-      // Step 4: Deploy to Fly.io
-      await this.recordMetric('deployment', 'started');
-      const deployStart = Date.now();
-      const deployment = await this.deployToFlyio();
-      if (!deployment.success) {
-        await this.recordMetric('deployment', 'failed', {
-          error: deployment.error,
-          duration: Date.now() - deployStart
-        });
-        result.success = false;
-        result.failedStep = 'deploy';
-        if (this.config.autoRollback) {
-          await this.recordMetric('rollback', 'started');
-          await this.rollback();
-          await this.recordMetric('rollback', 'success');
-          result.rollbackTriggered = true;
-        }
-        return result;
+      if (this.config.autoRollback) {
+        await this.executeAutoRollback();
+        result.rollbackTriggered = true;
       }
-      await this.recordMetric('deployment', 'success', {
-        duration: Date.now() - deployStart,
-        details: { deploymentId: deployment.deploymentId }
+      return false;
+    }
+
+    await this.recordMetric('migration', 'success', {
+      duration: Date.now() - migrationStepStart,
+      details: { migrationsExecuted: migration.migrationsExecuted }
+    });
+    result.steps.push('migrate');
+    result.metrics.migrationTime = Date.now() - migrationStart;
+    return true;
+  }
+
+  /**
+   * Execute deployment step
+   */
+  private async executeDeploymentStep(result: FullDeploymentResult): Promise<boolean> {
+    await this.recordMetric('deployment', 'started');
+    const deployStart = Date.now();
+    const deployment = await this.deployToFlyio();
+
+    if (!deployment.success) {
+      await this.recordMetric('deployment', 'failed', {
+        error: deployment.error,
+        duration: Date.now() - deployStart
       });
-      result.steps.push('deploy');
-      result.metrics.deploymentTime = Date.now() - deployStart;
+      result.success = false;
+      result.failedStep = 'deploy';
 
-      // Step 5: Verify deployment
-      await this.recordMetric('verification', 'started');
-      const verifyStart = Date.now();
-      const verification = await this.verifyDeployment();
-      if (!verification.success) {
-        await this.recordMetric('verification', 'failed', {
-          duration: Date.now() - verifyStart,
-          details: verification
-        });
-        result.success = false;
-        result.failedStep = 'verify';
-        return result;
+      if (this.config.autoRollback) {
+        await this.executeAutoRollback();
+        result.rollbackTriggered = true;
       }
-      await this.recordMetric('verification', 'success', {
+      return false;
+    }
+
+    await this.recordMetric('deployment', 'success', {
+      duration: Date.now() - deployStart,
+      details: { deploymentId: deployment.deploymentId }
+    });
+    result.steps.push('deploy');
+    result.metrics.deploymentTime = Date.now() - deployStart;
+    return true;
+  }
+
+  /**
+   * Execute verification step
+   */
+  private async executeVerificationStep(result: FullDeploymentResult): Promise<boolean> {
+    await this.recordMetric('verification', 'started');
+    const verifyStart = Date.now();
+    const verification = await this.verifyDeployment();
+
+    if (!verification.success) {
+      await this.recordMetric('verification', 'failed', {
         duration: Date.now() - verifyStart,
         details: verification
       });
-      result.steps.push('verify');
-      result.metrics.verificationTime = Date.now() - verifyStart;
-
-      result.metrics.totalTime = Date.now() - startTime;
-
-      // Send success notification
-      await this.sendNotification({
-        type: 'deployment_success',
-        environment: this.config.environment,
-        timestamp: new Date(),
-        metrics: result.metrics,
-      });
-
-      return result;
-    } catch (error) {
       result.success = false;
-      result.metrics.totalTime = Date.now() - startTime;
-
-      // Send failure notification
-      await this.sendNotification({
-        type: 'deployment_failed',
-        environment: this.config.environment,
-        timestamp: new Date(),
-        error: error instanceof Error ? error.message : String(error),
-      });
-
-      throw error;
+      result.failedStep = 'verify';
+      return false;
     }
+
+    await this.recordMetric('verification', 'success', {
+      duration: Date.now() - verifyStart,
+      details: verification
+    });
+    result.steps.push('verify');
+    result.metrics.verificationTime = Date.now() - verifyStart;
+    return true;
+  }
+
+  /**
+   * Execute auto rollback
+   */
+  private async executeAutoRollback(): Promise<void> {
+    await this.recordMetric('rollback', 'started');
+    await this.rollback();
+    await this.recordMetric('rollback', 'success');
+  }
+
+  /**
+   * Send deployment success notification
+   */
+  private async sendDeploymentSuccessNotification(metrics: any): Promise<void> {
+    await this.sendNotification({
+      type: 'deployment_success',
+      environment: this.config.environment,
+      timestamp: new Date(),
+      metrics,
+    });
+  }
+
+  /**
+   * Handle deployment error
+   */
+  private handleDeploymentError(result: FullDeploymentResult, startTime: number, error: unknown): FullDeploymentResult {
+    result.success = false;
+    result.metrics.totalTime = Date.now() - startTime;
+
+    // Send failure notification (fire and forget)
+    this.sendNotification({
+      type: 'deployment_failed',
+      environment: this.config.environment,
+      timestamp: new Date(),
+      error: error instanceof Error ? error.message : String(error),
+    }).catch(console.error);
+
+    return result;
   }
 
   /**

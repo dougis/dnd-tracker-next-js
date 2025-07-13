@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 
-**Product Name:** D&D Encounter Tracker Web App  
-**Version:** 2.3  
+**Product Name:** D&D Encounter Tracker Web App
+**Version:** 2.3
 **Date:** June 8, 2025
 
 ## 1. Purpose

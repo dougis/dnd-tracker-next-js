@@ -1,7 +1,7 @@
 # D&D Tracker MVP - 12-Week Development Phase Plan
 
-**Date:** June 9, 2025  
-**Repository:** dougis/dnd-tracker-next-js  
+**Date:** June 9, 2025
+**Repository:** dougis/dnd-tracker-next-js
 **Total MVP Issues:** 46 issues | **Total Effort:** 268 hours |
 **Average:** 22.3 hours/week
 
@@ -22,7 +22,7 @@
 
 ### **WEEK 1: Project Foundation**
 
-**Theme:** Core project setup and development environment  
+**Theme:** Core project setup and development environment
 **Total Effort:** 17 hours | **Issues:** 5
 
 | Issue | Title                                    | Priority | Effort | Dependencies |
@@ -45,7 +45,7 @@
 
 ### **WEEK 2: UI Foundation & Database**
 
-**Theme:** UI foundation and database configuration  
+**Theme:** UI foundation and database configuration
 **Total Effort:** 23 hours | **Issues:** 5
 
 | Issue | Title                              | Priority | Effort | Dependencies |
@@ -67,7 +67,7 @@
 
 ### **WEEK 3: Authentication & Core Components**
 
-**Theme:** Authentication setup and reusable components  
+**Theme:** Authentication setup and reusable components
 **Total Effort:** 24 hours | **Issues:** 4
 
 | Issue | Title                              | Priority | Effort | Dependencies |
@@ -88,7 +88,7 @@
 
 ### **WEEK 4: Authentication Complete & Data Models**
 
-**Theme:** Complete authentication flow and user data layer  
+**Theme:** Complete authentication flow and user data layer
 **Total Effort:** 24 hours | **Issues:** 5
 
 | Issue | Title                        | Priority | Effort | Dependencies |
@@ -110,7 +110,7 @@
 
 ### **WEEK 5: Character Data Layer**
 
-**Theme:** Character system foundation and creation  
+**Theme:** Character system foundation and creation
 **Total Effort:** 22 hours | **Issues:** 4
 
 | Issue | Title                          | Priority | Effort | Dependencies |
@@ -131,7 +131,7 @@
 
 ### **WEEK 6: Character Management**
 
-**Theme:** Complete character management interface  
+**Theme:** Complete character management interface
 **Total Effort:** 24 hours | **Issues:** 4
 
 | Issue | Title                              | Priority | Effort | Dependencies |
@@ -152,7 +152,7 @@
 
 ### **WEEK 7: Encounter Data Layer & NPCs**
 
-**Theme:** Encounter system foundation and NPC support  
+**Theme:** Encounter system foundation and NPC support
 **Total Effort:** 22 hours | **Issues:** 4
 
 | Issue | Title                         | Priority | Effort | Dependencies |
@@ -173,7 +173,7 @@
 
 ### **WEEK 8: Encounter Management**
 
-**Theme:** Complete encounter building and management  
+**Theme:** Complete encounter building and management
 **Total Effort:** 24 hours | **Issues:** 4
 
 | Issue | Title                             | Priority | Effort | Dependencies |
@@ -194,7 +194,7 @@
 
 ### **WEEK 9: Combat Foundation**
 
-**Theme:** Core combat system setup  
+**Theme:** Core combat system setup
 **Total Effort:** 24 hours | **Issues:** 4
 
 | Issue | Title                          | Priority | Effort | Dependencies |
@@ -215,7 +215,7 @@
 
 ### **WEEK 10: Combat Core Systems**
 
-**Theme:** Turn management and HP tracking  
+**Theme:** Turn management and HP tracking
 **Total Effort:** 21 hours | **Issues:** 3
 
 | Issue | Title                 | Priority | Effort | Dependencies |
@@ -235,7 +235,7 @@
 
 ### **WEEK 11: Advanced Combat & Settings**
 
-**Theme:** Combat enhancements and encounter features  
+**Theme:** Combat enhancements and encounter features
 **Total Effort:** 16 hours | **Issues:** 3
 
 | Issue | Title                              | Priority | Effort | Dependencies |
@@ -255,7 +255,7 @@
 
 ### **WEEK 12: Final Polish & Completion**
 
-**Theme:** Bug fixes, optimization, and deployment preparation  
+**Theme:** Bug fixes, optimization, and deployment preparation
 **Total Effort:** 16-20 hours | **Buffer Week**
 
 #### Week 12 Focus

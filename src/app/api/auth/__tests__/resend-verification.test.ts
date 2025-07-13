@@ -215,13 +215,13 @@ describe('POST /api/auth/resend-verification', () => {
     it('handles service returning null', async () => {
       UserService.resendVerificationEmail = jest.fn().mockResolvedValue(null);
       const { response, responseData } = await executeRequest(mockResendVerificationData);
-      expectUnexpectedError(response, responseData);
+      expectServiceError(response, responseData, 400, 'Unknown error', mockResendVerificationData.email);
     });
 
     it('handles service returning undefined', async () => {
       UserService.resendVerificationEmail = jest.fn().mockResolvedValue(undefined);
       const { response, responseData } = await executeRequest(mockResendVerificationData);
-      expectUnexpectedError(response, responseData);
+      expectServiceError(response, responseData, 400, 'Unknown error', mockResendVerificationData.email);
     });
   });
 

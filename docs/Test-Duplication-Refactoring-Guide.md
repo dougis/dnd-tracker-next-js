@@ -91,7 +91,7 @@ Created comprehensive test helper utilities to eliminate common patterns:
      { name: 'field B', data: {...}, expected: {...} },
      { name: 'field C', data: {...}, expected: {...} }
    ];
-   
+
    fieldTestCases.forEach(testCase => {
      it(`should validate ${testCase.name}`, () => {
        executeValidationTest(testCase.data, testCase.expected);
@@ -102,7 +102,7 @@ Created comprehensive test helper utilities to eliminate common patterns:
 4. **Extract Common Utilities**
    ```typescript
    // Extract repeated patterns to helper functions
-   function testFieldValidation(fieldName: string, validData: any, 
+   function testFieldValidation(fieldName: string, validData: any,
                                 invalidData: any) {
      // Common validation testing logic
    }
@@ -177,13 +177,13 @@ testCases.forEach(testCase => {
 ### For Character Form Tests
 
 ```typescript
-import { CharacterFormHelpers, createFieldValidationTests } from 
+import { CharacterFormHelpers, createFieldValidationTests } from
   '@/components/forms/__tests__/formTestHelpers';
 
 describe('CharacterFormSection', () => {
   const validationTestCases = createFieldValidationTests('fieldName', [
     { label: 'valid data', value: 'valid', shouldBeValid: true },
-    { label: 'invalid data', value: '', shouldBeValid: false, 
+    { label: 'invalid data', value: '', shouldBeValid: false,
       expectedError: 'Required' }
   ]);
 
@@ -196,12 +196,12 @@ describe('CharacterFormSection', () => {
 ### For Validation Schema Tests
 
 ```typescript
-import { runValidationTests, createStringValidationTests } from 
+import { runValidationTests, createStringValidationTests } from
   '@/lib/validations/__tests__/validationTestHelpers';
 
 describe('UserSchema', () => {
   const testCases = [
-    ...createStringValidationTests('username', 
+    ...createStringValidationTests('username',
       { required: true, minLength: 3 }),
     ...createEmailValidationTests('email')
   ];

@@ -37,8 +37,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Validate confirmation input
+        env:
+          CONFIRMATION_INPUT: ${{ github.event.inputs.confirm_production }}
         run: |
-          if [[ "${{ github.event.inputs.confirm_production }}" != "DEPLOY_TO_PRODUCTION" ]]; then
+          if [[ "$CONFIRMATION_INPUT" != "DEPLOY_TO_PRODUCTION" ]]; then
             echo "❌ Production deployment not confirmed"
             echo "Please type 'DEPLOY_TO_PRODUCTION' exactly to confirm production deployment"
             exit 1
@@ -46,8 +48,10 @@ jobs:
           echo "✅ Production deployment confirmed"
 
       - name: Check deployment authorization
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
         run: |
-          echo "Deployment requested by: ${{ github.actor }}"
+          echo "Deployment requested by: $GITHUB_ACTOR"
           echo "Deployment confirmed at: $(date)"
 
   comprehensive-testing:
@@ -209,17 +213,21 @@ jobs:
         run: npm ci
 
       - name: Setup Fly.io CLI
-        uses: superfly/flyctl-actions/setup-flyctl@master
+        uses: superfly/flyctl-actions/setup-flyctl@9c59df3b7f72d50f5e42fe0e9c9d18cf6c95aa38
         with:
           version: latest
 
       - name: Pre-deployment notification
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          SKIP_MIGRATIONS: ${{ github.event.inputs.skip_migrations }}
+          SKIP_BACKUP: ${{ github.event.inputs.skip_backup }}
         run: |
           echo "🚀 Starting production deployment..."
           echo "Deployment time: $(date)"
-          echo "Deployed by: ${{ github.actor }}"
-          echo "Skip migrations: ${{ github.event.inputs.skip_migrations }}"
-          echo "Skip backup: ${{ github.event.inputs.skip_backup }}"
+          echo "Deployed by: $GITHUB_ACTOR"
+          echo "Skip migrations: $SKIP_MIGRATIONS"
+          echo "Skip backup: $SKIP_BACKUP"
 
       - name: Deploy to production with enhanced monitoring
         env:
@@ -329,12 +337,15 @@ jobs:
           echo "✅ Production smoke tests completed"
 
       - name: Update deployment status
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_ACTOR: ${{ github.actor }}
         run: |
           echo "📝 Recording deployment details..."
           echo "Deployment completed at: $(date)"
           echo "Deployment duration: $((SECONDS / 60)) minutes"
-          echo "Git commit: ${{ github.sha }}"
-          echo "Deployed by: ${{ github.actor }}"
+          echo "Git commit: $GITHUB_SHA"
+          echo "Deployed by: $GITHUB_ACTOR"
 
       - name: Notify deployment success
         if: success()
@@ -377,16 +388,21 @@ jobs:
           echo "✅ Extended monitoring completed"
 
       - name: Generate deployment report
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_SHA: ${{ github.sha }}
+          SKIP_MIGRATIONS: ${{ github.event.inputs.skip_migrations }}
+          SKIP_BACKUP: ${{ github.event.inputs.skip_backup }}
         run: |
           echo "📊 Generating deployment report..."
           cat << EOF > deployment-report.md
           # Production Deployment Report
           
           **Deployment Date:** $(date)
-          **Deployed by:** ${{ github.actor }}
-          **Git Commit:** ${{ github.sha }}
-          **Skip Migrations:** ${{ github.event.inputs.skip_migrations }}
-          **Skip Backup:** ${{ github.event.inputs.skip_backup }}
+          **Deployed by:** $GITHUB_ACTOR
+          **Git Commit:** $GITHUB_SHA
+          **Skip Migrations:** $SKIP_MIGRATIONS
+          **Skip Backup:** $SKIP_BACKUP
           
           ## Status
           - ✅ Deployment successful
@@ -413,7 +429,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Fly.io CLI
-        uses: superfly/flyctl-actions/setup-flyctl@master
+        uses: superfly/flyctl-actions/setup-flyctl@9c59df3b7f72d50f5e42fe0e9c9d18cf6c95aa38
         with:
           version: latest
 
@@ -421,6 +437,7 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN_PROD }}
           MONGODB_URI: ${{ secrets.MONGODB_URI_PROD }}
+          SKIP_MIGRATIONS: ${{ github.event.inputs.skip_migrations }}
         run: |
           echo "🚨 EMERGENCY: Production deployment failed, executing rollback..."
           
@@ -429,7 +446,7 @@ jobs:
           flyctl rollback --app dnd-tracker-next-js-prod --yes || echo "App rollback failed"
           
           # Rollback migrations if they were executed
-          if [[ "${{ github.event.inputs.skip_migrations }}" != "true" ]]; then
+          if [[ "$SKIP_MIGRATIONS" != "true" ]]; then
             echo "🔄 Rolling back database migrations..."
             npm install -g tsx
             npm ci

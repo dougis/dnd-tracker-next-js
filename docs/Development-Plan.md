@@ -1,8 +1,8 @@
 # Development Plan
 
-**Project:** D&D Encounter Tracker Web App  
-**Version:** 2.0  
-**Date:** June 30, 2025  
+**Project:** D&D Encounter Tracker Web App
+**Version:** 2.0
+**Date:** June 30, 2025
 **Scope:** 12-Week MVP Development with Post-MVP Roadmap
 
 ## 1. Project Overview
@@ -60,7 +60,7 @@ phases, focusing on:
 
 #### **Phase 2: Authentication & Core Components (Weeks 4-6)**
 
-**Status**: In Progress  
+**Status**: In Progress
 **Focus**: User authentication, data models, and core UI patterns
 
 **Week 4 Issues (Priority 1):**
@@ -133,10 +133,10 @@ phases, focusing on:
 Each GitHub issue follows this standardized format:
 
 ```markdown
-**Phase**: Week X  
-**Priority**: P1/P2  
-**Estimated Effort**: X hours  
-**Dependencies**: Issue #Y, #Z  
+**Phase**: Week X
+**Priority**: P1/P2
+**Estimated Effort**: X hours
+**Dependencies**: Issue #Y, #Z
 **MVP Component**: [Component Area]
 
 ## Acceptance Criteria
@@ -326,5 +326,5 @@ This consolidated Development Plan was created from the following legacy documen
   descriptions and CLI commands
 - `legacy/Project Roadmap.md` - Long-term feature roadmap and post-MVP planning
 
-**Last Updated:** June 30, 2025  
+**Last Updated:** June 30, 2025
 **Document Status:** Current with Phase 1 completion reflected

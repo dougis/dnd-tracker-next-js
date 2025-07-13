@@ -1,8 +1,8 @@
 # High Level Design Document (HLD)
 
-**Project:** D&D Encounter Tracker Web App  
-**Version:** 1.0  
-**Date:** June 8, 2025  
+**Project:** D&D Encounter Tracker Web App
+**Version:** 1.0
+**Date:** June 8, 2025
 **Architecture:** Next.js 15 Full-Stack Application
 
 ## 1. System Architecture Overview

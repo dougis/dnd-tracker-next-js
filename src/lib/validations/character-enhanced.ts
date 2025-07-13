@@ -3,7 +3,6 @@ import {
   characterCreationSchema,
   characterUpdateSchema,
   characterClassSchema,
-  characterRaceSchema,
   abilityScoresSchema,
   equipmentItemSchema,
   spellSchema,
@@ -16,6 +15,7 @@ import {
   safeValidate,
   type ValidationResult,
 } from './base';
+import { validateField } from './form-integration';
 
 /**
  * Enhanced character validation with advanced business rules and validation feedback
@@ -331,22 +331,15 @@ export class CharacterConsistencyChecker {
  */
 export class RealtimeValidator {
   static validateFieldValue(fieldName: string, value: any, fullCharacter?: Partial<CharacterCreation>): ValidationError | null {
+    // Use the shared validateField function for basic validation
+    const basicError = validateField(enhancedCharacterCreationSchema, fieldName as any, value);
+    if (basicError) {
+      return basicError;
+    }
+
+    // Additional character-specific validations
     try {
       switch (fieldName) {
-        case 'name':
-          const nameResult = z.string().min(1).max(100).safeParse(value);
-          if (!nameResult.success) {
-            return new ValidationError(CHARACTER_VALIDATION_MESSAGES.name.tooShort, 'name');
-          }
-          break;
-
-        case 'race':
-          const raceResult = characterRaceSchema.safeParse(value);
-          if (!raceResult.success) {
-            return new ValidationError(CHARACTER_VALIDATION_MESSAGES.race.invalid, 'race');
-          }
-          break;
-
         case 'customRace':
           if (fullCharacter?.race === 'custom' && (!value || !value.trim())) {
             return new ValidationError(CHARACTER_VALIDATION_MESSAGES.race.customRequired, 'customRace');
@@ -356,30 +349,6 @@ export class RealtimeValidator {
         case 'hitPoints.current':
           if (fullCharacter?.hitPoints?.maximum && value > fullCharacter.hitPoints.maximum) {
             return new ValidationError(CHARACTER_VALIDATION_MESSAGES.hitPoints.currentTooHigh, 'hitPoints.current');
-          }
-          if (value < 0) {
-            return new ValidationError(CHARACTER_VALIDATION_MESSAGES.hitPoints.currentTooLow, 'hitPoints.current');
-          }
-          break;
-
-        case 'armorClass':
-          if (value < 1 || value > 30) {
-            return new ValidationError(
-              value < 1 ? CHARACTER_VALIDATION_MESSAGES.armorClass.tooLow : CHARACTER_VALIDATION_MESSAGES.armorClass.tooHigh,
-              'armorClass'
-            );
-          }
-          break;
-
-        default:
-          // Generic validation for ability scores
-          if (fieldName.includes('abilityScores.')) {
-            if (value < 1 || value > 30) {
-              return new ValidationError(
-                value < 1 ? CHARACTER_VALIDATION_MESSAGES.abilityScores.tooLow : CHARACTER_VALIDATION_MESSAGES.abilityScores.tooHigh,
-                fieldName
-              );
-            }
           }
           break;
       }

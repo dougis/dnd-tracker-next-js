@@ -114,7 +114,7 @@ jobs:
         run: npm ci
 
       - name: Setup Fly.io CLI
-        uses: superfly/flyctl-actions/setup-flyctl@master
+        uses: superfly/flyctl-actions/setup-flyctl@9c59df3b7f72d50f5e42fe0e9c9d18cf6c95aa38
         with:
           version: latest
 
@@ -213,6 +213,7 @@ jobs:
         if: failure() && github.event.inputs.dry_run != 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          SKIP_MIGRATIONS: ${{ github.event.inputs.skip_migrations }}
         run: |
           echo "🔄 Deployment failed, attempting rollback..."
           
@@ -220,7 +221,7 @@ jobs:
           flyctl rollback --yes || echo "App rollback failed"
           
           # Rollback migrations if they were executed
-          if [[ "${{ github.event.inputs.skip_migrations }}" != "true" ]]; then
+          if [[ "$SKIP_MIGRATIONS" != "true" ]]; then
             echo "Rolling back migrations..."
             npm run migrate:down 1 || echo "Migration rollback failed"
           fi

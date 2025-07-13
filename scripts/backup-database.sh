@@ -106,8 +106,8 @@ echo "Location: $BACKUP_PATH"
 # Clean up old backups based on retention policy
 echo "🧹 Cleaning up backups older than $RETENTION_DAYS days..."
 
-find "$BACKUP_DIR" -name "backup-${ENVIRONMENT}-*" -type f -mtime +$RETENTION_DAYS -delete 2>/dev/null || true
-find "$BACKUP_DIR" -name "backup-${ENVIRONMENT}-*" -type d -mtime +$RETENTION_DAYS -exec rm -rf {} + 2>/dev/null || true
+find "$BACKUP_DIR" -name "backup-${ENVIRONMENT}-*" -type f -mtime "+$RETENTION_DAYS" -delete 2>/dev/null || true
+find "$BACKUP_DIR" -name "backup-${ENVIRONMENT}-*" -type d -mtime "+$RETENTION_DAYS" -exec rm -rf {} + 2>/dev/null || true
 
 REMAINING_BACKUPS=$(find "$BACKUP_DIR" -name "backup-${ENVIRONMENT}-*" | wc -l)
 echo "📈 $REMAINING_BACKUPS backup(s) remaining after cleanup"
