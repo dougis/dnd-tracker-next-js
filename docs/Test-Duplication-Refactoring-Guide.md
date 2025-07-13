@@ -67,6 +67,7 @@ Created comprehensive test helper utilities to eliminate common patterns:
 #### Step-by-Step Refactoring Method
 
 1. **Analyze Current Test File**
+
    ```bash
    # Review test file for patterns
    grep -n "expect\|it\|describe" src/path/to/test.file
@@ -79,6 +80,7 @@ Created comprehensive test helper utilities to eliminate common patterns:
    - Repeated assertion patterns
 
 3. **Apply Data-Driven Testing**
+
    ```typescript
    // BEFORE: Repetitive tests
    it('should validate field A', () => { /* test logic */ });
@@ -100,6 +102,7 @@ Created comprehensive test helper utilities to eliminate common patterns:
    ```
 
 4. **Extract Common Utilities**
+
    ```typescript
    // Extract repeated patterns to helper functions
    function testFieldValidation(fieldName: string, validData: any,
@@ -109,11 +112,13 @@ Created comprehensive test helper utilities to eliminate common patterns:
    ```
 
 5. **Verify Functionality**
+
    ```bash
    npm run test -- --testPathPatterns="refactored-file.test.ts"
    ```
 
 6. **Measure Improvement**
+
    ```bash
    npm run lint:fix
    npm run test:ci

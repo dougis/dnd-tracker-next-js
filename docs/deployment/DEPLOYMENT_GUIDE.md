@@ -218,20 +218,26 @@ jobs:
 ### Health Check Endpoints
 
 #### `/api/health`
+
 Basic application health check
+
 - Database connectivity
 - Application status
 - Environment information
 
 #### `/api/health/database`
+
 Comprehensive database health monitoring
+
 - Connection performance
 - Query performance
 - Collection accessibility
 - Migration status
 
 #### `/api/health/migrations`
+
 Migration-specific health validation
+
 - Migration system status
 - Pending migrations
 - Schema validation
@@ -239,20 +245,24 @@ Migration-specific health validation
 ### Monitoring API
 
 #### `/api/monitoring/deployment`
+
 Deployment monitoring and metrics endpoint
 
 **GET Parameters:**
+
 - `environment`: Filter by environment
 - `action`: `stats`, `metrics`, `health`
 - `format`: `json`, `csv` (for metrics export)
 
 **POST Actions:**
+
 - `metric`: Record deployment metric
 - `resolve-alert`: Resolve monitoring alert
 
 ### Alert Channels
 
 #### Slack Integration
+
 ```json
 {
   "type": "slack",
@@ -265,6 +275,7 @@ Deployment monitoring and metrics endpoint
 ```
 
 #### Email Alerts
+
 ```json
 {
   "type": "email",
@@ -276,6 +287,7 @@ Deployment monitoring and metrics endpoint
 ```
 
 #### PagerDuty Integration
+
 ```json
 {
   "type": "pagerduty",
@@ -305,6 +317,7 @@ BACKUP_RETENTION_DAYS=30 \
 #### Automated Backups
 
 Backups are automatically created during deployments when:
+
 - Environment is `staging` or `production`
 - `backupEnabled` configuration is `true`
 - Not running in dry-run mode
@@ -349,6 +362,7 @@ BACKUP_PATH=/path/to/backup.gz \
 ### Automatic Rollback
 
 Automatic rollback is triggered when:
+
 - Deployment validation fails
 - Migration execution fails
 - Post-deployment verification fails
@@ -357,12 +371,14 @@ Automatic rollback is triggered when:
 ### Manual Rollback
 
 #### Application Rollback
+
 ```bash
 # Rollback application only
 ROLLBACK_TYPE=app ./scripts/rollback-deployment.sh
 ```
 
 #### Migration Rollback
+
 ```bash
 # Rollback last migration
 ROLLBACK_TYPE=migration ./scripts/rollback-deployment.sh
@@ -374,6 +390,7 @@ MIGRATION_STEPS=3 \
 ```
 
 #### Database Restoration
+
 ```bash
 # Restore from backup
 ROLLBACK_TYPE=database \
@@ -382,6 +399,7 @@ BACKUP_PATH=/path/to/backup.gz \
 ```
 
 #### Emergency Rollback
+
 ```bash
 # Force rollback without confirmations
 FORCE_ROLLBACK=true \
@@ -394,6 +412,7 @@ ROLLBACK_TYPE=auto \
 ### Common Issues
 
 #### Deployment Timeout
+
 ```bash
 # Increase timeout
 DEPLOY_TIMEOUT=600000 ./scripts/deploy-with-migrations.sh
@@ -410,6 +429,7 @@ npm run migrate:validate
 ```
 
 #### Health Check Failures
+
 ```bash
 # Check specific health endpoint
 curl -f https://your-app.fly.dev/api/health/database
@@ -431,6 +451,7 @@ DRY_RUN=true ./scripts/deploy-with-migrations.sh
 ### Log Analysis
 
 #### Deployment Logs
+
 ```bash
 # View deployment logs
 flyctl logs -a your-app-name
@@ -440,6 +461,7 @@ flyctl logs -a your-app-name --since 1h
 ```
 
 #### Monitoring Logs
+
 ```bash
 # Export deployment metrics
 curl "https://your-app.fly.dev/api/monitoring/deployment?action=metrics&format=csv"
@@ -453,6 +475,7 @@ curl "https://your-app.fly.dev/api/monitoring/deployment?action=stats"
 ### Deployment Manager API
 
 #### Constructor Options
+
 ```typescript
 interface DeploymentConfig {
   environment: 'development' | 'staging' | 'production';
@@ -468,9 +491,11 @@ interface DeploymentConfig {
 #### Methods
 
 ##### `deploy(): Promise<FullDeploymentResult>`
+
 Execute complete deployment pipeline
 
 ##### `validatePreDeployment(): Promise<ValidationResult>`
+
 Validate pre-deployment requirements
 
 ##### `createBackup(): Promise<BackupResult>`
@@ -496,11 +521,13 @@ Rollback deployment
 ### Health Check API
 
 #### Basic Health Check
+
 ```http
 GET /api/health
 ```
 
 Response:
+
 ```json
 {
   "status": "ok",
@@ -512,11 +539,13 @@ Response:
 ```
 
 #### Database Health Check
+
 ```http
 GET /api/health/database
 ```
 
 Response:
+
 ```json
 {
   "status": "ok",
@@ -534,11 +563,13 @@ Response:
 ```
 
 #### Migration Health Check
+
 ```http
 GET /api/health/migrations
 ```
 
 Response:
+
 ```json
 {
   "status": "ok",
@@ -555,11 +586,13 @@ Response:
 ### Monitoring API
 
 #### Get Deployment Statistics
+
 ```http
 GET /api/monitoring/deployment?action=stats&environment=production
 ```
 
 Response:
+
 ```json
 {
   "success": true,
@@ -578,6 +611,7 @@ Response:
 ```
 
 #### Record Deployment Metric
+
 ```http
 POST /api/monitoring/deployment
 Content-Type: application/json
@@ -650,6 +684,7 @@ Content-Type: application/json
 ### Documentation Updates
 
 Keep this documentation updated when:
+
 - Configuration changes are made
 - New environments are added
 - Monitoring thresholds are adjusted

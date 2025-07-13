@@ -18,14 +18,18 @@ Comprehensive guide covering all aspects of the deployment system:
 - API reference and examples
 
 #### [Quick Reference](./QUICK_REFERENCE.md)
+
 Essential commands and URLs for daily operations:
+
 - Common deployment commands
 - Health check endpoints
 - Environment variables
 - Emergency procedures
 
 #### [Operational Runbook](./OPERATIONAL_RUNBOOK.md)
+
 Detailed operational procedures for:
+
 - Daily, weekly, and monthly maintenance
 - Incident response protocols
 - Troubleshooting procedures
@@ -36,6 +40,7 @@ Detailed operational procedures for:
 ### First Time Setup
 
 1. **Install Prerequisites**
+
    ```bash
    # Install required tools
    npm install -g flyctl
@@ -43,6 +48,7 @@ Detailed operational procedures for:
    ```
 
 2. **Configure Environment**
+
    ```bash
    # Set required environment variables
    export MONGODB_URI="mongodb://..."
@@ -52,6 +58,7 @@ Detailed operational procedures for:
    ```
 
 3. **Deploy to Staging**
+
    ```bash
    DEPLOY_ENV=staging ./scripts/deploy-with-migrations.sh
    ```
@@ -96,12 +103,14 @@ ROLLBACK_TYPE=auto ./scripts/rollback-deployment.sh
 ## Key Features
 
 ### 🚀 Automated Deployment Pipeline
+
 - Pre-deployment validation
 - Automated database migrations
 - Health check verification
 - Automatic rollback on failure
 
 ### 🛡️ Safety Mechanisms
+
 - Environment-specific configurations
 - Database backup before migrations
 - Multiple rollback strategies
@@ -115,6 +124,7 @@ ROLLBACK_TYPE=auto ./scripts/rollback-deployment.sh
 - Performance tracking
 
 ### 🔄 Backup & Recovery
+
 - Automated backup creation
 - Integrity verification
 - Point-in-time restoration
@@ -166,11 +176,13 @@ fly.production.toml              # Production Fly.io configuration
 - Regular credential rotation procedures
 
 ### Access Control
+
 - GitHub branch protection enabled
 - Required reviews for production deployments
 - Audit logging for all deployment actions
 
 ### Data Protection
+
 - Encrypted backups
 - Secure transmission protocols
 - Database access restrictions
@@ -185,6 +197,7 @@ fly.production.toml              # Production Fly.io configuration
 - **Rollback Time**: < 2 minutes
 
 ### Monitoring Thresholds
+
 - **Health Check**: 15-second intervals
 - **Alert Response**: < 5 minutes
 - **Error Rate**: < 1% for production
@@ -192,12 +205,14 @@ fly.production.toml              # Production Fly.io configuration
 ## Support and Maintenance
 
 ### Regular Tasks
+
 - **Daily**: Health check verification
 - **Weekly**: Backup integrity testing
 - **Monthly**: Security review and dependency updates
 - **Quarterly**: Documentation review and update
 
 ### Incident Response
+
 1. **Level 1**: Automated monitoring alerts
 2. **Level 2**: Development team notification
 3. **Level 3**: Operations escalation
@@ -206,12 +221,14 @@ fly.production.toml              # Production Fly.io configuration
 ## Contributing
 
 ### Documentation Updates
+
 1. Update relevant documentation files
 2. Test procedures on staging environment
 3. Submit pull request with changes
 4. Ensure team review and approval
 
 ### Procedure Changes
+
 1. Document current state
 2. Test new procedures thoroughly
 3. Update all relevant documentation
@@ -221,6 +238,7 @@ fly.production.toml              # Production Fly.io configuration
 ## Additional Resources
 
 ### External Documentation
+
 - [Fly.io Documentation](https://fly.io/docs/)
 - [MongoDB Migration Guide](https://docs.mongodb.com/manual/core/schema-validation/)
 - [Next.js Deployment Guide](https://nextjs.org/docs/deployment)
