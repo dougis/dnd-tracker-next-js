@@ -282,10 +282,10 @@ export class DeploymentMonitor {
       environment: alert.environment,
     };
 
-    // Store for future email queue processing
+    // Store for future email queue processing (extend global type for email queue)
     if (typeof global !== 'undefined') {
-      global.pendingEmails = global.pendingEmails || [];
-      global.pendingEmails.push(emailData);
+      (global as any).pendingEmails = (global as any).pendingEmails || [];
+      (global as any).pendingEmails.push(emailData);
     }
 
     console.log('📧 Email alert queued:', {
