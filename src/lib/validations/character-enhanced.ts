@@ -3,10 +3,10 @@ import {
   characterCreationSchema,
   characterUpdateSchema,
   characterClassSchema,
+  characterRaceSchema,
   abilityScoresSchema,
   equipmentItemSchema,
   spellSchema,
-  CHARACTER_RACES,
   type CharacterCreation,
   type CharacterUpdate,
   type AbilityScores,
@@ -19,7 +19,6 @@ import {
   armorClassSchema,
   type ValidationResult,
 } from './base';
-import { validateField } from './form-integration';
 
 /**
  * Enhanced character validation with advanced business rules and validation feedback
@@ -345,7 +344,7 @@ export class RealtimeValidator {
           fieldSchema = nameSchema;
           break;
         case 'race':
-          fieldSchema = z.enum(CHARACTER_RACES);
+          fieldSchema = characterRaceSchema;
           break;
         case 'background':
           fieldSchema = z.string().min(1, 'Background is required').max(100);
@@ -385,7 +384,7 @@ export class RealtimeValidator {
           const partialObject = { [fieldName]: value };
           const result = characterCreationSchema.partial().safeParse(partialObject);
           if (!result.success) {
-            const fieldError = result.error.errors.find(err => 
+            const fieldError = result.error.errors.find(err =>
               err.path.join('.') === fieldName
             );
             if (fieldError) {
@@ -410,7 +409,7 @@ export class RealtimeValidator {
       }
 
       return null;
-    } catch (error) {
+    } catch {
       return new ValidationError('Validation error occurred', fieldName);
     }
   }
