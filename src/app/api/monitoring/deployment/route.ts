@@ -8,16 +8,28 @@ import { DeploymentMonitor, AlertConfig } from '@/lib/monitoring/deployment-moni
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-// Global monitor instance (in production, this would be managed differently)
-let globalMonitor: DeploymentMonitor | null = null;
+// Deployment monitor singleton - uses proper singleton pattern for production environments
+class MonitorSingleton {
+  private static instance: DeploymentMonitor | null = null;
+  private static initPromise: Promise<DeploymentMonitor> | null = null;
 
-/**
- * Initialize monitoring configuration
- */
-async function initializeMonitor(): Promise<DeploymentMonitor> {
-  if (globalMonitor) {
-    return globalMonitor;
+  static async getInstance(): Promise<DeploymentMonitor> {
+    if (this.instance) {
+      return this.instance;
+    }
+
+    if (this.initPromise) {
+      return this.initPromise;
+    }
+
+    this.initPromise = this.initializeMonitor();
+    this.instance = await this.initPromise;
+    this.initPromise = null;
+    
+    return this.instance;
   }
+
+  private static async initializeMonitor(): Promise<DeploymentMonitor> {
 
   try {
     // Load monitoring configuration
@@ -39,8 +51,7 @@ async function initializeMonitor(): Promise<DeploymentMonitor> {
       enabled: envConfig.enabled,
     };
 
-    globalMonitor = new DeploymentMonitor(alertConfig);
-    return globalMonitor;
+    return new DeploymentMonitor(alertConfig);
   } catch (error) {
     console.error('Failed to initialize deployment monitor:', error);
 
@@ -57,8 +68,8 @@ async function initializeMonitor(): Promise<DeploymentMonitor> {
       enabled: false,
     };
 
-    globalMonitor = new DeploymentMonitor(fallbackConfig);
-    return globalMonitor;
+    return new DeploymentMonitor(fallbackConfig);
+  }
   }
 }
 
@@ -72,7 +83,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const environment = searchParams.get('environment');
     const action = searchParams.get('action') || 'stats';
 
-    const monitor = await initializeMonitor();
+    const monitor = await MonitorSingleton.getInstance();
 
     switch (action) {
       case 'stats':
@@ -106,7 +117,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           status: 'ok',
           timestamp: new Date().toISOString(),
           monitor: {
-            initialized: globalMonitor !== null,
+            initialized: true,
             environment: monitor.getDeploymentStats().environment,
             enabled: true, // This would check actual config
           },
@@ -144,7 +155,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const body = await request.json();
     const { action, data } = body;
 
-    const monitor = await initializeMonitor();
+    const monitor = await MonitorSingleton.getInstance();
 
     switch (action) {
       case 'metric':

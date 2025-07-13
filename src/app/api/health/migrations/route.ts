@@ -7,22 +7,40 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MongoClient } from 'mongodb';
 import { MigrationRunner } from '@/lib/migrations/runner';
 
+// Shared MongoDB client for health checks to avoid connection overhead
+let cachedClient: MongoClient | null = null;
+let connectionPromise: Promise<MongoClient> | null = null;
+
+async function getMongoClient(): Promise<MongoClient> {
+  if (cachedClient) {
+    return cachedClient;
+  }
+
+  if (connectionPromise) {
+    return connectionPromise;
+  }
+
+  const mongoUri = process.env.MONGODB_URI;
+  if (!mongoUri) {
+    throw new Error('MONGODB_URI not configured');
+  }
+
+  connectionPromise = MongoClient.connect(mongoUri, {
+    maxPoolSize: 5,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+  });
+
+  cachedClient = await connectionPromise;
+  connectionPromise = null;
+  
+  return cachedClient;
+}
+
 export async function GET(_request: NextRequest) {
-  let client: MongoClient | null = null;
-
   try {
-    const mongoUri = process.env.MONGODB_URI;
-    if (!mongoUri) {
-      return NextResponse.json({
-        status: 'error',
-        timestamp: new Date().toISOString(),
-        error: 'MONGODB_URI not configured',
-      }, { status: 500 });
-    }
-
-    // Connect to database
-    client = new MongoClient(mongoUri);
-    await client.connect();
+    // Use cached/shared connection
+    const client = await getMongoClient();
 
     // Initialize migration runner
     const runner = new MigrationRunner(client, {
@@ -79,9 +97,6 @@ export async function GET(_request: NextRequest) {
     }, {
       status: 500,
     });
-  } finally {
-    if (client) {
-      await client.close();
-    }
   }
+  // Note: We don't close the cached client as it's shared across requests
 }

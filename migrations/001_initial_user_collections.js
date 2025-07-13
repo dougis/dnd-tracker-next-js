@@ -1,12 +1,16 @@
 /**
- * Migration: Create initial user collections and indexes
+ * Migration: Create initial user collection indexes
  * Version: 001
  * Created: 2025-01-12T00:00:00.000Z
+ * 
+ * Note: Collections (users, accounts, sessions, verification_tokens) are created 
+ * automatically by NextAuth.js when first accessed. This migration only creates
+ * the necessary indexes for optimal performance and data integrity.
  */
 
 module.exports = {
   version: '001',
-  description: 'Create initial user collections and indexes',
+  description: 'Create initial user collection indexes',
 
   /**
    * Apply migration

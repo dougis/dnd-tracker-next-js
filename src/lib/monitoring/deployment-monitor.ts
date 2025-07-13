@@ -231,8 +231,37 @@ export class DeploymentMonitor {
       }],
     };
 
-    // In a real implementation, this would make an HTTP request to Slack webhook
-    console.log('📱 Slack alert sent:', payload);
+    // For MVP: Log structured alert data that can be captured by monitoring systems
+    // In production, this would use Slack Web API with proper webhook URL
+    if (config.webhookUrl) {
+      try {
+        const response = await fetch(config.webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Slack API error: ${response.status}`);
+        }
+        
+        console.log('✅ Slack alert sent successfully:', payload.attachments[0].title);
+      } catch (error) {
+        console.error('❌ Failed to send Slack alert:', error);
+        // Fallback to console logging for observability
+        console.log('📱 Slack alert (fallback):', {
+          channel: payload.channel,
+          title: payload.attachments[0].title,
+          severity: alert.severity,
+        });
+      }
+    } else {
+      console.log('📱 Slack alert (no webhook configured):', {
+        channel: payload.channel,
+        title: payload.attachments[0].title,
+        severity: alert.severity,
+      });
+    }
   }
 
   /**
@@ -242,11 +271,28 @@ export class DeploymentMonitor {
     const subject = `[${alert.severity.toUpperCase()}] ${alert.title} - ${alert.environment}`;
     const body = this.formatEmailBody(alert);
 
-    // In a real implementation, this would use an email service like SendGrid
-    console.log('📧 Email alert sent:', {
-      to: config.recipients,
+    // For MVP: Structure email data for future email service integration
+    // In production, this would use services like SendGrid, SES, or SMTP
+    const emailData = {
+      to: config.recipients || ['ops@dndtracker.com'],
       subject,
-      body: body.substring(0, 100) + '...',
+      html: body.replace(/\n/g, '<br>'),
+      text: body,
+      severity: alert.severity,
+      environment: alert.environment,
+    };
+    
+    // Store for future email queue processing
+    if (typeof global !== 'undefined') {
+      global.pendingEmails = global.pendingEmails || [];
+      global.pendingEmails.push(emailData);
+    }
+    
+    console.log('📧 Email alert queued:', {
+      to: emailData.to,
+      subject: emailData.subject,
+      severity: alert.severity,
+      queueSize: (global as any)?.pendingEmails?.length || 1,
     });
   }
 
@@ -260,10 +306,53 @@ export class DeploymentMonitor {
       timestamp: alert.timestamp.toISOString(),
     };
 
-    // In a real implementation, this would make an HTTP POST request
-    console.log('🔗 Webhook alert sent:', {
+    // Webhook implementation with error handling and retries
+    if (!config.url) {
+      console.warn('⚠️ Webhook URL not configured, alert not sent');
+      return;
+    }
+    
+    const maxRetries = config.retries || 3;
+    let lastError: Error | null = null;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetch(config.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'DnD-Tracker-Monitor/1.0',
+            ...(config.headers || {}),
+          },
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(config.timeout || 10000),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        console.log('✅ Webhook alert sent successfully:', {
+          url: config.url,
+          attempt,
+          severity: alert.severity,
+        });
+        return;
+        
+      } catch (error) {
+        lastError = error as Error;
+        console.warn(`⚠️ Webhook attempt ${attempt}/${maxRetries} failed:`, error);
+        
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
+      }
+    }
+    
+    console.error('❌ Webhook alert failed after all retries:', {
       url: config.url,
-      payload: JSON.stringify(payload).substring(0, 100) + '...',
+      error: lastError?.message,
+      alert: alert.title,
     });
   }
 
@@ -292,8 +381,47 @@ export class DeploymentMonitor {
       },
     };
 
-    // In a real implementation, this would make an HTTP request to PagerDuty Events API
-    console.log('📟 PagerDuty alert sent:', payload);
+    // PagerDuty Events API v2 implementation
+    if (!config.integrationKey) {
+      console.warn('⚠️ PagerDuty integration key not configured');
+      return;
+    }
+    
+    const apiUrl = 'https://events.pagerduty.com/v2/enqueue';
+    
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token token=${config.integrationKey}`,
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(10000),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`PagerDuty API error: ${response.status} - ${errorText}`);
+      }
+      
+      const result = await response.json();
+      console.log('✅ PagerDuty alert sent successfully:', {
+        dedup_key: payload.dedup_key,
+        event_action: payload.event_action,
+        message: result.message,
+      });
+      
+    } catch (error) {
+      console.error('❌ Failed to send PagerDuty alert:', error);
+      // Fallback logging for observability
+      console.log('📟 PagerDuty alert (fallback):', {
+        dedup_key: payload.dedup_key,
+        event_action: payload.event_action,
+        severity: alert.severity,
+        error: (error as Error).message,
+      });
+    }
   }
 
   /**
