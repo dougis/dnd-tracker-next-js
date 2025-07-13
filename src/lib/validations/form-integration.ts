@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { UseFormProps, FieldValues, Path } from 'react-hook-form';
+import { UseFormProps, FieldValues, Path, Resolver } from 'react-hook-form';
 import { z } from 'zod';
 import { ValidationError, safeValidate } from './base';
 
@@ -250,8 +250,8 @@ export function getFirstValidationError(
 }
 
 // Type utilities for form integration
-export type FormResolver<T extends FieldValues> = ReturnType<typeof createFormResolver<T>>;
-export type FormOptions<T extends FieldValues> = ReturnType<typeof createFormOptions<T>>;
+export type FormResolver<T extends FieldValues> = Resolver<T>;
+export type FormOptions<T extends FieldValues> = UseFormProps<T>;
 export type FormValidationResult<T> =
   | { success: true; data: T }
   | { success: false; errors: Record<string, string> };
