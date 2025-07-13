@@ -31,6 +31,7 @@ This runbook provides step-by-step procedures for operating the D&D Tracker depl
    ```
 
 #### Response to Issues
+
 - **Health Check Failures**: Proceed to [Incident Response](#incident-response)
 - **Database Issues**: Check [Database Troubleshooting](#database-troubleshooting)
 - **Migration Issues**: Check [Migration Troubleshooting](#migration-troubleshooting)
@@ -38,6 +39,7 @@ This runbook provides step-by-step procedures for operating the D&D Tracker depl
 ### Weekly Operations
 
 #### Backup Verification (15 minutes)
+
 1. **Create Test Backup**
    ```bash
    DEPLOY_ENV=staging ./scripts/backup-database.sh
@@ -144,6 +146,7 @@ This runbook provides step-by-step procedures for operating the D&D Tracker depl
    - What functionality is impacted?
 
 #### Escalation Decision (5 minutes)
+
 - **High Impact**: Proceed with immediate rollback
 - **Low Impact**: Investigate root cause first
 
@@ -178,9 +181,11 @@ This runbook provides step-by-step procedures for operating the D&D Tracker depl
 ### Database Issues
 
 #### Severity: Critical
+
 **Time to Resolution Target: 30 minutes**
 
 #### Connection Failures (0-10 minutes)
+
 1. **Check Database Status**
    ```bash
    curl -f https://dnd-tracker-production.fly.dev/api/health/database
@@ -199,6 +204,7 @@ This runbook provides step-by-step procedures for operating the D&D Tracker depl
    ```
 
 #### Data Corruption (10-30 minutes)
+
 1. **Stop Application**
    ```bash
    flyctl scale count 0 -a dnd-tracker-production
@@ -227,6 +233,7 @@ This runbook provides step-by-step procedures for operating the D&D Tracker depl
 **Time to Resolution Target: 20 minutes**
 
 #### Migration Stuck (0-10 minutes)
+
 1. **Check Migration Status**
    ```bash
    npm run migrate:status
@@ -341,6 +348,7 @@ This runbook provides step-by-step procedures for operating the D&D Tracker depl
    ```
 
 #### Backup Cleanup (Weekly)
+
 1. **Review Backup Storage**
    ```bash
    ls -la /tmp/mongodb-backups/
@@ -375,6 +383,7 @@ This runbook provides step-by-step procedures for operating the D&D Tracker depl
    ```
 
 #### High Error Rate Alert
+
 1. **Identify Error Source**
    ```bash
    flyctl logs -a dnd-tracker-production --since 15m | grep -i error

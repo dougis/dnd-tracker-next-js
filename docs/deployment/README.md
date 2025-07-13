@@ -7,7 +7,9 @@ This directory contains comprehensive documentation for the D&D Tracker deployme
 ### 📚 Core Documentation
 
 #### [Deployment Guide](./DEPLOYMENT_GUIDE.md)
+
 Comprehensive guide covering all aspects of the deployment system:
+
 - Architecture overview and components
 - Prerequisites and configuration
 - Step-by-step deployment procedures
@@ -106,6 +108,7 @@ ROLLBACK_TYPE=auto ./scripts/rollback-deployment.sh
 - Dry-run mode for testing
 
 ### 📊 Comprehensive Monitoring
+
 - Real-time deployment metrics
 - Multi-tier health checks
 - Configurable alerting
@@ -157,6 +160,7 @@ fly.production.toml              # Production Fly.io configuration
 ## Security Considerations
 
 ### Environment Variables
+
 - All secrets stored as GitHub secrets
 - Environment-specific variable isolation
 - Regular credential rotation procedures
@@ -174,6 +178,7 @@ fly.production.toml              # Production Fly.io configuration
 ## Performance Metrics
 
 ### Deployment Targets
+
 - **Staging**: < 3 minutes end-to-end
 - **Production**: < 5 minutes end-to-end
 - **Success Rate**: > 95%
@@ -221,11 +226,13 @@ fly.production.toml              # Production Fly.io configuration
 - [Next.js Deployment Guide](https://nextjs.org/docs/deployment)
 
 ### Internal Resources
+
 - [Project README](../../README.md)
 - [Migration Documentation](../migrations/)
 - [API Documentation](../api/)
 
 ### Team Resources
+
 - Slack: `#deployments` channel
 - GitHub: Issues and Pull Requests
 - Monitoring: Deployment dashboard

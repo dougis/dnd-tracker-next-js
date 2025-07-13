@@ -87,6 +87,7 @@ npm run migrate:status
 ```
 
 ### Test Health Endpoints
+
 ```bash
 curl -f https://dnd-tracker-staging.fly.dev/api/health
 curl -f https://dnd-tracker-production.fly.dev/api/health/database
@@ -100,6 +101,7 @@ curl "https://your-app.fly.dev/api/monitoring/deployment?action=stats&environmen
 ## Emergency Procedures
 
 ### Emergency Rollback
+
 ```bash
 FORCE_ROLLBACK=true ROLLBACK_TYPE=auto ./scripts/rollback-deployment.sh
 ```

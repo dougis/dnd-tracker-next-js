@@ -400,6 +400,7 @@ DEPLOY_TIMEOUT=600000 ./scripts/deploy-with-migrations.sh
 ```
 
 #### Migration Failures
+
 ```bash
 # Skip migrations temporarily
 SKIP_MIGRATIONS=true ./scripts/deploy-with-migrations.sh
@@ -473,18 +474,23 @@ Execute complete deployment pipeline
 Validate pre-deployment requirements
 
 ##### `createBackup(): Promise<BackupResult>`
+
 Create database backup
 
 ##### `runMigrations(): Promise<MigrationResult>`
+
 Execute database migrations
 
 ##### `deployToFlyio(): Promise<DeploymentResult>`
+
 Deploy application to Fly.io
 
 ##### `verifyDeployment(): Promise<VerificationResult>`
+
 Verify deployment success
 
 ##### `rollback(options?: RollbackOptions): Promise<RollbackResult>`
+
 Rollback deployment
 
 ### Health Check API
