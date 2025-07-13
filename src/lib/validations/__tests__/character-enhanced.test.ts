@@ -223,7 +223,7 @@ describe('Enhanced Character Validation', () => {
     it('should validate character name field', () => {
       const error = RealtimeValidator.validateFieldValue('name', '');
       expect(error).not.toBeNull();
-      expect(error?.message).toContain('at least 1 character');
+      expect(error?.message).toContain('Name is required');
 
       const validError = RealtimeValidator.validateFieldValue('name', 'Valid Name');
       expect(validError).toBeNull();
@@ -232,11 +232,11 @@ describe('Enhanced Character Validation', () => {
     it('should validate ability score fields', () => {
       const lowError = RealtimeValidator.validateFieldValue('abilityScores.strength', 0);
       expect(lowError).not.toBeNull();
-      expect(lowError?.message).toContain('cannot be lower than 1');
+      expect(lowError?.message).toContain('Ability score must be at least 1');
 
       const highError = RealtimeValidator.validateFieldValue('abilityScores.strength', 31);
       expect(highError).not.toBeNull();
-      expect(highError?.message).toContain('cannot be higher than 30');
+      expect(highError?.message).toContain('Ability score cannot exceed 30');
 
       const validError = RealtimeValidator.validateFieldValue('abilityScores.strength', 15);
       expect(validError).toBeNull();

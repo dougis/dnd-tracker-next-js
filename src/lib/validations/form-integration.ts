@@ -36,20 +36,46 @@ export function validateField<T extends FieldValues>(
   fieldName: Path<T>,
   value: unknown
 ): ValidationError | null {
-  // Check if schema has a shape property
-  if (!(schema as any)._def?.shape) {
-    return new ValidationError(
-      'Schema is not a ZodObject with shape',
-      fieldName
-    );
+  // Handle refined schemas by getting the underlying object schema
+  let objectSchema = schema as any;
+  
+  // If this is a refined schema, get the underlying schema
+  if (objectSchema._def?.schema) {
+    objectSchema = objectSchema._def.schema;
+  }
+  
+  // Check if we now have a shape property
+  if (!objectSchema._def?.shape) {
+    // Fallback: try to validate the whole partial object
+    try {
+      const partialObject = { [fieldName]: value };
+      const result = schema.partial().safeParse(partialObject);
+      
+      if (!result.success) {
+        const fieldError = result.error.errors.find(err => 
+          err.path.join('.') === fieldName
+        );
+        if (fieldError) {
+          return new ValidationError(fieldError.message, fieldName);
+        }
+      }
+      return null;
+    } catch {
+      return new ValidationError('Field validation not supported for this schema type', fieldName);
+    }
   }
 
   // Get the shape from the schema
-  const shape = (schema as any)._def.shape;
+  const shape = objectSchema._def.shape;
   const fieldSchema = shape[fieldName as string];
 
   if (!fieldSchema) {
     return new ValidationError('Field not found in schema', fieldName);
+  }
+
+  // Ensure fieldSchema is a valid Zod schema
+  if (!fieldSchema || typeof fieldSchema.safeParse !== 'function') {
+    return new ValidationError('Invalid field schema', fieldName);
   }
 
   const result = safeValidate(fieldSchema, value);
