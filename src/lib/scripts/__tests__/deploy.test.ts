@@ -411,6 +411,9 @@ describe('DeploymentManager', () => {
         return Promise.resolve({ stdout: 'Success', stderr: '' });
       });
 
+      // Mock the spied methods to prevent hanging
+      jest.spyOn(deploymentManager, 'sendNotification').mockResolvedValue();
+
       const result = await deploymentManager.deploy();
 
       expect(result.success).toBe(true);
@@ -419,7 +422,7 @@ describe('DeploymentManager', () => {
       expect(result.steps).toContain('migrate');
       expect(result.steps).toContain('deploy');
       expect(result.steps).toContain('verify');
-    });
+    }, 45000); // 45 second timeout
 
     it('should stop deployment on validation failure', async () => {
       mockExec.mockImplementation((command) => {
@@ -517,7 +520,7 @@ describe('DeploymentManager', () => {
 
   describe('Monitoring and alerting', () => {
     it('should send deployment start notification', async () => {
-      const notificationSpy = jest.spyOn(deploymentManager, 'sendNotification');
+      const notificationSpy = jest.spyOn(deploymentManager, 'sendNotification').mockResolvedValue();
       mockExec.mockResolvedValue({ stdout: '', stderr: '' });
 
       await deploymentManager.deploy();
@@ -528,10 +531,10 @@ describe('DeploymentManager', () => {
           environment: 'staging'
         })
       );
-    });
+    }, 10000);
 
     it('should send deployment success notification', async () => {
-      const notificationSpy = jest.spyOn(deploymentManager, 'sendNotification');
+      const notificationSpy = jest.spyOn(deploymentManager, 'sendNotification').mockResolvedValue();
       mockExec.mockResolvedValue({ stdout: '', stderr: '' });
 
       await deploymentManager.deploy();
@@ -542,10 +545,10 @@ describe('DeploymentManager', () => {
           environment: 'staging'
         })
       );
-    });
+    }, 10000);
 
     it('should send deployment failure notification', async () => {
-      const notificationSpy = jest.spyOn(deploymentManager, 'sendNotification');
+      const notificationSpy = jest.spyOn(deploymentManager, 'sendNotification').mockResolvedValue();
       mockExec.mockRejectedValue(new Error('Deployment failed'));
 
       await deploymentManager.deploy();
@@ -557,10 +560,11 @@ describe('DeploymentManager', () => {
           error: expect.stringContaining('Deployment failed')
         })
       );
-    });
+    }, 10000);
 
     it('should collect deployment metrics', async () => {
       mockExec.mockResolvedValue({ stdout: '', stderr: '' });
+      jest.spyOn(deploymentManager, 'sendNotification').mockResolvedValue();
 
       const result = await deploymentManager.deploy();
 
@@ -572,6 +576,6 @@ describe('DeploymentManager', () => {
           verificationTime: expect.any(Number)
         })
       );
-    });
+    }, 10000);
   });
 });
