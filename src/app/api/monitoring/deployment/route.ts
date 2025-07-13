@@ -11,6 +11,7 @@ import * as path from 'path';
 // Deployment monitor singleton - uses proper singleton pattern for production environments
 class MonitorSingleton {
   private static instance: DeploymentMonitor | null = null;
+
   private static initPromise: Promise<DeploymentMonitor> | null = null;
 
   static async getInstance(): Promise<DeploymentMonitor> {
@@ -25,7 +26,7 @@ class MonitorSingleton {
     this.initPromise = this.initializeMonitor();
     this.instance = await this.initPromise;
     this.initPromise = null;
-    
+
     return this.instance;
   }
 

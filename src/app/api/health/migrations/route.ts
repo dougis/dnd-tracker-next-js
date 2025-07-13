@@ -33,7 +33,7 @@ async function getMongoClient(): Promise<MongoClient> {
 
   cachedClient = await connectionPromise;
   connectionPromise = null;
-  
+
   return cachedClient;
 }
 

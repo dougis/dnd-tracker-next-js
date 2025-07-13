@@ -240,11 +240,11 @@ export class DeploymentMonitor {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
-        
+
         if (!response.ok) {
           throw new Error(`Slack API error: ${response.status}`);
         }
-        
+
         console.log('✅ Slack alert sent successfully:', payload.attachments[0].title);
       } catch (error) {
         console.error('❌ Failed to send Slack alert:', error);
@@ -281,13 +281,13 @@ export class DeploymentMonitor {
       severity: alert.severity,
       environment: alert.environment,
     };
-    
+
     // Store for future email queue processing
     if (typeof global !== 'undefined') {
       global.pendingEmails = global.pendingEmails || [];
       global.pendingEmails.push(emailData);
     }
-    
+
     console.log('📧 Email alert queued:', {
       to: emailData.to,
       subject: emailData.subject,
@@ -311,10 +311,10 @@ export class DeploymentMonitor {
       console.warn('⚠️ Webhook URL not configured, alert not sent');
       return;
     }
-    
+
     const maxRetries = config.retries || 3;
     let lastError: Error | null = null;
-    
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const response = await fetch(config.url, {
@@ -327,28 +327,28 @@ export class DeploymentMonitor {
           body: JSON.stringify(payload),
           signal: AbortSignal.timeout(config.timeout || 10000),
         });
-        
+
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        
+
         console.log('✅ Webhook alert sent successfully:', {
           url: config.url,
           attempt,
           severity: alert.severity,
         });
         return;
-        
+
       } catch (error) {
         lastError = error as Error;
         console.warn(`⚠️ Webhook attempt ${attempt}/${maxRetries} failed:`, error);
-        
+
         if (attempt < maxRetries) {
           await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
         }
       }
     }
-    
+
     console.error('❌ Webhook alert failed after all retries:', {
       url: config.url,
       error: lastError?.message,
@@ -386,9 +386,9 @@ export class DeploymentMonitor {
       console.warn('⚠️ PagerDuty integration key not configured');
       return;
     }
-    
+
     const apiUrl = 'https://events.pagerduty.com/v2/enqueue';
-    
+
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -399,19 +399,19 @@ export class DeploymentMonitor {
         body: JSON.stringify(payload),
         signal: AbortSignal.timeout(10000),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`PagerDuty API error: ${response.status} - ${errorText}`);
       }
-      
+
       const result = await response.json();
       console.log('✅ PagerDuty alert sent successfully:', {
         dedup_key: payload.dedup_key,
         event_action: payload.event_action,
         message: result.message,
       });
-      
+
     } catch (error) {
       console.error('❌ Failed to send PagerDuty alert:', error);
       // Fallback logging for observability
