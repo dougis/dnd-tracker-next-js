@@ -11,6 +11,16 @@ import * as fs from 'fs/promises';
 jest.mock('child_process');
 jest.mock('fs/promises');
 
+// Mock deployment monitor - this module may not exist yet
+jest.mock('../monitoring/deployment-monitor', () => ({
+  DeploymentMonitor: jest.fn().mockImplementation(() => ({
+    startMonitoring: jest.fn(),
+    stopMonitoring: jest.fn(),
+    recordMetric: jest.fn(),
+    sendAlert: jest.fn(),
+  })),
+}), { virtual: true });
+
 const mockExec = jest.mocked(promisify(exec));
 const _mockFs = jest.mocked(fs);
 
@@ -216,18 +226,18 @@ describe('DeploymentManager', () => {
     it('should respect timeout configuration', async () => {
       const timeoutManager = new DeploymentManager({
         environment: 'staging',
-        timeout: 60000,
+        timeout: 1000, // 1 second timeout
       });
 
       mockExec.mockImplementation(() =>
-        new Promise(resolve => setTimeout(() => resolve({ stdout: '', stderr: '' }), 70000))
+        new Promise(resolve => setTimeout(() => resolve({ stdout: '', stderr: '' }), 2000)) // 2 second delay
       );
 
       const result = await timeoutManager.runMigrations();
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('timeout');
-    });
+    }, 10000); // 10 second Jest timeout for this test
   });
 
   describe('deployToFlyio', () => {
