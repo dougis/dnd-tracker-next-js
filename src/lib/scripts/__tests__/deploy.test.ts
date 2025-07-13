@@ -341,11 +341,12 @@ describe('DeploymentManager', () => {
     });
 
     it('should handle release command failures', async () => {
-      mockExec.mockImplementation((command) => {
+      mockExec.mockImplementation((command: string, callback: any) => {
         if (command.includes('release_command')) {
-          throw new Error('Release command failed');
+          callback(new Error('Release command failed'));
+        } else {
+          callback(null, { stdout: '', stderr: '' });
         }
-        return Promise.resolve({ stdout: '', stderr: '' });
       });
 
       const result = await deploymentManager.deployToFlyio();
@@ -357,14 +358,14 @@ describe('DeploymentManager', () => {
 
   describe('verifyDeployment', () => {
     it('should verify successful deployment', async () => {
-      mockExec.mockImplementation((command) => {
+      mockExec.mockImplementation((command: string, callback: any) => {
         if (command.includes('health')) {
-          return Promise.resolve({ stdout: 'Health check passed', stderr: '' });
+          callback(null, { stdout: 'Health check passed', stderr: '' });
+        } else if (command.includes('migrate:status')) {
+          callback(null, { stdout: 'All migrations executed', stderr: '' });
+        } else {
+          callback(null, { stdout: '', stderr: '' });
         }
-        if (command.includes('migrate:status')) {
-          return Promise.resolve({ stdout: 'All migrations executed', stderr: '' });
-        }
-        return Promise.resolve({ stdout: '', stderr: '' });
       });
 
       const result = await deploymentManager.verifyDeployment();
@@ -375,11 +376,12 @@ describe('DeploymentManager', () => {
     });
 
     it('should detect health check failures', async () => {
-      mockExec.mockImplementation((command) => {
+      mockExec.mockImplementation((command: string, callback: any) => {
         if (command.includes('health')) {
-          throw new Error('Health check failed');
+          callback(new Error('Health check failed'));
+        } else {
+          callback(null, { stdout: '', stderr: '' });
         }
-        return Promise.resolve({ stdout: '', stderr: '' });
       });
 
       const result = await deploymentManager.verifyDeployment();
@@ -389,17 +391,18 @@ describe('DeploymentManager', () => {
     });
 
     it('should verify migration completion', async () => {
-      mockExec.mockImplementation((command) => {
+      mockExec.mockImplementation((command: string, callback: any) => {
         if (command.includes('migrate:status')) {
-          return Promise.resolve({
+          callback(null, {
             stdout: JSON.stringify([
               { version: '001', status: 'executed' },
               { version: '002', status: 'pending' }
             ]),
             stderr: ''
           });
+        } else {
+          callback(null, { stdout: '', stderr: '' });
         }
-        return Promise.resolve({ stdout: '', stderr: '' });
       });
 
       const result = await deploymentManager.verifyDeployment();
@@ -410,11 +413,12 @@ describe('DeploymentManager', () => {
     });
 
     it('should check application responsiveness', async () => {
-      mockExec.mockImplementation((command) => {
+      mockExec.mockImplementation((command: string, callback: any) => {
         if (command.includes('curl')) {
-          return Promise.resolve({ stdout: '{"status":"ok"}', stderr: '' });
+          callback(null, { stdout: '{"status":"ok"}', stderr: '' });
+        } else {
+          callback(null, { stdout: '', stderr: '' });
         }
-        return Promise.resolve({ stdout: '', stderr: '' });
       });
 
       const result = await deploymentManager.verifyDeployment();
@@ -482,9 +486,9 @@ describe('DeploymentManager', () => {
 
   describe('Full deployment workflow', () => {
     it('should execute complete deployment pipeline', async () => {
-      mockExec.mockImplementation((_command) => {
+      mockExec.mockImplementation((command: string, callback: any) => {
         // Mock different commands returning success
-        return Promise.resolve({ stdout: 'Success', stderr: '' });
+        callback(null, { stdout: 'Success', stderr: '' });
       });
 
       // Mock the spied methods to prevent hanging
@@ -498,14 +502,15 @@ describe('DeploymentManager', () => {
       expect(result.steps).toContain('migrate');
       expect(result.steps).toContain('deploy');
       expect(result.steps).toContain('verify');
-    }, 45000); // 45 second timeout
+    }, 10000); // 10 second timeout
 
     it('should stop deployment on validation failure', async () => {
-      mockExec.mockImplementation((command) => {
+      mockExec.mockImplementation((command: string, callback: any) => {
         if (command.includes('validate')) {
-          throw new Error('Validation failed');
+          callback(new Error('Validation failed'));
+        } else {
+          callback(null, { stdout: '', stderr: '' });
         }
-        return Promise.resolve({ stdout: '', stderr: '' });
       });
 
       const result = await deploymentManager.deploy();
@@ -516,11 +521,12 @@ describe('DeploymentManager', () => {
     });
 
     it('should trigger automatic rollback on deployment failure', async () => {
-      mockExec.mockImplementation((command) => {
+      mockExec.mockImplementation((command: string, callback: any) => {
         if (command.includes('flyctl deploy')) {
-          throw new Error('Deployment failed');
+          callback(new Error('Deployment failed'));
+        } else {
+          callback(null, { stdout: '', stderr: '' });
         }
-        return Promise.resolve({ stdout: '', stderr: '' });
       });
 
       const result = await deploymentManager.deploy();
@@ -530,11 +536,12 @@ describe('DeploymentManager', () => {
     });
 
     it('should handle migration failure during deployment', async () => {
-      mockExec.mockImplementation((command) => {
+      mockExec.mockImplementation((command: string, callback: any) => {
         if (command.includes('migrate:up')) {
-          throw new Error('Migration 003 failed');
+          callback(new Error('Migration 003 failed'));
+        } else {
+          callback(null, { stdout: '', stderr: '' });
         }
-        return Promise.resolve({ stdout: '', stderr: '' });
       });
 
       const result = await deploymentManager.deploy();
