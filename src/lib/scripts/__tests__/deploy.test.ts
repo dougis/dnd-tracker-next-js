@@ -8,7 +8,9 @@ import { promisify } from 'util';
 import * as fs from 'fs/promises';
 
 // Mock child_process and fs
-jest.mock('child_process');
+jest.mock('child_process', () => ({
+  exec: jest.fn(),
+}));
 jest.mock('fs/promises');
 
 // Mock deployment monitor - this module may not exist yet
@@ -21,8 +23,21 @@ jest.mock('../monitoring/deployment-monitor', () => ({
   })),
 }), { virtual: true });
 
-const mockExec = jest.mocked(promisify(exec));
+const mockExec = jest.mocked(exec);
 const _mockFs = jest.mocked(fs);
+
+// Helper function to mock exec calls
+const mockExecSuccess = (stdout = '', stderr = '') => {
+  mockExec.mockImplementation((command: string, callback: any) => {
+    callback(null, { stdout, stderr });
+  });
+};
+
+const mockExecFailure = (error: Error) => {
+  mockExec.mockImplementation((command: string, callback: any) => {
+    callback(error);
+  });
+};
 
 // Import the deployment module that we'll create
 import { DeploymentManager } from '../deploy';
@@ -64,37 +79,55 @@ describe('DeploymentManager', () => {
 
   describe('validatePreDeployment', () => {
     it('should validate migration readiness', async () => {
-      mockExec.mockResolvedValue({ stdout: 'All migrations valid', stderr: '' });
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(null, { stdout: 'All migrations valid', stderr: '' });
+      });
 
       const result = await deploymentManager.validatePreDeployment();
 
       expect(result.isValid).toBe(true);
-      expect(mockExec).toHaveBeenCalledWith('npm run migrate:validate');
+      expect(mockExec).toHaveBeenCalledWith('npm run migrate:validate', expect.any(Function));
     });
 
     it('should detect migration validation failures', async () => {
-      mockExec.mockRejectedValue(new Error('Migration validation failed'));
+      mockExec.mockImplementation((command: string, callback: any) => {
+        if (command === 'npm run migrate:validate') {
+          callback(new Error('Migration validation failed'));
+        } else {
+          callback(null, { stdout: '', stderr: '' });
+        }
+      });
 
       const result = await deploymentManager.validatePreDeployment();
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Migration validation failed');
+      expect(result.errors).toContain('Migration validation failed: Migration validation failed');
     });
 
     it('should check for pending migrations', async () => {
-      mockExec.mockResolvedValue({
-        stdout: JSON.stringify([
-          { version: '001', status: 'pending' },
-          { version: '002', status: 'executed' }
-        ]),
-        stderr: ''
+      mockExec.mockImplementation((command: string, callback: any) => {
+        if (command === 'npm run migrate:validate') {
+          callback(null, { stdout: 'All migrations valid', stderr: '' });
+        } else if (command === 'npm run migrate:status') {
+          callback(null, {
+            stdout: JSON.stringify([
+              { version: '001', status: 'pending' },
+              { version: '002', status: 'executed' }
+            ]),
+            stderr: ''
+          });
+        } else if (command === 'npm run build') {
+          callback(null, { stdout: 'Build successful', stderr: '' });
+        } else {
+          callback(null, { stdout: '', stderr: '' });
+        }
       });
 
       const result = await deploymentManager.validatePreDeployment();
 
       expect(result.pendingMigrations).toHaveLength(1);
       expect(result.pendingMigrations[0].version).toBe('001');
-    });
+    }, 5000);
 
     it('should validate environment variables', async () => {
       const originalEnv = process.env;
@@ -110,11 +143,16 @@ describe('DeploymentManager', () => {
     });
 
     it('should check build status', async () => {
-      mockExec.mockImplementation((command) => {
-        if (command === 'npm run build') {
-          return Promise.resolve({ stdout: 'Build successful', stderr: '' });
+      mockExec.mockImplementation((command: string, callback: any) => {
+        if (command === 'npm run migrate:validate') {
+          callback(null, { stdout: 'All migrations valid', stderr: '' });
+        } else if (command === 'npm run migrate:status') {
+          callback(null, { stdout: '[]', stderr: '' });
+        } else if (command === 'npm run build') {
+          callback(null, { stdout: 'Build successful', stderr: '' });
+        } else {
+          callback(null, { stdout: '', stderr: '' });
         }
-        return Promise.resolve({ stdout: '', stderr: '' });
       });
 
       const result = await deploymentManager.validatePreDeployment();
