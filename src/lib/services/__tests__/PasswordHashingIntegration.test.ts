@@ -231,7 +231,7 @@ describe('Password Hashing Integration Tests', () => {
 
       // Extract salt rounds from hash
       const hashParts = user.passwordHash.split('$');
-      const saltRounds = parseInt(hashParts[2]);
+      const saltRounds = parseInt(hashParts[2], 10);
 
       // Should use at least 12 rounds for security
       expect(saltRounds).toBeGreaterThanOrEqual(12);
@@ -280,7 +280,7 @@ describe('Password Hashing Integration Tests', () => {
       expect(isPasswordHashed(user.passwordHash)).toBe(true);
 
       const hashParts = user.passwordHash.split('$');
-      const saltRounds = parseInt(hashParts[2]);
+      const saltRounds = parseInt(hashParts[2], 10);
       expect(saltRounds).toBeGreaterThanOrEqual(12);
 
       // Test password strength validation

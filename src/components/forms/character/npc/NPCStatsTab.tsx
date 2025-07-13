@@ -84,7 +84,7 @@ export function NPCStatsTab({
                   min="1"
                   max="30"
                   value={score}
-                  onChange={(e) => updateAbilityScore(ability, parseInt(e.target.value) || 10)}
+                  onChange={(e) => updateAbilityScore(ability, parseInt(e.target.value, 10) || 10)}
                   className="w-20"
                 />
                 <Badge variant="outline">
@@ -108,7 +108,7 @@ export function NPCStatsTab({
               type="number"
               min="1"
               value={formData.hitPoints.maximum}
-              onChange={(e) => updateHitPoints(parseInt(e.target.value) || 1)}
+              onChange={(e) => updateHitPoints(parseInt(e.target.value, 10) || 1)}
               aria-required="true"
             />
             {errors.hitPoints && <p className="text-sm text-red-600" role="alert">{errors.hitPoints}</p>}
@@ -122,7 +122,7 @@ export function NPCStatsTab({
               min="1"
               max="30"
               value={formData.armorClass}
-              onChange={(e) => onUpdate({ armorClass: parseInt(e.target.value) || 10 })}
+              onChange={(e) => onUpdate({ armorClass: parseInt(e.target.value, 10) || 10 })}
               aria-required="true"
             />
             <p className="text-sm text-muted-foreground">Suggested AC: {suggestedAC}</p>
@@ -135,7 +135,7 @@ export function NPCStatsTab({
               type="number"
               min="0"
               value={formData.speed}
-              onChange={(e) => onUpdate({ speed: parseInt(e.target.value) || 30 })}
+              onChange={(e) => onUpdate({ speed: parseInt(e.target.value, 10) || 30 })}
             />
           </div>
         </div>

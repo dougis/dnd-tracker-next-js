@@ -250,7 +250,7 @@ function SpellList({
             max="9"
             placeholder="Level"
             value={spell.level}
-            onChange={(e) => updateSpell(index, 'level', parseInt(e.target.value) || 0)}
+            onChange={(e) => updateSpell(index, 'level', parseInt(e.target.value, 10) || 0)}
             className="w-20"
             aria-label="Spell level"
           />

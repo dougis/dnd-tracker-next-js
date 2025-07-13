@@ -113,7 +113,7 @@ export function ClassesSection({ value, onChange, errors }: ClassesSectionProps)
                   label="Level"
                   value={classData.level.toString()}
                   onChange={(e) =>
-                    updateClass(index, 'level', parseInt(e.target.value) || 1)
+                    updateClass(index, 'level', parseInt(e.target.value, 10) || 1)
                   }
                   error={errors[`level-${index}`]}
                   type="number"
@@ -127,7 +127,7 @@ export function ClassesSection({ value, onChange, errors }: ClassesSectionProps)
                   label="Hit Die"
                   value={classData.hitDie.toString()}
                   onChange={(e) =>
-                    updateClass(index, 'hitDie', parseInt(e.target.value) || 8)
+                    updateClass(index, 'hitDie', parseInt(e.target.value, 10) || 8)
                   }
                   error={errors[`hitDie-${index}`]}
                   type="number"

@@ -77,7 +77,7 @@ const StatFields = ({ formData, formErrors, onFormDataChange }: ParticipantFormP
         min="1"
         value={formData.maxHitPoints}
         onChange={(e) => {
-          const value = parseInt(e.target.value);
+          const value = parseInt(e.target.value, 10);
           const hitPoints = isNaN(value) ? 1 : value;
           onFormDataChange({
             ...formData,
@@ -95,7 +95,7 @@ const StatFields = ({ formData, formErrors, onFormDataChange }: ParticipantFormP
         min="0"
         value={formData.armorClass}
         onChange={(e) => {
-          const value = parseInt(e.target.value);
+          const value = parseInt(e.target.value, 10);
           const armorClass = isNaN(value) ? 10 : value;
           onFormDataChange({
             ...formData,
@@ -113,7 +113,7 @@ const StatFields = ({ formData, formErrors, onFormDataChange }: ParticipantFormP
         onChange={(e) =>
           onFormDataChange({
             ...formData,
-            initiative: e.target.value ? parseInt(e.target.value) : undefined,
+            initiative: e.target.value ? parseInt(e.target.value, 10) : undefined,
           })
         }
         placeholder="Optional"

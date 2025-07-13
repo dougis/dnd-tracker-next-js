@@ -9,7 +9,7 @@ interface CharacterSpellsProps {
 }
 
 const getSpellLevelTitle = (level: string): string => {
-  return level === '0' ? 'Cantrips' : `${level}${getOrdinalSuffix(parseInt(level))} Level`;
+  return level === '0' ? 'Cantrips' : `${level}${getOrdinalSuffix(parseInt(level, 10))} Level`;
 };
 
 const SpellItem = ({ spell }: { spell: any }) => (
@@ -59,7 +59,7 @@ export function CharacterSpells({ character }: CharacterSpellsProps) {
   return (
     <div className="space-y-6">
       {Object.entries(spellsByLevel)
-        .sort(([a], [b]) => parseInt(a) - parseInt(b))
+        .sort(([a], [b]) => parseInt(a, 10) - parseInt(b, 10))
         .map(([level, spells]) => (
           <SpellLevelGroup key={level} level={level} spells={spells as any[]} />
         ))}

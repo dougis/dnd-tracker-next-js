@@ -27,7 +27,7 @@ export function HPValueInputs({
         label="Current HP"
         type="number"
         value={currentHP}
-        onChange={(e) => onCurrentHPChange(parseInt(e.target.value) || 0)}
+        onChange={(e) => onCurrentHPChange(parseInt(e.target.value, 10) || 0)}
         error={errors.currentHitPoints}
         min={0}
         max={maxHP}
@@ -36,7 +36,7 @@ export function HPValueInputs({
         label="Maximum HP"
         type="number"
         value={maxHP}
-        onChange={(e) => onMaxHPChange(parseInt(e.target.value) || 1)}
+        onChange={(e) => onMaxHPChange(parseInt(e.target.value, 10) || 1)}
         error={errors.maxHitPoints}
         min={1}
       />
@@ -44,7 +44,7 @@ export function HPValueInputs({
         label="Temporary HP"
         type="number"
         value={tempHP}
-        onChange={(e) => onTempHPChange(parseInt(e.target.value) || 0)}
+        onChange={(e) => onTempHPChange(parseInt(e.target.value, 10) || 0)}
         error={errors.temporaryHitPoints}
         min={0}
       />

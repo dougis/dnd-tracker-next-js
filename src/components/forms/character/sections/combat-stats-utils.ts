@@ -73,6 +73,6 @@ export const formatModifier = (modifier: number): string => {
  * Parse number input safely
  */
 export const parseNumberInput = (value: string): number => {
-  const parsed = parseInt(value);
+  const parsed = parseInt(value, 10);
   return isNaN(parsed) ? 0 : parsed;
 };

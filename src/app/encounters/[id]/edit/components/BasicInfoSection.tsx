@@ -153,7 +153,7 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
                 max="20"
                 placeholder="1-20"
                 {...field}
-                onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 1)}
                 aria-describedby="target-level-error"
               />
             </FormControl>
@@ -176,7 +176,7 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
                 min="1"
                 placeholder="60"
                 {...field}
-                onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 1)}
                 aria-describedby="estimated-duration-error"
               />
             </FormControl>

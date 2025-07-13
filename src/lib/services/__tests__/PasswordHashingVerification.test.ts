@@ -132,7 +132,7 @@ describe('Password Hashing Security Verification', () => {
 
       // Extract salt rounds from hash
       const hashParts = hashedPassword.split('$');
-      const saltRounds = parseInt(hashParts[2]);
+      const saltRounds = parseInt(hashParts[2], 10);
 
       // Should use at least 12 rounds for security
       expect(saltRounds).toBeGreaterThanOrEqual(12);
