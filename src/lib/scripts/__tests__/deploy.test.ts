@@ -164,19 +164,24 @@ describe('DeploymentManager', () => {
   describe('createBackup', () => {
     it('should create database backup before deployment', async () => {
       const backupPath = '/tmp/backup-20250112-120000.gz';
-      mockExec.mockResolvedValue({ stdout: `Backup created: ${backupPath}`, stderr: '' });
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(null, { stdout: `Backup created: ${backupPath}`, stderr: '' });
+      });
 
       const result = await deploymentManager.createBackup();
 
       expect(result.success).toBe(true);
       expect(result.backupPath).toBe(backupPath);
       expect(mockExec).toHaveBeenCalledWith(
-        expect.stringContaining('mongodump')
+        expect.stringContaining('mongodump'),
+        expect.any(Function)
       );
     });
 
     it('should handle backup failures gracefully', async () => {
-      mockExec.mockRejectedValue(new Error('Backup failed'));
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(new Error('Backup failed'));
+      });
 
       const result = await deploymentManager.createBackup();
 
@@ -199,32 +204,42 @@ describe('DeploymentManager', () => {
 
     it('should include timestamp in backup filename', async () => {
       const mockDate = new Date('2025-01-12T12:00:00Z');
-      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+      const originalDate = Date;
+      const dateSpy = jest.spyOn(global, 'Date').mockImplementation((() => mockDate) as any);
+      // Preserve Date.now for other calls
+      (global.Date as any).now = originalDate.now;
 
-      mockExec.mockResolvedValue({ stdout: 'Backup created', stderr: '' });
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(null, { stdout: 'Backup created', stderr: '' });
+      });
 
       await deploymentManager.createBackup();
 
       expect(mockExec).toHaveBeenCalledWith(
-        expect.stringContaining('backup-20250112-120000')
+        expect.stringContaining('backup-20250112-120000'),
+        expect.any(Function)
       );
 
-      jest.restoreAllMocks();
+      dateSpy.mockRestore();
     });
   });
 
   describe('runMigrations', () => {
     it('should execute migrations in correct order', async () => {
-      mockExec.mockResolvedValue({ stdout: 'Migrations completed successfully', stderr: '' });
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(null, { stdout: 'Migrations completed successfully', stderr: '' });
+      });
 
       const result = await deploymentManager.runMigrations();
 
       expect(result.success).toBe(true);
-      expect(mockExec).toHaveBeenCalledWith('npm run migrate:up');
+      expect(mockExec).toHaveBeenCalledWith('npm run migrate:up', expect.any(Function));
     });
 
     it('should handle migration failures', async () => {
-      mockExec.mockRejectedValue(new Error('Migration 002 failed'));
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(new Error('Migration 002 failed'));
+      });
 
       const result = await deploymentManager.runMigrations();
 
@@ -251,13 +266,16 @@ describe('DeploymentManager', () => {
         dryRun: true,
       });
 
-      mockExec.mockResolvedValue({ stdout: 'Dry run completed', stderr: '' });
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(null, { stdout: 'Dry run completed', stderr: '' });
+      });
 
       const result = await dryRunManager.runMigrations();
 
       expect(result.success).toBe(true);
       expect(mockExec).toHaveBeenCalledWith(
-        'MIGRATION_DRY_RUN=true npm run migrate:up'
+        'MIGRATION_DRY_RUN=true npm run migrate:up',
+        expect.any(Function)
       );
     });
 
@@ -267,29 +285,36 @@ describe('DeploymentManager', () => {
         timeout: 1000, // 1 second timeout
       });
 
-      mockExec.mockImplementation(() =>
-        new Promise(resolve => setTimeout(() => resolve({ stdout: '', stderr: '' }), 2000)) // 2 second delay
-      );
+      mockExec.mockImplementation((command: string, callback: any) => {
+        // Simulate a command that takes longer than the timeout
+        setTimeout(() => {
+          callback(null, { stdout: '', stderr: '' });
+        }, 2000); // 2 second delay
+      });
 
       const result = await timeoutManager.runMigrations();
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('timeout');
-    }, 10000); // 10 second Jest timeout for this test
+    }, 5000); // 5 second Jest timeout for this test
   });
 
   describe('deployToFlyio', () => {
     it('should deploy application with migrations', async () => {
-      mockExec.mockResolvedValue({ stdout: 'Deployment successful', stderr: '' });
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(null, { stdout: 'Deployment successful', stderr: '' });
+      });
 
       const result = await deploymentManager.deployToFlyio();
 
       expect(result.success).toBe(true);
-      expect(mockExec).toHaveBeenCalledWith('flyctl deploy --remote-only');
+      expect(mockExec).toHaveBeenCalledWith('flyctl deploy --remote-only', expect.any(Function));
     });
 
     it('should handle deployment failures', async () => {
-      mockExec.mockRejectedValue(new Error('Deployment failed'));
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(new Error('Deployment failed'));
+      });
 
       const result = await deploymentManager.deployToFlyio();
 
@@ -302,13 +327,16 @@ describe('DeploymentManager', () => {
         environment: 'production',
       });
 
-      mockExec.mockResolvedValue({ stdout: 'Production deployment successful', stderr: '' });
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(null, { stdout: 'Production deployment successful', stderr: '' });
+      });
 
       const result = await prodManager.deployToFlyio();
 
       expect(result.success).toBe(true);
       expect(mockExec).toHaveBeenCalledWith(
-        expect.stringContaining('--config fly.production.toml')
+        expect.stringContaining('--config fly.production.toml'),
+        expect.any(Function)
       );
     });
 
@@ -398,28 +426,35 @@ describe('DeploymentManager', () => {
 
   describe('rollback', () => {
     it('should rollback deployment on failure', async () => {
-      mockExec.mockResolvedValue({ stdout: 'Rollback successful', stderr: '' });
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(null, { stdout: 'Rollback successful', stderr: '' });
+      });
 
       const result = await deploymentManager.rollback();
 
       expect(result.success).toBe(true);
       expect(mockExec).toHaveBeenCalledWith(
-        expect.stringContaining('flyctl rollback')
+        expect.stringContaining('flyctl rollback'),
+        expect.any(Function)
       );
     });
 
     it('should rollback migrations', async () => {
-      mockExec.mockResolvedValue({ stdout: 'Migration rollback successful', stderr: '' });
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(null, { stdout: 'Migration rollback successful', stderr: '' });
+      });
 
       const result = await deploymentManager.rollback({ steps: 2 });
 
       expect(result.success).toBe(true);
-      expect(mockExec).toHaveBeenCalledWith('npm run migrate:down 2');
+      expect(mockExec).toHaveBeenCalledWith('npm run migrate:down 2', expect.any(Function));
     });
 
     it('should restore from backup on critical failure', async () => {
       const backupPath = '/tmp/backup-20250112-120000.gz';
-      mockExec.mockResolvedValue({ stdout: 'Restore successful', stderr: '' });
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(null, { stdout: 'Restore successful', stderr: '' });
+      });
 
       const result = await deploymentManager.rollback({
         restoreBackup: true,
@@ -428,12 +463,15 @@ describe('DeploymentManager', () => {
 
       expect(result.success).toBe(true);
       expect(mockExec).toHaveBeenCalledWith(
-        expect.stringContaining(`mongorestore ${backupPath}`)
+        expect.stringContaining(`mongorestore ${backupPath}`),
+        expect.any(Function)
       );
     });
 
     it('should handle rollback failures', async () => {
-      mockExec.mockRejectedValue(new Error('Rollback failed'));
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(new Error('Rollback failed'));
+      });
 
       const result = await deploymentManager.rollback();
 
@@ -512,7 +550,9 @@ describe('DeploymentManager', () => {
         dryRun: true,
       });
 
-      mockExec.mockResolvedValue({ stdout: 'Dry run success', stderr: '' });
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(null, { stdout: 'Dry run success', stderr: '' });
+      });
 
       const result = await dryRunManager.deploy();
 
@@ -559,7 +599,9 @@ describe('DeploymentManager', () => {
   describe('Monitoring and alerting', () => {
     it('should send deployment start notification', async () => {
       const notificationSpy = jest.spyOn(deploymentManager, 'sendNotification').mockResolvedValue();
-      mockExec.mockResolvedValue({ stdout: '', stderr: '' });
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(null, { stdout: '', stderr: '' });
+      });
 
       await deploymentManager.deploy();
 
@@ -573,7 +615,26 @@ describe('DeploymentManager', () => {
 
     it('should send deployment success notification', async () => {
       const notificationSpy = jest.spyOn(deploymentManager, 'sendNotification').mockResolvedValue();
-      mockExec.mockResolvedValue({ stdout: '', stderr: '' });
+      mockExec.mockImplementation((command: string, callback: any) => {
+        // Mock all necessary commands for a successful deployment
+        if (command === 'npm run migrate:validate') {
+          callback(null, { stdout: 'All migrations valid', stderr: '' });
+        } else if (command === 'npm run migrate:status') {
+          callback(null, { stdout: '[]', stderr: '' });
+        } else if (command === 'npm run build') {
+          callback(null, { stdout: 'Build successful', stderr: '' });
+        } else if (command.includes('mongodump')) {
+          callback(null, { stdout: 'Backup created', stderr: '' });
+        } else if (command === 'npm run migrate:up') {
+          callback(null, { stdout: 'Migrations completed', stderr: '' });
+        } else if (command.includes('flyctl deploy')) {
+          callback(null, { stdout: 'Deployment successful', stderr: '' });
+        } else if (command.includes('curl')) {
+          callback(null, { stdout: '{"status":"ok"}', stderr: '' });
+        } else {
+          callback(null, { stdout: '', stderr: '' });
+        }
+      });
 
       await deploymentManager.deploy();
 
@@ -587,7 +648,9 @@ describe('DeploymentManager', () => {
 
     it('should send deployment failure notification', async () => {
       const notificationSpy = jest.spyOn(deploymentManager, 'sendNotification').mockResolvedValue();
-      mockExec.mockRejectedValue(new Error('Deployment failed'));
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(new Error('Deployment failed'));
+      });
 
       await deploymentManager.deploy();
 
@@ -601,7 +664,9 @@ describe('DeploymentManager', () => {
     }, 10000);
 
     it('should collect deployment metrics', async () => {
-      mockExec.mockResolvedValue({ stdout: '', stderr: '' });
+      mockExec.mockImplementation((command: string, callback: any) => {
+        callback(null, { stdout: '', stderr: '' });
+      });
       jest.spyOn(deploymentManager, 'sendNotification').mockResolvedValue();
 
       const result = await deploymentManager.deploy();
