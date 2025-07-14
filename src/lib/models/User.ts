@@ -296,7 +296,7 @@ const userSchema = new Schema<IUser, UserModel>(
   {
     timestamps: true,
     toJSON: {
-      transform: (_, ret) => {
+      transform: (_, ret: any) => {
         // Convert _id to id and remove sensitive fields
         ret.id = ret._id;
         delete ret._id;
@@ -309,7 +309,7 @@ const userSchema = new Schema<IUser, UserModel>(
       },
     },
     toObject: {
-      transform: (_, ret) => {
+      transform: (_, ret: any) => {
         // Convert _id to id and remove sensitive fields
         ret.id = ret._id;
         delete ret.passwordHash;
