@@ -181,7 +181,7 @@ describe('MigrationRunner TTL Index Creation', () => {
         { expires: 1 },
         { expireAfterSeconds: 0 }
       );
-      
+
       // Verify it was called exactly once
       expect(mockVerificationTokensCollection.createIndex).toHaveBeenCalledTimes(1);
     });
