@@ -16,6 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { getRedirectMessage } from '@/lib/utils/redirect-utils';
 
 type FormState = {
   success: boolean;
@@ -28,6 +29,9 @@ export default function SignInPage() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || searchParams.get('next') || '/dashboard';
   const error = searchParams.get('error');
+
+  // Generate redirect message if user was redirected from a protected route
+  const redirectMessage = getRedirectMessage(searchParams.get('callbackUrl') || searchParams.get('next'));
 
   const [formState, setFormState] = useState<FormState>({
     success: false,
@@ -123,9 +127,15 @@ export default function SignInPage() {
     <div className="space-y-6">
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold">Sign in to your account</h1>
-        <p className="text-slate-500 dark:text-slate-400">
-          Enter your credentials to access your D&D Encounter Tracker
-        </p>
+        {redirectMessage ? (
+          <p className="text-primary font-medium">
+            {redirectMessage}
+          </p>
+        ) : (
+          <p className="text-slate-500 dark:text-slate-400">
+            Enter your credentials to access your D&D Encounter Tracker
+          </p>
+        )}
       </div>
 
       {generalError && (

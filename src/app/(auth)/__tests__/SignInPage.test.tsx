@@ -124,4 +124,146 @@ describe('SignInPage Component', () => {
       expect(mockRouter.push).not.toHaveBeenCalled();
     });
   });
+
+  describe('Redirect Message Display', () => {
+    it('shows redirect message when callbackUrl contains a protected route', () => {
+      // Mock callbackUrl pointing to settings page
+      mockSearchParams.get.mockImplementation(param => {
+        if (param === 'callbackUrl') return 'http://localhost:3000/settings';
+        if (param === 'next') return null;
+        if (param === 'error') return null;
+        return null;
+      });
+
+      render(<SignInPage />);
+
+      expect(screen.getByText('Please sign in to view your Settings')).toBeInTheDocument();
+    });
+
+    it('shows redirect message when callbackUrl contains parties route', () => {
+      // Mock callbackUrl pointing to parties page
+      mockSearchParams.get.mockImplementation(param => {
+        if (param === 'callbackUrl') return 'http://localhost:3000/parties';
+        if (param === 'next') return null;
+        if (param === 'error') return null;
+        return null;
+      });
+
+      render(<SignInPage />);
+
+      expect(screen.getByText('Please sign in to view your Parties')).toBeInTheDocument();
+    });
+
+    it('shows redirect message when callbackUrl contains characters route', () => {
+      // Mock callbackUrl pointing to characters page
+      mockSearchParams.get.mockImplementation(param => {
+        if (param === 'callbackUrl') return 'http://localhost:3000/characters';
+        if (param === 'next') return null;
+        if (param === 'error') return null;
+        return null;
+      });
+
+      render(<SignInPage />);
+
+      expect(screen.getByText('Please sign in to view your Characters')).toBeInTheDocument();
+    });
+
+    it('shows redirect message when callbackUrl contains encounters route', () => {
+      // Mock callbackUrl pointing to encounters page
+      mockSearchParams.get.mockImplementation(param => {
+        if (param === 'callbackUrl') return 'http://localhost:3000/encounters';
+        if (param === 'next') return null;
+        if (param === 'error') return null;
+        return null;
+      });
+
+      render(<SignInPage />);
+
+      expect(screen.getByText('Please sign in to view your Encounters')).toBeInTheDocument();
+    });
+
+    it('shows redirect message when callbackUrl contains combat route', () => {
+      // Mock callbackUrl pointing to combat page
+      mockSearchParams.get.mockImplementation(param => {
+        if (param === 'callbackUrl') return 'http://localhost:3000/combat';
+        if (param === 'next') return null;
+        if (param === 'error') return null;
+        return null;
+      });
+
+      render(<SignInPage />);
+
+      expect(screen.getByText('Please sign in to view your Combat')).toBeInTheDocument();
+    });
+
+    it('shows redirect message when callbackUrl contains dashboard subpath', () => {
+      // Mock callbackUrl pointing to dashboard subpath
+      mockSearchParams.get.mockImplementation(param => {
+        if (param === 'callbackUrl') return 'http://localhost:3000/dashboard/profile';
+        if (param === 'next') return null;
+        if (param === 'error') return null;
+        return null;
+      });
+
+      render(<SignInPage />);
+
+      expect(screen.getByText('Please sign in to view your Dashboard')).toBeInTheDocument();
+    });
+
+    it('shows redirect message when next parameter contains a protected route', () => {
+      // Mock next parameter instead of callbackUrl
+      mockSearchParams.get.mockImplementation(param => {
+        if (param === 'callbackUrl') return null;
+        if (param === 'next') return '/settings';
+        if (param === 'error') return null;
+        return null;
+      });
+
+      render(<SignInPage />);
+
+      expect(screen.getByText('Please sign in to view your Settings')).toBeInTheDocument();
+    });
+
+    it('does not show redirect message when no redirect URL is provided', () => {
+      // Mock no redirect URLs
+      mockSearchParams.get.mockImplementation(param => {
+        if (param === 'callbackUrl') return null;
+        if (param === 'next') return null;
+        if (param === 'error') return null;
+        return null;
+      });
+
+      render(<SignInPage />);
+
+      expect(screen.queryByText(/Please sign in to view your/)).not.toBeInTheDocument();
+    });
+
+    it('does not show redirect message when callbackUrl points to default dashboard', () => {
+      // Mock callbackUrl pointing to default dashboard (no redirect context)
+      mockSearchParams.get.mockImplementation(param => {
+        if (param === 'callbackUrl') return '/dashboard';
+        if (param === 'next') return null;
+        if (param === 'error') return null;
+        return null;
+      });
+
+      render(<SignInPage />);
+
+      expect(screen.queryByText(/Please sign in to view your/)).not.toBeInTheDocument();
+    });
+
+    it('handles redirect message with subpaths correctly', () => {
+      // Mock callbackUrl pointing to a subpath
+      mockSearchParams.get.mockImplementation(param => {
+        if (param === 'callbackUrl') return 'http://localhost:3000/characters/123/edit';
+        if (param === 'next') return null;
+        if (param === 'error') return null;
+        return null;
+      });
+
+      render(<SignInPage />);
+
+      expect(screen.getByText('Please sign in to view your Characters')).toBeInTheDocument();
+    });
+  });
 });
