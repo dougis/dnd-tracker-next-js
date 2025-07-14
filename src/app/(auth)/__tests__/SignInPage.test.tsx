@@ -124,4 +124,97 @@ describe('SignInPage Component', () => {
       expect(mockRouter.push).not.toHaveBeenCalled();
     });
   });
+
+  describe('Redirect Message Display', () => {
+    // Helper function to mock search params and test redirect messages
+    const testRedirectMessage = (url: string, expectedMessage: string, _description?: string) => {
+      mockSearchParams.get.mockImplementation(param => {
+        if (param === 'callbackUrl') return url;
+        if (param === 'next') return null;
+        if (param === 'error') return null;
+        return null;
+      });
+
+      render(<SignInPage />);
+      expect(screen.getByText(expectedMessage)).toBeInTheDocument();
+    };
+
+    // Test data for protected routes
+    const redirectTestCases = [
+      {
+        url: 'http://localhost:3000/settings',
+        expectedMessage: 'Please sign in to view your Settings',
+        description: 'settings route'
+      },
+      {
+        url: 'http://localhost:3000/parties',
+        expectedMessage: 'Please sign in to view your Parties',
+        description: 'parties route'
+      },
+      {
+        url: 'http://localhost:3000/characters',
+        expectedMessage: 'Please sign in to view your Characters',
+        description: 'characters route'
+      },
+      {
+        url: 'http://localhost:3000/encounters',
+        expectedMessage: 'Please sign in to view your Encounters',
+        description: 'encounters route'
+      },
+      {
+        url: 'http://localhost:3000/combat',
+        expectedMessage: 'Please sign in to view your Combat',
+        description: 'combat route'
+      },
+      {
+        url: 'http://localhost:3000/dashboard/profile',
+        expectedMessage: 'Please sign in to view your Dashboard',
+        description: 'dashboard subpath'
+      }
+    ];
+
+    // Generate tests for each protected route
+    redirectTestCases.forEach(({ url, expectedMessage, description }) => {
+      it(`shows redirect message when callbackUrl contains ${description}`, () => {
+        testRedirectMessage(url, expectedMessage);
+      });
+    });
+
+    it('shows redirect message when next parameter contains a protected route', () => {
+      // Mock next parameter instead of callbackUrl
+      mockSearchParams.get.mockImplementation(param => {
+        if (param === 'callbackUrl') return null;
+        if (param === 'next') return '/settings';
+        if (param === 'error') return null;
+        return null;
+      });
+
+      render(<SignInPage />);
+
+      expect(screen.getByText('Please sign in to view your Settings')).toBeInTheDocument();
+    });
+
+    it('does not show redirect message when no redirect URL is provided', () => {
+      mockSearchParams.get.mockImplementation(_param => null);
+      render(<SignInPage />);
+      expect(screen.queryByText(/Please sign in to view your/)).not.toBeInTheDocument();
+    });
+
+    it('does not show redirect message when callbackUrl points to default dashboard', () => {
+      mockSearchParams.get.mockImplementation(param => {
+        if (param === 'callbackUrl') return '/dashboard';
+        return null;
+      });
+
+      render(<SignInPage />);
+      expect(screen.queryByText(/Please sign in to view your/)).not.toBeInTheDocument();
+    });
+
+    it('handles redirect message with subpaths correctly', () => {
+      testRedirectMessage(
+        'http://localhost:3000/characters/123/edit',
+        'Please sign in to view your Characters'
+      );
+    });
+  });
 });
