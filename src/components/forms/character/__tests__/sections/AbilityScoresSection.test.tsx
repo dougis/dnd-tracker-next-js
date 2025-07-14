@@ -2,7 +2,16 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AbilityScoresSection } from '../../sections/AbilityScoresSection';
 import { DEFAULT_ABILITY_SCORES } from '../../constants';
-import { setupSectionTest, expectAbilityScoreFieldsToBeRendered } from '../utils';
+import {
+  setupSectionTest,
+  expectAbilityScoreFieldsToBeRendered,
+  testFieldChanges,
+  testFieldErrors,
+  testSectionLayout,
+  testSectionAccessibility,
+  FieldChangeTestCase,
+  ErrorTestCase
+} from '../utils';
 
 describe('AbilityScoresSection', () => {
   const { defaultSectionProps } = setupSectionTest();
@@ -11,16 +20,31 @@ describe('AbilityScoresSection', () => {
     value: DEFAULT_ABILITY_SCORES,
   };
 
-  describe('Ability Score Fields', () => {
-    const abilities = [
-      { name: 'Strength', key: 'strength', abbreviation: 'STR' },
-      { name: 'Dexterity', key: 'dexterity', abbreviation: 'DEX' },
-      { name: 'Constitution', key: 'constitution', abbreviation: 'CON' },
-      { name: 'Intelligence', key: 'intelligence', abbreviation: 'INT' },
-      { name: 'Wisdom', key: 'wisdom', abbreviation: 'WIS' },
-      { name: 'Charisma', key: 'charisma', abbreviation: 'CHA' },
-    ];
+  // Define test data for data-driven testing
+  const abilities = [
+    { name: 'Strength', key: 'strength' as keyof typeof DEFAULT_ABILITY_SCORES, abbreviation: 'STR' },
+    { name: 'Dexterity', key: 'dexterity' as keyof typeof DEFAULT_ABILITY_SCORES, abbreviation: 'DEX' },
+    { name: 'Constitution', key: 'constitution' as keyof typeof DEFAULT_ABILITY_SCORES, abbreviation: 'CON' },
+    { name: 'Intelligence', key: 'intelligence' as keyof typeof DEFAULT_ABILITY_SCORES, abbreviation: 'INT' },
+    { name: 'Wisdom', key: 'wisdom' as keyof typeof DEFAULT_ABILITY_SCORES, abbreviation: 'WIS' },
+    { name: 'Charisma', key: 'charisma' as keyof typeof DEFAULT_ABILITY_SCORES, abbreviation: 'CHA' },
+  ];
 
+  const fieldChangeTestCases: FieldChangeTestCase<typeof testProps.value>[] = abilities.map(ability => ({
+    fieldName: ability.key,
+    labelPattern: new RegExp(ability.name, 'i'),
+    newValue: 18,
+    expectedStateChange: { [ability.key]: 18 },
+    inputMethod: 'change' as const,
+  }));
+
+  const errorTestCases: ErrorTestCase[] = abilities.map(ability => ({
+    fieldName: ability.key,
+    errorMessage: `${ability.name} must be between 1 and 30`,
+    labelPattern: new RegExp(ability.name, 'i'),
+  }));
+
+  describe('Ability Score Fields', () => {
     it('renders all six ability score fields', () => {
       render(<AbilityScoresSection {...testProps} />);
       expectAbilityScoreFieldsToBeRendered();
@@ -67,19 +91,6 @@ describe('AbilityScoresSection', () => {
         expect(field).toHaveAttribute('aria-required', 'true');
       });
     });
-
-    it('calls onChange when ability scores are modified', async () => {
-      render(<AbilityScoresSection {...testProps} />);
-
-      const strengthField = screen.getByLabelText(/strength/i);
-
-      // Use fireEvent.change for number inputs to avoid concatenation issues
-      fireEvent.change(strengthField, { target: { value: '18' } });
-
-      expect(testProps.onChange).toHaveBeenCalledWith(expect.objectContaining({
-        strength: 18,
-      }));
-    });
   });
 
   describe('Ability Modifiers', () => {
@@ -116,6 +127,14 @@ describe('AbilityScoresSection', () => {
       expect(testProps.onChange).toHaveBeenCalledWith(expect.objectContaining({
         strength: 20,
       }));
+    });
+  });
+
+  // Data-driven field change tests
+  describe('Field Value Changes', () => {
+    const fieldChangeTests = testFieldChanges(AbilityScoresSection, testProps.value, fieldChangeTestCases);
+    fieldChangeTests.forEach(({ name, test }) => {
+      it(name, test);
     });
   });
 
@@ -244,41 +263,22 @@ describe('AbilityScoresSection', () => {
     });
   });
 
-  describe('Validation', () => {
-    it('shows validation errors for invalid ability scores', () => {
-      const props = {
-        ...testProps,
-        errors: {
-          strength: 'Strength must be between 1 and 30',
-          dexterity: 'Dexterity must be between 1 and 30',
-        },
-      };
-      render(<AbilityScoresSection {...props} />);
-
-      expect(screen.getByText('Strength must be between 1 and 30')).toBeInTheDocument();
-      expect(screen.getByText('Dexterity must be between 1 and 30')).toBeInTheDocument();
-    });
-
-    it('marks fields with errors as invalid', () => {
-      const props = {
-        ...testProps,
-        errors: {
-          strength: 'Strength must be between 1 and 30',
-        },
-      };
-      render(<AbilityScoresSection {...props} />);
-
-      const strengthField = screen.getByLabelText(/strength/i);
-      expect(strengthField).toHaveAttribute('aria-invalid', 'true');
+  // Data-driven error validation tests
+  describe('Field Error Validation', () => {
+    const errorTests = testFieldErrors(AbilityScoresSection, testProps, errorTestCases);
+    errorTests.forEach(({ name, test }) => {
+      it(name, test);
     });
   });
 
+  // Section layout tests using utility
   describe('Section Layout', () => {
-    it('renders section header with proper title', () => {
-      render(<AbilityScoresSection {...testProps} />);
-
-      expect(screen.getByText('Ability Scores')).toBeInTheDocument();
-      expect(screen.getByText(/fundamental attributes/i)).toBeInTheDocument();
+    const layoutTests = testSectionLayout(AbilityScoresSection, testProps, {
+      title: 'Ability Scores',
+      description: 'fundamental attributes',
+    });
+    layoutTests.forEach(({ name, test }) => {
+      it(name, test);
     });
 
     it('arranges ability scores in a responsive grid', () => {
@@ -297,12 +297,15 @@ describe('AbilityScoresSection', () => {
     });
   });
 
+  // Accessibility tests using utility
   describe('Accessibility', () => {
-    it('has proper section heading structure', () => {
-      render(<AbilityScoresSection {...testProps} />);
-
-      const heading = screen.getByRole('heading', { name: /ability scores/i });
-      expect(heading).toHaveAttribute('aria-level', '3');
+    const accessibilityTests = testSectionAccessibility(AbilityScoresSection, testProps, {
+      headingText: 'Ability Scores',
+      headingLevel: 3,
+      fieldPatterns: abilities.map(ability => new RegExp(ability.name, 'i')),
+    });
+    accessibilityTests.forEach(({ name, test }) => {
+      it(name, test);
     });
 
     it('associates ability modifiers with their scores', () => {
