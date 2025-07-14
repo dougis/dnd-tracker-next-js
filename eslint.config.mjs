@@ -22,7 +22,11 @@ export default [
       'coverage/**/*',
       'out/**/*',
       '*.config.js',
-      'plato_report/**/*'
+      '*.config.mjs',
+      '*.config.ts',
+      'plato_report/**/*',
+      '*.min.js',
+      '*.bundle.js'
     ]
   },
   // Next.js configuration - includes the plugin automatically

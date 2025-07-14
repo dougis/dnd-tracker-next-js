@@ -228,15 +228,15 @@ export function createTestComponent<T>(
   initialProps: any = {}
 ) {
   const mockOnChange = jest.fn();
-  
+
   const TestComponent = () => {
     const [value, setValue] = React.useState(initialValue);
-    
+
     const handleChange = (newValue: T) => {
       setValue(newValue);
       mockOnChange(newValue);
     };
-    
+
     return React.createElement(Component, {
       value,
       onChange: handleChange,
@@ -244,7 +244,7 @@ export function createTestComponent<T>(
       ...initialProps,
     });
   };
-  
+
   return { TestComponent, mockOnChange };
 }
 
@@ -273,7 +273,7 @@ export function testFieldChanges<T>(
         // For complex components, test by directly calling onChange (existing pattern)
         const { TestComponent, mockOnChange } = createTestComponent(Component, initialValue, initialProps);
         render(React.createElement(TestComponent));
-        
+
         // Simulate the onChange call directly
         mockOnChange({ ...initialValue, ...expectedStateChange });
         expect(mockOnChange).toHaveBeenCalledWith(
@@ -283,11 +283,11 @@ export function testFieldChanges<T>(
         // For simple inputs, test user interactions
         const { TestComponent, mockOnChange } = createTestComponent(Component, initialValue, initialProps);
         const user = userEvent.setup();
-        
+
         render(React.createElement(TestComponent));
-        
+
         const field = screen.getByLabelText(labelPattern);
-        
+
         switch (inputMethod) {
           case 'type':
             await user.clear(field);
@@ -303,7 +303,7 @@ export function testFieldChanges<T>(
             await user.click(field);
             break;
         }
-        
+
         expect(mockOnChange).toHaveBeenCalledWith(
           expect.objectContaining(expectedStateChange)
         );
@@ -313,7 +313,7 @@ export function testFieldChanges<T>(
 }
 
 /**
- * Data-driven error display testing utility  
+ * Data-driven error display testing utility
  * Eliminates repetitive error validation test patterns
  */
 export interface ErrorTestCase {
@@ -334,9 +334,9 @@ export function testFieldErrors(
         ...baseProps,
         errors: { [fieldName]: errorMessage },
       };
-      
+
       render(React.createElement(Component, props));
-      
+
       expect(screen.getByText(errorMessage)).toBeInTheDocument();
       const field = screen.getByLabelText(labelPattern);
       expect(field).toHaveAttribute('aria-invalid', 'true');
@@ -362,12 +362,12 @@ export function testCharacterCount(
         ...baseProps,
         value: { ...baseProps.value, [fieldName]: testValue },
       };
-      
+
       render(React.createElement(Component, props));
-      
+
       const countElement = screen.getByText((content, node) => {
-        const hasText = (content: string) => 
-          content.includes(testValue.length.toString()) && 
+        const hasText = (content: string) =>
+          content.includes(testValue.length.toString()) &&
           content.includes(`/${maxLength}`);
         const nodeHasText = hasText(node?.textContent || '');
         const childrenDontHaveText = Array.from(node?.children || []).every(
@@ -375,7 +375,7 @@ export function testCharacterCount(
         );
         return nodeHasText && childrenDontHaveText;
       });
-      
+
       expect(countElement).toBeInTheDocument();
     }
   };
@@ -407,7 +407,7 @@ export function testSectionLayout(
       }
     }
   ];
-  
+
   if (sectionConfig.testId && sectionConfig.expectedClasses) {
     tests.push({
       name: 'applies proper layout classes',
@@ -420,7 +420,7 @@ export function testSectionLayout(
       }
     });
   }
-  
+
   return tests;
 }
 
@@ -443,14 +443,14 @@ export function testSectionAccessibility(
       name: 'has proper section heading structure',
       test: () => {
         render(React.createElement(Component, props));
-        const heading = screen.getByRole('heading', { 
-          name: new RegExp(accessibilityConfig.headingText, 'i') 
+        const heading = screen.getByRole('heading', {
+          name: new RegExp(accessibilityConfig.headingText, 'i')
         });
         expect(heading).toHaveAttribute('aria-level', accessibilityConfig.headingLevel.toString());
       }
     }
   ];
-  
+
   if (accessibilityConfig.fieldPatterns) {
     tests.push({
       name: 'has proper form field labels',
@@ -462,7 +462,7 @@ export function testSectionAccessibility(
       }
     });
   }
-  
+
   if (accessibilityConfig.describedByFields) {
     tests.push({
       name: 'associates helper text with form fields',
@@ -476,6 +476,6 @@ export function testSectionAccessibility(
       }
     });
   }
-  
+
   return tests;
 }
