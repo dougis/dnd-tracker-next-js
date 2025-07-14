@@ -4,7 +4,14 @@ import { BasicInfoSection } from '../../sections/BasicInfoSection';
 import {
   setupSectionTest,
   expectFieldToBeRequired,
-  expectBasicInfoFieldsToBeRendered
+  expectBasicInfoFieldsToBeRendered,
+  testFieldChanges,
+  testFieldErrors,
+  testCharacterCount,
+  testSectionLayout,
+  testSectionAccessibility,
+  FieldChangeTestCase,
+  ErrorTestCase
 } from '../utils';
 
 describe('BasicInfoSection', () => {
@@ -20,6 +27,52 @@ describe('BasicInfoSection', () => {
     },
   };
 
+  // Define test data for data-driven testing
+  const fieldChangeTestCases: FieldChangeTestCase<typeof testProps.value>[] = [
+    {
+      fieldName: 'name',
+      labelPattern: /character name/i,
+      newValue: 'Test Character',
+      expectedStateChange: { name: 'Test Character' },
+    },
+    {
+      fieldName: 'type',
+      labelPattern: /character type/i,
+      newValue: 'npc',
+      expectedStateChange: { type: 'npc' },
+    },
+    {
+      fieldName: 'race',
+      labelPattern: /race/i,
+      newValue: 'elf',
+      expectedStateChange: { race: 'elf' },
+    },
+    {
+      fieldName: 'customRace',
+      labelPattern: /custom race name/i,
+      newValue: 'Test Race',
+      expectedStateChange: { customRace: 'Test Race' },
+    },
+  ];
+
+  const errorTestCases: ErrorTestCase[] = [
+    {
+      fieldName: 'name',
+      errorMessage: 'Character name is required',
+      labelPattern: /character name/i,
+    },
+    {
+      fieldName: 'type',
+      errorMessage: 'Character type is required',
+      labelPattern: /character type/i,
+    },
+    {
+      fieldName: 'race',
+      errorMessage: 'Race is required',
+      labelPattern: /race/i,
+    },
+  ];
+
   describe('Character Name Field', () => {
     it('renders character name input with proper label', () => {
       render(<BasicInfoSection {...testProps} />);
@@ -30,62 +83,14 @@ describe('BasicInfoSection', () => {
       expect(nameField).toHaveAttribute('maxlength', '100');
     });
 
-    it('updates character name value', () => {
-      const mockOnValueChange = jest.fn();
-      const TestComponent = () => {
-        const [value, setValue] = React.useState(testProps.value);
-
-        const handleChange = (newValue: any) => {
-          setValue(newValue);
-          mockOnValueChange(newValue);
-        };
-
-        return <BasicInfoSection value={value} onChange={handleChange} errors={{}} />;
-      };
-
-      render(<TestComponent />);
-
-      // Test by directly calling the onChange with expected data
-      mockOnValueChange({ ...testProps.value, name: 'Test Character' });
-      expect(mockOnValueChange).toHaveBeenCalledWith(expect.objectContaining({
-        name: 'Test Character',
-      }));
-    });
-
     it('renders all basic info fields using utility', () => {
       render(<BasicInfoSection {...testProps} />);
       expectBasicInfoFieldsToBeRendered();
     });
 
-    it('shows validation error for character name', () => {
-      const props = {
-        ...testProps,
-        errors: { name: 'Character name is required' },
-      };
-      render(<BasicInfoSection {...props} />);
-
-      expect(screen.getByText('Character name is required')).toBeInTheDocument();
-      expect(screen.getByLabelText(/character name/i)).toHaveAttribute('aria-invalid', 'true');
-    });
-
-    it('shows character count indicator', () => {
-      const props = {
-        ...testProps,
-        value: { ...testProps.value, name: 'Test' },
-      };
-      render(<BasicInfoSection {...props} />);
-
-      // Character count is displayed as "4/100" within a single container
-      const countElement = screen.getByText((content, node) => {
-        const hasText = (content: string) => content.includes('4') && content.includes('/100');
-        const nodeHasText = hasText(node?.textContent || '');
-        const childrenDontHaveText = Array.from(node?.children || []).every(
-          child => !hasText((child as HTMLElement).textContent || '')
-        );
-        return nodeHasText && childrenDontHaveText;
-      });
-      expect(countElement).toBeInTheDocument();
-    });
+    // Test character count using utility
+    const characterCountTest = testCharacterCount(BasicInfoSection, testProps, 'name', 'Test', 100);
+    it(characterCountTest.name, characterCountTest.test);
   });
 
   describe('Character Type Selection', () => {
@@ -100,38 +105,6 @@ describe('BasicInfoSection', () => {
     it('shows PC selected by default', () => {
       render(<BasicInfoSection {...testProps} />);
       expect(screen.getByText('Player Character')).toBeInTheDocument();
-    });
-
-    it('calls onChange when character type value changes', () => {
-      const mockOnValueChange = jest.fn();
-      const TestComponent = () => {
-        const [value, setValue] = React.useState(testProps.value);
-
-        const handleChange = (newValue: any) => {
-          setValue(newValue);
-          mockOnValueChange(newValue);
-        };
-
-        return <BasicInfoSection value={value} onChange={handleChange} errors={{}} />;
-      };
-
-      render(<TestComponent />);
-
-      // Test by directly calling the onChange with expected data
-      mockOnValueChange({ ...testProps.value, type: 'npc' });
-      expect(mockOnValueChange).toHaveBeenCalledWith(expect.objectContaining({
-        type: 'npc',
-      }));
-    });
-
-    it('shows validation error for character type', () => {
-      const props = {
-        ...testProps,
-        errors: { type: 'Character type is required' },
-      };
-      render(<BasicInfoSection {...props} />);
-
-      expect(screen.getByText('Character type is required')).toBeInTheDocument();
     });
   });
 
@@ -154,28 +127,6 @@ describe('BasicInfoSection', () => {
       expect(screen.getByText('Elf')).toBeInTheDocument();
     });
 
-    it('calls onChange when race value changes', () => {
-      const mockOnValueChange = jest.fn();
-      const TestComponent = () => {
-        const [value, setValue] = React.useState(testProps.value);
-
-        const handleChange = (newValue: any) => {
-          setValue(newValue);
-          mockOnValueChange(newValue);
-        };
-
-        return <BasicInfoSection value={value} onChange={handleChange} errors={{}} />;
-      };
-
-      render(<TestComponent />);
-
-      // Test by directly calling the onChange with expected data
-      mockOnValueChange({ ...testProps.value, race: 'elf' });
-      expect(mockOnValueChange).toHaveBeenCalledWith(expect.objectContaining({
-        race: 'elf',
-      }));
-    });
-
     it('shows custom race input when custom is selected', () => {
       const props = {
         ...testProps,
@@ -189,40 +140,15 @@ describe('BasicInfoSection', () => {
       expect(customRaceField).toHaveAttribute('maxlength', '50');
     });
 
-    it('calls onChange when custom race name is typed', () => {
-      const mockOnValueChange = jest.fn();
-      const TestComponent = () => {
-        const [value, setValue] = React.useState({
-          ...testProps.value,
-          race: 'custom' as const,
-        });
-
-        const handleChange = (newValue: any) => {
-          setValue(newValue);
-          mockOnValueChange(newValue);
-        };
-
-        return <BasicInfoSection value={value} onChange={handleChange} errors={{}} />;
-      };
-
-      render(<TestComponent />);
-
-      // Test by directly calling the onChange with expected data
-      mockOnValueChange({ ...testProps.value, race: 'custom', customRace: 'Test Race' });
-      expect(mockOnValueChange).toHaveBeenCalledWith(expect.objectContaining({
-        customRace: 'Test Race',
-      }));
-    });
-
-    it('shows validation error for race', () => {
-      const props = {
-        ...testProps,
-        errors: { race: 'Race is required' },
-      };
-      render(<BasicInfoSection {...props} />);
-
-      expect(screen.getByText('Race is required')).toBeInTheDocument();
-    });
+    // Test custom race character count using utility
+    const customRaceCountTest = testCharacterCount(
+      BasicInfoSection,
+      { ...testProps, value: { ...testProps.value, race: 'custom' as const } },
+      'customRace',
+      'Test',
+      50
+    );
+    it(customRaceCountTest.name, customRaceCountTest.test);
 
     it('shows validation error for custom race', () => {
       const props = {
@@ -234,40 +160,34 @@ describe('BasicInfoSection', () => {
 
       expect(screen.getByText('Custom race name is required')).toBeInTheDocument();
     });
+  });
 
-    it('shows custom race character count', () => {
-      const props = {
-        ...testProps,
-        value: { ...testProps.value, race: 'custom' as const, customRace: 'Test' },
-      };
-      render(<BasicInfoSection {...props} />);
-
-      // Character count is displayed as "4/50" within a single container
-      const countElement = screen.getByText((content, node) => {
-        const hasText = (content: string) => content.includes('4') && content.includes('/50');
-        const nodeHasText = hasText(node?.textContent || '');
-        const childrenDontHaveText = Array.from(node?.children || []).every(
-          child => !hasText((child as HTMLElement).textContent || '')
-        );
-        return nodeHasText && childrenDontHaveText;
-      });
-      expect(countElement).toBeInTheDocument();
+  // Data-driven field change tests
+  describe('Field Value Changes', () => {
+    const fieldChangeTests = testFieldChanges(BasicInfoSection, testProps.value, fieldChangeTestCases);
+    fieldChangeTests.forEach(({ name, test }) => {
+      it(name, test);
     });
   });
 
-  describe('Section Layout', () => {
-    it('renders section header with proper title', () => {
-      render(<BasicInfoSection {...testProps} />);
-
-      expect(screen.getByText('Basic Information')).toBeInTheDocument();
-      expect(screen.getByText(/character's fundamental details/i)).toBeInTheDocument();
+  // Data-driven error validation tests
+  describe('Field Error Validation', () => {
+    const errorTests = testFieldErrors(BasicInfoSection, testProps, errorTestCases);
+    errorTests.forEach(({ name, test }) => {
+      it(name, test);
     });
+  });
 
-    it('applies proper responsive layout classes', () => {
-      render(<BasicInfoSection {...testProps} />);
-
-      const section = screen.getByTestId('basic-info-section');
-      expect(section).toHaveClass('space-y-4');
+  // Section layout tests using utility
+  describe('Section Layout', () => {
+    const layoutTests = testSectionLayout(BasicInfoSection, testProps, {
+      title: 'Basic Information',
+      description: "character's fundamental details",
+      testId: 'basic-info-section',
+      expectedClasses: ['space-y-4'],
+    });
+    layoutTests.forEach(({ name, test }) => {
+      it(name, test);
     });
 
     it('groups name and type fields together', () => {
@@ -283,19 +203,18 @@ describe('BasicInfoSection', () => {
     });
   });
 
+  // Accessibility tests using utility
   describe('Accessibility', () => {
-    it('has proper section heading structure', () => {
-      render(<BasicInfoSection {...testProps} />);
-
-      const heading = screen.getByRole('heading', { name: /basic information/i });
-      expect(heading).toHaveAttribute('aria-level', '3');
+    const accessibilityTests = testSectionAccessibility(BasicInfoSection, testProps, {
+      headingText: 'Basic Information',
+      headingLevel: 3,
+      fieldPatterns: [/character name/i, /character type/i, /race/i],
+      describedByFields: [
+        { field: /character name/i, describedBy: /choose a memorable name/i }
+      ],
     });
-
-    it('associates helper text with form fields', () => {
-      render(<BasicInfoSection {...testProps} />);
-
-      const nameField = screen.getByLabelText(/character name/i);
-      expect(nameField).toHaveAttribute('aria-describedby');
+    accessibilityTests.forEach(({ name, test }) => {
+      it(name, test);
     });
 
     it('links helper text to field with proper ID relationship', () => {
