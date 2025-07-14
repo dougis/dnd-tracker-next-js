@@ -1,4 +1,5 @@
 /* cspell:disable-line globals readonly jsx eslint browserslist typescript nextjs */
+import js from '@eslint/js';
 import { FlatCompat } from '@eslint/eslintrc';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -7,7 +8,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const compat = new FlatCompat({
-  baseDirectory: __dirname,
+  baseDirectory: import.meta.dirname,
+  recommendedConfig: js.configs.recommended,
 });
 
 /** @type {import('eslint').Linter.Config[]} */
@@ -25,8 +27,8 @@ export default [
       '*.config.mjs',
       '*.config.ts',
       'plato_report/**/*',
-      '*.min.js',
-      '*.bundle.js'
+      '**/*.min.js',
+      '**/*.bundle.js'
     ]
   },
   // Next.js configuration - includes the plugin automatically
