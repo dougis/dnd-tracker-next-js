@@ -1,5 +1,5 @@
 /* cspell:disable-line globals readonly jsx eslint browserslist typescript nextjs */
-const js = require('@eslint/js');
+import js from '@eslint/js';
 import { FlatCompat } from '@eslint/eslintrc';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
