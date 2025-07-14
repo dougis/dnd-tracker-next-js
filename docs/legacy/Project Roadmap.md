@@ -1,8 +1,8 @@
 # Project Roadmap - D&D Encounter Tracker
 
-**Project:** D&D Encounter Tracker Web App  
-**Total Estimated Duration:** 16 weeks (80 working days)  
-**MVP Delivery:** 6 weeks (30 working days)  
+**Project:** D&D Encounter Tracker Web App
+**Total Estimated Duration:** 16 weeks (80 working days)
+**MVP Delivery:** 6 weeks (30 working days)
 **Last Updated:** June 8, 2025
 
 ## Task Organization

@@ -1,7 +1,7 @@
 # D&D Tracker Documentation
 
-**Project:** D&D Encounter Tracker Web App  
-**Documentation Updated:** June 30, 2025  
+**Project:** D&D Encounter Tracker Web App
+**Documentation Updated:** June 30, 2025
 **Current Status:** Phase 2 Development (28% MVP Complete)
 
 ## 📋 Project Overview
@@ -212,8 +212,8 @@ This consolidated documentation replaces the following legacy documents:
 
 ---
 
-**Last Updated:** June 30, 2025  
-**Next Review:** July 7, 2025  
+**Last Updated:** June 30, 2025
+**Next Review:** July 7, 2025
 **Maintained By:** Development Team
 
 For questions about this documentation, refer to the GitHub issue tracking

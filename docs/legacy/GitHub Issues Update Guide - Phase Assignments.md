@@ -1,6 +1,6 @@
 # GitHub Issues Update Guide - 12-Week Phase Assignments
 
-**Date:** June 9, 2025  
+**Date:** June 9, 2025
 **Purpose:** Update all 46 MVP issues with proper week assignments and dependencies
 
 ## 📋 **INSTRUCTIONS FOR UPDATING ISSUES**

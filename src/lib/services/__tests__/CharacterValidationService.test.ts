@@ -255,7 +255,7 @@ describe('CharacterValidationService', () => {
       );
 
       expect(error).not.toBeNull();
-      expect(error!.message).toContain('at least 1 character');
+      expect(error!.message).toContain('Name is required');
       expect(error!.suggestedFix).toBeDefined();
     });
 

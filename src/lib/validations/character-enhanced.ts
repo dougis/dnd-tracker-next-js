@@ -14,6 +14,9 @@ import {
 import {
   ValidationError,
   safeValidate,
+  nameSchema,
+  hitPointsSchema,
+  armorClassSchema,
   type ValidationResult,
 } from './base';
 
@@ -331,57 +334,78 @@ export class CharacterConsistencyChecker {
  */
 export class RealtimeValidator {
   static validateFieldValue(fieldName: string, value: any, fullCharacter?: Partial<CharacterCreation>): ValidationError | null {
+    // Direct field validation using specific schemas to avoid complex shape extraction
     try {
+      let fieldSchema: z.ZodSchema<any> | null = null;
+
+      // Map field names to their corresponding schemas
       switch (fieldName) {
         case 'name':
-          const nameResult = z.string().min(1).max(100).safeParse(value);
-          if (!nameResult.success) {
-            return new ValidationError(CHARACTER_VALIDATION_MESSAGES.name.tooShort, 'name');
-          }
+          fieldSchema = nameSchema;
           break;
-
         case 'race':
-          const raceResult = characterRaceSchema.safeParse(value);
-          if (!raceResult.success) {
-            return new ValidationError(CHARACTER_VALIDATION_MESSAGES.race.invalid, 'race');
-          }
+          fieldSchema = characterRaceSchema;
           break;
-
+        case 'background':
+          fieldSchema = z.string().min(1, 'Background is required').max(100);
+          break;
+        case 'abilityScores':
+          fieldSchema = abilityScoresSchema;
+          break;
+        case 'abilityScores.strength':
+        case 'abilityScores.dexterity':
+        case 'abilityScores.constitution':
+        case 'abilityScores.intelligence':
+        case 'abilityScores.wisdom':
+        case 'abilityScores.charisma':
+          fieldSchema = z.number().int().min(1, 'Ability score must be at least 1').max(30, 'Ability score cannot exceed 30');
+          break;
+        case 'hitPoints':
+          fieldSchema = hitPointsSchema;
+          break;
+        case 'hitPoints.current':
+          fieldSchema = z.number().int().min(0);
+          break;
+        case 'hitPoints.maximum':
+          fieldSchema = z.number().int().min(1);
+          break;
+        case 'armorClass':
+          fieldSchema = armorClassSchema;
+          break;
         case 'customRace':
+          // Special validation for custom race
           if (fullCharacter?.race === 'custom' && (!value || !value.trim())) {
             return new ValidationError(CHARACTER_VALIDATION_MESSAGES.race.customRequired, 'customRace');
           }
+          fieldSchema = z.string().min(1).max(100);
           break;
-
-        case 'hitPoints.current':
-          if (fullCharacter?.hitPoints?.maximum && value > fullCharacter.hitPoints.maximum) {
-            return new ValidationError(CHARACTER_VALIDATION_MESSAGES.hitPoints.currentTooHigh, 'hitPoints.current');
-          }
-          if (value < 0) {
-            return new ValidationError(CHARACTER_VALIDATION_MESSAGES.hitPoints.currentTooLow, 'hitPoints.current');
-          }
-          break;
-
-        case 'armorClass':
-          if (value < 1 || value > 30) {
-            return new ValidationError(
-              value < 1 ? CHARACTER_VALIDATION_MESSAGES.armorClass.tooLow : CHARACTER_VALIDATION_MESSAGES.armorClass.tooHigh,
-              'armorClass'
-            );
-          }
-          break;
-
         default:
-          // Generic validation for ability scores
-          if (fieldName.includes('abilityScores.')) {
-            if (value < 1 || value > 30) {
-              return new ValidationError(
-                value < 1 ? CHARACTER_VALIDATION_MESSAGES.abilityScores.tooLow : CHARACTER_VALIDATION_MESSAGES.abilityScores.tooHigh,
-                fieldName
-              );
+          // For unknown fields, try partial validation
+          const partialObject = { [fieldName]: value };
+          const result = characterCreationSchema.partial().safeParse(partialObject);
+          if (!result.success) {
+            const fieldError = result.error.errors.find(err =>
+              err.path.join('.') === fieldName
+            );
+            if (fieldError) {
+              return new ValidationError(fieldError.message, fieldName);
             }
           }
-          break;
+          return null;
+      }
+
+      // Validate the field if we have a schema
+      if (fieldSchema) {
+        const result = fieldSchema.safeParse(value);
+        if (!result.success) {
+          const error = result.error.errors[0];
+          return new ValidationError(error.message, fieldName, error.code);
+        }
+      }
+
+      // Additional context-dependent validations
+      if (fieldName === 'hitPoints.current' && fullCharacter?.hitPoints?.maximum && value > fullCharacter.hitPoints.maximum) {
+        return new ValidationError(CHARACTER_VALIDATION_MESSAGES.hitPoints.currentTooHigh, 'hitPoints.current');
       }
 
       return null;

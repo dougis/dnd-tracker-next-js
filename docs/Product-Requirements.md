@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 
-**Product Name:** D&D Encounter Tracker Web App  
-**Version:** 2.3  
+**Product Name:** D&D Encounter Tracker Web App
+**Version:** 2.3
 **Date:** June 8, 2025
 
 ## 1. Purpose
@@ -448,5 +448,5 @@ following legacy documents:
 
 - `legacy/Product Requirements Document.md` - Complete business and technical requirements
 
-**Last Updated:** June 30, 2025  
+**Last Updated:** June 30, 2025
 **Document Status:** Current and comprehensive

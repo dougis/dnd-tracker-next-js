@@ -147,7 +147,7 @@ export function SettingsSection({ form }: SettingsSectionProps) {
                         max="30"
                         placeholder="20"
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || undefined)}
+                        onChange={(e) => field.onChange(parseInt(e.target.value, 10) || undefined)}
                         aria-describedby="lair-action-initiative-error"
                       />
                     </FormControl>
@@ -185,7 +185,7 @@ export function SettingsSection({ form }: SettingsSectionProps) {
                         max="10"
                         placeholder="5"
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 5)}
+                        onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 5)}
                         aria-describedby="grid-size-error"
                       />
                     </FormControl>
@@ -224,7 +224,7 @@ export function SettingsSection({ form }: SettingsSectionProps) {
                       max="600"
                       placeholder="Leave empty for no limit"
                       {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || undefined)}
+                      onChange={(e) => field.onChange(parseInt(e.target.value, 10) || undefined)}
                       aria-describedby="round-time-limit-error"
                     />
                   </FormControl>
@@ -250,7 +250,7 @@ export function SettingsSection({ form }: SettingsSectionProps) {
                       min="0"
                       placeholder="Leave empty for automatic calculation"
                       {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || undefined)}
+                      onChange={(e) => field.onChange(parseInt(e.target.value, 10) || undefined)}
                       aria-describedby="experience-threshold-error"
                     />
                   </FormControl>

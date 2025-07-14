@@ -1,0 +1,76 @@
+{
+  "migrations": {
+    "autoRun": false,
+    "backupEnabled": true,
+    "timeout": 600000,
+    "dryRun": false,
+    "validateOnly": false,
+    "requireConfirmation": false,
+    "migrationsPath": "./migrations",
+    "collectionName": "migrations"
+  },
+  "deployment": {
+    "environment": "production",
+    "healthCheckTimeout": 120000,
+    "healthCheckRetries": 15,
+    "healthCheckInterval": 15000,
+    "stabilizationTime": 60000,
+    "canaryDeployment": true
+  },
+  "database": {
+    "connectionTimeout": 60000,
+    "queryTimeout": 30000,
+    "retries": 10,
+    "connectionPoolSize": 10
+  },
+  "backup": {
+    "enabled": true,
+    "retentionDays": 30,
+    "compression": true,
+    "verifyIntegrity": true,
+    "redundantBackups": 2,
+    "offSiteBackup": true
+  },
+  "rollback": {
+    "autoRollback": true,
+    "rollbackOnMigrationFailure": true,
+    "rollbackOnHealthCheckFailure": true,
+    "emergencyRollbackEnabled": true,
+    "rollbackNotificationRequired": true
+  },
+  "monitoring": {
+    "enabled": true,
+    "alertsEnabled": true,
+    "metricsEnabled": true,
+    "notificationChannels": ["slack", "email", "pagerduty"],
+    "detailedLogging": true,
+    "performanceMonitoring": true
+  },
+  "performance": {
+    "maxConnectionTime": 3000,
+    "maxQueryTime": 1500,
+    "warningThresholds": {
+      "connectionTime": 1000,
+      "queryTime": 500
+    },
+    "criticalThresholds": {
+      "connectionTime": 5000,
+      "queryTime": 2000
+    }
+  },
+  "security": {
+    "auditLogging": true,
+    "encryptBackups": true,
+    "accessLogging": true,
+    "restrictedAccess": true
+  },
+  "maintenance": {
+    "maintenanceWindow": {
+      "start": "02:00",
+      "end": "04:00",
+      "timezone": "UTC"
+    },
+    "allowedDeploymentDays": ["tuesday", "wednesday", "thursday"],
+    "emergencyDeploymentOverride": true
+  }
+}

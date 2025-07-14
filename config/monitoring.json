@@ -1,0 +1,211 @@
+{
+  "environments": {
+    "development": {
+      "enabled": false,
+      "channels": [
+        {
+          "type": "webhook",
+          "enabled": true,
+          "config": {
+            "url": "http://localhost:3000/api/webhooks/deployment",
+            "timeout": 5000
+          }
+        }
+      ],
+      "thresholds": {
+        "deploymentDuration": 120000,
+        "migrationDuration": 30000,
+        "errorRate": 0.1,
+        "consecutiveFailures": 2
+      }
+    },
+    "staging": {
+      "enabled": true,
+      "channels": [
+        {
+          "type": "slack",
+          "enabled": true,
+          "config": {
+            "webhook": "${SLACK_WEBHOOK_URL}",
+            "channel": "#deployments-staging",
+            "username": "D&D Tracker Deploy Bot (Staging)"
+          }
+        },
+        {
+          "type": "email",
+          "enabled": true,
+          "config": {
+            "recipients": ["dev-team@dndtracker.com"],
+            "from": "alerts@dndtracker.com",
+            "smtp": {
+              "host": "${SMTP_HOST}",
+              "port": 587,
+              "secure": false,
+              "auth": {
+                "user": "${SMTP_USER}",
+                "pass": "${SMTP_PASS}"
+              }
+            }
+          }
+        }
+      ],
+      "thresholds": {
+        "deploymentDuration": 300000,
+        "migrationDuration": 60000,
+        "errorRate": 0.05,
+        "consecutiveFailures": 3
+      }
+    },
+    "production": {
+      "enabled": true,
+      "channels": [
+        {
+          "type": "slack",
+          "enabled": true,
+          "config": {
+            "webhook": "${SLACK_WEBHOOK_URL}",
+            "channel": "#deployments-production",
+            "username": "D&D Tracker Deploy Bot (Production)"
+          }
+        },
+        {
+          "type": "email",
+          "enabled": true,
+          "config": {
+            "recipients": [
+              "dev-team@dndtracker.com",
+              "ops-team@dndtracker.com"
+            ],
+            "from": "alerts@dndtracker.com",
+            "smtp": {
+              "host": "${SMTP_HOST}",
+              "port": 587,
+              "secure": true,
+              "auth": {
+                "user": "${SMTP_USER}",
+                "pass": "${SMTP_PASS}"
+              }
+            }
+          }
+        },
+        {
+          "type": "pagerduty",
+          "enabled": true,
+          "config": {
+            "integrationKey": "${PAGERDUTY_INTEGRATION_KEY}",
+            "urgency": "high",
+            "escalationPolicy": "deployment-escalation"
+          }
+        }
+      ],
+      "thresholds": {
+        "deploymentDuration": 600000,
+        "migrationDuration": 120000,
+        "errorRate": 0.01,
+        "consecutiveFailures": 2
+      }
+    }
+  },
+  "metrics": {
+    "retention": {
+      "days": 90
+    },
+    "aggregation": {
+      "enabled": true,
+      "intervals": ["1h", "24h", "7d", "30d"]
+    },
+    "export": {
+      "enabled": true,
+      "formats": ["json", "csv"],
+      "destinations": [
+        {
+          "type": "s3",
+          "config": {
+            "bucket": "${METRICS_S3_BUCKET}",
+            "prefix": "deployment-metrics/",
+            "region": "us-east-1"
+          }
+        }
+      ]
+    }
+  },
+  "alerts": {
+    "retention": {
+      "days": 30
+    },
+    "autoResolve": {
+      "enabled": true,
+      "timeoutHours": 24
+    },
+    "escalation": {
+      "enabled": true,
+      "rules": [
+        {
+          "condition": "severity=critical AND environment=production",
+          "escalateAfterMinutes": 15,
+          "channels": ["pagerduty"]
+        },
+        {
+          "condition": "consecutiveFailures>=5",
+          "escalateAfterMinutes": 5,
+          "channels": ["pagerduty", "email"]
+        }
+      ]
+    }
+  },
+  "healthChecks": {
+    "enabled": true,
+    "intervals": {
+      "deployment": 30,
+      "migration": 60,
+      "database": 120
+    },
+    "timeouts": {
+      "deployment": 10000,
+      "migration": 30000,
+      "database": 15000
+    },
+    "retries": 3,
+    "endpoints": [
+      "/api/health",
+      "/api/health/database",
+      "/api/health/migrations"
+    ]
+  },
+  "dashboards": {
+    "enabled": true,
+    "refreshInterval": 30,
+    "metrics": [
+      "deployment_success_rate",
+      "deployment_duration",
+      "migration_duration",
+      "error_rate",
+      "alert_count",
+      "health_check_status"
+    ],
+    "charts": [
+      {
+        "type": "line",
+        "title": "Deployment Success Rate",
+        "metric": "deployment_success_rate",
+        "timeRange": "24h"
+      },
+      {
+        "type": "bar",
+        "title": "Deployment Duration",
+        "metric": "deployment_duration",
+        "timeRange": "7d"
+      },
+      {
+        "type": "gauge",
+        "title": "Current Health Status",
+        "metric": "health_check_status",
+        "thresholds": {
+          "good": 0.95,
+          "warning": 0.8,
+          "critical": 0.5
+        }
+      }
+    ]
+  }
+}

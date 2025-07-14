@@ -39,6 +39,7 @@ describe('PartiesPage', () => {
     mockRedirect.mockImplementation((url: string) => {
       throw new Error(`REDIRECT: ${url}`);
     });
+
     // Default to authenticated user
     mockAuth.mockResolvedValue(mockSession);
   });

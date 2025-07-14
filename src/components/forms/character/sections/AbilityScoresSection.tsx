@@ -59,7 +59,7 @@ export function AbilityScoresSection({
   };
 
   const handleScoreChange = (ability: keyof AbilityScores, newValue: string) => {
-    const numValue = parseInt(newValue) || 0;
+    const numValue = parseInt(newValue, 10) || 0;
     onChange({
       ...value,
       [ability]: numValue,

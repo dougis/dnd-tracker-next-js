@@ -13,13 +13,13 @@ export async function POST(request: NextRequest) {
     // Reset the password
     const result = await UserService.resetPassword(validatedData);
 
-    if (!result.success) {
+    if (!result || !result.success) {
       return NextResponse.json(
         {
           success: false,
-          message: result.error?.message || 'Unknown error',
+          message: result?.error?.message || 'Unknown error',
         },
-        { status: result.error?.statusCode || 400 }
+        { status: result?.error?.statusCode || 400 }
       );
     }
 

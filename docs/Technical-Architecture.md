@@ -1,8 +1,8 @@
 # Technical Architecture Document
 
-**Project:** D&D Encounter Tracker Web App  
-**Version:** 1.0  
-**Date:** June 8, 2025  
+**Project:** D&D Encounter Tracker Web App
+**Version:** 1.0
+**Date:** June 8, 2025
 **Architecture:** Next.js 15 Full-Stack Application
 
 ## 1. System Architecture Overview
@@ -477,5 +477,5 @@ following legacy documents:
 - `legacy/ESLint-Codacy-Configuration-Analysis.md` - Development standards
   and tool configuration
 
-**Last Updated:** June 30, 2025  
+**Last Updated:** June 30, 2025
 **Document Status:** Current and comprehensive

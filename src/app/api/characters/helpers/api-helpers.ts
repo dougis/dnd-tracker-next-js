@@ -59,7 +59,7 @@ export function parseQueryParams(url: string) {
   return {
     type: searchParams.get('type'),
     search: searchParams.get('search'),
-    limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 50,
-    page: searchParams.get('page') ? parseInt(searchParams.get('page')!) : 1,
+    limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!, 10) : 50,
+    page: searchParams.get('page') ? parseInt(searchParams.get('page')!, 10) : 1,
   };
 }

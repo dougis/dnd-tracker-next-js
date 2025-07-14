@@ -209,7 +209,7 @@ describe('POST /api/auth/reset-password-request', () => {
     it('handles service returning null', async () => {
       UserService.requestPasswordReset = jest.fn().mockResolvedValue(null);
       const { response, responseData } = await executeRequest(mockResetRequestData);
-      expectUnexpectedError(response, responseData);
+      expectServiceError(response, responseData, 400, 'Unknown error', mockResetRequestData);
     });
   });
 

@@ -215,7 +215,7 @@ describe('Form Integration', () => {
       const stringSchema = z.string();
       const error = validateField(stringSchema as any, 'field' as any, 'value');
       expect(error).toBeInstanceOf(ValidationError);
-      expect(error?.message).toBe('Schema is not a ZodObject with shape');
+      expect(error?.message).toBe('Field validation not supported for this schema type');
     });
   });
 

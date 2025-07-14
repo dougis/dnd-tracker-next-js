@@ -15,13 +15,13 @@ export async function POST(request: NextRequest) {
       validatedData.email
     );
 
-    if (!result.success) {
+    if (!result || !result.success) {
       return NextResponse.json(
         {
           success: false,
-          message: result.error?.message || 'Unknown error',
+          message: result?.error?.message || 'Unknown error',
         },
-        { status: result.error?.statusCode || 400 }
+        { status: result?.error?.statusCode || 400 }
       );
     }
 

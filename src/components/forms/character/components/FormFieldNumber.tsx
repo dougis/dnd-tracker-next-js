@@ -49,7 +49,7 @@ export function FormFieldNumber<T extends Record<string, any>>({
               placeholder={placeholder}
               className={inputClassName}
               {...field}
-              onChange={(e) => field.onChange(parseInt(e.target.value) || defaultValue || 0)}
+              onChange={(e) => field.onChange(parseInt(e.target.value, 10) || defaultValue || 0)}
             />
           </FormControl>
           {description && <FormDescription>{description}</FormDescription>}

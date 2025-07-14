@@ -5,7 +5,7 @@ This PR implements full account deletion functionality as specified in issue #34
 ## Changes Made
 
 - ✅ Account deletion functionality implemented
-- ✅ Confirmation dialog with data loss warnings  
+- ✅ Confirmation dialog with data loss warnings
 - ✅ API integration with proper error handling
 - ✅ User sign-out flow after successful deletion
 - ✅ Code duplication issues resolved
