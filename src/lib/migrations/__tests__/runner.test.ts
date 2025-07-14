@@ -716,6 +716,162 @@ describe('MigrationRunner', () => {
     });
   });
 
+  describe('TTL Index Creation', () => {
+    it('should create TTL index for verification tokens with expireAfterSeconds option', async () => {
+      const migration = {
+        version: '001',
+        description: 'Create initial user collection indexes',
+        up: jest.fn().mockImplementation(async (db) => {
+          const verificationTokensCollection = db.collection('verificationtokens');
+          await verificationTokensCollection.createIndex({ expires: 1 }, { expireAfterSeconds: 0 });
+        }),
+        down: jest.fn().mockResolvedValue(undefined),
+      };
+
+      (mockFs.readdir as jest.Mock).mockResolvedValue(['001_initial_user_collections.js']);
+      mockCollection.find.mockReturnValue({
+        toArray: jest.fn().mockResolvedValue([]),
+        sort: jest.fn().mockReturnThis(),
+      });
+
+      const mockVerificationTokensCollection = {
+        createIndex: jest.fn().mockResolvedValue(undefined),
+      };
+
+      mockDb.collection.mockImplementation((name) => {
+        if (name === 'verificationtokens') {
+          return mockVerificationTokensCollection;
+        }
+        return mockCollection;
+      });
+
+      jest.spyOn(runner as any, 'loadMigration').mockResolvedValue(migration);
+
+      const results = await runner.migrate();
+
+      expect(results[0].success).toBe(true);
+      expect(mockVerificationTokensCollection.createIndex).toHaveBeenCalledWith(
+        { expires: 1 },
+        { expireAfterSeconds: 0 }
+      );
+    });
+
+    it('should verify TTL index is created with correct parameters', async () => {
+      const migration = {
+        version: '001',
+        description: 'Create initial user collection indexes',
+        up: jest.fn().mockImplementation(async (db) => {
+          const verificationTokensCollection = db.collection('verificationtokens');
+          await verificationTokensCollection.createIndex({ expires: 1 }, { expireAfterSeconds: 0 });
+        }),
+        down: jest.fn().mockResolvedValue(undefined),
+      };
+
+      (mockFs.readdir as jest.Mock).mockResolvedValue(['001_initial_user_collections.js']);
+      mockCollection.find.mockReturnValue({
+        toArray: jest.fn().mockResolvedValue([]),
+        sort: jest.fn().mockReturnThis(),
+      });
+
+      const mockVerificationTokensCollection = {
+        createIndex: jest.fn().mockResolvedValue(undefined),
+      };
+
+      mockDb.collection.mockImplementation((name) => {
+        if (name === 'verificationtokens') {
+          return mockVerificationTokensCollection;
+        }
+        return mockCollection;
+      });
+
+      jest.spyOn(runner as any, 'loadMigration').mockResolvedValue(migration);
+
+      await runner.migrate();
+
+      // Verify the index was created with the correct TTL option
+      expect(mockVerificationTokensCollection.createIndex).toHaveBeenCalledWith(
+        { expires: 1 },
+        { expireAfterSeconds: 0 }
+      );
+
+      // Verify it was called exactly once
+      expect(mockVerificationTokensCollection.createIndex).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle TTL index creation failure gracefully', async () => {
+      const migration = {
+        version: '001',
+        description: 'Create initial user collection indexes',
+        up: jest.fn().mockImplementation(async (db) => {
+          const verificationTokensCollection = db.collection('verificationtokens');
+          await verificationTokensCollection.createIndex({ expires: 1 }, { expireAfterSeconds: 0 });
+        }),
+        down: jest.fn().mockResolvedValue(undefined),
+      };
+
+      (mockFs.readdir as jest.Mock).mockResolvedValue(['001_initial_user_collections.js']);
+      mockCollection.find.mockReturnValue({
+        toArray: jest.fn().mockResolvedValue([]),
+        sort: jest.fn().mockReturnThis(),
+      });
+
+      const mockVerificationTokensCollection = {
+        createIndex: jest.fn().mockRejectedValue(new Error('Index creation failed')),
+      };
+
+      mockDb.collection.mockImplementation((name) => {
+        if (name === 'verificationtokens') {
+          return mockVerificationTokensCollection;
+        }
+        return mockCollection;
+      });
+
+      jest.spyOn(runner as any, 'loadMigration').mockResolvedValue(migration);
+
+      const results = await runner.migrate();
+
+      expect(results[0].success).toBe(false);
+      expect(results[0].error?.message).toContain('Index creation failed');
+    });
+
+    it('should rollback TTL index during migration rollback', async () => {
+      const migration = {
+        version: '001',
+        description: 'Create initial user collection indexes',
+        up: jest.fn().mockResolvedValue(undefined),
+        down: jest.fn().mockImplementation(async (db) => {
+          const verificationTokensCollection = db.collection('verificationtokens');
+          await verificationTokensCollection.dropIndex({ expires: 1 });
+        }),
+      };
+
+      mockCollection.find.mockReturnValue({
+        toArray: jest.fn().mockResolvedValue([
+          { version: '001', filename: '001_initial_user_collections.js', executedAt: new Date() },
+        ]),
+        sort: jest.fn().mockReturnThis(),
+      });
+
+      const mockVerificationTokensCollection = {
+        dropIndex: jest.fn().mockResolvedValue(undefined),
+      };
+
+      mockDb.collection.mockImplementation((name) => {
+        if (name === 'verificationtokens') {
+          return mockVerificationTokensCollection;
+        }
+        return mockCollection;
+      });
+
+      jest.spyOn(runner as any, 'loadMigration').mockResolvedValue(migration);
+
+      const results = await runner.rollback();
+
+      expect(results[0].success).toBe(true);
+      expect(mockVerificationTokensCollection.dropIndex).toHaveBeenCalledWith({ expires: 1 });
+    });
+  });
+
   describe('Performance considerations', () => {
     it('should process large numbers of migrations efficiently', async () => {
       const manyMigrations = Array.from({ length: 100 }, (_, i) =>

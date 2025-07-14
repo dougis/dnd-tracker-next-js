@@ -42,7 +42,7 @@ module.exports = {
     // Create verification tokens collection for NextAuth
     const verificationTokensCollection = db.collection('verificationtokens');
     await verificationTokensCollection.createIndex({ identifier: 1, token: 1 }, { unique: true });
-    await verificationTokensCollection.createIndex({ expires: 1 });
+    await verificationTokensCollection.createIndex({ expires: 1 }, { expireAfterSeconds: 0 });
   },
 
   /**
