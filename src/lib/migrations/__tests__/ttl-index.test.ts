@@ -55,41 +55,35 @@ describe('MigrationRunner TTL Index Creation', () => {
     validateOnly: false,
   });
 
-  // Consolidated test setup helpers
-  const setupStandardMigrationTest = (mockBehavior: any = {}) => {
-    const migration = createBaseTTLMigration();
-    setupMockFileSystem();
-    const mockVerificationTokensCollection = setupMockVerificationTokensCollection(mockBehavior);
-    jest.spyOn(runner as any, 'loadMigration').mockResolvedValue(migration);
-    return { migration, mockVerificationTokensCollection };
-  };
+  // Consolidated test utilities
+  const TTL_INDEX_PARAMS = { expires: 1 };
+  const TTL_INDEX_OPTIONS = { expireAfterSeconds: 0 };
+  const MIGRATION_METADATA = { version: '001', description: 'Create initial user collection indexes' };
 
-  const createBaseTTLMigration = (upImpl?: (_db: any) => Promise<void>, downImpl?: (_db: any) => Promise<void>) => ({
-    version: '001',
-    description: 'Create initial user collection indexes',
+  const createMigrationBase = (upImpl?: any, downImpl?: any) => ({
+    ...MIGRATION_METADATA,
     up: jest.fn().mockImplementation(upImpl || (async (db) => {
-      const verificationTokensCollection = db.collection('verificationtokens');
-      await verificationTokensCollection.createIndex({ expires: 1 }, { expireAfterSeconds: 0 });
+      await db.collection('verificationtokens').createIndex(TTL_INDEX_PARAMS, TTL_INDEX_OPTIONS);
     })),
     down: jest.fn().mockImplementation(downImpl || (async () => {})),
   });
 
-  const setupMockFileSystem = () => {
+  const setupTestEnvironment = (collectionBehavior: any = {}) => {
+    const defaultBehavior = { createIndex: jest.fn().mockResolvedValue(undefined), dropIndex: jest.fn().mockResolvedValue(undefined) };
+    const mockTokensCollection = { ...defaultBehavior, ...collectionBehavior };
+
     (mockFs.readdir as jest.Mock).mockResolvedValue(['001_initial_user_collections.js']);
-    mockCollection.find.mockReturnValue({
-      toArray: jest.fn().mockResolvedValue([]),
-      sort: jest.fn().mockReturnThis(),
-    });
+    mockCollection.find.mockReturnValue({ toArray: jest.fn().mockResolvedValue([]), sort: jest.fn().mockReturnThis() });
+    mockDb.collection.mockImplementation((name) => name === 'verificationtokens' ? mockTokensCollection : mockCollection);
+
+    const migration = createMigrationBase();
+    jest.spyOn(runner as any, 'loadMigration').mockResolvedValue(migration);
+    return { migration, mockTokensCollection };
   };
 
-  const setupMockVerificationTokensCollection = (mockBehavior: any = {}) => {
-    const defaultBehavior = {
-      createIndex: jest.fn().mockResolvedValue(undefined),
-      dropIndex: jest.fn().mockResolvedValue(undefined),
-    };
-    const mockVerificationTokensCollection = { ...defaultBehavior, ...mockBehavior };
-    mockDb.collection.mockImplementation((name) => name === 'verificationtokens' ? mockVerificationTokensCollection : mockCollection);
-    return mockVerificationTokensCollection;
+  const expectTTLIndexCall = (mockCollection: any, timesCalled = 1) => {
+    expect(mockCollection.createIndex).toHaveBeenCalledWith(TTL_INDEX_PARAMS, TTL_INDEX_OPTIONS);
+    expect(mockCollection.createIndex).toHaveBeenCalledTimes(timesCalled);
   };
 
   testUtils.setupMockClearance();
@@ -143,27 +137,21 @@ describe('MigrationRunner TTL Index Creation', () => {
 
   describe('TTL Index Creation', () => {
     it('should create TTL index for verification tokens with expireAfterSeconds option', async () => {
-      const { mockVerificationTokensCollection } = setupStandardMigrationTest();
+      const { mockTokensCollection } = setupTestEnvironment();
       const results = await runner.migrate();
 
       expect(results[0].success).toBe(true);
-      expect(mockVerificationTokensCollection.createIndex).toHaveBeenCalledWith(
-        { expires: 1 }, { expireAfterSeconds: 0 }
-      );
+      expectTTLIndexCall(mockTokensCollection);
     });
 
     it('should verify TTL index is created with correct parameters', async () => {
-      const { mockVerificationTokensCollection } = setupStandardMigrationTest();
+      const { mockTokensCollection } = setupTestEnvironment();
       await runner.migrate();
-
-      expect(mockVerificationTokensCollection.createIndex).toHaveBeenCalledWith(
-        { expires: 1 }, { expireAfterSeconds: 0 }
-      );
-      expect(mockVerificationTokensCollection.createIndex).toHaveBeenCalledTimes(1);
+      expectTTLIndexCall(mockTokensCollection);
     });
 
     it('should handle TTL index creation failure gracefully', async () => {
-      setupStandardMigrationTest({ createIndex: jest.fn().mockRejectedValue(new Error('Index creation failed')) });
+      setupTestEnvironment({ createIndex: jest.fn().mockRejectedValue(new Error('Index creation failed')) });
       const results = await runner.migrate();
 
       expect(results[0].success).toBe(false);
@@ -171,21 +159,21 @@ describe('MigrationRunner TTL Index Creation', () => {
     });
 
     it('should rollback TTL index during migration rollback', async () => {
-      const rollbackImpl = async (db: any) => {
-        await db.collection('verificationtokens').dropIndex({ expires: 1 });
-      };
-      const migration = createBaseTTLMigration(undefined, rollbackImpl);
+      const { mockTokensCollection } = setupTestEnvironment();
+      const rollbackMigration = createMigrationBase(undefined, async (db) => {
+        await db.collection('verificationtokens').dropIndex(TTL_INDEX_PARAMS);
+      });
+
       mockCollection.find.mockReturnValue({
-        toArray: jest.fn().mockResolvedValue([{ version: '001', filename: '001_initial_user_collections.js', executedAt: new Date() }]),
+        toArray: jest.fn().mockResolvedValue([{ ...MIGRATION_METADATA, filename: '001_initial_user_collections.js', executedAt: new Date() }]),
         sort: jest.fn().mockReturnThis(),
       });
-      const mockVerificationTokensCollection = setupMockVerificationTokensCollection();
-      jest.spyOn(runner as any, 'loadMigration').mockResolvedValue(migration);
+      jest.spyOn(runner as any, 'loadMigration').mockResolvedValue(rollbackMigration);
 
       const results = await runner.rollback();
 
       expect(results[0].success).toBe(true);
-      expect(mockVerificationTokensCollection.dropIndex).toHaveBeenCalledWith({ expires: 1 });
+      expect(mockTokensCollection.dropIndex).toHaveBeenCalledWith(TTL_INDEX_PARAMS);
     });
   });
 });
