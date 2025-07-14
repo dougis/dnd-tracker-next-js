@@ -10,11 +10,8 @@ const {
   MockHelpers,
   TestSetup,
   AssertionHelpers,
-  mockDb,
-  mockClient,
   mockCollection,
   runner,
-  config,
 } = createMigrationTestSetup();
 
 describe('MigrationRunner TTL Index Creation', () => {

@@ -96,7 +96,7 @@ export function createMigrationTestSetup() {
     initializeMocks: () => {
       jest.clearAllMocks();
       jest.restoreAllMocks();
-      
+
       // Setup MongoDB mocks
       mockCollection = {
         findOne: jest.fn(),
