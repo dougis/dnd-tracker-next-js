@@ -27,13 +27,13 @@ describe('Docker Optimization Tests', () => {
   };
 
   const findLineIndex = (startIndex: number, searchTerm: string): number => {
-    return dockerfileLines.findIndex((line, index) => 
+    return dockerfileLines.findIndex((line, index) =>
       index > startIndex && line.includes(searchTerm)
     );
   };
 
   const findLineWithMultipleTerms = (startIndex: number, ...terms: string[]): number => {
-    return dockerfileLines.findIndex((line, index) => 
+    return dockerfileLines.findIndex((line, index) =>
       index > startIndex && terms.every(term => line.includes(term))
     );
   };
@@ -47,7 +47,7 @@ describe('Docker Optimization Tests', () => {
   describe('Layer Caching Optimization', () => {
     test('should copy package.json and package-lock.json before copying application code', () => {
       const buildStageStart = expectStageExists('FROM base AS build');
-      
+
       const packageJsonCopyIndex = findLineWithMultipleTerms(buildStageStart, 'COPY', 'package.json', 'package-lock.json');
       expect(packageJsonCopyIndex).toBeGreaterThan(buildStageStart);
 
@@ -143,7 +143,7 @@ describe('Docker Optimization Tests', () => {
 
     test('should expose port and set entrypoint in production stage', () => {
       const productionStageStart = expectStageExists('FROM base AS production');
-      
+
       const exposePort = findLineIndex(productionStageStart, 'EXPOSE 3000');
       expect(exposePort).toBeGreaterThan(productionStageStart);
 
