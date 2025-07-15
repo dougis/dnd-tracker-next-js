@@ -141,7 +141,7 @@ jobs:
 
       - name: Send failure notification
         if: failure()
-        uses: 8398a7/action-slack@v3
+        uses: 8398a7/action-slack@28ba43ae48961b90abb8e58e1677d9b4b2b5b728
         with:
           status: failure
           channel: '#deployments'
@@ -152,7 +152,7 @@ jobs:
 
       - name: Send success notification
         if: success() && github.event.inputs.dry_run != 'true'
-        uses: 8398a7/action-slack@v3
+        uses: 8398a7/action-slack@28ba43ae48961b90abb8e58e1677d9b4b2b5b728
         with:
           status: success
           channel: '#deployments'

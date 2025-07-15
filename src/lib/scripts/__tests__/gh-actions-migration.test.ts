@@ -39,7 +39,7 @@ describe('GitHub Actions Migration Setup', () => {
 
     it('should have correct workflow structure', async () => {
       const workflowContent = await fs.readFile(workflowPath, 'utf-8');
-      const workflow: GitHubWorkflow = require('js-yaml').load(workflowContent);
+      const workflow: GitHubWorkflow = require('js-yaml').load(workflowContent, { schema: require('js-yaml').FAILSAFE_SCHEMA });
 
       expect(workflow.name).toBe('Database Migrations');
       expect(workflow.on.push.branches).toContain('main');
@@ -49,7 +49,7 @@ describe('GitHub Actions Migration Setup', () => {
 
     it('should include migration detection step', async () => {
       const workflowContent = await fs.readFile(workflowPath, 'utf-8');
-      const workflow: GitHubWorkflow = require('js-yaml').load(workflowContent);
+      const workflow: GitHubWorkflow = require('js-yaml').load(workflowContent, { schema: require('js-yaml').FAILSAFE_SCHEMA });
 
       const migrationJob = workflow.jobs['migrate'];
       expect(migrationJob).toBeDefined();
@@ -62,7 +62,7 @@ describe('GitHub Actions Migration Setup', () => {
 
     it('should include backup creation step', async () => {
       const workflowContent = await fs.readFile(workflowPath, 'utf-8');
-      const workflow: GitHubWorkflow = require('js-yaml').load(workflowContent);
+      const workflow: GitHubWorkflow = require('js-yaml').load(workflowContent, { schema: require('js-yaml').FAILSAFE_SCHEMA });
 
       const migrationJob = workflow.jobs['migrate'];
       const backupStep = migrationJob.steps.find(step =>
@@ -73,7 +73,7 @@ describe('GitHub Actions Migration Setup', () => {
 
     it('should include migration execution step', async () => {
       const workflowContent = await fs.readFile(workflowPath, 'utf-8');
-      const workflow: GitHubWorkflow = require('js-yaml').load(workflowContent);
+      const workflow: GitHubWorkflow = require('js-yaml').load(workflowContent, { schema: require('js-yaml').FAILSAFE_SCHEMA });
 
       const migrationJob = workflow.jobs['migrate'];
       const executionStep = migrationJob.steps.find(step =>
@@ -84,7 +84,7 @@ describe('GitHub Actions Migration Setup', () => {
 
     it('should include rollback on failure step', async () => {
       const workflowContent = await fs.readFile(workflowPath, 'utf-8');
-      const workflow: GitHubWorkflow = require('js-yaml').load(workflowContent);
+      const workflow: GitHubWorkflow = require('js-yaml').load(workflowContent, { schema: require('js-yaml').FAILSAFE_SCHEMA });
 
       const migrationJob = workflow.jobs['migrate'];
       const rollbackStep = migrationJob.steps.find(step =>

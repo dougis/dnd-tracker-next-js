@@ -104,6 +104,26 @@ export async function detectNewMigrations(config?: Partial<GitHubActionsMigratio
 }
 
 /**
+ * Validate and sanitize inputs to prevent command injection
+ */
+function validateAndSanitizeInputs(mongoUri: string, dbName: string, backupPath?: string): void {
+  // Validate MongoDB URI format
+  if (!mongoUri.match(/^mongodb(\+srv)?:\/\/[^\s]+$/)) {
+    throw new Error('Invalid MongoDB URI format');
+  }
+
+  // Validate database name (alphanumeric, hyphens, underscores only)
+  if (!dbName.match(/^[a-zA-Z0-9_-]+$/)) {
+    throw new Error('Invalid database name format');
+  }
+
+  // Validate backup path (no command injection characters)
+  if (backupPath && !backupPath.match(/^[a-zA-Z0-9/_.-]+$/)) {
+    throw new Error('Invalid backup path format');
+  }
+}
+
+/**
  * Create database backup for migration safety
  */
 export async function createDatabaseBackup(config?: Partial<GitHubActionsMigrationConfig>): Promise<BackupResult> {
@@ -115,6 +135,9 @@ export async function createDatabaseBackup(config?: Partial<GitHubActionsMigrati
   if (!mongoUri || !dbName) {
     throw new Error('MongoDB URI and database name are required');
   }
+
+  // Validate inputs to prevent command injection
+  validateAndSanitizeInputs(mongoUri, dbName, backupPath);
 
   // Ensure backup directory exists
   try {
@@ -172,7 +195,41 @@ export async function rollbackMigrations(
     throw new Error('MongoDB URI and database name are required');
   }
 
+  // Validate inputs to prevent command injection
+  validateAndSanitizeInputs(mongoUri, dbName, backupPath);
+
+  // Validate steps parameter
+  if (!Number.isInteger(steps) || steps < 1 || steps > 100) {
+    throw new Error('Steps must be a positive integer between 1 and 100');
+  }
+
   // Try automatic rollback first
+  const automaticResult = await tryAutomaticRollback(steps, mongoUri, dbName, timeout);
+  if (automaticResult.success) {
+    return automaticResult;
+  }
+
+  // If automatic rollback fails, try backup restore
+  if (backupPath) {
+    return await tryBackupRestore(backupPath, mongoUri, timeout);
+  }
+
+  return {
+    success: false,
+    method: 'automatic',
+    rollbackSteps: steps
+  };
+}
+
+/**
+ * Attempt automatic rollback using migration scripts
+ */
+async function tryAutomaticRollback(
+  steps: number,
+  mongoUri: string,
+  dbName: string,
+  timeout: number
+): Promise<RollbackResult> {
   try {
     const command = `npm run migrate:down ${steps}`;
     execSync(command, {
@@ -190,38 +247,53 @@ export async function rollbackMigrations(
       method: 'automatic',
       rollbackSteps: steps
     };
-
   } catch {
-    // If automatic rollback fails and backup is available, try backup restore
-    if (backupPath && await fs.access(backupPath).then(() => true).catch(() => false)) {
-      try {
-        const command = `mongorestore --uri="${mongoUri}" --gzip --archive="${backupPath}" --drop`;
-        execSync(command, {
-          timeout,
-          stdio: 'pipe'
-        });
-
-        return {
-          success: true,
-          method: 'backup-restore',
-          rollbackSteps: 0,
-          restoredBackup: backupPath
-        };
-
-      } catch {
-        return {
-          success: false,
-          method: 'backup-restore',
-          rollbackSteps: 0,
-          restoredBackup: backupPath
-        };
-      }
-    }
-
     return {
       success: false,
       method: 'automatic',
       rollbackSteps: steps
+    };
+  }
+}
+
+/**
+ * Attempt backup restore as fallback rollback method
+ */
+async function tryBackupRestore(
+  backupPath: string,
+  mongoUri: string,
+  timeout: number
+): Promise<RollbackResult> {
+  // Check if backup file exists
+  const backupExists = await fs.access(backupPath).then(() => true).catch(() => false);
+  if (!backupExists) {
+    return {
+      success: false,
+      method: 'backup-restore',
+      rollbackSteps: 0,
+      restoredBackup: backupPath
+    };
+  }
+
+  try {
+    const command = `mongorestore --uri="${mongoUri}" --gzip --archive="${backupPath}" --drop`;
+    execSync(command, {
+      timeout,
+      stdio: 'pipe'
+    });
+
+    return {
+      success: true,
+      method: 'backup-restore',
+      rollbackSteps: 0,
+      restoredBackup: backupPath
+    };
+  } catch {
+    return {
+      success: false,
+      method: 'backup-restore',
+      rollbackSteps: 0,
+      restoredBackup: backupPath
     };
   }
 }

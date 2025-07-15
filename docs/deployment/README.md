@@ -24,6 +24,7 @@ Database migrations are now handled by a dedicated GitHub Actions workflow that 
 #### Workflow Triggers
 
 The migration workflow is triggered by:
+
 - Push to main branch with changes to migration-related files
 - Manual dispatch for emergency migrations
 - Changes to:
@@ -111,6 +112,7 @@ For emergency situations, migrations can be triggered manually:
 #### Migration Logs
 
 All migration logs are available in the GitHub Actions workflow run. Each step provides detailed output including:
+
 - Migration detection results
 - Backup creation status
 - Migration execution progress
@@ -169,6 +171,7 @@ For detailed deployment instructions, see the [Fly.io Deployment Guide](./flyio-
 ## Migration History
 
 All migration records are stored in the `migrations` collection in MongoDB. Each record includes:
+
 - Version timestamp
 - Description
 - Execution time
@@ -178,6 +181,7 @@ All migration records are stored in the `migrations` collection in MongoDB. Each
 ## Support
 
 For migration-related issues:
+
 1. Check GitHub Actions workflow logs
 2. Review MongoDB Atlas metrics
 3. Verify GitHub Secrets configuration

@@ -1,0 +1,350 @@
+/**
+ * Integration tests for GitHub Actions migration functionality
+ * Tests actual function execution with mocked external dependencies
+ */
+
+import { execSync } from 'child_process';
+import fs from 'fs/promises';
+import {
+  detectNewMigrations,
+  createDatabaseBackup,
+  rollbackMigrations,
+  validateMigrationFiles,
+  executeMigrations
+} from '../gh-actions-migration';
+
+// Mock external dependencies
+jest.mock('child_process');
+jest.mock('fs/promises');
+jest.mock('mongodb', () => ({
+  MongoClient: jest.fn().mockImplementation(() => ({
+    connect: jest.fn(),
+    close: jest.fn(),
+    db: jest.fn().mockReturnValue({
+      collection: jest.fn().mockReturnValue({
+        find: jest.fn().mockReturnValue({
+          toArray: jest.fn().mockResolvedValue([
+            { version: '20241201120000' },
+            { version: '20241202120000' }
+          ])
+        })
+      })
+    })
+  }))
+}));
+
+const mockedExecSync = execSync as jest.MockedFunction<typeof execSync>;
+const mockedFs = fs as jest.Mocked<typeof fs>;
+
+describe('GitHub Actions Migration Integration Tests', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    // Setup default environment variables
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
+    process.env.MONGODB_DB_NAME = 'testdb';
+
+    // Mock file system operations
+    mockedFs.readdir = jest.fn().mockResolvedValue([
+      '20241201120000_initial_migration.js',
+      '20241202120000_add_users.js',
+      '20241203120000_new_feature.js'
+    ] as any);
+
+    mockedFs.mkdir = jest.fn().mockResolvedValue(undefined);
+    mockedFs.stat = jest.fn().mockResolvedValue({ size: 1024 } as any);
+    mockedFs.access = jest.fn().mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    delete process.env.MONGODB_URI;
+    delete process.env.MONGODB_DB_NAME;
+  });
+
+  describe('detectNewMigrations', () => {
+    it('should detect new migrations correctly', async () => {
+      const result = await detectNewMigrations();
+
+      expect(result.hasNewMigrations).toBe(true);
+      expect(result.newMigrationCount).toBe(1);
+      expect(result.pendingMigrations).toContain('20241203120000_new_feature');
+    });
+
+    it('should handle no new migrations', async () => {
+      mockedFs.readdir = jest.fn().mockResolvedValue([
+        '20241201120000_initial_migration.js',
+        '20241202120000_add_users.js'
+      ] as any);
+
+      const result = await detectNewMigrations();
+
+      expect(result.hasNewMigrations).toBe(false);
+      expect(result.newMigrationCount).toBe(0);
+      expect(result.pendingMigrations).toHaveLength(0);
+    });
+
+    it('should handle missing migrations directory', async () => {
+      mockedFs.readdir = jest.fn().mockRejectedValue(new Error('ENOENT'));
+
+      const result = await detectNewMigrations();
+
+      expect(result.hasNewMigrations).toBe(false);
+      expect(result.newMigrationCount).toBe(0);
+      expect(result.pendingMigrations).toHaveLength(0);
+    });
+
+    it('should validate MongoDB URI format', async () => {
+      process.env.MONGODB_URI = 'invalid-uri';
+
+      await expect(detectNewMigrations()).rejects.toThrow('Invalid MongoDB URI format');
+    });
+
+    it('should validate database name format', async () => {
+      process.env.MONGODB_DB_NAME = 'invalid db name!';
+
+      await expect(detectNewMigrations()).rejects.toThrow('Invalid database name format');
+    });
+  });
+
+  describe('createDatabaseBackup', () => {
+    it('should create backup successfully', async () => {
+      mockedExecSync.mockReturnValue(Buffer.from(''));
+
+      const result = await createDatabaseBackup();
+
+      expect(result.success).toBe(true);
+      expect(result.backupPath).toMatch(/\/tmp\/db-backups\/migration-backup-.*\.gz/);
+      expect(result.fileSize).toBe(1024);
+      expect(mockedExecSync).toHaveBeenCalledWith(
+        expect.stringContaining('mongodump --uri="mongodb://localhost:27017/test"'),
+        expect.any(Object)
+      );
+    });
+
+    it('should handle backup failure', async () => {
+      mockedExecSync.mockImplementation(() => {
+        throw new Error('mongodump failed');
+      });
+
+      const result = await createDatabaseBackup();
+
+      expect(result.success).toBe(false);
+      expect(result.fileSize).toBe(0);
+    });
+
+    it('should create backup directory if it does not exist', async () => {
+      mockedFs.mkdir = jest.fn().mockResolvedValue(undefined);
+      mockedExecSync.mockReturnValue(Buffer.from(''));
+
+      await createDatabaseBackup({ backupPath: '/custom/backup/path' });
+
+      expect(mockedFs.mkdir).toHaveBeenCalledWith('/custom/backup/path', { recursive: true });
+    });
+
+    it('should validate custom backup path', async () => {
+      await expect(createDatabaseBackup({
+        backupPath: '/invalid;path'
+      })).rejects.toThrow('Invalid backup path format');
+    });
+  });
+
+  describe('rollbackMigrations', () => {
+    it('should perform automatic rollback successfully', async () => {
+      mockedExecSync.mockReturnValue(Buffer.from(''));
+
+      const result = await rollbackMigrations(2);
+
+      expect(result.success).toBe(true);
+      expect(result.method).toBe('automatic');
+      expect(result.rollbackSteps).toBe(2);
+      expect(mockedExecSync).toHaveBeenCalledWith(
+        'npm run migrate:down 2',
+        expect.objectContaining({
+          env: expect.objectContaining({
+            MONGODB_URI: 'mongodb://localhost:27017/test',
+            MONGODB_DB_NAME: 'testdb'
+          })
+        })
+      );
+    });
+
+    it('should fallback to backup restore when automatic rollback fails', async () => {
+      // First call (automatic rollback) fails
+      mockedExecSync
+        .mockImplementationOnce(() => {
+          throw new Error('Migration rollback failed');
+        })
+        // Second call (backup restore) succeeds
+        .mockReturnValueOnce(Buffer.from(''));
+
+      const backupPath = '/tmp/backup.gz';
+      const result = await rollbackMigrations(1, backupPath);
+
+      expect(result.success).toBe(true);
+      expect(result.method).toBe('backup-restore');
+      expect(result.restoredBackup).toBe(backupPath);
+      expect(mockedExecSync).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle backup restore failure', async () => {
+      mockedExecSync.mockImplementation(() => {
+        throw new Error('Command failed');
+      });
+
+      const backupPath = '/tmp/backup.gz';
+      const result = await rollbackMigrations(1, backupPath);
+
+      expect(result.success).toBe(false);
+      expect(result.method).toBe('backup-restore');
+    });
+
+    it('should handle missing backup file', async () => {
+      mockedExecSync.mockImplementationOnce(() => {
+        throw new Error('Migration rollback failed');
+      });
+      mockedFs.access = jest.fn().mockRejectedValue(new Error('ENOENT'));
+
+      const backupPath = '/tmp/nonexistent-backup.gz';
+      const result = await rollbackMigrations(1, backupPath);
+
+      expect(result.success).toBe(false);
+      expect(result.method).toBe('backup-restore');
+    });
+
+    it('should validate steps parameter', async () => {
+      await expect(rollbackMigrations(-1)).rejects.toThrow(
+        'Steps must be a positive integer between 1 and 100'
+      );
+
+      await expect(rollbackMigrations(101)).rejects.toThrow(
+        'Steps must be a positive integer between 1 and 100'
+      );
+
+      await expect(rollbackMigrations(1.5)).rejects.toThrow(
+        'Steps must be a positive integer between 1 and 100'
+      );
+    });
+  });
+
+  describe('validateMigrationFiles', () => {
+    it('should validate migrations successfully', async () => {
+      mockedExecSync.mockReturnValue(Buffer.from(''));
+
+      const result = await validateMigrationFiles('./migrations');
+
+      expect(result).toBe(true);
+      expect(mockedExecSync).toHaveBeenCalledWith(
+        'npm run migrate:validate',
+        expect.objectContaining({
+          env: expect.objectContaining({
+            MIGRATIONS_PATH: './migrations'
+          })
+        })
+      );
+    });
+
+    it('should handle validation failure', async () => {
+      mockedExecSync.mockImplementation(() => {
+        throw new Error('Validation failed');
+      });
+
+      const result = await validateMigrationFiles();
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('executeMigrations', () => {
+    it('should execute migrations successfully', async () => {
+      mockedExecSync.mockReturnValue(Buffer.from(''));
+
+      const result = await executeMigrations(false);
+
+      expect(result).toBe(true);
+      expect(mockedExecSync).toHaveBeenCalledWith(
+        'npm run migrate:up',
+        expect.objectContaining({
+          env: expect.objectContaining({
+            MONGODB_URI: 'mongodb://localhost:27017/test',
+            MONGODB_DB_NAME: 'testdb',
+            MIGRATION_DRY_RUN: 'false',
+            MIGRATION_VALIDATE_ONLY: 'false'
+          })
+        })
+      );
+    });
+
+    it('should execute dry run migrations', async () => {
+      mockedExecSync.mockReturnValue(Buffer.from(''));
+
+      const result = await executeMigrations(true);
+
+      expect(result).toBe(true);
+      expect(mockedExecSync).toHaveBeenCalledWith(
+        'npm run migrate:up',
+        expect.objectContaining({
+          env: expect.objectContaining({
+            MIGRATION_DRY_RUN: 'true',
+            MIGRATION_VALIDATE_ONLY: 'true'
+          })
+        })
+      );
+    });
+
+    it('should handle migration execution failure', async () => {
+      mockedExecSync.mockImplementation(() => {
+        throw new Error('Migration failed');
+      });
+
+      const result = await executeMigrations();
+
+      expect(result).toBe(false);
+    });
+
+    it('should require MongoDB configuration', async () => {
+      delete process.env.MONGODB_URI;
+
+      await expect(executeMigrations()).rejects.toThrow(
+        'MongoDB URI and database name are required'
+      );
+    });
+  });
+
+  describe('Error Handling and Edge Cases', () => {
+    it('should handle timeout errors gracefully', async () => {
+      mockedExecSync.mockImplementation(() => {
+        const error = new Error('Command timed out') as any;
+        error.code = 'TIMEOUT';
+        throw error;
+      });
+
+      const result = await createDatabaseBackup();
+      expect(result.success).toBe(false);
+    });
+
+    it('should handle large backup files', async () => {
+      mockedFs.stat = jest.fn().mockResolvedValue({ size: 1024 * 1024 * 1024 } as any); // 1GB
+      mockedExecSync.mockReturnValue(Buffer.from(''));
+
+      const result = await createDatabaseBackup();
+
+      expect(result.success).toBe(true);
+      expect(result.fileSize).toBe(1024 * 1024 * 1024);
+    });
+
+    it('should handle configuration object variations', async () => {
+      const config = {
+        mongodbUri: 'mongodb://custom:27017/custom',
+        databaseName: 'customdb',
+        timeout: 60000
+      };
+
+      mockedFs.readdir = jest.fn().mockResolvedValue(['migration1.js'] as any);
+
+      const result = await detectNewMigrations(config);
+
+      expect(result).toBeDefined();
+      expect(result.hasNewMigrations).toBe(false); // No new migrations since DB has 2, file has 1
+    });
+  });
+});
