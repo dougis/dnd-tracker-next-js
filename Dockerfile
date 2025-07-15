@@ -11,7 +11,8 @@ LABEL fly_launch_runtime="Next.js"
 
 # Install build dependencies
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential pkg-config python3
+    apt-get install --no-install-recommends -y build-essential pkg-config python3 && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install all Node.js dependencies (including devDependencies)
 COPY package-lock.json package.json ./
