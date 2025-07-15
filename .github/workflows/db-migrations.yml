@@ -1,0 +1,162 @@
+name: Database Migrations
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'migrations/**'
+      - 'src/lib/migrations/**'
+      - 'src/lib/scripts/migrate.ts'
+      - 'config/migration.*.json'
+  workflow_dispatch:
+    inputs:
+      migration_steps:
+        description: 'Number of migrations to run (default: all pending)'
+        required: false
+        default: 'all'
+      dry_run:
+        description: 'Run in dry-run mode'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for migration detection
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install MongoDB tools
+        run: |
+          wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo apt-key add -
+          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+          sudo apt-get update
+          sudo apt-get install -y mongodb-database-tools
+
+      - name: Detect new migrations
+        id: detect-migrations
+        run: |
+          chmod +x ./scripts/gh-actions-migration.sh
+          ./scripts/gh-actions-migration.sh detect_new_migrations
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_PROD }}
+          MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
+
+      - name: Skip if no migrations
+        if: steps.detect-migrations.outputs.has_new_migrations != 'true'
+        run: |
+          echo "No new migrations detected. Skipping migration execution."
+          exit 0
+
+      - name: Validate migration files
+        run: npm run migrate:validate
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_PROD }}
+          MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
+
+      - name: Create database backup
+        id: backup
+        run: |
+          chmod +x ./scripts/gh-actions-migration.sh
+          ./scripts/gh-actions-migration.sh create_backup
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_PROD }}
+          MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
+          DB_MIGRATION_USER: ${{ secrets.DB_MIGRATION_USER }}
+          DB_MIGRATION_PASSWORD: ${{ secrets.DB_MIGRATION_PASSWORD }}
+
+      - name: Run migration dry-run
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          chmod +x ./scripts/gh-actions-migration.sh
+          ./scripts/gh-actions-migration.sh dry_run_migrations
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_PROD }}
+          MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
+          DB_MIGRATION_USER: ${{ secrets.DB_MIGRATION_USER }}
+          DB_MIGRATION_PASSWORD: ${{ secrets.DB_MIGRATION_PASSWORD }}
+          MIGRATION_DRY_RUN: 'true'
+
+      - name: Execute migrations
+        if: github.event.inputs.dry_run != 'true'
+        id: execute-migrations
+        run: |
+          chmod +x ./scripts/gh-actions-migration.sh
+          ./scripts/gh-actions-migration.sh execute_migrations
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_PROD }}
+          MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
+          DB_MIGRATION_USER: ${{ secrets.DB_MIGRATION_USER }}
+          DB_MIGRATION_PASSWORD: ${{ secrets.DB_MIGRATION_PASSWORD }}
+          MIGRATION_ENCRYPTION_KEY: ${{ secrets.MIGRATION_ENCRYPTION_KEY }}
+
+      - name: Verify migration status
+        if: github.event.inputs.dry_run != 'true' && steps.execute-migrations.outcome == 'success'
+        run: |
+          npm run migrate:status
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_PROD }}
+          MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
+          DB_MIGRATION_USER: ${{ secrets.DB_MIGRATION_USER }}
+          DB_MIGRATION_PASSWORD: ${{ secrets.DB_MIGRATION_PASSWORD }}
+
+      - name: Run post-migration health checks
+        if: github.event.inputs.dry_run != 'true' && steps.execute-migrations.outcome == 'success'
+        run: |
+          chmod +x ./scripts/gh-actions-migration.sh
+          ./scripts/gh-actions-migration.sh health_check
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_PROD }}
+          MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
+          DB_MIGRATION_USER: ${{ secrets.DB_MIGRATION_USER }}
+          DB_MIGRATION_PASSWORD: ${{ secrets.DB_MIGRATION_PASSWORD }}
+
+      - name: Rollback on failure
+        if: failure() && github.event.inputs.dry_run != 'true'
+        run: |
+          echo "Migration failed. Attempting rollback..."
+          chmod +x ./scripts/gh-actions-migration.sh
+          ./scripts/gh-actions-migration.sh rollback_migrations
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_PROD }}
+          MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
+          DB_MIGRATION_USER: ${{ secrets.DB_MIGRATION_USER }}
+          DB_MIGRATION_PASSWORD: ${{ secrets.DB_MIGRATION_PASSWORD }}
+          BACKUP_PATH: ${{ steps.backup.outputs.backup_path }}
+
+      - name: Send failure notification
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send success notification
+        if: success() && github.event.inputs.dry_run != 'true'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

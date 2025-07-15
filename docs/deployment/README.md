@@ -1,263 +1,184 @@
-# D&D Tracker Deployment Documentation
+# Deployment Documentation
 
-This directory contains comprehensive documentation for the D&D Tracker deployment system, including setup, operations, monitoring, and troubleshooting procedures.
+This document describes the deployment process for the D&D Tracker application, including the database migrations workflow.
 
-## Documentation Overview
+## Overview
 
-### 📚 Core Documentation
+The application uses a decoupled deployment strategy where database migrations are handled separately from application deployment through GitHub Actions.
 
-#### [Deployment Guide](./DEPLOYMENT_GUIDE.md)
+## Database Migrations
 
-Comprehensive guide covering all aspects of the deployment system:
+### GitHub Actions Migration Workflow
 
-- Architecture overview and components
-- Prerequisites and configuration
-- Step-by-step deployment procedures
-- Monitoring and alerting setup
-- Backup and recovery procedures
-- API reference and examples
+Database migrations are now handled by a dedicated GitHub Actions workflow that runs automatically when changes are pushed to the main branch. This provides better isolation, monitoring, and error handling compared to running migrations during application deployment.
 
-#### [Quick Reference](./QUICK_REFERENCE.md)
+#### Key Features
 
-Essential commands and URLs for daily operations:
+- **Automatic Migration Detection**: Detects new migration files and skips execution if none are found
+- **Backup Creation**: Creates database backups before executing migrations
+- **Rollback Capability**: Automatic rollback on failure with backup restore as fallback
+- **Dry Run Support**: Supports dry-run mode for testing migrations
+- **Health Checks**: Post-migration validation and health checks
+- **Notifications**: Slack notifications for migration status
 
-- Common deployment commands
-- Health check endpoints
-- Environment variables
-- Emergency procedures
+#### Workflow Triggers
 
-#### [Operational Runbook](./OPERATIONAL_RUNBOOK.md)
+The migration workflow is triggered by:
+- Push to main branch with changes to migration-related files
+- Manual dispatch for emergency migrations
+- Changes to:
+  - `migrations/**`
+  - `src/lib/migrations/**`
+  - `src/lib/scripts/migrate.ts`
+  - `config/migration.*.json`
 
-Detailed operational procedures for:
+#### Required GitHub Secrets
 
-- Daily, weekly, and monthly maintenance
-- Incident response protocols
-- Troubleshooting procedures
-- Emergency contact information
+The following secrets must be configured in the GitHub repository:
 
-## Quick Start
+- `MONGODB_URI_PROD`: Production MongoDB connection string
+- `MONGODB_DB_NAME`: Database name for migrations
+- `DB_MIGRATION_USER`: Dedicated database user for migrations
+- `DB_MIGRATION_PASSWORD`: Password for migration user
+- `MIGRATION_ENCRYPTION_KEY`: For sensitive migration data
+- `SLACK_WEBHOOK_URL`: For migration status notifications
 
-### First Time Setup
+#### MongoDB Atlas Configuration
 
-1. **Install Prerequisites**
+1. **Database User Setup**:
+   - Create a dedicated user for GitHub Actions migrations
+   - Grant `readWrite` and `dbAdmin` roles
+   - Restrict to specific IP ranges (GitHub Actions IPs)
 
-   ```bash
-   # Install required tools
-   npm install -g flyctl
-   brew install mongodb/brew/mongodb-community-tools
-   ```
+2. **Network Access**:
+   - Add GitHub Actions IP ranges to Atlas IP whitelist
+   - Configure connection limits and timeouts
 
-2. **Configure Environment**
+3. **Security Settings**:
+   - Enable authentication
+   - Configure SSL/TLS settings
+   - Set up monitoring and alerting
 
-   ```bash
-   # Set required environment variables
-   export MONGODB_URI="mongodb://..."
-   export MONGODB_DB_NAME="dnd-tracker"
-   export NEXTAUTH_SECRET="your-secret"
-   export FLY_API_TOKEN="your-token"
-   ```
+### Migration Commands
 
-3. **Deploy to Staging**
-
-   ```bash
-   DEPLOY_ENV=staging ./scripts/deploy-with-migrations.sh
-   ```
-
-### Common Operations
+#### Local Development
 
 ```bash
-# Deploy to production
-DEPLOY_ENV=production ./scripts/deploy-with-migrations.sh
+# Check migration status
+npm run migrate:status
 
-# Create backup
-DEPLOY_ENV=production ./scripts/backup-database.sh
+# Run pending migrations
+npm run migrate:up
 
-# Check health
-curl -f https://dnd-tracker-production.fly.dev/api/health
+# Rollback migrations
+npm run migrate:down [steps]
 
-# Emergency rollback
-ROLLBACK_TYPE=auto ./scripts/rollback-deployment.sh
+# Create new migration
+npm run migrate:create "Description of migration"
+
+# Validate migration files
+npm run migrate:validate
 ```
 
-## Architecture Overview
+#### GitHub Actions
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   GitHub Actions   │────│  DeploymentManager  │────│    Fly.io App      │
-│   CI/CD Pipeline    │    │   Orchestration     │    │   Next.js Server   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                │                        │
-                                │                        │
-                       ┌─────────────────┐    ┌─────────────────┐
-                       │  MongoDB Atlas  │    │  Health Checks  │
-                       │   Database      │    │   Monitoring    │
-                       └─────────────────┘    └─────────────────┘
-                                │                        │
-                                │                        │
-                       ┌─────────────────┐    ┌─────────────────┐
-                       │ Backup System   │    │ Alert System    │
-                       │ Scripts & Hooks │    │ Slack/Email/PD  │
-                       └─────────────────┘    └─────────────────┘
+```bash
+# GitHub Actions migration script
+npm run migrate:github-actions [command]
+
+# Available commands:
+# - detect_new_migrations
+# - create_backup
+# - dry_run_migrations
+# - execute_migrations
+# - rollback_migrations
+# - health_check
 ```
 
-## Key Features
+### Manual Migration Execution
 
-### 🚀 Automated Deployment Pipeline
+For emergency situations, migrations can be triggered manually:
 
-- Pre-deployment validation
-- Automated database migrations
-- Health check verification
-- Automatic rollback on failure
+1. Go to the GitHub Actions tab
+2. Select the "Database Migrations" workflow
+3. Click "Run workflow"
+4. Choose options:
+   - **migration_steps**: Number of migrations to run (default: all)
+   - **dry_run**: Run in dry-run mode (default: false)
 
-### 🛡️ Safety Mechanisms
+### Monitoring and Troubleshooting
 
-- Environment-specific configurations
-- Database backup before migrations
-- Multiple rollback strategies
-- Dry-run mode for testing
+#### Migration Logs
 
-### 📊 Comprehensive Monitoring
+All migration logs are available in the GitHub Actions workflow run. Each step provides detailed output including:
+- Migration detection results
+- Backup creation status
+- Migration execution progress
+- Health check results
+- Error details and stack traces
 
-- Real-time deployment metrics
-- Multi-tier health checks
-- Configurable alerting
-- Performance tracking
+#### Common Issues
 
-### 🔄 Backup & Recovery
+1. **Connection Timeouts**: Check MongoDB Atlas IP whitelist and connection limits
+2. **Permission Errors**: Verify database user roles and permissions
+3. **Backup Failures**: Ensure sufficient disk space and proper credentials
+4. **Migration Syntax Errors**: Run `npm run migrate:validate` locally first
 
-- Automated backup creation
-- Integrity verification
-- Point-in-time restoration
-- Emergency recovery procedures
+#### Rollback Procedures
 
-## File Structure
+1. **Automatic Rollback**: Failed migrations trigger automatic rollback
+2. **Manual Rollback**: Use the GitHub Actions workflow with rollback command
+3. **Backup Restore**: As last resort, restore from the pre-migration backup
 
-```
-docs/deployment/
-├── README.md              # This file - overview and index
-├── DEPLOYMENT_GUIDE.md    # Comprehensive deployment guide
-├── QUICK_REFERENCE.md     # Quick command reference
-└── OPERATIONAL_RUNBOOK.md # Operational procedures
+### Security Considerations
 
-scripts/
-├── deploy-with-migrations.sh    # Main deployment script
-├── backup-database.sh           # Database backup utility
-├── restore-database.sh          # Database restoration utility
-└── rollback-deployment.sh       # Rollback automation
+- All migration credentials are stored as GitHub Secrets
+- Database backups are created with encryption
+- Migration user has minimal required permissions
+- Audit logging is enabled for all migration operations
+- Network access is restricted to GitHub Actions IP ranges
 
-config/
-├── migration.development.json   # Development migration config
-├── migration.staging.json       # Staging migration config
-├── migration.production.json    # Production migration config
-└── monitoring.json              # Monitoring configuration
+### Best Practices
 
-src/lib/
-├── scripts/
-│   └── deploy.ts                # DeploymentManager class
-├── monitoring/
-│   └── deployment-monitor.ts    # Monitoring system
-└── migrations/
-    └── runner.ts                # Migration execution
+1. **Always Test Locally**: Run migrations in development environment first
+2. **Use Dry Run**: Test migrations with dry-run mode before production
+3. **Monitor Execution**: Check GitHub Actions logs for migration progress
+4. **Backup Verification**: Ensure backups are created successfully
+5. **Rollback Testing**: Test rollback procedures in staging environment
 
-.github/workflows/
-├── deploy-staging.yml           # Staging deployment workflow
-└── deploy-production.yml        # Production deployment workflow
+## Application Deployment
 
-fly.toml                         # Staging Fly.io configuration
-fly.production.toml              # Production Fly.io configuration
-```
+Application deployment to Fly.io is now separate from database migrations. The deployment process focuses solely on deploying the application code without migration concerns.
 
-## Security Considerations
+### Deployment Process
 
-### Environment Variables
+1. **GitHub Actions Migration**: Runs automatically on push to main
+2. **Application Deployment**: Deploys to Fly.io after successful migrations
+3. **Health Checks**: Validates both database and application health
+4. **Notifications**: Status updates via Slack and email
 
-- All secrets stored as GitHub secrets
-- Environment-specific variable isolation
-- Regular credential rotation procedures
+For detailed deployment instructions, see the [Fly.io Deployment Guide](./flyio-deployment.md).
 
-### Access Control
+## Configuration Files
 
-- GitHub branch protection enabled
-- Required reviews for production deployments
-- Audit logging for all deployment actions
+- `.github/workflows/db-migrations.yml`: GitHub Actions migration workflow
+- `config/migration.github-actions.json`: GitHub Actions migration configuration
+- `scripts/gh-actions-migration.sh`: GitHub Actions migration script
+- `scripts/deploy-with-migrations.sh`: Legacy deployment script (migrations removed)
 
-### Data Protection
+## Migration History
 
-- Encrypted backups
-- Secure transmission protocols
-- Database access restrictions
+All migration records are stored in the `migrations` collection in MongoDB. Each record includes:
+- Version timestamp
+- Description
+- Execution time
+- Git commit hash
+- Rollback availability
 
-## Performance Metrics
+## Support
 
-### Deployment Targets
-
-- **Staging**: < 3 minutes end-to-end
-- **Production**: < 5 minutes end-to-end
-- **Success Rate**: > 95%
-- **Rollback Time**: < 2 minutes
-
-### Monitoring Thresholds
-
-- **Health Check**: 15-second intervals
-- **Alert Response**: < 5 minutes
-- **Error Rate**: < 1% for production
-
-## Support and Maintenance
-
-### Regular Tasks
-
-- **Daily**: Health check verification
-- **Weekly**: Backup integrity testing
-- **Monthly**: Security review and dependency updates
-- **Quarterly**: Documentation review and update
-
-### Incident Response
-
-1. **Level 1**: Automated monitoring alerts
-2. **Level 2**: Development team notification
-3. **Level 3**: Operations escalation
-4. **Level 4**: Emergency response protocol
-
-## Contributing
-
-### Documentation Updates
-
-1. Update relevant documentation files
-2. Test procedures on staging environment
-3. Submit pull request with changes
-4. Ensure team review and approval
-
-### Procedure Changes
-
-1. Document current state
-2. Test new procedures thoroughly
-3. Update all relevant documentation
-4. Train team on changes
-5. Monitor implementation closely
-
-## Additional Resources
-
-### External Documentation
-
-- [Fly.io Documentation](https://fly.io/docs/)
-- [MongoDB Migration Guide](https://docs.mongodb.com/manual/core/schema-validation/)
-- [Next.js Deployment Guide](https://nextjs.org/docs/deployment)
-
-### Internal Resources
-
-- [Project README](../../README.md)
-- [Migration Documentation](../migrations/)
-- [API Documentation](../api/)
-
-### Team Resources
-
-- Slack: `#deployments` channel
-- GitHub: Issues and Pull Requests
-- Monitoring: Deployment dashboard
-- Alerts: PagerDuty/Slack notifications
-
----
-
-**Last Updated**: 2025-01-12
-**Next Review**: 2025-04-12
-**Maintained By**: Development Team
+For migration-related issues:
+1. Check GitHub Actions workflow logs
+2. Review MongoDB Atlas metrics
+3. Verify GitHub Secrets configuration
+4. Contact the development team for assistance

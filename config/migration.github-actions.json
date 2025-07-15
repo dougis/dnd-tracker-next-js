@@ -1,0 +1,44 @@
+{
+  "environment": "github-actions",
+  "migrationsPath": "./migrations",
+  "collectionName": "migrations",
+  "timeout": 300000,
+  "backupEnabled": true,
+  "dryRun": false,
+  "validateOnly": false,
+  "notificationsEnabled": true,
+  "githubActions": {
+    "enableSlackNotifications": true,
+    "enableEmailNotifications": false,
+    "backupRetentionDays": 30,
+    "maxMigrationTimeout": 600,
+    "healthCheckTimeout": 60,
+    "rollbackTimeout": 300
+  },
+  "mongodb": {
+    "connectionOptions": {
+      "maxPoolSize": 10,
+      "serverSelectionTimeoutMS": 30000,
+      "socketTimeoutMS": 60000,
+      "retryWrites": true,
+      "w": "majority"
+    },
+    "backupOptions": {
+      "compression": "gzip",
+      "excludeCollections": ["sessions", "logs"],
+      "includeIndexes": true
+    }
+  },
+  "security": {
+    "requireBackupBeforeMigration": true,
+    "requireValidationBeforeExecution": true,
+    "enableEncryption": true,
+    "auditLogging": true
+  },
+  "monitoring": {
+    "trackExecutionTime": true,
+    "logMigrationProgress": true,
+    "enableMetrics": true,
+    "alertOnFailure": true
+  }
+}
