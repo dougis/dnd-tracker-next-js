@@ -27,9 +27,9 @@ RUN npm run build
 FROM base AS production
 ENV NODE_ENV=production
 
-# Create a non-root user
+# Create a non-root user with proper home directory
 RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN adduser --system --uid 1001 --home /home/nextjs nextjs
 
 # Copy production dependencies and install tsx for migrations
 COPY --from=build /app/package-lock.json /app/package.json ./
@@ -41,8 +41,10 @@ COPY --from=build --chown=nextjs:nodejs /app/public ./public
 COPY --from=build --chown=nextjs:nodejs /app/src ./src
 COPY --from=build /app/docker-entrypoint.js ./docker-entrypoint.js
 
-# Set the user to the non-root user
+# Set the user to the non-root user with proper environment
 USER nextjs
+ENV HOME=/home/nextjs
+ENV NPM_CONFIG_CACHE=/home/nextjs/.npm
 
 # Expose the port and add a health check
 EXPOSE 8080
