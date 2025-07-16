@@ -23,7 +23,9 @@ class MigrationCLI {
   private async initialize(): Promise<void> {
     const mongoUri = process.env.MONGODB_URI || process.env.DATABASE_URL;
     if (!mongoUri) {
-      throw new Error('MONGODB_URI or DATABASE_URL environment variable is required');
+      throw new Error(
+        'MONGODB_URI or DATABASE_URL environment variable is required'
+      );
     }
 
     this.client = new MongoClient(mongoUri);
@@ -36,6 +38,8 @@ class MigrationCLI {
       backupEnabled: process.env.MIGRATION_BACKUP_ENABLED !== 'false',
       dryRun: process.env.MIGRATION_DRY_RUN === 'true',
       validateOnly: process.env.MIGRATION_VALIDATE_ONLY === 'true',
+      databaseName:
+        process.env.MONGODB_DB_NAME || process.env.DATABASE_NAME || 'test',
     };
 
     this.runner = new MigrationRunner(this.client, config);
@@ -66,8 +70,12 @@ class MigrationCLI {
         return;
       }
 
-      console.log('Version | Status    | Description                    | Executed At');
-      console.log('--------|-----------|--------------------------------|-------------------');
+      console.log(
+        'Version | Status    | Description                    | Executed At'
+      );
+      console.log(
+        '--------|-----------|--------------------------------|-------------------'
+      );
 
       for (const status of statuses) {
         const version = status.version.padEnd(7);
@@ -77,13 +85,19 @@ class MigrationCLI {
           ? status.executedAt.toISOString().substring(0, 19).replace('T', ' ')
           : 'Not executed';
 
-        console.log(`${version} | ${statusText} | ${description} | ${executedAt}`);
+        console.log(
+          `${version} | ${statusText} | ${description} | ${executedAt}`
+        );
       }
 
       const pendingCount = statuses.filter(s => s.status === 'pending').length;
-      const executedCount = statuses.filter(s => s.status === 'executed').length;
+      const executedCount = statuses.filter(
+        s => s.status === 'executed'
+      ).length;
 
-      console.log(`\n📈 Summary: ${executedCount} executed, ${pendingCount} pending`);
+      console.log(
+        `\n📈 Summary: ${executedCount} executed, ${pendingCount} pending`
+      );
     } finally {
       await this.cleanup();
     }
@@ -107,9 +121,13 @@ class MigrationCLI {
 
       for (const result of results) {
         if (result.success) {
-          console.log(`✅ ${result.version}: ${result.description} (${result.executionTime}ms)`);
+          console.log(
+            `✅ ${result.version}: ${result.description} (${result.executionTime}ms)`
+          );
         } else {
-          console.error(`❌ ${result.version}: ${result.description} - ${result.error?.message}`);
+          console.error(
+            `❌ ${result.version}: ${result.description} - ${result.error?.message}`
+          );
           console.error(`   Execution stopped due to failure.`);
           break;
         }
@@ -118,7 +136,9 @@ class MigrationCLI {
       const successCount = results.filter(r => r.success).length;
       const totalTime = results.reduce((sum, r) => sum + r.executionTime, 0);
 
-      console.log(`\n🎉 Completed ${successCount}/${results.length} migrations in ${totalTime}ms`);
+      console.log(
+        `\n🎉 Completed ${successCount}/${results.length} migrations in ${totalTime}ms`
+      );
     } finally {
       await this.cleanup();
     }
@@ -142,9 +162,13 @@ class MigrationCLI {
 
       for (const result of results) {
         if (result.success) {
-          console.log(`✅ Rolled back ${result.version}: ${result.description} (${result.executionTime}ms)`);
+          console.log(
+            `✅ Rolled back ${result.version}: ${result.description} (${result.executionTime}ms)`
+          );
         } else {
-          console.error(`❌ Failed to rollback ${result.version}: ${result.description} - ${result.error?.message}`);
+          console.error(
+            `❌ Failed to rollback ${result.version}: ${result.description} - ${result.error?.message}`
+          );
           break;
         }
       }
@@ -152,7 +176,9 @@ class MigrationCLI {
       const successCount = results.filter(r => r.success).length;
       const totalTime = results.reduce((sum, r) => sum + r.executionTime, 0);
 
-      console.log(`\n🎉 Rolled back ${successCount}/${results.length} migrations in ${totalTime}ms`);
+      console.log(
+        `\n🎉 Rolled back ${successCount}/${results.length} migrations in ${totalTime}ms`
+      );
     } finally {
       await this.cleanup();
     }
@@ -197,7 +223,9 @@ class MigrationCLI {
       if (isValid) {
         console.log('✅ All migrations are valid.');
       } else {
-        console.error('❌ Migration validation failed. Check the logs above for details.');
+        console.error(
+          '❌ Migration validation failed. Check the logs above for details.'
+        );
         process.exit(1);
       }
     } finally {
@@ -255,12 +283,18 @@ async function main(): Promise<void> {
   try {
     await executeCommand(cli, command, args);
   } catch (error) {
-    console.error(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(
+      `❌ Error: ${error instanceof Error ? error.message : String(error)}`
+    );
     process.exit(1);
   }
 }
 
-async function executeCommand(cli: MigrationCLI, command: string, args: string[]): Promise<void> {
+async function executeCommand(
+  cli: MigrationCLI,
+  command: string,
+  args: string[]
+): Promise<void> {
   switch (command) {
     case 'status':
       await cli.status();
@@ -287,7 +321,10 @@ async function executeCommand(cli: MigrationCLI, command: string, args: string[]
   }
 }
 
-async function handleDownCommand(cli: MigrationCLI, args: string[]): Promise<void> {
+async function handleDownCommand(
+  cli: MigrationCLI,
+  args: string[]
+): Promise<void> {
   const steps = args[0] ? parseInt(args[0], 10) : 1;
   if (isNaN(steps) || steps < 1) {
     console.error('❌ Invalid number of steps. Must be a positive integer.');
@@ -296,7 +333,10 @@ async function handleDownCommand(cli: MigrationCLI, args: string[]): Promise<voi
   await cli.down(steps);
 }
 
-async function handleCreateCommand(cli: MigrationCLI, args: string[]): Promise<void> {
+async function handleCreateCommand(
+  cli: MigrationCLI,
+  args: string[]
+): Promise<void> {
   const description = args.join(' ');
   await cli.create(description);
 }
