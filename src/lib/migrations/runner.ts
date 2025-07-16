@@ -29,8 +29,45 @@ export class MigrationRunner implements IMigrationRunner {
   constructor(client: MongoClient, config: MigrationConfig) {
     this.validateConstructorParams(client, config);
     this.client = client;
-    this.db = client.db();
+
+    // Extract database name from connection string or use explicitly provided one
+    const dbName = config.databaseName || this.extractDatabaseName(client);
+    this.db = client.db(dbName); // Explicitly specify database name
+
     this.config = this.normalizeConfig(config);
+  }
+
+  /**
+   * Extract database name from MongoDB connection string
+   */
+  private extractDatabaseName(client: MongoClient): string {
+    try {
+      const connectionUrl = (client as any).options?.url || '';
+      if (!connectionUrl) {
+        return 'test';
+      }
+
+      // Extract database name from connection string
+      // Format: mongodb://username:password@host:port/database?options
+      const urlParts = connectionUrl.split('/');
+      if (urlParts.length < 4) {
+        return 'test';
+      }
+
+      const databasePart = urlParts[urlParts.length - 1];
+      if (!databasePart) {
+        return 'test';
+      }
+
+      // Remove query parameters
+      const dbName = databasePart.split('?')[0];
+
+      // Return extracted name or default to 'test'
+      return dbName || 'test';
+    } catch {
+      // If any error occurs during extraction, fallback to 'test'
+      return 'test';
+    }
   }
 
   /**
@@ -69,6 +106,7 @@ export class MigrationRunner implements IMigrationRunner {
       backupEnabled: config.backupEnabled ?? true,
       dryRun: config.dryRun ?? false,
       validateOnly: config.validateOnly ?? false,
+      databaseName: config.databaseName,
     };
   }
 
