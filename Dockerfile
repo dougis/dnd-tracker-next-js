@@ -31,13 +31,14 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy production dependencies and prune devDependencies
+# Copy production dependencies and install tsx for migrations
 COPY --from=build /app/package-lock.json /app/package.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev && npm install tsx
 
 # Copy built application artifacts
 COPY --from=build --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=build --chown=nextjs:nodejs /app/public ./public
+COPY --from=build --chown=nextjs:nodejs /app/src ./src
 COPY --from=build /app/docker-entrypoint.js ./docker-entrypoint.js
 
 # Set the user to the non-root user
