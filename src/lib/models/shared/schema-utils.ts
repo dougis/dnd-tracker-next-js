@@ -252,7 +252,8 @@ export const commonFields = {
   },
   deletedAt: {
     type: Date,
-    index: true,
+    // Note: Index is created by commonIndexes.temporal() with sparse: true
+    // which is more appropriate for optional deletion timestamps
   },
   imageUrl: {
     type: String,
