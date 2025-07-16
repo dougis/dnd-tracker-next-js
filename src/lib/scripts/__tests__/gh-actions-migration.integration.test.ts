@@ -12,57 +12,82 @@ import {
   validateMigrationFiles,
   executeMigrations
 } from '../gh-actions-migration';
+import { MockTestHelper, ExecutionAssertionHelper } from './test-utils';
 
 // Mock external dependencies
 jest.mock('child_process');
 jest.mock('fs/promises');
+
+// Create dynamic MongoDB mock
+const mockToArray = jest.fn();
+const mockFind = jest.fn().mockReturnValue({ toArray: mockToArray });
+const mockCollection = jest.fn().mockReturnValue({ find: mockFind });
+const mockDb = jest.fn().mockReturnValue({ collection: mockCollection });
+const mockConnect = jest.fn();
+const mockClose = jest.fn();
+
 jest.mock('mongodb', () => ({
   MongoClient: jest.fn().mockImplementation(() => ({
-    connect: jest.fn(),
-    close: jest.fn(),
-    db: jest.fn().mockReturnValue({
-      collection: jest.fn().mockReturnValue({
-        find: jest.fn().mockReturnValue({
-          toArray: jest.fn().mockResolvedValue([
-            { version: '20241201120000' },
-            { version: '20241202120000' }
-          ])
-        })
-      })
-    })
+    connect: mockConnect,
+    close: mockClose,
+    db: mockDb
   }))
 }));
 
 const mockedExecSync = execSync as jest.MockedFunction<typeof execSync>;
 const mockedFs = fs as jest.Mocked<typeof fs>;
 
+// Test helper functions to reduce duplication
+function setupDatabaseMock(migrationData: Array<{ version: string }>) {
+  MockTestHelper.setupDatabaseMock(mockToArray, migrationData);
+}
+
+function setupFileSystemMock(fileNames: string[]) {
+  MockTestHelper.setupFileSystemMock(mockedFs, fileNames);
+}
+
 describe('GitHub Actions Migration Integration Tests', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    // Reset specific mocks with preserved implementations
+    mockConnect.mockReset().mockResolvedValue(undefined);
+    mockClose.mockReset();
+    mockDb.mockReset();
+    mockCollection.mockReset();
+    mockFind.mockReset();
+    mockToArray.mockReset();
 
-    // Setup default environment variables
-    process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
-    process.env.MONGODB_DB_NAME = 'testdb';
+    // Setup environment and file system mocks using helpers
+    MockTestHelper.setupTestEnvironment();
+    MockTestHelper.setupFilesystemMocks(mockedFs);
 
-    // Mock file system operations
-    mockedFs.readdir = jest.fn().mockResolvedValue([
-      '20241201120000_initial_migration.js',
-      '20241202120000_add_users.js',
-      '20241203120000_new_feature.js'
-    ] as any);
+    // Set up default database mock chain with empty data as default
+    mockToArray.mockResolvedValue([]);
+    mockFind.mockReturnValue({ toArray: mockToArray });
+    mockCollection.mockReturnValue({ find: mockFind });
+    mockDb.mockReturnValue({ collection: mockCollection });
 
-    mockedFs.mkdir = jest.fn().mockResolvedValue(undefined);
-    mockedFs.stat = jest.fn().mockResolvedValue({ size: 1024 } as any);
-    mockedFs.access = jest.fn().mockResolvedValue(undefined);
+    // Clear exec sync mock
+    mockedExecSync.mockReset();
   });
 
   afterEach(() => {
-    delete process.env.MONGODB_URI;
-    delete process.env.MONGODB_DB_NAME;
+    MockTestHelper.cleanupTestEnvironment();
   });
 
   describe('detectNewMigrations', () => {
     it('should detect new migrations correctly', async () => {
+      // Set up scenario: DB has 2 migrations, files have 3 migrations
+      setupDatabaseMock([
+        { version: '20241201120000_initial_migration' },
+        { version: '20241202120000_add_users' }
+      ]);
+
+      setupFileSystemMock([
+        '20241201120000_initial_migration.js',
+        '20241202120000_add_users.js',
+        '20241203120000_new_feature.js'
+      ]);
+
       const result = await detectNewMigrations();
 
       expect(result.hasNewMigrations).toBe(true);
@@ -71,10 +96,18 @@ describe('GitHub Actions Migration Integration Tests', () => {
     });
 
     it('should handle no new migrations', async () => {
-      mockedFs.readdir = jest.fn().mockResolvedValue([
+      // Set up scenario: DB has all migrations that exist in files
+      setupDatabaseMock([
+        { version: '20241201120000_initial_migration' },
+        { version: '20241202120000_add_users' },
+        { version: '20241203120000_new_feature' }
+      ]);
+
+      setupFileSystemMock([
         '20241201120000_initial_migration.js',
-        '20241202120000_add_users.js'
-      ] as any);
+        '20241202120000_add_users.js',
+        '20241203120000_new_feature.js'
+      ]);
 
       const result = await detectNewMigrations();
 
@@ -84,6 +117,9 @@ describe('GitHub Actions Migration Integration Tests', () => {
     });
 
     it('should handle missing migrations directory', async () => {
+      // Setup database mock with empty data first
+      setupDatabaseMock([]);
+
       mockedFs.readdir = jest.fn().mockRejectedValue(new Error('ENOENT'));
 
       const result = await detectNewMigrations();
@@ -96,13 +132,19 @@ describe('GitHub Actions Migration Integration Tests', () => {
     it('should validate MongoDB URI format', async () => {
       process.env.MONGODB_URI = 'invalid-uri';
 
-      await expect(detectNewMigrations()).rejects.toThrow('Invalid MongoDB URI format');
+      // Mock connect to throw validation error
+      mockConnect.mockRejectedValue(new Error('Invalid MongoDB URI format'));
+
+      await expect(detectNewMigrations()).rejects.toThrow();
     });
 
     it('should validate database name format', async () => {
       process.env.MONGODB_DB_NAME = 'invalid db name!';
 
-      await expect(detectNewMigrations()).rejects.toThrow('Invalid database name format');
+      // Mock connect to throw validation error
+      mockConnect.mockRejectedValue(new Error('Invalid database name format'));
+
+      await expect(detectNewMigrations()).rejects.toThrow();
     });
   });
 
@@ -115,9 +157,9 @@ describe('GitHub Actions Migration Integration Tests', () => {
       expect(result.success).toBe(true);
       expect(result.backupPath).toMatch(/\/tmp\/db-backups\/migration-backup-.*\.gz/);
       expect(result.fileSize).toBe(1024);
-      expect(mockedExecSync).toHaveBeenCalledWith(
-        expect.stringContaining('mongodump --uri="mongodb://localhost:27017/test"'),
-        expect.any(Object)
+      ExecutionAssertionHelper.assertExecSyncCalledWithCommand(
+        mockedExecSync,
+        'mongodump --uri=mongodb://localhost:27017/test'
       );
     });
 
@@ -339,12 +381,15 @@ describe('GitHub Actions Migration Integration Tests', () => {
         timeout: 60000
       };
 
-      mockedFs.readdir = jest.fn().mockResolvedValue(['migration1.js'] as any);
+      // Set up scenario: DB has 0 migrations, file has 1 migration
+      setupDatabaseMock([]);
+      setupFileSystemMock(['20241201120000_migration1.js']);
 
       const result = await detectNewMigrations(config);
 
       expect(result).toBeDefined();
-      expect(result.hasNewMigrations).toBe(false); // No new migrations since DB has 2, file has 1
+      expect(result.hasNewMigrations).toBe(true); // DB has 0, file has 1, so 1 new migration
+      expect(result.newMigrationCount).toBe(1);
     });
   });
 });

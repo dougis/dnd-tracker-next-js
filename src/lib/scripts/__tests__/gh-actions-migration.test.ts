@@ -4,7 +4,7 @@
  */
 
 import fs from 'fs/promises';
-import { execSync } from 'child_process';
+import { WorkflowTestHelper, FileTestHelper, CommandTestHelper } from './test-utils';
 
 // Types for GitHub Actions workflow validation
 interface WorkflowJob {
@@ -34,12 +34,11 @@ describe('GitHub Actions Migration Setup', () => {
   describe('GitHub Actions Workflow File', () => {
     it('should create a valid GitHub Actions workflow file', async () => {
       // This test will fail initially - we haven't created the file yet
-      await expect(fs.access(workflowPath)).resolves.not.toThrow();
+      await FileTestHelper.assertFileExists(workflowPath);
     });
 
     it('should have correct workflow structure', async () => {
-      const workflowContent = await fs.readFile(workflowPath, 'utf-8');
-      const workflow: GitHubWorkflow = require('js-yaml').load(workflowContent, { schema: require('js-yaml').FAILSAFE_SCHEMA });
+      const workflow: GitHubWorkflow = await WorkflowTestHelper.loadAndParseWorkflow(workflowPath);
 
       expect(workflow.name).toBe('Database Migrations');
       expect(workflow.on.push.branches).toContain('main');
@@ -48,106 +47,74 @@ describe('GitHub Actions Migration Setup', () => {
     });
 
     it('should include migration detection step', async () => {
-      const workflowContent = await fs.readFile(workflowPath, 'utf-8');
-      const workflow: GitHubWorkflow = require('js-yaml').load(workflowContent, { schema: require('js-yaml').FAILSAFE_SCHEMA });
-
-      const migrationJob = workflow.jobs['migrate'];
-      expect(migrationJob).toBeDefined();
-
-      const detectionStep = migrationJob.steps.find(step =>
-        step.name.includes('Detect new migrations')
-      );
-      expect(detectionStep).toBeDefined();
+      const workflow: GitHubWorkflow = await WorkflowTestHelper.loadAndParseWorkflow(workflowPath);
+      WorkflowTestHelper.assertStepExists(workflow, 'Detect new migrations');
     });
 
     it('should include backup creation step', async () => {
-      const workflowContent = await fs.readFile(workflowPath, 'utf-8');
-      const workflow: GitHubWorkflow = require('js-yaml').load(workflowContent, { schema: require('js-yaml').FAILSAFE_SCHEMA });
-
-      const migrationJob = workflow.jobs['migrate'];
-      const backupStep = migrationJob.steps.find(step =>
-        step.name.includes('Create database backup')
-      );
-      expect(backupStep).toBeDefined();
+      const workflow: GitHubWorkflow = await WorkflowTestHelper.loadAndParseWorkflow(workflowPath);
+      WorkflowTestHelper.assertStepExists(workflow, 'Create database backup');
     });
 
     it('should include migration execution step', async () => {
-      const workflowContent = await fs.readFile(workflowPath, 'utf-8');
-      const workflow: GitHubWorkflow = require('js-yaml').load(workflowContent, { schema: require('js-yaml').FAILSAFE_SCHEMA });
-
-      const migrationJob = workflow.jobs['migrate'];
-      const executionStep = migrationJob.steps.find(step =>
-        step.name.includes('Execute migrations')
-      );
-      expect(executionStep).toBeDefined();
+      const workflow: GitHubWorkflow = await WorkflowTestHelper.loadAndParseWorkflow(workflowPath);
+      WorkflowTestHelper.assertStepExists(workflow, 'Execute migrations');
     });
 
     it('should include rollback on failure step', async () => {
-      const workflowContent = await fs.readFile(workflowPath, 'utf-8');
-      const workflow: GitHubWorkflow = require('js-yaml').load(workflowContent, { schema: require('js-yaml').FAILSAFE_SCHEMA });
-
-      const migrationJob = workflow.jobs['migrate'];
-      const rollbackStep = migrationJob.steps.find(step =>
-        step.name.includes('Rollback on failure')
-      );
-      expect(rollbackStep).toBeDefined();
+      const workflow: GitHubWorkflow = await WorkflowTestHelper.loadAndParseWorkflow(workflowPath);
+      WorkflowTestHelper.assertStepExists(workflow, 'Rollback on failure');
     });
 
     it('should reference all required GitHub secrets', async () => {
       const workflowContent = await fs.readFile(workflowPath, 'utf-8');
-
-      // Check for required secrets
-      expect(workflowContent).toContain('MONGODB_URI_PROD');
-      expect(workflowContent).toContain('MONGODB_DB_NAME');
-      expect(workflowContent).toContain('DB_MIGRATION_USER');
-      expect(workflowContent).toContain('DB_MIGRATION_PASSWORD');
+      const requiredSecrets = [
+        'MONGODB_URI_PROD',
+        'MONGODB_DB_NAME',
+        'DB_MIGRATION_USER',
+        'DB_MIGRATION_PASSWORD'
+      ];
+      WorkflowTestHelper.assertSecretsUsed(workflowContent, requiredSecrets);
     });
   });
 
   describe('GitHub Actions Migration Script', () => {
     it('should create GitHub Actions specific migration script', async () => {
-      await expect(fs.access(scriptPath)).resolves.not.toThrow();
+      await FileTestHelper.assertFileExists(scriptPath);
     });
 
     it('should be executable', async () => {
-      const stats = await fs.stat(scriptPath);
-      expect(stats.mode & 0o111).toBeTruthy(); // Check execute permissions
+      await FileTestHelper.assertExecutablePermissions(scriptPath);
     });
 
     it('should contain migration detection logic', async () => {
-      const scriptContent = await fs.readFile(scriptPath, 'utf-8');
-      expect(scriptContent).toContain('detect_new_migrations');
+      await FileTestHelper.assertFileContains(scriptPath, ['detect_new_migrations']);
     });
 
     it('should contain backup creation logic', async () => {
-      const scriptContent = await fs.readFile(scriptPath, 'utf-8');
-      expect(scriptContent).toContain('create_backup');
+      await FileTestHelper.assertFileContains(scriptPath, ['create_backup']);
     });
 
     it('should contain migration execution logic', async () => {
-      const scriptContent = await fs.readFile(scriptPath, 'utf-8');
-      expect(scriptContent).toContain('execute_migrations');
+      await FileTestHelper.assertFileContains(scriptPath, ['execute_migrations']);
     });
 
     it('should contain rollback logic', async () => {
-      const scriptContent = await fs.readFile(scriptPath, 'utf-8');
-      expect(scriptContent).toContain('rollback_migrations');
+      await FileTestHelper.assertFileContains(scriptPath, ['rollback_migrations']);
     });
   });
 
   describe('GitHub Actions Migration Configuration', () => {
     it('should create GitHub Actions specific configuration', async () => {
-      await expect(fs.access(configPath)).resolves.not.toThrow();
+      await FileTestHelper.assertFileExists(configPath);
     });
 
     it('should contain valid JSON', async () => {
-      const configContent = await fs.readFile(configPath, 'utf-8');
-      expect(() => JSON.parse(configContent)).not.toThrow();
+      await FileTestHelper.assertValidJson(configPath);
     });
 
     it('should have GitHub Actions specific settings', async () => {
-      const configContent = await fs.readFile(configPath, 'utf-8');
-      const config = JSON.parse(configContent);
+      const config = await FileTestHelper.assertValidJson(configPath);
 
       expect(config.environment).toBe('github-actions');
       expect(config.backupEnabled).toBe(true);
@@ -159,17 +126,14 @@ describe('GitHub Actions Migration Setup', () => {
   describe('Integration with Existing Migration System', () => {
     it('should not break existing migration CLI commands', async () => {
       // Test that existing npm scripts still work
-      expect(() => {
-        execSync('npm run migrate:help', { stdio: 'pipe' });
-      }).not.toThrow();
+      CommandTestHelper.assertCommandNotThrows('npm run migrate:help');
     });
 
     it('should validate against existing migration types', async () => {
       // Import migration types to ensure compatibility
-      await import('../../../lib/migrations/types');
+      await CommandTestHelper.assertImportWorks('../../../lib/migrations/types');
 
-      const configContent = await fs.readFile(configPath, 'utf-8');
-      const config = JSON.parse(configContent);
+      const config = await FileTestHelper.assertValidJson(configPath);
 
       // Ensure config matches MigrationConfig interface
       expect(typeof config.migrationsPath).toBe('string');
@@ -182,16 +146,12 @@ describe('GitHub Actions Migration Setup', () => {
   describe('Deployment Script Modifications', () => {
     it('should update deploy-with-migrations.sh to skip migrations', async () => {
       const deployScriptPath = './scripts/deploy-with-migrations.sh';
-      const scriptContent = await fs.readFile(deployScriptPath, 'utf-8');
-
-      // Check that migration logic is conditional or removed
-      expect(scriptContent).toContain('SKIP_MIGRATIONS');
+      await FileTestHelper.assertFileContains(deployScriptPath, ['SKIP_MIGRATIONS']);
     });
 
     it('should add GitHub Actions migration scripts to package.json', async () => {
       const packageJsonPath = './package.json';
-      const packageContent = await fs.readFile(packageJsonPath, 'utf-8');
-      const packageJson = JSON.parse(packageContent);
+      const packageJson = await FileTestHelper.assertValidJson(packageJsonPath);
 
       expect(packageJson.scripts['migrate:github-actions']).toBeDefined();
     });

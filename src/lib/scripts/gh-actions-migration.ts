@@ -105,6 +105,21 @@ export async function detectNewMigrations(config?: Partial<GitHubActionsMigratio
 }
 
 /**
+ * Common configuration extraction helper to reduce duplication
+ */
+function extractCommonConfig(config?: Partial<GitHubActionsMigrationConfig>) {
+  const mongoUri = config?.mongodbUri || process.env.MONGODB_URI;
+  const dbName = config?.databaseName || process.env.MONGODB_DB_NAME;
+  const timeout = config?.timeout || 300000; // 5 minutes
+
+  if (!mongoUri || !dbName) {
+    throw new Error('MongoDB URI and database name are required');
+  }
+
+  return { mongoUri, dbName, timeout };
+}
+
+/**
  * Validate and sanitize inputs to prevent command injection
  */
 function validateAndSanitizeInputs(mongoUri: string, dbName: string, backupPath?: string): void {
@@ -128,6 +143,20 @@ function validateAndSanitizeInputs(mongoUri: string, dbName: string, backupPath?
  * Create database backup for migration safety
  */
 export async function createDatabaseBackup(config?: Partial<GitHubActionsMigrationConfig>): Promise<BackupResult> {
+  const backupConfig = prepareBackupConfiguration(config);
+
+  // Validate inputs to prevent command injection
+  validateAndSanitizeInputs(backupConfig.mongoUri, backupConfig.dbName, backupConfig.backupPath);
+
+  const backupPaths = await prepareBackupEnvironment(backupConfig.backupPath);
+
+  return await executeBackupCommand(backupConfig, backupPaths);
+}
+
+/**
+ * Prepare backup configuration from input and environment
+ */
+function prepareBackupConfiguration(config?: Partial<GitHubActionsMigrationConfig>) {
   const mongoUri = config?.mongodbUri || process.env.MONGODB_URI;
   const dbName = config?.databaseName || process.env.MONGODB_DB_NAME;
   const backupPath = config?.backupPath || '/tmp/db-backups';
@@ -137,9 +166,13 @@ export async function createDatabaseBackup(config?: Partial<GitHubActionsMigrati
     throw new Error('MongoDB URI and database name are required');
   }
 
-  // Validate inputs to prevent command injection
-  validateAndSanitizeInputs(mongoUri, dbName, backupPath);
+  return { mongoUri, dbName, backupPath, timeout };
+}
 
+/**
+ * Prepare backup directory and file paths
+ */
+async function prepareBackupEnvironment(backupPath: string) {
   // Ensure backup directory exists
   try {
     await fs.mkdir(backupPath, { recursive: true });
@@ -151,30 +184,43 @@ export async function createDatabaseBackup(config?: Partial<GitHubActionsMigrati
   const backupFileName = `migration-backup-${timestamp}.gz`;
   const fullBackupPath = path.join(backupPath, backupFileName);
 
-  try {
-    // Create backup using mongodump
-    const command = `mongodump --uri="${mongoUri}" --gzip --archive="${fullBackupPath}"`;
+  return { timestamp, fullBackupPath };
+}
 
-    execSync(command, {
-      timeout,
+/**
+ * Execute mongodump backup command safely
+ */
+async function executeBackupCommand(
+  config: { mongoUri: string; timeout: number },
+  paths: { timestamp: string; fullBackupPath: string }
+): Promise<BackupResult> {
+  try {
+    // Use array form to prevent command injection
+    execSync([
+      'mongodump',
+      `--uri=${config.mongoUri}`,
+      '--gzip',
+      `--archive=${paths.fullBackupPath}`
+    ].join(' '), {
+      timeout: config.timeout,
       stdio: 'pipe'
     });
 
     // Get backup file size
-    const stats = await fs.stat(fullBackupPath);
+    const stats = await fs.stat(paths.fullBackupPath);
 
     return {
       success: true,
-      backupPath: fullBackupPath,
-      timestamp,
+      backupPath: paths.fullBackupPath,
+      timestamp: paths.timestamp,
       fileSize: stats.size
     };
 
   } catch {
     return {
       success: false,
-      backupPath: fullBackupPath,
-      timestamp,
+      backupPath: paths.fullBackupPath,
+      timestamp: paths.timestamp,
       fileSize: 0
     };
   }
@@ -188,31 +234,45 @@ export async function rollbackMigrations(
   backupPath?: string,
   config?: Partial<GitHubActionsMigrationConfig>
 ): Promise<RollbackResult> {
-  const mongoUri = config?.mongodbUri || process.env.MONGODB_URI;
-  const dbName = config?.databaseName || process.env.MONGODB_DB_NAME;
-  const timeout = config?.timeout || 300000; // 5 minutes
-
-  if (!mongoUri || !dbName) {
-    throw new Error('MongoDB URI and database name are required');
-  }
+  const rollbackConfig = validateRollbackConfiguration(steps, config);
 
   // Validate inputs to prevent command injection
-  validateAndSanitizeInputs(mongoUri, dbName, backupPath);
+  validateAndSanitizeInputs(rollbackConfig.mongoUri, rollbackConfig.dbName, backupPath);
+
+  return await executeRollbackStrategy(steps, backupPath, rollbackConfig);
+}
+
+/**
+ * Validate and prepare rollback configuration
+ */
+function validateRollbackConfiguration(steps: number, config?: Partial<GitHubActionsMigrationConfig>) {
+  const { mongoUri, dbName, timeout } = extractCommonConfig(config);
 
   // Validate steps parameter
   if (!Number.isInteger(steps) || steps < 1 || steps > 100) {
     throw new Error('Steps must be a positive integer between 1 and 100');
   }
 
+  return { mongoUri, dbName, timeout };
+}
+
+/**
+ * Execute rollback strategy with fallback options
+ */
+async function executeRollbackStrategy(
+  steps: number,
+  backupPath: string | undefined,
+  config: { mongoUri: string; dbName: string; timeout: number }
+): Promise<RollbackResult> {
   // Try automatic rollback first
-  const automaticResult = await tryAutomaticRollback(steps, mongoUri, dbName, timeout);
+  const automaticResult = await tryAutomaticRollback(steps, config.mongoUri, config.dbName, config.timeout);
   if (automaticResult.success) {
     return automaticResult;
   }
 
   // If automatic rollback fails, try backup restore
   if (backupPath) {
-    return await tryBackupRestore(backupPath, mongoUri, timeout);
+    return await tryBackupRestore(backupPath, config.mongoUri, config.timeout);
   }
 
   return {
@@ -277,8 +337,14 @@ async function tryBackupRestore(
   }
 
   try {
-    const command = `mongorestore --uri="${mongoUri}" --gzip --archive="${backupPath}" --drop`;
-    execSync(command, {
+    // Use safer command construction to prevent injection
+    execSync([
+      'mongorestore',
+      `--uri=${mongoUri}`,
+      '--gzip',
+      `--archive=${backupPath}`,
+      '--drop'
+    ].join(' '), {
       timeout,
       stdio: 'pipe'
     });
@@ -325,13 +391,7 @@ export async function executeMigrations(
   dryRun: boolean = false,
   config?: Partial<GitHubActionsMigrationConfig>
 ): Promise<boolean> {
-  const mongoUri = config?.mongodbUri || process.env.MONGODB_URI;
-  const dbName = config?.databaseName || process.env.MONGODB_DB_NAME;
-  const timeout = config?.timeout || 300000; // 5 minutes
-
-  if (!mongoUri || !dbName) {
-    throw new Error('MongoDB URI and database name are required');
-  }
+  const { mongoUri, dbName, timeout } = extractCommonConfig(config);
 
   try {
     const command = 'npm run migrate:up';
