@@ -453,4 +453,20 @@ describe('commonIndexes', () => {
     expect(mockSchema.index).toHaveBeenCalledWith({ type: 1, isPublic: 1 });
     expect(mockSchema.index).toHaveBeenCalledWith({ tags: 1 });
   });
+
+  it('should not create duplicate deletedAt indexes when using both commonFields.deletedAt and commonIndexes.temporal', () => {
+    // Verify that commonFields.deletedAt does NOT have index: true
+    expect(commonFields.deletedAt.index).toBeUndefined();
+
+    // Apply temporal indexes which should create the only deletedAt index
+    commonIndexes.temporal(mockSchema);
+
+    // Verify that deletedAt index is only created once by temporal indexes with sparse option
+    expect(mockSchema.index).toHaveBeenCalledWith({ deletedAt: 1 }, { sparse: true });
+
+    // Verify total number of temporal indexes created
+    expect(mockSchema.index).toHaveBeenCalledWith({ createdAt: -1 });
+    expect(mockSchema.index).toHaveBeenCalledWith({ updatedAt: -1 });
+    expect(mockSchema.index).toHaveBeenCalledWith({ deletedAt: 1 }, { sparse: true });
+  });
 });
