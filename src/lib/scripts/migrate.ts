@@ -253,48 +253,58 @@ async function main(): Promise<void> {
   const args = process.argv.slice(3);
 
   try {
-    switch (command) {
-      case 'status':
-        await cli.status();
-        break;
-
-      case 'up':
-        await cli.up();
-        break;
-
-      case 'down':
-        const steps = args[0] ? parseInt(args[0], 10) : 1;
-        if (isNaN(steps) || steps < 1) {
-          console.error('❌ Invalid number of steps. Must be a positive integer.');
-          process.exit(1);
-        }
-        await cli.down(steps);
-        break;
-
-      case 'create':
-        const description = args.join(' ');
-        await cli.create(description);
-        break;
-
-      case 'validate':
-        await cli.validate();
-        break;
-
-      case 'help':
-      case '--help':
-      case '-h':
-        cli.help();
-        break;
-
-      default:
-        console.error(`❌ Unknown command: ${command || '(none)'}`);
-        console.log('Run "npm run migrate:help" for usage information.');
-        process.exit(1);
-    }
+    await executeCommand(cli, command, args);
   } catch (error) {
     console.error(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);
   }
+}
+
+async function executeCommand(cli: MigrationCLI, command: string, args: string[]): Promise<void> {
+  switch (command) {
+    case 'status':
+      await cli.status();
+      break;
+    case 'up':
+      await cli.up();
+      break;
+    case 'down':
+      await handleDownCommand(cli, args);
+      break;
+    case 'create':
+      await handleCreateCommand(cli, args);
+      break;
+    case 'validate':
+      await cli.validate();
+      break;
+    case 'help':
+    case '--help':
+    case '-h':
+      cli.help();
+      break;
+    default:
+      handleUnknownCommand(command);
+  }
+}
+
+async function handleDownCommand(cli: MigrationCLI, args: string[]): Promise<void> {
+  const steps = args[0] ? parseInt(args[0], 10) : 1;
+  if (isNaN(steps) || steps < 1) {
+    console.error('❌ Invalid number of steps. Must be a positive integer.');
+    process.exit(1);
+  }
+  await cli.down(steps);
+}
+
+async function handleCreateCommand(cli: MigrationCLI, args: string[]): Promise<void> {
+  const description = args.join(' ');
+  await cli.create(description);
+}
+
+function handleUnknownCommand(command: string): never {
+  console.error(`❌ Unknown command: ${command || '(none)'}`);
+  console.log('Run "npm run migrate:help" for usage information.');
+  process.exit(1);
 }
 
 // Run CLI if this file is executed directly
