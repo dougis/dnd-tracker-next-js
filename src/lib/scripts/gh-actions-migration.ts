@@ -18,7 +18,7 @@ function safeExecSync(command: string, args: string[], options: any = {}) {
   if (!allowedCommands.includes(command)) {
     throw new Error(`Command '${command}' is not allowed`);
   }
-  
+
   // Validate arguments
   args.forEach(arg => {
     if (typeof arg !== 'string') {
@@ -29,7 +29,7 @@ function safeExecSync(command: string, args: string[], options: any = {}) {
       throw new Error(`Invalid argument contains shell metacharacters: ${arg}`);
     }
   });
-  
+
   // Construct command safely
   const fullCommand = `${command} ${args.join(' ')}`;
   return execSync(fullCommand, options);
