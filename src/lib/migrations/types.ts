@@ -37,6 +37,7 @@ export interface MigrationConfig {
   backupEnabled: boolean;
   dryRun: boolean;
   validateOnly: boolean;
+  databaseName?: string;
 }
 
 /**
