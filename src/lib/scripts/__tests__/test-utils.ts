@@ -12,7 +12,8 @@ import { execSync } from 'child_process';
 export class WorkflowTestHelper {
   static async loadAndParseWorkflow(workflowPath: string) {
     const workflowContent = await fs.readFile(workflowPath, 'utf-8');
-    return require('js-yaml').load(workflowContent);
+    const yaml = require('js-yaml');
+    return yaml.load(workflowContent, { schema: yaml.CORE_SCHEMA });
   }
 
   static findStepByName(workflow: any, stepName: string) {

@@ -10,6 +10,32 @@ import fs from 'fs/promises';
 import path from 'path';
 
 /**
+ * Secure wrapper for execSync that validates and constructs commands safely
+ */
+function safeExecSync(command: string, args: string[], options: any = {}) {
+  // Validate command name (whitelist approach)
+  const allowedCommands = ['mongodump', 'mongorestore', 'npm'];
+  if (!allowedCommands.includes(command)) {
+    throw new Error(`Command '${command}' is not allowed`);
+  }
+  
+  // Validate arguments
+  args.forEach(arg => {
+    if (typeof arg !== 'string') {
+      throw new Error('All arguments must be strings');
+    }
+    // Check for command injection patterns
+    if (arg.includes(';') || arg.includes('|') || arg.includes('&') || arg.includes('$')) {
+      throw new Error(`Invalid argument contains shell metacharacters: ${arg}`);
+    }
+  });
+  
+  // Construct command safely
+  const fullCommand = `${command} ${args.join(' ')}`;
+  return execSync(fullCommand, options);
+}
+
+/**
  * Configuration for GitHub Actions migrations
  */
 interface GitHubActionsMigrationConfig {
@@ -206,13 +232,11 @@ async function executeBackupCommand(
     }
 
     // Use safe command execution to prevent injection
-    const mongodumpCmd = 'mongodump';
-    const mongodumpArgs = [
+    safeExecSync('mongodump', [
       `--uri=${config.mongoUri}`,
       '--gzip',
       `--archive=${paths.fullBackupPath}`
-    ];
-    execSync(`${mongodumpCmd} ${mongodumpArgs.join(' ')}`, {
+    ], {
       timeout: config.timeout,
       stdio: 'pipe'
     });
@@ -307,8 +331,7 @@ async function tryAutomaticRollback(
     if (!/^\d+$/.test(steps.toString())) {
       throw new Error('Invalid steps parameter - must be a number');
     }
-    const command = 'npm run migrate:down ' + steps;
-    execSync(command, {
+    safeExecSync('npm', ['run', 'migrate:down', steps.toString()], {
       timeout,
       stdio: 'pipe',
       env: {
@@ -353,13 +376,12 @@ async function tryBackupRestore(
 
   try {
     // Use safer command construction to prevent injection
-    execSync([
-      'mongorestore',
+    safeExecSync('mongorestore', [
       `--uri=${mongoUri}`,
       '--gzip',
       `--archive=${backupPath}`,
       '--drop'
-    ].join(' '), {
+    ], {
       timeout,
       stdio: 'pipe'
     });
