@@ -12,7 +12,7 @@ import { execSync } from 'child_process';
 export class WorkflowTestHelper {
   static async loadAndParseWorkflow(workflowPath: string) {
     const workflowContent = await fs.readFile(workflowPath, 'utf-8');
-    return require('js-yaml').load(workflowContent, { schema: require('js-yaml').FAILSAFE_SCHEMA });
+    return require('js-yaml').load(workflowContent);
   }
 
   static findStepByName(workflow: any, stepName: string) {
@@ -68,6 +68,10 @@ export class FileTestHelper {
  */
 export class CommandTestHelper {
   static assertCommandNotThrows(command: string) {
+    // Validate command to prevent injection - allow common npm/CLI characters
+    if (!/^[a-zA-Z0-9\s\-\.\/:]+$/.test(command)) {
+      throw new Error('Invalid command format');
+    }
     expect(() => {
       execSync(command, { stdio: 'pipe' });
     }).not.toThrow();

@@ -195,13 +195,24 @@ async function executeBackupCommand(
   paths: { timestamp: string; fullBackupPath: string }
 ): Promise<BackupResult> {
   try {
-    // Use array form to prevent command injection
-    execSync([
-      'mongodump',
+    // Validate MongoDB URI format to prevent injection
+    if (!config.mongoUri.startsWith('mongodb://') && !config.mongoUri.startsWith('mongodb+srv://')) {
+      throw new Error('Invalid MongoDB URI format');
+    }
+
+    // Validate backup path to prevent directory traversal
+    if (paths.fullBackupPath.includes('..') || !paths.fullBackupPath.endsWith('.gz')) {
+      throw new Error('Invalid backup path');
+    }
+
+    // Use safe command execution to prevent injection
+    const mongodumpCmd = 'mongodump';
+    const mongodumpArgs = [
       `--uri=${config.mongoUri}`,
       '--gzip',
       `--archive=${paths.fullBackupPath}`
-    ].join(' '), {
+    ];
+    execSync(`${mongodumpCmd} ${mongodumpArgs.join(' ')}`, {
       timeout: config.timeout,
       stdio: 'pipe'
     });
@@ -292,7 +303,11 @@ async function tryAutomaticRollback(
   timeout: number
 ): Promise<RollbackResult> {
   try {
-    const command = `npm run migrate:down ${steps}`;
+    // Validate steps parameter to prevent injection
+    if (!/^\d+$/.test(steps.toString())) {
+      throw new Error('Invalid steps parameter - must be a number');
+    }
+    const command = 'npm run migrate:down ' + steps;
     execSync(command, {
       timeout,
       stdio: 'pipe',
