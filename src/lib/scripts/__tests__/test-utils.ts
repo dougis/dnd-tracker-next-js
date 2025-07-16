@@ -13,6 +13,7 @@ export class WorkflowTestHelper {
   static async loadAndParseWorkflow(workflowPath: string) {
     const workflowContent = await fs.readFile(workflowPath, 'utf-8');
     const yaml = require('js-yaml');
+    // Safe YAML parsing: uses CORE_SCHEMA to prevent code execution
     return yaml.load(workflowContent, { schema: yaml.CORE_SCHEMA });
   }
 
@@ -74,6 +75,7 @@ export class CommandTestHelper {
       throw new Error('Invalid command format');
     }
     expect(() => {
+      // Safe execution: command validated above with regex check
       execSync(command, { stdio: 'pipe' });
     }).not.toThrow();
   }

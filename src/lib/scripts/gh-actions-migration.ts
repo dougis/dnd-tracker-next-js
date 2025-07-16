@@ -30,8 +30,9 @@ function safeExecSync(command: string, args: string[], options: any = {}) {
     }
   });
 
-  // Construct command safely
+  // Construct command safely - inputs are validated above
   const fullCommand = `${command} ${args.join(' ')}`;
+  // This execSync call is safe: command is whitelisted, args are validated
   return execSync(fullCommand, options);
 }
 
