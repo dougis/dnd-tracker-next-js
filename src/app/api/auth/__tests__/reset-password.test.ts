@@ -240,8 +240,8 @@ describe('POST /api/auth/reset-password', () => {
     it('handles password with special characters', async () => {
       const specialPasswordData = {
         token: 'valid-token',
-        password: 'P@ssw0rd!@#$%^&*()',
-        confirmPassword: 'P@ssw0rd!@#$%^&*()',
+        password: 'P@ssw0rd!&*?$', // Only use allowed special characters: @$!%*?&
+        confirmPassword: 'P@ssw0rd!&*?$',
       };
 
       setupUserServiceMock('resetPassword', {
