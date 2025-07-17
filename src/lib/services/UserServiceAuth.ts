@@ -122,26 +122,37 @@ export class UserServiceAuth {
       return UserServiceResponseHelpers.handleValidationError(error);
     }
 
-    // Handle MongoDB duplicate key errors
-    if (error instanceof Error && 'code' in error && (error as any).code === 11000) {
-      const field = error.message.includes('email') ? 'email' : 'username';
-      return this.createUserExistsError(field);
-    }
-
-    // Handle other specific MongoDB/Mongoose errors
-    if (error instanceof Error) {
-      if (error.message === 'Email already exists') {
-        return this.createUserExistsError('email');
-      }
-
-      if (error.message === 'Username already exists') {
-        return this.createUserExistsError('username');
-      }
-    }
+    // Handle MongoDB and model-specific errors
+    const mongoError = this.handleMongoErrors(error);
+    if (mongoError) return mongoError;
 
     // Default to internal server error for unknown errors
     console.error('Unexpected error during user creation:', error);
     return this.createRegistrationFailedError();
+  }
+
+  /**
+   * Handle MongoDB and model-specific errors
+   */
+  private static handleMongoErrors(error: unknown): ServiceResult<never> | null {
+    if (!(error instanceof Error)) return null;
+
+    // Handle MongoDB duplicate key errors
+    if ('code' in error && (error as any).code === 11000) {
+      const field = error.message.includes('email') ? 'email' : 'username';
+      return this.createUserExistsError(field);
+    }
+
+    // Handle model validation errors
+    if (error.message === 'Email already exists') {
+      return this.createUserExistsError('email');
+    }
+
+    if (error.message === 'Username already exists') {
+      return this.createUserExistsError('username');
+    }
+
+    return null;
   }
 
   /**

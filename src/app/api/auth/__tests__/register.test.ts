@@ -238,4 +238,90 @@ describe('POST /api/auth/register', () => {
 
     await testErrorResponse(mockUserData, 500, 'Connection timeout');
   });
+
+  it('handles password validation errors correctly', async () => {
+    // Mock password validation error
+    UserService.createUser = jest.fn().mockResolvedValueOnce({
+      success: false,
+      error: {
+        message: 'Password does not meet security requirements: too short',
+        code: 'INVALID_PASSWORD',
+        statusCode: 400,
+      },
+    });
+
+    await testErrorResponse(
+      mockUserData,
+      400,
+      'Password does not meet security requirements: too short'
+    );
+  });
+
+  it('handles invalid password format errors correctly', async () => {
+    // Mock invalid password format error
+    UserService.createUser = jest.fn().mockResolvedValueOnce({
+      success: false,
+      error: {
+        message: 'Invalid password format',
+        code: 'INVALID_PASSWORD_FORMAT',
+        statusCode: 400,
+      },
+    });
+
+    await testErrorResponse(
+      mockUserData,
+      400,
+      'Invalid password format'
+    );
+  });
+
+  it('handles MongoDB duplicate key error with code 11000', async () => {
+    // Mock MongoDB duplicate key error
+    UserService.createUser = jest.fn().mockResolvedValueOnce(
+      createUserExistsMock('email', 'test@example.com')
+    );
+
+    await testErrorResponse(
+      { ...mockUserData, email: 'test@example.com' },
+      409,
+      'User already exists with email: test@example.com'
+    );
+  });
+
+  it('handles service-level validation errors', async () => {
+    // Mock validation error from UserService
+    UserService.createUser = jest.fn().mockResolvedValueOnce({
+      success: false,
+      error: {
+        message: 'Invalid data provided',
+        code: 'VALIDATION_ERROR',
+        statusCode: 400,
+      },
+    });
+
+    await testErrorResponse(
+      mockUserData,
+      400,
+      'Invalid data provided'
+    );
+  });
+
+  it('handles input validation errors from Zod schema', async () => {
+    // Invalid data that will fail Zod validation (missing required fields)
+    const invalidData = {
+      email: 'invalid-email',
+      password: 'short', // Will fail validation
+    };
+
+    const request = createMockRequest(invalidData);
+    const response = await POST(request);
+    const responseData = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(responseData.success).toBe(false);
+    expect(responseData.message).toBe('Validation error');
+    expect(responseData.errors).toBeDefined();
+    expect(responseData.errors.length).toBeGreaterThan(0);
+    expect(UserService.createUser).not.toHaveBeenCalled();
+  });
 });
