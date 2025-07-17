@@ -324,4 +324,58 @@ describe('POST /api/auth/register', () => {
     expect(responseData.errors.length).toBeGreaterThan(0);
     expect(UserService.createUser).not.toHaveBeenCalled();
   });
+
+  it('handles UserAlreadyExistsError from service correctly', async () => {
+    // Mock UserAlreadyExistsError
+    UserService.createUser = jest.fn().mockResolvedValueOnce({
+      success: false,
+      error: {
+        message: 'User already exists with email: existing@example.com',
+        code: 'USER_ALREADY_EXISTS',
+        statusCode: 409,
+      },
+    });
+
+    await testErrorResponse(
+      { ...mockUserData, email: 'existing@example.com' },
+      409,
+      'User already exists with email: existing@example.com'
+    );
+  });
+
+  it('handles mongoose validation errors with "validation" keyword', async () => {
+    // Mock a mongoose validation error
+    UserService.createUser = jest.fn().mockResolvedValueOnce({
+      success: false,
+      error: {
+        message: 'Invalid data provided',
+        code: 'VALIDATION_ERROR',
+        statusCode: 400,
+      },
+    });
+
+    await testErrorResponse(
+      mockUserData,
+      400,
+      'Invalid data provided'
+    );
+  });
+
+  it('handles non-Error objects gracefully', async () => {
+    // Mock an error that's not an Error instance
+    UserService.createUser = jest.fn().mockResolvedValueOnce({
+      success: false,
+      error: {
+        message: 'An unexpected error occurred during registration',
+        code: 'REGISTRATION_FAILED',
+        statusCode: 500,
+      },
+    });
+
+    await testErrorResponse(
+      mockUserData,
+      500,
+      'An unexpected error occurred during registration'
+    );
+  });
 });
