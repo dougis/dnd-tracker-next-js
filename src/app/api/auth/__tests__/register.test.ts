@@ -129,27 +129,18 @@ describe('POST /api/auth/register', () => {
     expect(UserService.createUser).toHaveBeenCalledWith(mockUserData);
   });
 
-  // Helper function to create user existence error mock
-  const createUserExistsMock = (field: string, value: string) => ({
+  // Helper functions for mocking and testing
+  const createErrorMock = (message: string, code: string, statusCode: number) => ({
     success: false,
-    error: {
-      message: `User already exists with ${field}: ${value}`,
-      code: 'USER_ALREADY_EXISTS',
-      statusCode: 409,
-    },
+    error: { message, code, statusCode },
   });
 
-  // Helper function to create server error mock
-  const createServerErrorMock = (message: string, code: string = 'DATABASE_ERROR') => ({
-    success: false,
-    error: {
-      message,
-      code,
-      statusCode: 500,
-    },
-  });
+  const createUserExistsMock = (field: string, value: string) =>
+    createErrorMock(`User already exists with ${field}: ${value}`, 'USER_ALREADY_EXISTS', 409);
 
-  // Helper function to test error response
+  const createServerErrorMock = (message: string, code: string = 'DATABASE_ERROR') =>
+    createErrorMock(message, code, 500);
+
   const testErrorResponse = async (userData: any, expectedStatus: number, expectedMessage: string) => {
     const request = createMockRequest(userData);
     const response = await POST(request);
