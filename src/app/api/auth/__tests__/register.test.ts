@@ -40,14 +40,11 @@ describe('POST /api/auth/register', () => {
 
   it('successfully registers a new user', async () => {
     // Mock the UserService.createUser method to return success
-    mockUserServiceCreateUser({
-      success: true,
-      data: {
-        id: '12345',
-        email: 'john.doe@example.com',
-        username: 'johndoe',
-      },
-    });
+    mockUserServiceCreateUser(createSuccessResponse({
+      id: '12345',
+      email: 'john.doe@example.com',
+      username: 'johndoe',
+    }));
 
     const request = createMockRequest(mockUserData);
     const response = await POST(request);
@@ -145,6 +142,19 @@ describe('POST /api/auth/register', () => {
     UserService.createUser = jest.fn().mockResolvedValueOnce(returnValue);
   };
 
+  const createPasswordError = (message: string, code: string) => ({
+    success: false,
+    error: { message, code, statusCode: 400 },
+  });
+
+  const createValidationError = (message: string) => 
+    createPasswordError(message, 'VALIDATION_ERROR');
+
+  const createSuccessResponse = (userData: any) => ({
+    success: true,
+    data: userData,
+  });
+
   const testErrorResponse = async (userData: any, expectedStatus: number, expectedMessage: string) => {
     const request = createMockRequest(userData);
     const response = await POST(request);
@@ -158,14 +168,11 @@ describe('POST /api/auth/register', () => {
 
   it('handles actual duplicate email registration correctly', async () => {
     // First, mock a successful user creation
-    mockUserServiceCreateUser({
-      success: true,
-      data: {
-        id: '12345',
-        email: 'duplicate@example.com',
-        username: 'duplicateuser',
-      },
-    });
+    mockUserServiceCreateUser(createSuccessResponse({
+      id: '12345',
+      email: 'duplicate@example.com',
+      username: 'duplicateuser',
+    }));
 
     // Create first user successfully
     const firstUserData = {
@@ -230,14 +237,9 @@ describe('POST /api/auth/register', () => {
 
   it('handles password validation errors correctly', async () => {
     // Mock password validation error
-    mockUserServiceCreateUser({
-      success: false,
-      error: {
-        message: 'Password does not meet security requirements: too short',
-        code: 'INVALID_PASSWORD',
-        statusCode: 400,
-      },
-    });
+    mockUserServiceCreateUser(
+      createPasswordError('Password does not meet security requirements: too short', 'INVALID_PASSWORD')
+    );
 
     await testErrorResponse(
       mockUserData,
@@ -248,14 +250,9 @@ describe('POST /api/auth/register', () => {
 
   it('handles invalid password format errors correctly', async () => {
     // Mock invalid password format error
-    mockUserServiceCreateUser({
-      success: false,
-      error: {
-        message: 'Invalid password format',
-        code: 'INVALID_PASSWORD_FORMAT',
-        statusCode: 400,
-      },
-    });
+    mockUserServiceCreateUser(
+      createPasswordError('Invalid password format', 'INVALID_PASSWORD_FORMAT')
+    );
 
     await testErrorResponse(
       mockUserData,
@@ -277,14 +274,7 @@ describe('POST /api/auth/register', () => {
 
   it('handles service-level validation errors', async () => {
     // Mock validation error from UserService
-    mockUserServiceCreateUser({
-      success: false,
-      error: {
-        message: 'Invalid data provided',
-        code: 'VALIDATION_ERROR',
-        statusCode: 400,
-      },
-    });
+    mockUserServiceCreateUser(createValidationError('Invalid data provided'));
 
     await testErrorResponse(
       mockUserData,
@@ -314,14 +304,9 @@ describe('POST /api/auth/register', () => {
 
   it('handles UserAlreadyExistsError from service correctly', async () => {
     // Mock UserAlreadyExistsError
-    mockUserServiceCreateUser({
-      success: false,
-      error: {
-        message: 'User already exists with email: existing@example.com',
-        code: 'USER_ALREADY_EXISTS',
-        statusCode: 409,
-      },
-    });
+    mockUserServiceCreateUser(
+      createUserExistsMock('email', 'existing@example.com')
+    );
 
     await testErrorResponse(
       { ...mockUserData, email: 'existing@example.com' },
@@ -332,14 +317,7 @@ describe('POST /api/auth/register', () => {
 
   it('handles mongoose validation errors with "validation" keyword', async () => {
     // Mock a mongoose validation error
-    mockUserServiceCreateUser({
-      success: false,
-      error: {
-        message: 'Invalid data provided',
-        code: 'VALIDATION_ERROR',
-        statusCode: 400,
-      },
-    });
+    mockUserServiceCreateUser(createValidationError('Invalid data provided'));
 
     await testErrorResponse(
       mockUserData,
@@ -350,14 +328,9 @@ describe('POST /api/auth/register', () => {
 
   it('handles non-Error objects gracefully', async () => {
     // Mock an error that's not an Error instance
-    mockUserServiceCreateUser({
-      success: false,
-      error: {
-        message: 'An unexpected error occurred during registration',
-        code: 'REGISTRATION_FAILED',
-        statusCode: 500,
-      },
-    });
+    mockUserServiceCreateUser(
+      createServerErrorMock('An unexpected error occurred during registration', 'REGISTRATION_FAILED')
+    );
 
     await testErrorResponse(
       mockUserData,
