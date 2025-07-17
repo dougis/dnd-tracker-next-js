@@ -40,7 +40,7 @@ describe('POST /api/auth/register', () => {
 
   it('successfully registers a new user', async () => {
     // Mock the UserService.createUser method to return success
-    UserService.createUser = jest.fn().mockResolvedValue({
+    mockUserServiceCreateUser({
       success: true,
       data: {
         id: '12345',
@@ -96,7 +96,7 @@ describe('POST /api/auth/register', () => {
       },
     };
 
-    UserService.createUser = jest.fn().mockResolvedValue(mockError);
+    mockUserServiceCreateUser(mockError);
 
     const request = createMockRequest(mockUserData);
     const response = await POST(request);
@@ -141,6 +141,10 @@ describe('POST /api/auth/register', () => {
   const createServerErrorMock = (message: string, code: string = 'DATABASE_ERROR') =>
     createErrorMock(message, code, 500);
 
+  const mockUserServiceCreateUser = (returnValue: any) => {
+    UserService.createUser = jest.fn().mockResolvedValueOnce(returnValue);
+  };
+
   const testErrorResponse = async (userData: any, expectedStatus: number, expectedMessage: string) => {
     const request = createMockRequest(userData);
     const response = await POST(request);
@@ -154,7 +158,7 @@ describe('POST /api/auth/register', () => {
 
   it('handles actual duplicate email registration correctly', async () => {
     // First, mock a successful user creation
-    UserService.createUser = jest.fn().mockResolvedValueOnce({
+    mockUserServiceCreateUser({
       success: true,
       data: {
         id: '12345',
@@ -174,9 +178,7 @@ describe('POST /api/auth/register', () => {
     expect(firstResponse.status).toBe(201);
 
     // Now mock the error for duplicate user
-    UserService.createUser = jest.fn().mockResolvedValueOnce(
-      createUserExistsMock('email', 'duplicate@example.com')
-    );
+    mockUserServiceCreateUser(createUserExistsMock('email', 'duplicate@example.com'));
 
     // Try to create the same user again
     await testErrorResponse(
@@ -188,9 +190,7 @@ describe('POST /api/auth/register', () => {
 
   it('handles actual duplicate username registration correctly', async () => {
     // Mock the error for duplicate username
-    UserService.createUser = jest.fn().mockResolvedValueOnce(
-      createUserExistsMock('username', 'duplicateusername')
-    );
+    mockUserServiceCreateUser(createUserExistsMock('username', 'duplicateusername'));
 
     const duplicateUsernameData = {
       ...mockUserData,
@@ -207,7 +207,7 @@ describe('POST /api/auth/register', () => {
 
   it('handles internal server errors correctly instead of returning 409', async () => {
     // Mock an internal server error (like database connection issues)
-    UserService.createUser = jest.fn().mockResolvedValueOnce(
+    mockUserServiceCreateUser(
       createServerErrorMock('An unexpected error occurred during registration', 'REGISTRATION_FAILED')
     );
 
@@ -223,16 +223,14 @@ describe('POST /api/auth/register', () => {
 
   it('handles unknown database errors correctly', async () => {
     // Mock an unknown database error
-    UserService.createUser = jest.fn().mockResolvedValueOnce(
-      createServerErrorMock('Connection timeout')
-    );
+    mockUserServiceCreateUser(createServerErrorMock('Connection timeout'));
 
     await testErrorResponse(mockUserData, 500, 'Connection timeout');
   });
 
   it('handles password validation errors correctly', async () => {
     // Mock password validation error
-    UserService.createUser = jest.fn().mockResolvedValueOnce({
+    mockUserServiceCreateUser({
       success: false,
       error: {
         message: 'Password does not meet security requirements: too short',
@@ -250,7 +248,7 @@ describe('POST /api/auth/register', () => {
 
   it('handles invalid password format errors correctly', async () => {
     // Mock invalid password format error
-    UserService.createUser = jest.fn().mockResolvedValueOnce({
+    mockUserServiceCreateUser({
       success: false,
       error: {
         message: 'Invalid password format',
@@ -268,9 +266,7 @@ describe('POST /api/auth/register', () => {
 
   it('handles MongoDB duplicate key error with code 11000', async () => {
     // Mock MongoDB duplicate key error
-    UserService.createUser = jest.fn().mockResolvedValueOnce(
-      createUserExistsMock('email', 'test@example.com')
-    );
+    mockUserServiceCreateUser(createUserExistsMock('email', 'test@example.com'));
 
     await testErrorResponse(
       { ...mockUserData, email: 'test@example.com' },
@@ -281,7 +277,7 @@ describe('POST /api/auth/register', () => {
 
   it('handles service-level validation errors', async () => {
     // Mock validation error from UserService
-    UserService.createUser = jest.fn().mockResolvedValueOnce({
+    mockUserServiceCreateUser({
       success: false,
       error: {
         message: 'Invalid data provided',
@@ -318,7 +314,7 @@ describe('POST /api/auth/register', () => {
 
   it('handles UserAlreadyExistsError from service correctly', async () => {
     // Mock UserAlreadyExistsError
-    UserService.createUser = jest.fn().mockResolvedValueOnce({
+    mockUserServiceCreateUser({
       success: false,
       error: {
         message: 'User already exists with email: existing@example.com',
@@ -336,7 +332,7 @@ describe('POST /api/auth/register', () => {
 
   it('handles mongoose validation errors with "validation" keyword', async () => {
     // Mock a mongoose validation error
-    UserService.createUser = jest.fn().mockResolvedValueOnce({
+    mockUserServiceCreateUser({
       success: false,
       error: {
         message: 'Invalid data provided',
@@ -354,7 +350,7 @@ describe('POST /api/auth/register', () => {
 
   it('handles non-Error objects gracefully', async () => {
     // Mock an error that's not an Error instance
-    UserService.createUser = jest.fn().mockResolvedValueOnce({
+    mockUserServiceCreateUser({
       success: false,
       error: {
         message: 'An unexpected error occurred during registration',
