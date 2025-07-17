@@ -128,4 +128,114 @@ describe('POST /api/auth/register', () => {
     });
     expect(UserService.createUser).toHaveBeenCalledWith(mockUserData);
   });
+
+  it('handles actual duplicate email registration correctly', async () => {
+    // First, mock a successful user creation
+    UserService.createUser = jest.fn().mockResolvedValueOnce({
+      success: true,
+      data: {
+        id: '12345',
+        email: 'duplicate@example.com',
+        username: 'duplicateuser',
+      },
+    });
+
+    // Create first user successfully
+    const firstUserData = {
+      ...mockUserData,
+      email: 'duplicate@example.com',
+      username: 'duplicateuser',
+    };
+    const firstRequest = createMockRequest(firstUserData);
+    const firstResponse = await POST(firstRequest);
+    expect(firstResponse.status).toBe(201);
+
+    // Now mock the error for duplicate user
+    UserService.createUser = jest.fn().mockResolvedValueOnce({
+      success: false,
+      error: {
+        message: 'User already exists with email: duplicate@example.com',
+        code: 'USER_ALREADY_EXISTS',
+        statusCode: 409,
+      },
+    });
+
+    // Try to create the same user again
+    const secondRequest = createMockRequest(firstUserData);
+    const secondResponse = await POST(secondRequest);
+    const secondResponseData = await secondResponse.json();
+
+    expect(secondResponse.status).toBe(409);
+    expect(secondResponseData.success).toBe(false);
+    expect(secondResponseData.message).toBe('User already exists with email: duplicate@example.com');
+  });
+
+  it('handles actual duplicate username registration correctly', async () => {
+    // Mock the error for duplicate username
+    UserService.createUser = jest.fn().mockResolvedValueOnce({
+      success: false,
+      error: {
+        message: 'User already exists with username: duplicateusername',
+        code: 'USER_ALREADY_EXISTS',
+        statusCode: 409,
+      },
+    });
+
+    const duplicateUsernameData = {
+      ...mockUserData,
+      email: 'different@example.com',
+      username: 'duplicateusername',
+    };
+
+    const request = createMockRequest(duplicateUsernameData);
+    const response = await POST(request);
+    const responseData = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(responseData.success).toBe(false);
+    expect(responseData.message).toBe('User already exists with username: duplicateusername');
+  });
+
+  it('handles internal server errors correctly instead of returning 409', async () => {
+    // Mock an internal server error (like database connection issues)
+    UserService.createUser = jest.fn().mockResolvedValueOnce({
+      success: false,
+      error: {
+        message: 'An unexpected error occurred during registration',
+        code: 'REGISTRATION_FAILED',
+        statusCode: 500,
+      },
+    });
+
+    const request = createMockRequest(mockUserData);
+    const response = await POST(request);
+    const responseData = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(responseData.success).toBe(false);
+    expect(responseData.message).toBe('An unexpected error occurred during registration');
+    // Register route adds errors field for all non-success responses
+    expect(responseData.errors).toEqual([{ field: '', message: 'An unexpected error occurred during registration' }]);
+  });
+
+  it('handles unknown database errors correctly', async () => {
+    // Mock an unknown database error
+    UserService.createUser = jest.fn().mockResolvedValueOnce({
+      success: false,
+      error: {
+        message: 'Connection timeout',
+        code: 'DATABASE_ERROR',
+        statusCode: 500,
+      },
+    });
+
+    const request = createMockRequest(mockUserData);
+    const response = await POST(request);
+    const responseData = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(responseData.success).toBe(false);
+    // Should get the actual error message, not default to "User already exists"
+    expect(responseData.message).toBe('Connection timeout');
+  });
 });

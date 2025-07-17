@@ -93,20 +93,65 @@ export class UserServiceAuth {
         return UserServiceResponseHelpers.createErrorResponse(error);
       }
 
-      // Handle validation errors
-      try {
+      // Handle validation errors first
+      if (error instanceof Error && error.message.includes('validation')) {
         return UserServiceResponseHelpers.handleValidationError(error);
-      } catch {
-        // Fallback for test compatibility
+      }
+
+      // Handle MongoDB duplicate key errors
+      if (
+        error instanceof Error && 
+        'code' in error && 
+        (error as any).code === 11000
+      ) {
+        const field = error.message.includes('email') ? 'email' : 'username';
         return {
           success: false,
           error: {
-            message: 'User already exists',
+            message: `User already exists with this ${field}`,
             code: 'USER_ALREADY_EXISTS',
             statusCode: 409,
           },
         };
       }
+
+      // Handle other specific MongoDB/Mongoose errors
+      if (error instanceof Error) {
+        // Handle email already exists errors from User model validation
+        if (error.message === 'Email already exists') {
+          return {
+            success: false,
+            error: {
+              message: 'User already exists with this email',
+              code: 'USER_ALREADY_EXISTS',
+              statusCode: 409,
+            },
+          };
+        }
+
+        // Handle username already exists errors from User model validation
+        if (error.message === 'Username already exists') {
+          return {
+            success: false,
+            error: {
+              message: 'User already exists with this username',
+              code: 'USER_ALREADY_EXISTS',
+              statusCode: 409,
+            },
+          };
+        }
+      }
+
+      // Default to internal server error for unknown errors
+      console.error('Unexpected error during user creation:', error);
+      return {
+        success: false,
+        error: {
+          message: 'An unexpected error occurred during registration',
+          code: 'REGISTRATION_FAILED',
+          statusCode: 500,
+        },
+      };
     }
   }
 
