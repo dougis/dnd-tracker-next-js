@@ -66,6 +66,7 @@ describe('Base Validation Schemas', () => {
 
     it('should validate passwords with special characters like asterisks', () => {
       // Test case for issue #408: passwords with * character should be valid
+      // Regression test for password validation rejecting valid asterisk characters
       const passwordsWithSpecialChars = [
         'cjt*JCQ8hvk*xbw2tgd', // The exact password from the bug report
         'Test*Password123!',
