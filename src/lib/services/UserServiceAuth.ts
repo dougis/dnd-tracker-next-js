@@ -100,8 +100,8 @@ export class UserServiceAuth {
 
       // Handle MongoDB duplicate key errors
       if (
-        error instanceof Error && 
-        'code' in error && 
+        error instanceof Error &&
+        'code' in error &&
         (error as any).code === 11000
       ) {
         const field = error.message.includes('email') ? 'email' : 'username';
