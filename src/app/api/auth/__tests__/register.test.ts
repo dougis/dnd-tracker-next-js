@@ -129,6 +129,38 @@ describe('POST /api/auth/register', () => {
     expect(UserService.createUser).toHaveBeenCalledWith(mockUserData);
   });
 
+  // Helper function to create user existence error mock
+  const createUserExistsMock = (field: string, value: string) => ({
+    success: false,
+    error: {
+      message: `User already exists with ${field}: ${value}`,
+      code: 'USER_ALREADY_EXISTS',
+      statusCode: 409,
+    },
+  });
+
+  // Helper function to create server error mock
+  const createServerErrorMock = (message: string, code: string = 'DATABASE_ERROR') => ({
+    success: false,
+    error: {
+      message,
+      code,
+      statusCode: 500,
+    },
+  });
+
+  // Helper function to test error response
+  const testErrorResponse = async (userData: any, expectedStatus: number, expectedMessage: string) => {
+    const request = createMockRequest(userData);
+    const response = await POST(request);
+    const responseData = await response.json();
+
+    expect(response.status).toBe(expectedStatus);
+    expect(responseData.success).toBe(false);
+    expect(responseData.message).toBe(expectedMessage);
+    return responseData;
+  };
+
   it('handles actual duplicate email registration correctly', async () => {
     // First, mock a successful user creation
     UserService.createUser = jest.fn().mockResolvedValueOnce({
@@ -151,35 +183,23 @@ describe('POST /api/auth/register', () => {
     expect(firstResponse.status).toBe(201);
 
     // Now mock the error for duplicate user
-    UserService.createUser = jest.fn().mockResolvedValueOnce({
-      success: false,
-      error: {
-        message: 'User already exists with email: duplicate@example.com',
-        code: 'USER_ALREADY_EXISTS',
-        statusCode: 409,
-      },
-    });
+    UserService.createUser = jest.fn().mockResolvedValueOnce(
+      createUserExistsMock('email', 'duplicate@example.com')
+    );
 
     // Try to create the same user again
-    const secondRequest = createMockRequest(firstUserData);
-    const secondResponse = await POST(secondRequest);
-    const secondResponseData = await secondResponse.json();
-
-    expect(secondResponse.status).toBe(409);
-    expect(secondResponseData.success).toBe(false);
-    expect(secondResponseData.message).toBe('User already exists with email: duplicate@example.com');
+    await testErrorResponse(
+      firstUserData,
+      409,
+      'User already exists with email: duplicate@example.com'
+    );
   });
 
   it('handles actual duplicate username registration correctly', async () => {
     // Mock the error for duplicate username
-    UserService.createUser = jest.fn().mockResolvedValueOnce({
-      success: false,
-      error: {
-        message: 'User already exists with username: duplicateusername',
-        code: 'USER_ALREADY_EXISTS',
-        statusCode: 409,
-      },
-    });
+    UserService.createUser = jest.fn().mockResolvedValueOnce(
+      createUserExistsMock('username', 'duplicateusername')
+    );
 
     const duplicateUsernameData = {
       ...mockUserData,
@@ -187,55 +207,35 @@ describe('POST /api/auth/register', () => {
       username: 'duplicateusername',
     };
 
-    const request = createMockRequest(duplicateUsernameData);
-    const response = await POST(request);
-    const responseData = await response.json();
-
-    expect(response.status).toBe(409);
-    expect(responseData.success).toBe(false);
-    expect(responseData.message).toBe('User already exists with username: duplicateusername');
+    await testErrorResponse(
+      duplicateUsernameData,
+      409,
+      'User already exists with username: duplicateusername'
+    );
   });
 
   it('handles internal server errors correctly instead of returning 409', async () => {
     // Mock an internal server error (like database connection issues)
-    UserService.createUser = jest.fn().mockResolvedValueOnce({
-      success: false,
-      error: {
-        message: 'An unexpected error occurred during registration',
-        code: 'REGISTRATION_FAILED',
-        statusCode: 500,
-      },
-    });
+    UserService.createUser = jest.fn().mockResolvedValueOnce(
+      createServerErrorMock('An unexpected error occurred during registration', 'REGISTRATION_FAILED')
+    );
 
-    const request = createMockRequest(mockUserData);
-    const response = await POST(request);
-    const responseData = await response.json();
+    const responseData = await testErrorResponse(
+      mockUserData,
+      500,
+      'An unexpected error occurred during registration'
+    );
 
-    expect(response.status).toBe(500);
-    expect(responseData.success).toBe(false);
-    expect(responseData.message).toBe('An unexpected error occurred during registration');
     // Register route adds errors field for all non-success responses
     expect(responseData.errors).toEqual([{ field: '', message: 'An unexpected error occurred during registration' }]);
   });
 
   it('handles unknown database errors correctly', async () => {
     // Mock an unknown database error
-    UserService.createUser = jest.fn().mockResolvedValueOnce({
-      success: false,
-      error: {
-        message: 'Connection timeout',
-        code: 'DATABASE_ERROR',
-        statusCode: 500,
-      },
-    });
+    UserService.createUser = jest.fn().mockResolvedValueOnce(
+      createServerErrorMock('Connection timeout')
+    );
 
-    const request = createMockRequest(mockUserData);
-    const response = await POST(request);
-    const responseData = await response.json();
-
-    expect(response.status).toBe(500);
-    expect(responseData.success).toBe(false);
-    // Should get the actual error message, not default to "User already exists"
-    expect(responseData.message).toBe('Connection timeout');
+    await testErrorResponse(mockUserData, 500, 'Connection timeout');
   });
 });
