@@ -8,8 +8,8 @@ primary_region = 'sea'
 
 [build]
 
-[deploy]
-  release_command = "npm run migrate:up"
+#[deploy]
+#  release_command = "npm run migrate:up"
 
 [env]
   NODE_ENV = "production"
