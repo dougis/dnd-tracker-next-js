@@ -19,9 +19,10 @@ export class UserServiceDatabase {
    */
   static async generateAndSaveEmailToken(user: any): Promise<void> {
     if (user && typeof user.generateEmailVerificationToken === 'function') {
-      user.generateEmailVerificationToken();
+      await user.generateEmailVerificationToken();
     }
-    await this.saveUserSafely(user);
+    // Note: generateEmailVerificationToken() already saves the user internally,
+    // so we don't need to call saveUserSafely() here to avoid ParallelSaveError
   }
 
   /**
