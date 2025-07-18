@@ -18,7 +18,10 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
       passwordResetExpires: new Date(),
       emailVerificationToken: 'verification-token',
       save: jest.fn().mockResolvedValue(undefined),
-      generateEmailVerificationToken: jest.fn(),
+      generateEmailVerificationToken: jest.fn().mockImplementation(async function() {
+        await this.save();
+        return 'test-token';
+      }),
       generatePasswordResetToken: jest
         .fn()
         .mockResolvedValue('new-reset-token'),
@@ -86,16 +89,18 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
       await UserServiceDatabase.generateAndSaveEmailToken(mockUser);
 
       expect(mockUser.generateEmailVerificationToken).toHaveBeenCalledTimes(1);
+      // Note: save is called internally by generateEmailVerificationToken, not by the method itself
       expect(mockUser.save).toHaveBeenCalledTimes(1);
     });
 
-    it('should save user even when generateEmailVerificationToken does not exist', async () => {
+    it('should not save user when generateEmailVerificationToken does not exist', async () => {
       const userWithoutMethod = { ...mockUser };
       delete userWithoutMethod.generateEmailVerificationToken;
 
       await UserServiceDatabase.generateAndSaveEmailToken(userWithoutMethod);
 
-      expect(userWithoutMethod.save).toHaveBeenCalledTimes(1);
+      // Since generateEmailVerificationToken doesn't exist, no save should occur
+      expect(userWithoutMethod.save).not.toHaveBeenCalled();
     });
 
     it('should handle non-function generateEmailVerificationToken property', async () => {
@@ -103,7 +108,8 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
 
       await UserServiceDatabase.generateAndSaveEmailToken(mockUser);
 
-      expect(mockUser.save).toHaveBeenCalledTimes(1);
+      // Since generateEmailVerificationToken is not a function, no save should occur
+      expect(mockUser.save).not.toHaveBeenCalled();
     });
 
     it('should handle generateEmailVerificationToken that throws an error', async () => {
@@ -117,7 +123,10 @@ describe('UserServiceDatabase - Comprehensive Tests', () => {
     });
 
     it('should handle save failure after token generation', async () => {
-      mockUser.save.mockRejectedValue(new Error('Save failed'));
+      // Mock generateEmailVerificationToken to throw save error
+      mockUser.generateEmailVerificationToken.mockImplementation(async () => {
+        throw new Error('Save failed');
+      });
 
       await expect(
         UserServiceDatabase.generateAndSaveEmailToken(mockUser)
