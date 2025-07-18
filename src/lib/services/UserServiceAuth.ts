@@ -31,6 +31,15 @@ import {
 export class UserServiceAuth {
 
   /**
+   * Check if email verification should be bypassed based on environment variable
+   * For MVP development purposes only
+   */
+  private static shouldBypassEmailVerification(): boolean {
+    const bypassValue = process.env.BYPASS_EMAIL_VERIFICATION;
+    return bypassValue === 'true';
+  }
+
+  /**
    * Create a new user account
    */
   static async createUser(
@@ -92,6 +101,9 @@ export class UserServiceAuth {
    * Create and save a new user with email verification token
    */
   private static async createAndSaveUser(validatedData: any) {
+    // Check if email verification should be bypassed for MVP
+    const bypassEmailVerification = this.shouldBypassEmailVerification();
+
     const newUser = new User({
       email: validatedData.email,
       username: validatedData.username,
@@ -100,11 +112,17 @@ export class UserServiceAuth {
       passwordHash: validatedData.password, // Will be hashed by middleware
       role: 'user',
       subscriptionTier: 'free',
-      isEmailVerified: false,
+      isEmailVerified: bypassEmailVerification,
     });
 
-    // Generate email verification token and save
-    await UserServiceDatabase.generateAndSaveEmailToken(newUser);
+    // Only generate email verification token if bypass is not enabled
+    if (!bypassEmailVerification) {
+      await UserServiceDatabase.generateAndSaveEmailToken(newUser);
+    } else {
+      // Save user without generating email token when bypass is enabled
+      await UserServiceDatabase.saveUserSafely(newUser);
+    }
+    
     return newUser;
   }
 
