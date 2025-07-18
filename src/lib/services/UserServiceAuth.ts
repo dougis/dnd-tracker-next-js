@@ -122,7 +122,7 @@ export class UserServiceAuth {
       // Save user without generating email token when bypass is enabled
       await UserServiceDatabase.saveUserSafely(newUser);
     }
-    
+
     return newUser;
   }
 
