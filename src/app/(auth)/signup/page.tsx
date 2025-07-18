@@ -63,8 +63,8 @@ export default function SignUpPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        // Handle server validation errors
-        if (response.status === 400 && result.errors) {
+        // Handle server validation errors (400) and duplicate user errors (409)
+        if ((response.status === 400 || response.status === 409) && result.errors) {
           setFormState({
             success: false,
             errors: result.errors.map((err: any) => ({
