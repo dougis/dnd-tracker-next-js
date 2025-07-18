@@ -64,6 +64,44 @@ describe('Base Validation Schemas', () => {
       });
     });
 
+    it('should validate passwords with special characters like asterisks', () => {
+      // Test case for issue #408: passwords with * character should be valid
+      // Regression test for password validation rejecting valid asterisk characters
+      const passwordsWithSpecialChars = [
+        'cjt*JCQ8hvk*xbw2tgd', // The exact password from the bug report
+        'Test*Password123!',
+        'MyP@ssw*rd2024',
+        'SecurePass*123!', // Fixed: changed # to ! (allowed character)
+        'Compl3x$P@ss*w0rd',
+      ];
+
+      passwordsWithSpecialChars.forEach(password => {
+        const result = safeValidate(passwordSchema, password);
+        expect(result.success).toBe(true);
+        if (!result.success) {
+          console.log(`Password "${password}" failed validation:`, result.errors);
+        }
+      });
+    });
+
+    it('should validate edge case passwords with all required character types', () => {
+      const edgeCasePasswords = [
+        'aA1!', // Minimal length - should fail
+        'aA1!abcd', // 8 chars, all requirements met
+        'Aa1@bcdefgh', // 11 chars, all requirements
+        'MyP@ssw0rd!123', // Longer password with all requirements
+      ];
+
+      edgeCasePasswords.forEach(password => {
+        const result = safeValidate(passwordSchema, password);
+        if (password.length >= 8) {
+          expect(result.success).toBe(true);
+        } else {
+          expect(result.success).toBe(false);
+        }
+      });
+    });
+
     it('should reject weak passwords', () => {
       const invalidPasswords = [
         'short',
@@ -75,6 +113,21 @@ describe('Base Validation Schemas', () => {
       ];
 
       invalidPasswords.forEach(password => {
+        const result = safeValidate(passwordSchema, password);
+        expect(result.success).toBe(false);
+      });
+    });
+
+    it('should reject passwords with disallowed characters', () => {
+      const passwordsWithInvalidChars = [
+        'TestPassword()', // () are not in the allowed character set
+        'MyPassword123~', // ~ is not in the allowed character set
+        'Password123{}', // {} are not in the allowed character set
+        'ValidPass123#', // # is not in the allowed character set [@$!%*?&]
+        'TestPass123+', // + is not in the allowed character set
+      ];
+
+      passwordsWithInvalidChars.forEach(password => {
         const result = safeValidate(passwordSchema, password);
         expect(result.success).toBe(false);
       });

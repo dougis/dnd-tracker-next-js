@@ -37,77 +37,150 @@ export class UserServiceAuth {
     userData: UserRegistration
   ): Promise<ServiceResult<PublicUser>> {
     try {
-      // Validate input data
-      const validatedData =
-        UserServiceValidation.validateAndParseRegistration(userData);
-
-      // SECURITY: Validate password strength
-      const passwordValidation = validatePasswordStrength(validatedData.password);
-      if (!passwordValidation.isValid) {
-        return {
-          success: false,
-          error: {
-            message: `Password does not meet security requirements: ${passwordValidation.errors.join(', ')}`,
-            code: 'INVALID_PASSWORD',
-            statusCode: 400,
-          },
-        };
-      }
-
-      // SECURITY: Ensure password is not already hashed (should be plaintext for new users)
-      if (isPasswordHashed(validatedData.password)) {
-        return {
-          success: false,
-          error: {
-            message: 'Invalid password format',
-            code: 'INVALID_PASSWORD_FORMAT',
-            statusCode: 400,
-          },
-        };
-      }
+      // Validate input data and password
+      const validatedData = UserServiceValidation.validateAndParseRegistration(userData);
+      const passwordError = this.validatePassword(validatedData.password);
+      if (passwordError) return passwordError;
 
       // Check if user already exists
       await checkUserExists(validatedData.email, validatedData.username);
 
-      // Create new user
-      const newUser = new User({
-        email: validatedData.email,
-        username: validatedData.username,
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
-        passwordHash: validatedData.password, // Will be hashed by middleware
-        role: 'user',
-        subscriptionTier: 'free',
-        isEmailVerified: false,
-      });
-
-      // Generate email verification token and save
-      await UserServiceDatabase.generateAndSaveEmailToken(newUser);
+      // Create and save new user
+      const newUser = await this.createAndSaveUser(validatedData);
 
       return UserServiceResponseHelpers.createSuccessResponse(
         UserServiceResponseHelpers.safeToPublicJSON(newUser)
       );
     } catch (error) {
-      // Handle custom errors
-      if (error instanceof UserAlreadyExistsError) {
-        return UserServiceResponseHelpers.createErrorResponse(error);
-      }
-
-      // Handle validation errors
-      try {
-        return UserServiceResponseHelpers.handleValidationError(error);
-      } catch {
-        // Fallback for test compatibility
-        return {
-          success: false,
-          error: {
-            message: 'User already exists',
-            code: 'USER_ALREADY_EXISTS',
-            statusCode: 409,
-          },
-        };
-      }
+      return this.handleUserCreationError(error);
     }
+  }
+
+  /**
+   * Validate password strength and format
+   */
+  private static validatePassword(password: string): ServiceResult<never> | null {
+    // SECURITY: Validate password strength
+    const passwordValidation = validatePasswordStrength(password);
+    if (!passwordValidation.isValid) {
+      return {
+        success: false,
+        error: {
+          message: `Password does not meet security requirements: ${passwordValidation.errors.join(', ')}`,
+          code: 'INVALID_PASSWORD',
+          statusCode: 400,
+        },
+      };
+    }
+
+    // SECURITY: Ensure password is not already hashed (should be plaintext for new users)
+    if (isPasswordHashed(password)) {
+      return {
+        success: false,
+        error: {
+          message: 'Invalid password format',
+          code: 'INVALID_PASSWORD_FORMAT',
+          statusCode: 400,
+        },
+      };
+    }
+
+    return null;
+  }
+
+  /**
+   * Create and save a new user with email verification token
+   */
+  private static async createAndSaveUser(validatedData: any) {
+    const newUser = new User({
+      email: validatedData.email,
+      username: validatedData.username,
+      firstName: validatedData.firstName,
+      lastName: validatedData.lastName,
+      passwordHash: validatedData.password, // Will be hashed by middleware
+      role: 'user',
+      subscriptionTier: 'free',
+      isEmailVerified: false,
+    });
+
+    // Generate email verification token and save
+    await UserServiceDatabase.generateAndSaveEmailToken(newUser);
+    return newUser;
+  }
+
+  /**
+   * Handle errors during user creation with specific error type handling
+   */
+  private static handleUserCreationError(error: unknown): ServiceResult<never> {
+    // Handle custom errors
+    if (error instanceof UserAlreadyExistsError) {
+      return UserServiceResponseHelpers.createErrorResponse(error);
+    }
+
+    // Handle validation errors first
+    if (error instanceof Error && error.message.includes('validation')) {
+      return UserServiceResponseHelpers.handleValidationError(error);
+    }
+
+    // Handle MongoDB and model-specific errors
+    const mongoError = this.handleMongoErrors(error);
+    if (mongoError) return mongoError;
+
+    // Default to internal server error for unknown errors
+    console.error('Unexpected error during user creation:', error);
+    return this.createRegistrationFailedError();
+  }
+
+  /**
+   * Handle MongoDB and model-specific errors
+   */
+  private static handleMongoErrors(error: unknown): ServiceResult<never> | null {
+    if (!(error instanceof Error)) return null;
+
+    // Handle MongoDB duplicate key errors
+    if ('code' in error && (error as any).code === 11000) {
+      const field = error.message.includes('email') ? 'email' : 'username';
+      return this.createUserExistsError(field);
+    }
+
+    // Handle model validation errors
+    if (error.message === 'Email already exists') {
+      return this.createUserExistsError('email');
+    }
+
+    if (error.message === 'Username already exists') {
+      return this.createUserExistsError('username');
+    }
+
+    return null;
+  }
+
+  /**
+   * Create standardized user already exists error response
+   */
+  private static createUserExistsError(field: string): ServiceResult<never> {
+    return {
+      success: false,
+      error: {
+        message: `User already exists with this ${field}`,
+        code: 'USER_ALREADY_EXISTS',
+        statusCode: 409,
+      },
+    };
+  }
+
+  /**
+   * Create standardized registration failed error response
+   */
+  private static createRegistrationFailedError(): ServiceResult<never> {
+    return {
+      success: false,
+      error: {
+        message: 'An unexpected error occurred during registration',
+        code: 'REGISTRATION_FAILED',
+        statusCode: 500,
+      },
+    };
   }
 
   /**
