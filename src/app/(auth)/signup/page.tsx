@@ -79,17 +79,24 @@ export default function SignUpPage() {
         throw new Error(result.message || 'Registration failed');
       }
 
-      // Success - redirect to verification page
+      // Success - redirect based on email bypass flag
       setFormState({
         success: true,
         errors: [],
         isSubmitting: false,
       });
 
-      router.push(
-        ('/verify-email?email=' +
-          encodeURIComponent(validatedData.email)) as any
-      );
+      // Check if email verification was bypassed
+      if (result.emailBypass) {
+        // Email verification was bypassed, redirect directly to sign-in
+        router.push('/signin?next=/profile-setup' as any);
+      } else {
+        // Normal flow - redirect to email verification page
+        router.push(
+          ('/verify-email?email=' +
+            encodeURIComponent(validatedData.email)) as any
+        );
+      }
     } catch (error) {
       // Handle Zod validation errors
       if (error instanceof z.ZodError) {

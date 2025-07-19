@@ -222,6 +222,12 @@ export type PasswordResetRequest = InferSchemaType<
 export type ChangePassword = InferSchemaType<typeof changePasswordSchema>;
 export type UserPreferences = InferSchemaType<typeof userPreferencesSchema>;
 export type SubscriptionTier = InferSchemaType<typeof subscriptionTierSchema>;
+
+// Registration response type
+export type UserRegistrationResponse = {
+  user: PublicUser;
+  emailBypass: boolean;
+};
 export type UserRole = InferSchemaType<typeof userRoleSchema>;
 export type EmailVerification = InferSchemaType<typeof emailVerificationSchema>;
 export type UpdateSubscription = InferSchemaType<

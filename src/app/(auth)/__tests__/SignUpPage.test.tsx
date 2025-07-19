@@ -200,4 +200,128 @@ describe('SignUpPage Component', () => {
       expect(submitButton).not.toHaveTextContent(/Creating account/i);
     });
   });
+
+  describe('Email verification bypass', () => {
+    it('redirects to sign-in page when email bypass is enabled', async () => {
+      // Mock API response for bypassed email verification
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          success: true,
+          message: 'User registered successfully',
+          user: { id: '123', email: 'test@example.com' },
+          emailBypass: true,
+        }),
+      });
+
+      render(<SignUpPage />);
+
+      // Fill out the form
+      await userEvent.type(screen.getByLabelText(/First Name/i), 'John');
+      await userEvent.type(screen.getByLabelText(/Last Name/i), 'Doe');
+      await userEvent.type(screen.getByLabelText(/Username/i), 'johndoe');
+      await userEvent.type(
+        screen.getByLabelText(/Email/i),
+        'john.doe@example.com'
+      );
+      await userEvent.type(screen.getByLabelText(/^Password/i), 'Password123!');
+      await userEvent.type(
+        screen.getByLabelText(/Confirm Password/i),
+        'Password123!'
+      );
+      await userEvent.click(screen.getByLabelText(/I agree to the/i));
+
+      await userEvent.click(
+        screen.getByRole('button', { name: /Create Account/i })
+      );
+
+      await waitFor(() => {
+        // Should redirect to sign-in with profile setup next step when email is bypassed
+        expect(mockRouter.push).toHaveBeenCalledWith(
+          '/signin?next=/profile-setup'
+        );
+      });
+    });
+
+    it('redirects to email verification page when email bypass is disabled', async () => {
+      // Mock API response for normal email verification flow
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          success: true,
+          message: 'User registered successfully',
+          user: { id: '123', email: 'test@example.com' },
+          emailBypass: false,
+        }),
+      });
+
+      render(<SignUpPage />);
+
+      // Fill out the form
+      await userEvent.type(screen.getByLabelText(/First Name/i), 'John');
+      await userEvent.type(screen.getByLabelText(/Last Name/i), 'Doe');
+      await userEvent.type(screen.getByLabelText(/Username/i), 'johndoe');
+      await userEvent.type(
+        screen.getByLabelText(/Email/i),
+        'john.doe@example.com'
+      );
+      await userEvent.type(screen.getByLabelText(/^Password/i), 'Password123!');
+      await userEvent.type(
+        screen.getByLabelText(/Confirm Password/i),
+        'Password123!'
+      );
+      await userEvent.click(screen.getByLabelText(/I agree to the/i));
+
+      await userEvent.click(
+        screen.getByRole('button', { name: /Create Account/i })
+      );
+
+      await waitFor(() => {
+        // Should redirect to email verification page when bypass is disabled
+        expect(mockRouter.push).toHaveBeenCalledWith(
+          '/verify-email?email=john.doe%40example.com'
+        );
+      });
+    });
+
+    it('defaults to email verification flow when emailBypass is not provided', async () => {
+      // Mock API response without emailBypass property (backward compatibility)
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          success: true,
+          message: 'User registered successfully',
+          user: { id: '123', email: 'test@example.com' },
+        }),
+      });
+
+      render(<SignUpPage />);
+
+      // Fill out the form
+      await userEvent.type(screen.getByLabelText(/First Name/i), 'John');
+      await userEvent.type(screen.getByLabelText(/Last Name/i), 'Doe');
+      await userEvent.type(screen.getByLabelText(/Username/i), 'johndoe');
+      await userEvent.type(
+        screen.getByLabelText(/Email/i),
+        'john.doe@example.com'
+      );
+      await userEvent.type(screen.getByLabelText(/^Password/i), 'Password123!');
+      await userEvent.type(
+        screen.getByLabelText(/Confirm Password/i),
+        'Password123!'
+      );
+      await userEvent.click(screen.getByLabelText(/I agree to the/i));
+
+      await userEvent.click(
+        screen.getByRole('button', { name: /Create Account/i })
+      );
+
+      await waitFor(() => {
+        // Should default to email verification page for backward compatibility
+        expect(mockRouter.push).toHaveBeenCalledWith(
+          '/verify-email?email=john.doe%40example.com'
+        );
+      });
+    });
+  });
 });

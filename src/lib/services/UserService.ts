@@ -7,6 +7,7 @@ import {
   type PasswordReset,
   type EmailVerification,
   type PublicUser,
+  type UserRegistrationResponse,
   type SubscriptionTier,
 } from '../validations/user';
 
@@ -40,7 +41,7 @@ export class UserService {
    */
   static async createUser(
     userData: UserRegistration
-  ): Promise<ServiceResult<PublicUser>> {
+  ): Promise<ServiceResult<UserRegistrationResponse>> {
     return UserServiceAuth.createUser(userData);
   }
 
