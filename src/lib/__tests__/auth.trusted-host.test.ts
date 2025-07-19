@@ -1,17 +1,6 @@
-// Mock the entire next-auth module to avoid import issues
-jest.mock('next-auth', () => {
-  return jest.fn((_config) => {
-    return {
-      handlers: {
-        GET: jest.fn(),
-        POST: jest.fn(),
-      },
-      auth: jest.fn(),
-      signIn: jest.fn(),
-      signOut: jest.fn(),
-    };
-  });
-});
+// Mock the entire next-auth module to capture configuration
+const mockNextAuth = jest.fn();
+jest.mock('next-auth', () => mockNextAuth);
 
 // Mock MongoDB dependencies
 jest.mock('@auth/mongodb-adapter', () => ({
@@ -35,6 +24,23 @@ describe('NextAuth Trusted Host Configuration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Clear module cache to ensure fresh imports
+    jest.resetModules();
+    
+    // Setup NextAuth mock to return proper structure
+    mockNextAuth.mockImplementation((config) => {
+      return {
+        handlers: {
+          GET: jest.fn(),
+          POST: jest.fn(),
+        },
+        auth: jest.fn(),
+        signIn: jest.fn(),
+        signOut: jest.fn(),
+      };
+    });
+    
     // Reset environment to simulate production
     process.env = {
       ...originalEnv,
@@ -102,35 +108,135 @@ describe('NextAuth Trusted Host Configuration', () => {
     });
   });
 
-  describe('Security Requirements', () => {
-    it('should have trustHost configuration enabled in auth module', async () => {
-      // After our fix, the auth module should have trustHost: true configured
-      // This test verifies that the NextAuth configuration includes trustHost
-
-      // Import the auth module - should work without errors now
-      const authModule = await import('../auth');
-
-      // Verify that the module loads successfully (indicates trustHost is working)
-      expect(authModule.handlers).toBeDefined();
-      expect(authModule.auth).toBeDefined();
-      expect(authModule.signIn).toBeDefined();
-      expect(authModule.signOut).toBeDefined();
-
-      // The fact that this test passes indicates the trustHost configuration is working
-      // because if it weren't, we'd get the UntrustedHost error
+  describe('Environment Variable Configuration', () => {
+    it('should set trustHost to true when AUTH_TRUST_HOST=true', async () => {
+      // Set the environment variable to enable trusted host
+      process.env.AUTH_TRUST_HOST = 'true';
+      
+      // Clear any previous calls to the mock
+      mockNextAuth.mockClear();
+      
+      // Import the auth module - this will call NextAuth with our configuration
+      await import('../auth');
+      
+      // Verify that NextAuth was called
+      expect(mockNextAuth).toHaveBeenCalledTimes(1);
+      
+      // Get the configuration object that was passed to NextAuth
+      const configurationObject = mockNextAuth.mock.calls[0][0];
+      
+      // Verify that trustHost: true was passed when AUTH_TRUST_HOST=true
+      expect(configurationObject).toHaveProperty('trustHost', true);
     });
 
-    it('should validate the fix addresses the UntrustedHost issue', () => {
-      // This test documents that we've addressed Issue #434
-      // The fix is adding `trustHost: true` to the NextAuth configuration
+    it('should set trustHost to false when AUTH_TRUST_HOST is not set', async () => {
+      // Ensure AUTH_TRUST_HOST is not set
+      delete process.env.AUTH_TRUST_HOST;
+      
+      // Clear any previous calls to the mock
+      mockNextAuth.mockClear();
+      
+      // Import the auth module
+      await import('../auth');
+      
+      // Get the configuration object that was passed to NextAuth
+      const configurationObject = mockNextAuth.mock.calls[0][0];
+      
+      // Verify that trustHost: false when AUTH_TRUST_HOST is not set
+      expect(configurationObject).toHaveProperty('trustHost', false);
+    });
 
+    it('should set trustHost to false when AUTH_TRUST_HOST=false', async () => {
+      // Set the environment variable to a non-true value
+      process.env.AUTH_TRUST_HOST = 'false';
+      
+      // Clear any previous calls to the mock
+      mockNextAuth.mockClear();
+      
+      // Import the auth module
+      await import('../auth');
+      
+      // Get the configuration object that was passed to NextAuth
+      const configurationObject = mockNextAuth.mock.calls[0][0];
+      
+      // Verify that trustHost: false when AUTH_TRUST_HOST=false
+      expect(configurationObject).toHaveProperty('trustHost', false);
+    });
+
+    it('should set trustHost to false when AUTH_TRUST_HOST has invalid value', async () => {
+      // Set the environment variable to an invalid value
+      process.env.AUTH_TRUST_HOST = 'yes';
+      
+      // Clear any previous calls to the mock
+      mockNextAuth.mockClear();
+      
+      // Import the auth module
+      await import('../auth');
+      
+      // Get the configuration object that was passed to NextAuth
+      const configurationObject = mockNextAuth.mock.calls[0][0];
+      
+      // Verify that trustHost: false when AUTH_TRUST_HOST has invalid value
+      expect(configurationObject).toHaveProperty('trustHost', false);
+    });
+  });
+
+  describe('Production Configuration Validation', () => {
+    it('should verify the trustHost configuration solves the UntrustedHost issue', async () => {
+      // Set AUTH_TRUST_HOST to enable trusted host (production fix)
+      process.env.AUTH_TRUST_HOST = 'true';
+      
+      // Clear any previous calls to the mock
+      mockNextAuth.mockClear();
+      
+      // Import the auth module
+      await import('../auth');
+      
+      // Verify NextAuth was called with trustHost configuration
+      const configurationObject = mockNextAuth.mock.calls[0][0];
+      
+      // This is the key fix for Issue #434
+      expect(configurationObject.trustHost).toBe(true);
+      
+      // Document what this fixes
       const issueDescription = 'UntrustedHost: Host must be trusted. URL was: https://dnd-tracker-next-js.fly.dev/api/auth/session';
-      const fixApplied = 'trustHost: true added to NextAuth configuration';
-
-      // Document the issue and solution
       expect(issueDescription).toContain('UntrustedHost');
       expect(issueDescription).toContain('dnd-tracker-next-js.fly.dev');
-      expect(fixApplied).toContain('trustHost: true');
+    });
+
+    it('should maintain all other NextAuth configuration while adding trustHost', async () => {
+      // Set AUTH_TRUST_HOST to enable trusted host
+      process.env.AUTH_TRUST_HOST = 'true';
+      
+      // Clear any previous calls to the mock
+      mockNextAuth.mockClear();
+      
+      // Import the auth module
+      await import('../auth');
+      
+      const config = mockNextAuth.mock.calls[0][0];
+      
+      // Verify trustHost is enabled
+      expect(config.trustHost).toBe(true);
+      
+      // Verify essential NextAuth configuration is preserved
+      expect(config.providers).toBeDefined();
+      expect(Array.isArray(config.providers)).toBe(true);
+      expect(config.providers.length).toBeGreaterThan(0);
+      
+      expect(config.session).toBeDefined();
+      expect(config.session.strategy).toBe('database');
+      expect(config.session.maxAge).toBe(30 * 24 * 60 * 60); // 30 days
+      
+      expect(config.callbacks).toBeDefined();
+      expect(config.callbacks.session).toBeDefined();
+      expect(config.callbacks.jwt).toBeDefined();
+      
+      expect(config.pages).toBeDefined();
+      expect(config.pages.signIn).toBe('/signin');
+      expect(config.pages.error).toBe('/error');
+      
+      expect(config.debug).toBe(false); // Should be false in production test env
     });
   });
 });
