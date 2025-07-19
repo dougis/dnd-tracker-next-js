@@ -71,22 +71,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   session: {
-    strategy: 'database',
+    strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
     updateAge: 24 * 60 * 60, // 24 hours
   },
   callbacks: {
-    async session({ session, user }: { session: any; user: any }) {
-      // Add user ID and subscription tier to session
-      if (session?.user && user) {
-        session.user.id = user.id;
-        session.user.subscriptionTier =
-          (user as any).subscriptionTier || 'free';
+    async session({ session, token }: { session: any; token: any }) {
+      // Add user ID and subscription tier to session from JWT token
+      if (session?.user && token) {
+        session.user.id = token.sub ?? ''; // JWT 'sub' field contains user ID
+        session.user.subscriptionTier = token.subscriptionTier || 'free';
       }
       return session;
     },
     async jwt({ token, user }: { token: any; user?: any }) {
-      // Add user data to JWT token
+      // Add user data to JWT token when user signs in
       if (user) {
         token.subscriptionTier = (user as any).subscriptionTier || 'free';
       }
