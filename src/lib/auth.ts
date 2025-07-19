@@ -78,9 +78,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async session({ session, token }: { session: any; token: any }) {
       // Add user ID and subscription tier to session from JWT token
-      if (session?.user && token) {
-        session.user.id = token.sub; // JWT 'sub' field contains user ID
+    if (session?.user && token) {
+        session.user.id = token.sub ?? ''; // JWT 'sub' field contains user ID
         session.user.subscriptionTier = token.subscriptionTier || 'free';
+    }
       }
       return session;
     },
