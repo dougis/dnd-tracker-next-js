@@ -120,11 +120,11 @@ describe('Base Validation Schemas', () => {
 
     it('should reject passwords with disallowed characters', () => {
       const passwordsWithInvalidChars = [
-        'TestPassword()', // () are not in the allowed character set
-        'MyPassword123~', // ~ is not in the allowed character set
-        'Password123{}', // {} are not in the allowed character set
-        'ValidPass123#', // # is not in the allowed character set [@$!%*?&]
-        'TestPass123+', // + is not in the allowed character set
+        'TestPassword1!()', // Contains all required types, plus invalid '()'
+        'MyPassword123!~', // Contains all required types, plus invalid '~'
+        'PasswordIsG00d!{}', // Contains all required types, plus invalid '{}'
+        'ValidPass123!#', // Contains all required types, plus invalid '#'
+        'TestPass123!+', // Contains all required types, plus invalid '+'
       ];
 
       passwordsWithInvalidChars.forEach(password => {
