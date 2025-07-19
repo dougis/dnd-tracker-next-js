@@ -17,16 +17,45 @@ describe('SignUpPage Component', () => {
     push: jest.fn(),
   };
 
+  // Helper function to fill out the registration form
+  const fillRegistrationForm = async () => {
+    await userEvent.type(screen.getByLabelText(/First Name/i), 'John');
+    await userEvent.type(screen.getByLabelText(/Last Name/i), 'Doe');
+    await userEvent.type(screen.getByLabelText(/Username/i), 'johndoe');
+    await userEvent.type(
+      screen.getByLabelText(/Email/i),
+      'john.doe@example.com'
+    );
+    await userEvent.type(screen.getByLabelText(/^Password/i), 'Password123!');
+    await userEvent.type(
+      screen.getByLabelText(/Confirm Password/i),
+      'Password123!'
+    );
+    await userEvent.click(screen.getByLabelText(/I agree to the/i));
+  };
+
+  // Helper function to submit the form
+  const submitForm = async () => {
+    await userEvent.click(
+      screen.getByRole('button', { name: /Create Account/i })
+    );
+  };
+
+  // Helper function to setup API mock with custom response
+  const setupApiMock = (responseData: any) => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue(responseData),
+    });
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
-    (global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({
-        success: true,
-        message: 'User registered successfully',
-        user: { id: '123', email: 'test@example.com' },
-      }),
+    setupApiMock({
+      success: true,
+      message: 'User registered successfully',
+      user: { id: '123', email: 'test@example.com' },
     });
   });
 
@@ -53,23 +82,8 @@ describe('SignUpPage Component', () => {
   it('submits the form with valid data', async () => {
     render(<SignUpPage />);
 
-    await userEvent.type(screen.getByLabelText(/First Name/i), 'John');
-    await userEvent.type(screen.getByLabelText(/Last Name/i), 'Doe');
-    await userEvent.type(screen.getByLabelText(/Username/i), 'johndoe');
-    await userEvent.type(
-      screen.getByLabelText(/Email/i),
-      'john.doe@example.com'
-    );
-    await userEvent.type(screen.getByLabelText(/^Password/i), 'Password123!');
-    await userEvent.type(
-      screen.getByLabelText(/Confirm Password/i),
-      'Password123!'
-    );
-    await userEvent.click(screen.getByLabelText(/I agree to the/i));
-
-    await userEvent.click(
-      screen.getByRole('button', { name: /Create Account/i })
-    );
+    await fillRegistrationForm();
+    await submitForm();
 
     await waitFor(() => {
       // Use expect.objectContaining to handle potential differences in property order
@@ -149,24 +163,8 @@ describe('SignUpPage Component', () => {
 
     render(<SignUpPage />);
 
-    // Fill the form with valid data
-    await userEvent.type(screen.getByLabelText(/First Name/i), 'John');
-    await userEvent.type(screen.getByLabelText(/Last Name/i), 'Doe');
-    await userEvent.type(screen.getByLabelText(/Username/i), 'johndoe');
-    await userEvent.type(
-      screen.getByLabelText(/Email/i),
-      'john.doe@example.com'
-    );
-    await userEvent.type(screen.getByLabelText(/^Password/i), 'Password123!');
-    await userEvent.type(
-      screen.getByLabelText(/Confirm Password/i),
-      'Password123!'
-    );
-    await userEvent.click(screen.getByLabelText(/I agree to the/i));
-
-    await userEvent.click(
-      screen.getByRole('button', { name: /Create Account/i })
-    );
+    await fillRegistrationForm();
+    await submitForm();
 
     // Essential behavior to test:
     // 1. API request is made (fetch is called)
@@ -204,36 +202,17 @@ describe('SignUpPage Component', () => {
   describe('Email verification bypass', () => {
     it('redirects to sign-in page when email bypass is enabled', async () => {
       // Mock API response for bypassed email verification
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          success: true,
-          message: 'User registered successfully',
-          user: { id: '123', email: 'test@example.com' },
-          emailBypass: true,
-        }),
+      setupApiMock({
+        success: true,
+        message: 'User registered successfully',
+        user: { id: '123', email: 'test@example.com' },
+        emailBypass: true,
       });
 
       render(<SignUpPage />);
 
-      // Fill out the form
-      await userEvent.type(screen.getByLabelText(/First Name/i), 'John');
-      await userEvent.type(screen.getByLabelText(/Last Name/i), 'Doe');
-      await userEvent.type(screen.getByLabelText(/Username/i), 'johndoe');
-      await userEvent.type(
-        screen.getByLabelText(/Email/i),
-        'john.doe@example.com'
-      );
-      await userEvent.type(screen.getByLabelText(/^Password/i), 'Password123!');
-      await userEvent.type(
-        screen.getByLabelText(/Confirm Password/i),
-        'Password123!'
-      );
-      await userEvent.click(screen.getByLabelText(/I agree to the/i));
-
-      await userEvent.click(
-        screen.getByRole('button', { name: /Create Account/i })
-      );
+      await fillRegistrationForm();
+      await submitForm();
 
       await waitFor(() => {
         // Should redirect to sign-in with profile setup next step when email is bypassed
@@ -245,36 +224,17 @@ describe('SignUpPage Component', () => {
 
     it('redirects to email verification page when email bypass is disabled', async () => {
       // Mock API response for normal email verification flow
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          success: true,
-          message: 'User registered successfully',
-          user: { id: '123', email: 'test@example.com' },
-          emailBypass: false,
-        }),
+      setupApiMock({
+        success: true,
+        message: 'User registered successfully',
+        user: { id: '123', email: 'test@example.com' },
+        emailBypass: false,
       });
 
       render(<SignUpPage />);
 
-      // Fill out the form
-      await userEvent.type(screen.getByLabelText(/First Name/i), 'John');
-      await userEvent.type(screen.getByLabelText(/Last Name/i), 'Doe');
-      await userEvent.type(screen.getByLabelText(/Username/i), 'johndoe');
-      await userEvent.type(
-        screen.getByLabelText(/Email/i),
-        'john.doe@example.com'
-      );
-      await userEvent.type(screen.getByLabelText(/^Password/i), 'Password123!');
-      await userEvent.type(
-        screen.getByLabelText(/Confirm Password/i),
-        'Password123!'
-      );
-      await userEvent.click(screen.getByLabelText(/I agree to the/i));
-
-      await userEvent.click(
-        screen.getByRole('button', { name: /Create Account/i })
-      );
+      await fillRegistrationForm();
+      await submitForm();
 
       await waitFor(() => {
         // Should redirect to email verification page when bypass is disabled
@@ -286,35 +246,16 @@ describe('SignUpPage Component', () => {
 
     it('defaults to email verification flow when emailBypass is not provided', async () => {
       // Mock API response without emailBypass property (backward compatibility)
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          success: true,
-          message: 'User registered successfully',
-          user: { id: '123', email: 'test@example.com' },
-        }),
+      setupApiMock({
+        success: true,
+        message: 'User registered successfully',
+        user: { id: '123', email: 'test@example.com' },
       });
 
       render(<SignUpPage />);
 
-      // Fill out the form
-      await userEvent.type(screen.getByLabelText(/First Name/i), 'John');
-      await userEvent.type(screen.getByLabelText(/Last Name/i), 'Doe');
-      await userEvent.type(screen.getByLabelText(/Username/i), 'johndoe');
-      await userEvent.type(
-        screen.getByLabelText(/Email/i),
-        'john.doe@example.com'
-      );
-      await userEvent.type(screen.getByLabelText(/^Password/i), 'Password123!');
-      await userEvent.type(
-        screen.getByLabelText(/Confirm Password/i),
-        'Password123!'
-      );
-      await userEvent.click(screen.getByLabelText(/I agree to the/i));
-
-      await userEvent.click(
-        screen.getByRole('button', { name: /Create Account/i })
-      );
+      await fillRegistrationForm();
+      await submitForm();
 
       await waitFor(() => {
         // Should default to email verification page for backward compatibility
