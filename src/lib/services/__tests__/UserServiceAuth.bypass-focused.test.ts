@@ -53,7 +53,7 @@ jest.mock('../UserServiceResponseHelpers', () => ({
 
 describe('UserServiceAuth - Email Bypass Focus', () => {
   const originalEnv = process.env.BYPASS_EMAIL_VERIFICATION;
-  
+
   // Get mocked modules
   const { UserServiceDatabase } = require('../UserServiceDatabase');
 
@@ -138,7 +138,7 @@ describe('UserServiceAuth - Email Bypass Focus', () => {
       const result = await UserServiceAuth.createUser(userData);
 
       expect(result.success).toBe(true);
-      
+
       // Verify bypass path was taken
       expect(UserServiceDatabase.saveUserSafely).toHaveBeenCalledTimes(1);
       expect(UserServiceDatabase.generateAndSaveEmailToken).not.toHaveBeenCalled();
@@ -154,7 +154,7 @@ describe('UserServiceAuth - Email Bypass Focus', () => {
       const result = await UserServiceAuth.createUser(userData);
 
       expect(result.success).toBe(true);
-      
+
       // Verify normal path was taken
       expect(UserServiceDatabase.generateAndSaveEmailToken).toHaveBeenCalledTimes(1);
       expect(UserServiceDatabase.saveUserSafely).not.toHaveBeenCalled();
