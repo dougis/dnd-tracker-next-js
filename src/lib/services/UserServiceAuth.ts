@@ -13,6 +13,7 @@ import {
   type PasswordReset,
   type EmailVerification,
   type PublicUser,
+  type UserRegistrationResponse,
 } from '../validations/user';
 import { checkUserExists } from './UserServiceHelpers';
 import { UserServiceValidation } from './UserServiceValidation';
@@ -44,7 +45,7 @@ export class UserServiceAuth {
    */
   static async createUser(
     userData: UserRegistration
-  ): Promise<ServiceResult<PublicUser>> {
+  ): Promise<ServiceResult<UserRegistrationResponse>> {
     try {
       // Validate input data and password
       const validatedData = UserServiceValidation.validateAndParseRegistration(userData);
@@ -54,12 +55,14 @@ export class UserServiceAuth {
       // Check if user already exists
       await checkUserExists(validatedData.email, validatedData.username);
 
-      // Create and save new user
+      // Create and save new user with bypass flag tracking
+      const bypassEmailVerification = this.shouldBypassEmailVerification();
       const newUser = await this.createAndSaveUser(validatedData);
 
-      return UserServiceResponseHelpers.createSuccessResponse(
-        UserServiceResponseHelpers.safeToPublicJSON(newUser)
-      );
+      return UserServiceResponseHelpers.createSuccessResponse({
+        user: UserServiceResponseHelpers.safeToPublicJSON(newUser),
+        emailBypass: bypassEmailVerification,
+      });
     } catch (error) {
       return this.handleUserCreationError(error);
     }

@@ -31,7 +31,8 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         message: 'User registered successfully',
-        user: result.data,
+        user: result.data?.user,
+        emailBypass: result.data?.emailBypass,
       },
       { status: 201 }
     );

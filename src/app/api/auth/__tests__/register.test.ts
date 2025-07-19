@@ -43,9 +43,12 @@ describe('POST /api/auth/register', () => {
     UserService.createUser = jest.fn().mockResolvedValue({
       success: true,
       data: {
-        id: '12345',
-        email: 'john.doe@example.com',
-        username: 'johndoe',
+        user: {
+          id: '12345',
+          email: 'john.doe@example.com',
+          username: 'johndoe',
+        },
+        emailBypass: false,
       },
     });
 
@@ -62,6 +65,7 @@ describe('POST /api/auth/register', () => {
         email: 'john.doe@example.com',
         username: 'johndoe',
       },
+      emailBypass: false,
     });
     expect(UserService.createUser).toHaveBeenCalledWith(mockUserData);
   });
