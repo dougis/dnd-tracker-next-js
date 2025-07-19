@@ -22,7 +22,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   }),
   // Fix for Issue #434: NextAuth v5 requires explicit trust host configuration
   // This prevents "UntrustedHost" errors in production deployments
-  trustHost: true,
+  trustHost: process.env.AUTH_TRUST_HOST === 'true',
   providers: [
     CredentialsProvider({
       name: 'credentials',
