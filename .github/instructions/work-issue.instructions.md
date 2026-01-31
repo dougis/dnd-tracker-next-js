@@ -22,14 +22,14 @@
       4. Add a final step to the plan to remove that status document
    2. If you have sub issues, iterate over each one following the steps below
 4. Persist the plan file to disk and commit it
-   1. Create a plan file in the docs folder with format: `issue-{issue-number}-{brief-description}.md`
+   1. Create a plan file in the docs folder with format: `issue-<issue-number>-<brief-description>.md`
    2. The plan file should contain:
       1. Issue title and number
       2. Issue description/summary
       3. Detailed breakdown of work to be done (as a checklist)
       4. Any sub-issues created
       5. Success criteria
-   3. Commit the plan file to the working branch: `git add docs/issue-{issue-number}-{brief-description}.md && git commit -m "Add plan for issue #<number>" && git push -u origin copilot/issue-<number>-<brief-description>`
+   3. Commit the plan file to the working branch: `git add docs/issue-<issue-number>-<brief-description>.md && git commit -m "Add plan for issue #<issue-number>" && git push -u origin copilot/issue-<issue-number>-<brief-description>`
 5. Once the plan is laid out and committed, execute on that plan making sure to
    - follow **all** instructions in /AGENTS.md
    - adhere to the standards in /CONTRIBUTING.md

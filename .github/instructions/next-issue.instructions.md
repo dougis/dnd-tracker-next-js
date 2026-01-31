@@ -24,6 +24,6 @@
    3. What the next step to execute is
    4. The status of the overall project
 6. Commit and push the updated `#$ARGUMENTS` document
-   1. Execute: `git add <plan-file-path> && git commit -m "Update plan status" && git push`
+   1. Execute: `git add <plan-file-path> && git commit -m "Update plan status" && git push -u origin <branch-name>`
 
 The `#$ARGUMENTS` document should serve as full context for a new chat
