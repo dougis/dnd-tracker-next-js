@@ -11,8 +11,9 @@
    1. If the MCP server fails or times out, use the gh command line of gh issue view
       1. Use the Desktop commander MCP server to execute the GH command line if possible
 2. Create and switch to a new branch for the work
-   1. Ensure you're on the latest main branch: `git checkout main && git pull origin main`
-   2. Create and switch to a new branch with a descriptive name based on the issue: `git checkout -b copilot/issue-<number>-<brief-description>`
+   1. Checkout main branch: `git checkout main`
+   2. Pull latest changes: `git pull origin main`
+   3. Create and switch to a new branch with a descriptive name based on the issue: `git checkout -b copilot/issue-<number>-<brief-description>`
 3. Once you have the issue details and description build a plan for the work it describes
    1. If the issue described needs to broken down into sub issues, please do so by
       1. Generating a planned list of steps to execute
