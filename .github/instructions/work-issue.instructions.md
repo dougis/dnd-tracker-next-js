@@ -12,8 +12,7 @@
       1. Use the Desktop commander MCP server to execute the GH command line if possible
 2. Create and switch to a new branch for the work
    1. Ensure you're on the latest main branch: `git checkout main && git pull origin main`
-   2. Create a new branch with a descriptive name based on the issue (e.g., `copilot/issue-123-feature-name`)
-   3. Switch to the newly created branch: `git checkout -b <branch-name>`
+   2. Create and switch to a new branch with a descriptive name based on the issue: `git checkout -b copilot/issue-<number>-<brief-description>`
 3. Once you have the issue details and description build a plan for the work it describes
    1. If the issue described needs to broken down into sub issues, please do so by
       1. Generating a planned list of steps to execute
@@ -30,7 +29,7 @@
       3. Detailed breakdown of work to be done (as a checklist)
       4. Any sub-issues created
       5. Success criteria
-   3. Commit the plan file to the working branch: `git add docs/issue-*.md && git commit -m "Add plan for issue #<number>" && git push -u origin <branch-name>`
+   3. Commit the plan file to the working branch: `git add docs/issue-{issue-number}-{brief-description}.md && git commit -m "Add plan for issue #<number>" && git push -u origin copilot/issue-<number>-<brief-description>`
 5. Once the plan is laid out and committed, execute on that plan making sure to
    - follow **all** instructions in /AGENTS.md
    - adhere to the standards in /CONTRIBUTING.md
