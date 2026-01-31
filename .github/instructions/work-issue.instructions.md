@@ -29,7 +29,9 @@
       3. Detailed breakdown of work to be done (as a checklist)
       4. Any sub-issues created
       5. Success criteria
-   3. Commit the plan file to the working branch: `git add docs/issue-<issue-number>-<brief-description>.md && git commit -m "Add plan for issue #<issue-number>" && git push -u origin copilot/issue-<issue-number>-<brief-description>`
+   3. Add the plan file to git: `git add docs/issue-<issue-number>-<brief-description>.md`
+   4. Commit the plan file: `git commit -m "Add plan for issue #<issue-number>"`
+   5. Push to the working branch: `git push -u origin copilot/issue-<issue-number>-<brief-description>`
 5. Once the plan is laid out and committed, execute on that plan making sure to
    - follow **all** instructions in /AGENTS.md
    - adhere to the standards in /CONTRIBUTING.md

@@ -13,7 +13,7 @@
 2. Find next incomplete, not `in-progress` item to be worked on in the `#$ARGUMENTS` document
 3. Create and switch to a new branch for the work
    1. Create a descriptive branch name based on the work item (e.g., `copilot/step-3-implement-feature`)
-   2. Execute: `git checkout -b <branch-name>`
+   2. Execute: `git checkout -b <descriptive-branch-name>`
 4. Execute the work following the instructions in ./work-issue.instructions.md
    1. Ensure the plan is persisted to disk and committed before starting implementation
    2. The plan file should be in the docs folder and committed to the working branch
@@ -24,6 +24,6 @@
    3. What the next step to execute is
    4. The status of the overall project
 6. Commit and push the updated `#$ARGUMENTS` document
-   1. Execute: `git add <plan-file-path> && git commit -m "Update plan status" && git push -u origin <branch-name>`
+   1. Execute: `git add <plan-file-path> && git commit -m "Update plan status" && git push -u origin <descriptive-branch-name>`
 
 The `#$ARGUMENTS` document should serve as full context for a new chat
