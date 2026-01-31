@@ -13,7 +13,7 @@
 2. Create and switch to a new branch for the work
    1. Checkout main branch: `git checkout main`
    2. Pull latest changes: `git pull origin main`
-   3. Create and switch to a new branch with a descriptive name based on the issue: `git checkout -b copilot/issue-<number>-<brief-description>`
+   3. Create and switch to a new branch with a descriptive name based on the issue: `git checkout -b copilot/issue-<issue-number>-<brief-description>`
 3. Once you have the issue details and description build a plan for the work it describes
    1. If the issue described needs to broken down into sub issues, please do so by
       1. Generating a planned list of steps to execute
